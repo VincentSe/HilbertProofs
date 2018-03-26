@@ -1,0 +1,86 @@
+%{
+#include "folAST.h"
+#include "fol.tab.h"
+#define YYSTYPE         FOLSTYPE
+#define YYLTYPE         FOLLTYPE
+#define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno;
+void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* errorMsg);
+%}
+
+%option noyywrap
+%option reentrant bison-bridge
+%option bison-locations
+
+%x FOL_COMMENT
+
+%%
+
+[ \t]+        { /* ignore */ }
+"~"           { folget_lval(yyscanner)->lopVal = lnot; return LNOT; }
+"\\/"         { folget_lval(yyscanner)->lopVal = lor; return LOGICAL_BIN_OP; }
+"/\\"         { folget_lval(yyscanner)->lopVal = land; return LOGICAL_BIN_OP; }
+"=>"          { folget_lval(yyscanner)->lopVal = limplies; return LOGICAL_BIN_OP; }
+"<=>"         { folget_lval(yyscanner)->lopVal = lequiv; return LOGICAL_BIN_OP; }
+
+"UNION"       { folget_lval(yyscanner)->lopVal = unaryUnion; return PREFIX_OP; }
+"SUBSET"      { folget_lval(yyscanner)->lopVal = powerset; return PREFIX_OP; }
+"\\in"        { folget_lval(yyscanner)->lopVal = in; return INFIX_OP; }
+"\\notin"     { folget_lval(yyscanner)->lopVal = notin; return INFIX_OP; }
+"="           { folget_lval(yyscanner)->lopVal = equal; return INFIX_OP; }
+"#"           { folget_lval(yyscanner)->lopVal = different; return INFIX_OP; }
+"\\subseteq"  { folget_lval(yyscanner)->lopVal = subseteq; return INFIX_OP; }
+"\\intersect" { folget_lval(yyscanner)->lopVal = binIntersect; return INFIX_OP; }
+"+"           { folget_lval(yyscanner)->lopVal = plus; return INFIX_OP; }
+
+
+"\\A"     { folget_lval(yyscanner)->lopVal = forall; return QUANTIFIER; }
+"\\E"     { folget_lval(yyscanner)->lopVal = exists; return QUANTIFIER; }
+"CHOOSE"  { folget_lval(yyscanner)->lopVal = choose; return QUANTIFIER; }
+
+
+"AXIOM"          { folget_lval(yyscanner)->rkVal = axiom; return REASON_KIND; }
+"AXIOM_SCHEME"   { folget_lval(yyscanner)->rkVal = axiomScheme; return REASON_KIND; }
+"Q_SCHEME"       { folget_lval(yyscanner)->rkVal = quantifierScheme; return REASON_KIND; }
+"E_SCHEME"       { folget_lval(yyscanner)->rkVal = equalityScheme; return REASON_KIND; }
+"THEOREM"        { folget_lval(yyscanner)->rkVal = theorem; return REASON_KIND; }
+"PROPO_TAUTO"    { folget_lval(yyscanner)->rkVal = propoTautology; return REASON_KIND; }
+"MODUS_PONENS"   { folget_lval(yyscanner)->rkVal = modusPonens; return REASON_KIND; }
+"GENERALIZATION" { folget_lval(yyscanner)->rkVal = generalization; return REASON_KIND; }
+
+"BOUND_VAR" { return BOUND_VAR; }
+"<-" { return LEFT_ARROW; }
+
+\\\*[^\n]*$ { /* ignore line comments for now */ }
+
+"PROOF" { return PROOF; }
+"QED" { return QED; }
+"BECAUSE" { return BECAUSE; }
+"CONSTANT" { return CONSTANT; }
+"EXTENDS" { return EXTENDS; }
+"VARIABLES" { return VARIABLES; }
+","  { return COMMA; }
+";"  { return SEMICOLON; }
+":"  { return COLON; }
+"_" { return UNDERSCORE; }
+
+[a-zA-Z0-9]+ {
+  folget_lval(yyscanner)->sVal = strdup(yytext);
+  return NAME; }
+
+"=="  { return NAME_SEPARATOR; }
+"("   { return LEFT_PARENTHESIS; }
+")"   { return RIGHT_PARENTHESIS; }
+"{"   { return LEFT_BRACE; }
+"}"   { return RIGHT_BRACE; }
+"<<"  { return LEFT_TUPLE; }
+">>"  { return RIGHT_TUPLE; }
+\n+   { yylineno += strlen(yytext); } // return EOL;
+
+.     { folerror (yylloc, yyscanner, (struct folAST*)0, "unknown character"); }  // don't silently convert "y'" to "y" as a variable name for instance
+
+"(*"              { BEGIN(FOL_COMMENT); }
+<FOL_COMMENT>"*)" { BEGIN(INITIAL); }
+<FOL_COMMENT>\n   { yylineno += 1; }
+<FOL_COMMENT>.    { } // Discard block comments
+
+%%

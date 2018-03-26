@@ -1,0 +1,570 @@
+EXTENDS Tautologies
+
+\* The membership binary relation, the only primitive symbol of ZFC :
+CONSTANT _ \in _
+
+aSetExists == \E x : x = x
+
+THEOREM aSetExists
+PROOF
+VARIABLES x;
+(\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
+~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
+x = x => ~~(x = x)   BECAUSE PT3;
+x = x   BECAUSE E_SCHEME;
+~~(x = x)   BECAUSE MODUS_PONENS;
+~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
+(\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
+aSetExists   BECAUSE MODUS_PONENS;
+QED
+
+(* The theorem above uses only logical axioms, the constant binary
+   relation \in does not appear in the proof. It is a general property
+   of first-order logic with equality : something exists.
+
+   Let's continue with a property of binary relations in
+   first-order logic. *)
+russellParadox == ~\E x : \A y : y \in x <=> ~(y \in y)
+
+contraposNeg(a,b) == (a <=> ~b) => (b => ~a)  PROPO_TAUTO contraposNeg
+
+THEOREM russellParadox
+PROOF
+VARIABLES x,y,a,h,b;
+\* If such a set x existed, it would both belong and not belong to itself
+(\A y : y \in x <=> ~(y \in y)) => (x \in x <=> ~(x \in x))   BECAUSE \A(y <- x);
+~(\A y : y \in x <=> ~(y \in y))   BECAUSE ContradictionEquiv;
+\A x : ~(\A y : y \in x <=> ~(y \in y))   BECAUSE GENERALIZATION;
+(\E x : \A y : y \in x <=> ~(y \in y)) <=> ~(\A x : ~(\A y : y \in x <=> ~(y \in y)))  BECAUSE Q_SCHEME;
+(\A x : ~(\A y : y \in x <=> ~(y \in y))) => ~(\E x : \A y : y \in x <=> ~(y \in y))  BECAUSE contraposNeg;
+russellParadox   BECAUSE MODUS_PONENS;
+QED
+
+(* We still don't have axioms to define what sets are.
+   The proof of Russell's paradox works with any binary relation,
+   for example < in Peano arithmetic : it then states that there
+   is no number greater than all others.
+
+   Russell's paradox constrains what axioms we can take for sets.
+   If we are not careful, we can choose axioms proving its contrary. *)
+
+\* The first axiom for sets : two sets are equal iif they have the same elements,
+\* and an element appears at most once in a set.
+extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
+AXIOM extensionality
+
+\* Inclusion of sets.
+x \subseteq y == \A z : z \in x => z \in y
+
+bothInclusions == \A a : \A b : (a \subseteq b /\ b \subseteq a) => a = b
+THEOREM bothInclusions
+
+PROOF
+VARIABLES z, y, x, b, a, i, j, t;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in a <=> x \in b) => a = b   BECAUSE \A(a <- a, b <- b);
+
+h == a \subseteq b /\ b \subseteq a;
+((\A z : z \in a => z \in b) /\ (\A z : z \in b => z \in a))
+   => \A z : (z \in a => z \in b) /\ (z \in b => z \in a)   BECAUSE Q_SCHEME;
+(z \in a => z \in b) => ((z \in b => z \in a) => (z \in a <=> z \in b))   BECAUSE IntroEquiv;
+((z \in a => z \in b) /\ (z \in b => z \in a)) => (z \in a <=> z \in b)   BECAUSE HypoImplToAnd;
+(\A z : (z \in a => z \in b) /\ (z \in b => z \in a)) => (\A z : z \in a <=> z \in b)   BECAUSE Q_SCHEME;
+h => \A z : z \in a <=> z \in b   BECAUSE TransitImplication;
+
+(\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE \A(z <- x);
+\A x : (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
+(\A z : z \in a <=> z \in b) => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
+h => (\A x : x \in a <=> x \in b)   BECAUSE TransitImplication;
+h => a = b    BECAUSE TransitImplication;
+bothInclusions   BECAUSE GENERALIZATION;
+QED
+
+inclusionInOneself == \A x : x \subseteq x
+THEOREM inclusionInOneself
+PROOF
+VARIABLES z, x;
+z \in x => z \in x   BECAUSE ImplyOneself;
+\A z : z \in x => z \in x   BECAUSE GENERALIZATION;
+inclusionInOneself   BECAUSE GENERALIZATION;
+QED
+
+(*
+   The axiom scheme of separation. Although it can be deduced from the
+   axiom scheme of replacement, we declare it for easier use
+   and better tracking of where replacement is needed.
+   
+   The variable "a" can be free in F as in the axiom
+       \A a : \E b : \A x : x \in b <=> (x \in a /\ x \subseteq a)
+   However we exclude b from the free variables of F, to avoid the self-contradicting formula
+       \A a : \E b : \A x : x \in b <=> (x \in a /\ x \notin b)
+   t is contrary to Russell's paradox so we cannot have it as an axiom.
+
+   Here is the derivation of the separation axiom scheme from the replacement axiom scheme :
+   sep(x,y) == x = y /\ F(x)
+   sep(x,y) /\ sep(x,y') => x = y /\ x = y'   BECAUSE PT;
+   (x = y /\ x = y') => y = y'   BECAUSE AXIOM_SCHEME;
+   sep(x,y) /\ sep(x,y') => y = y'   BECAUSE TransitImplication;
+   \A x : \A y : \A y' : sep(x,y) /\ sep(x,y') => y = y'   BECAUSE GENERALIZATION;
+   \* replacement scheme : by hypothesis formula F has no free occurrences of variable b
+   (\A x : \A y : \A y' : sep(x,y) /\ sep(x,y') => y = y')
+      => \A a : \E b : \A x : x \in b <=> \E y : y \in a /\ sep(x,y)   BECAUSE AXIOM_SCHEME;
+   \A a : \E b : \A x : x \in b <=> \E y : y \in a /\ sep(x,y)   BECAUSE MODUS_PONENS;
+*)
+separation(F) == \A a : \E b : \A x : x \in b <=> (x \in a /\ F)
+AXIOM_SCHEME BOUND_VAR(b) separation
+
+(*
+   The full axiom scheme of replacement : the image of a set by
+   a functional relation is a set. It can be interpreted as a size
+   guard, the image b is smaller than the starting set a, so
+   there is no risk of b exploding outside the limits of sets.
+*)
+replacement(F) == (\A x : \A y : \A z : (F /\ F(y <- z)) => y = z)
+   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F)
+AXIOM_SCHEME BOUND_VAR(b) replacement
+
+
+(*
+   There exists a set such that any set is not a member of it. It is called the empty set.
+   This empty set is rather mysterious : it exists so it is something, however there is
+   nothing in it, so by extensionality it should be nothing too.
+
+   Besides, we will see with the axiom of foundation that this empty set is the atom,
+   the elementary building block for all sets, ie all mathematics.
+*)
+{} == CHOOSE b : \A x : x \notin b
+emptySetExists == \A x : x \notin {}
+
+equivFalse(a,b,t) == t => ((a <=> (b /\ ~t)) => ~a)   PROPO_TAUTO equivFalse
+
+THEOREM emptySetExists
+PROOF
+VARIABLES x, a, b;
+(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE;
+
+\* Construct the empty by the separation axiom with a contradictory formula
+\A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x = x))   BECAUSE AXIOM_SCHEME; \* separation
+\E b : \A x : x \in b <=> (x \in a /\ ~(x = x))   BECAUSE \A(a <- a);
+
+\* Prove that this set b has no elements, because x \neq x is always false
+x = x   BECAUSE E_SCHEME;
+(x \in b <=> (x \in a /\ ~(x = x))) => x \notin b   BECAUSE equivFalse;
+(\A x : x \in b <=> (x \in a /\ ~(x = x))) => \A x : x \notin b   BECAUSE Q_SCHEME;
+
+(\E b : \A x : x \in b <=> (x \in a /\ ~(x = x))) => (\E b : \A x : x \notin b)   BECAUSE Q_SCHEME;
+\E b : \A x : x \notin b   BECAUSE MODUS_PONENS;
+emptySetExists   BECAUSE MODUS_PONENS;
+QED
+
+equivImpossible(a,b) == ~b => (~a => (a <=> b))
+PROPO_TAUTO equivImpossible
+
+emptySetUnique == \A a : (\A x : x \notin a) => a = {}
+THEOREM emptySetUnique
+PROOF
+VARIABLES a,b,x;
+emptySetExists BECAUSE THEOREM;
+x \notin {} BECAUSE \A(x <- x);
+(x \notin {}) => ((x \notin a) => (x \in a <=> x \in {}))   BECAUSE equivImpossible;
+(x \notin a) => (x \in a <=> x \in {})  BECAUSE MODUS_PONENS;
+(\A x : x \notin a) => (\A x : x \in a <=> x \in {})   BECAUSE Q_SCHEME;
+
+extensionality   BECAUSE AXIOM;
+(\A x : x \in a <=> x \in {}) => a = {}   BECAUSE \A(a <- a, b <- {});
+(\A x : x \notin a) => a = {}   BECAUSE TransitImplication;
+\A a : (\A x : x \notin a) => a = {}   BECAUSE GENERALIZATION;
+QED
+
+emptyIncludedInAny == \A x : {} \subseteq x
+THEOREM emptyIncludedInAny
+PROOF
+VARIABLES x,z;
+emptySetExists   BECAUSE THEOREM;
+z \notin {}   BECAUSE \A(x <- z);
+~(z \notin {}) => z \in x   BECAUSE Explosion;
+z \in {} => ~(z \notin {})   BECAUSE PT3;
+z \in {} => z \in x   BECAUSE TransitImplication;
+{} \subseteq x   BECAUSE GENERALIZATION;
+emptyIncludedInAny   BECAUSE GENERALIZATION;
+QED
+
+includedInEmpty == \A x : x \subseteq {} => x = {}
+THEOREM includedInEmpty
+PROOF
+VARIABLES a,b,x;
+emptyIncludedInAny   BECAUSE THEOREM;
+{} \subseteq x   BECAUSE \A(x <- x);
+bothInclusions BECAUSE THEOREM;
+(x \subseteq {} /\ {} \subseteq x) => x = {}   BECAUSE \A(a <- x, b <- {});
+x \subseteq {} => ({} \subseteq x /\ x \subseteq {})   BECAUSE PT6;
+({} \subseteq x /\ x \subseteq {}) => (x \subseteq {} /\ {} \subseteq x)   BECAUSE AndSymmetry;
+x \subseteq {} => (x \subseteq {} /\ {} \subseteq x)   BECAUSE TransitImplication;
+x \subseteq {} => x = {}   BECAUSE TransitImplication;
+includedInEmpty   BECAUSE GENERALIZATION;
+QED
+
+notEmpty == \A x : x # {} => \E z : z \in x
+THEOREM notEmpty
+PROOF
+VARIABLES a,x,z;
+emptySetUnique BECAUSE THEOREM;
+(\A x : x \notin a) => a = {} BECAUSE \A(a <- a);
+(\A z : z \notin a) => x \notin a   BECAUSE \A(z <- x);
+\A x : (\A z : z \notin a) => x \notin a   BECAUSE GENERALIZATION;
+(\A z : z \notin a) => \A x : x \notin a   BECAUSE Q_SCHEME;
+(\A z : z \notin a) => a = {} BECAUSE TransitImplication;
+(\E z : z \in a) <=> ~(\A z : z \notin a)   BECAUSE Q_SCHEME;
+~(\A z : z \notin a) => (\E z : z \in a)   BECAUSE EquivToImplReverse;
+a # {} => ~(\A z : z \notin a) BECAUSE Contraposition;
+a # {} => \E z : z \in a   BECAUSE TransitImplication;
+\A a : a # {} => \E z : z \in a   BECAUSE GENERALIZATION;
+x # {} => \E z : z \in x   BECAUSE \A(a <- x);
+notEmpty   BECAUSE GENERALIZATION;
+QED
+
+pullHypo(a,b,c) == (a <=> (b /\ c)) => (b => (a <=> c))
+PROPO_TAUTO pullHypo
+
+\* All sets together are too big to form a set. We say instead the class of sets.
+noSetOfSets == ~\E a : \A y : y \in a
+THEOREM noSetOfSets
+PROOF
+VARIABLES a,b,x,y;
+\* If such a set existed, by separation we would create the forbidden set of the Russell's paradox
+\A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE AXIOM_SCHEME; \* separation
+\E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE \A(a <- a);
+
+\* Rename bound variable x -> y
+(\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE \A(x <- y);
+\A y : (\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE GENERALIZATION;
+(\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (\A y : y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))) => \E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))   BECAUSE Q_SCHEME;
+\E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))   BECAUSE MODUS_PONENS;
+
+\* Force the hypothesis that a is the set of all sets
+(y \in b <=> (y \in a /\ ~(y \in y))) => ((y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE pullHypo;
+(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\A y : (y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
+(\A y : (y \in a) => (y \in b <=> ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
+(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE TransitImplication;
+(\E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
+\E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
+(\A y : y \in a) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
+(\E a : \A y : y \in a) => (\E a : \E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
+(\E a : \E b : \A y : y \in b <=> ~(y \in y)) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
+(\E a : \A y : y \in a) => \E b : \A y : y \in b <=> ~(y \in y)   BECAUSE TransitImplication;
+
+~(\E b : \A y : y \in b <=> ~(y \in y)) => noSetOfSets   BECAUSE Contraposition;
+
+\* Rename bound variables of russelParadox to prove the previous hypothesis
+russellParadox   BECAUSE THEOREM;
+(\E x : \A y : y \in x <=> ~(y \in y)) <=> ~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE Q_SCHEME;
+~(\A x : ~\A y : y \in x <=> ~(y \in y)) => (\E x : \A y : y \in x <=> ~(y \in y))   BECAUSE EquivToImplReverse;
+russellParadox => ~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE Contraposition;
+~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE MODUS_PONENS;
+\A x : ~\A y : y \in x <=> ~(y \in y)   BECAUSE PT4;
+~\A y : y \in b <=> ~(y \in y)   BECAUSE \A(x <- b);
+\A b : ~\A y : y \in b <=> ~(y \in y)   BECAUSE GENERALIZATION;
+(\E b : \A y : y \in b <=> ~(y \in y)) <=> ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
+(\E b : \A y : y \in b <=> ~(y \in y)) => ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE EquivToImpl;
+~~(\A b : ~\A y : y \in b <=> ~(y \in y)) => ~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Contraposition;
+~~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE PT3;
+~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
+noSetOfSets  BECAUSE MODUS_PONENS;
+QED
+
+\* The union of a set x is the set of elements of elements of x.
+UNION b == CHOOSE u : \A z : (z \in u <=> \E t : (t \in b /\ z \in t))
+unionExists == \A b : \A z : (z \in UNION b <=> \E t : (t \in b /\ z \in t))
+AXIOM unionExists
+
+\* unionUnique == \A b : \A u : (\A a : (a \in u <=> \E t : (t \in b /\ a \in t))) <=> u = UNION b
+\* THEOREM unionUnique
+
+\* \* The intersection of two sets is the set of common elements
+\* x \intersect y == CHOOSE z : \A a : (a \in z <=> (a \in x /\ a \in y))
+
+SUBSET x == CHOOSE y : \A z : z \in y <=> z \subseteq x
+
+powersetExists == \A x : \A z : z \in SUBSET x <=> z \subseteq x
+AXIOM powersetExists
+
+\* Representation of number 1 as a set
+ordinalOne == SUBSET {}
+elemOfOne == \A x : x \in ordinalOne <=> x = {}
+
+THEOREM elemOfOne
+PROOF
+VARIABLES x,z;
+powersetExists   BECAUSE AXIOM;
+x \in ordinalOne <=> x \subseteq {}   BECAUSE \A(x <- {}, z <- x);
+
+includedInEmpty   BECAUSE THEOREM;
+x \subseteq {} => x = {}   BECAUSE \A(x <- x);
+x \in ordinalOne => x \subseteq {}   BECAUSE EquivToImpl;
+x \in ordinalOne => x = {}   BECAUSE TransitImplication;
+
+\* Proof that {} \in ordinalOne
+{} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
+inclusionInOneself   BECAUSE THEOREM;
+{} \subseteq {}   BECAUSE \A(x <- {});
+{} \in ordinalOne   BECAUSE MODUS_PONENS;
+
+x = {} => (x \in ordinalOne <=> {} \in ordinalOne)   BECAUSE E_SCHEME;
+(x \in ordinalOne <=> {} \in ordinalOne) => x \in ordinalOne   BECAUSE EquivTrue;
+x = {} => x \in ordinalOne   BECAUSE TransitImplication;
+
+x \in ordinalOne <=> x = {}   BECAUSE IntroEquiv;
+elemOfOne   BECAUSE GENERALIZATION;
+QED
+
+ordinalTwo == SUBSET ordinalOne
+elemOfTwo == \A x : x \in ordinalTwo <=> (x = {} \/ x = ordinalOne)
+
+THEOREM elemOfTwo
+PROOF
+VARIABLES a,b,x,z;
+powersetExists   BECAUSE AXIOM;
+x \in ordinalTwo <=> x \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne, z <- x);
+x \in ordinalTwo => x \subseteq ordinalOne   BECAUSE EquivToImpl;
+
+\* Proof of (x \subseteq ordinalOne /\ x # {}) => {} \in x
+elemOfOne   BECAUSE THEOREM;
+z \in ordinalOne <=> z = {}   BECAUSE \A(x <- z);
+z \in ordinalOne => z = {}   BECAUSE EquivToImpl;
+(z \in x => z \in ordinalOne) => (z \in x => z = {})   BECAUSE AddHypothesis;
+z \in x => z \in x   BECAUSE ImplyOneself;
+(z \in x => z = {}) => (z \in x => (z \in x /\ z = {}))   BECAUSE CombineImplicationsEnd;
+(z \in x => z \in ordinalOne) => (z \in x => (z \in x /\ z = {}))   BECAUSE TransitImplication;
+x \subseteq ordinalOne => (\A z : z \in x => (z \in x /\ z = {}))   BECAUSE Q_SCHEME;
+
+notEmpty   BECAUSE THEOREM;
+x # {} => \E z : z \in x   BECAUSE \A(x <- x);
+(x \subseteq ordinalOne /\ x # {}) => ((\A z : z \in x => (z \in x /\ z = {})) /\ \E z : z \in x)   BECAUSE MergeImplicationsAnd;
+
+(\A z : z \in x => (z \in x /\ z = {})) => ((\E z : z \in x) => \E z : z \in x /\ z = {})   BECAUSE Q_SCHEME;
+((\A z : z \in x => (z \in x /\ z = {})) /\ (\E z : z \in x)) => \E z : z \in x /\ z = {}   BECAUSE HypoImplToAnd;
+(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TransitImplication;
+
+z = {} => (z \in x <=> {} \in x)   BECAUSE E_SCHEME;
+(z \in x <=> {} \in x) => (z \in x => {} \in x)   BECAUSE EquivToImpl;
+z = {} => (z \in x => {} \in x)   BECAUSE TransitImplication;
+(z = {} /\ z \in x) => {} \in x   BECAUSE HypoImplToAnd;
+(z \in x /\ z = {}) => (z = {} /\ z \in x)   BECAUSE AndSymmetry;
+(z \in x /\ z = {}) => {} \in x   BECAUSE TransitImplication;
+(\E z : z \in x /\ z = {}) => \E z : {} \in x   BECAUSE Q_SCHEME;
+(\E z : {} \in x) => {} \in x   BECAUSE Q_SCHEME;
+(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => \E z : {} \in x   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => {} \in x   BECAUSE TransitImplication;
+
+\* Proof of {} \in x => ordinalOne \subseteq x
+z \in ordinalOne => (z \in x <=> {} \in x)   BECAUSE TransitImplication;
+(z \in x <=> {} \in x) => ({} \in x => z \in x)   BECAUSE EquivToImplReverse;
+z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TransitImplication;
+{} \in x => (z \in ordinalOne => z \in x)   BECAUSE SwitchHypos;
+\A z : {} \in x => (z \in ordinalOne => z \in x)   BECAUSE GENERALIZATION;
+{} \in x => ordinalOne \subseteq x   BECAUSE Q_SCHEME;
+(x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TransitImplication;
+
+(x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE PT7;
+(x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CombineImplicationsEnd;
+bothInclusions BECAUSE THEOREM;
+(x \subseteq ordinalOne /\ ordinalOne \subseteq x) => x = ordinalOne   BECAUSE \A(a <- x, b <- ordinalOne);
+(x \subseteq ordinalOne /\ x # {}) => x = ordinalOne   BECAUSE TransitImplication;
+
+x \subseteq ordinalOne => (x # {} => x = ordinalOne)   BECAUSE HypoAndToImpl;
+x \in ordinalTwo => (x # {} => x = ordinalOne)   BECAUSE TransitImplication;
+x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE ImplyExcludedMiddle;
+
+\* Reverse proof
+inclusionInOneself   BECAUSE THEOREM;
+ordinalOne \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
+x \subseteq ordinalOne => x \in ordinalTwo   BECAUSE EquivToImplReverse;
+x = ordinalOne => (x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne)   BECAUSE E_SCHEME;
+(x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne) => x \subseteq ordinalOne   BECAUSE EquivTrue;
+x = ordinalOne => x \subseteq ordinalOne   BECAUSE TransitImplication;
+x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
+
+x \in ordinalOne <=> x = {}   BECAUSE \A(x <- x);
+x = {} => (x \subseteq ordinalOne <=> {} \subseteq ordinalOne)   BECAUSE E_SCHEME;
+emptyIncludedInAny   BECAUSE THEOREM;
+{} \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
+(x \subseteq ordinalOne <=> {} \subseteq ordinalOne) => x \subseteq ordinalOne   BECAUSE EquivTrue;
+x = {} => x \subseteq ordinalOne   BECAUSE TransitImplication;
+x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
+
+(x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE CombineImplicationsStart;
+x \in ordinalTwo <=> (x = {} \/ x = ordinalOne)   BECAUSE IntroEquiv;
+elemOfTwo   BECAUSE GENERALIZATION;
+QED
+
+(* Singleton and pair operators *)
+{ a } == CHOOSE b : \A x : x \in b <=> x = a
+
+singletonExists == \A a : \A x : x \in { a } <=> x = a
+THEOREM singletonExists
+PROOF
+VARIABLES a,b,c,x,z;
+\* Proof by separation in the powerset of a
+(\A x : x \in { a } <=> x = a) <=> \E b : \A x : x \in b <=> x = a   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ x = c)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE \A(a <- SUBSET a);
+\A c : \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE GENERALIZATION;
+\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)   BECAUSE \A(c <- a);
+
+\* Proof that (x \in SUBSET a /\ x = a) <=> x = a
+(x \in SUBSET a /\ x = a) => x = a   BECAUSE PT8;
+x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE E_SCHEME;
+inclusionInOneself   BECAUSE THEOREM;
+a \subseteq a   BECAUSE \A(x <- a);
+powersetExists   BECAUSE AXIOM;
+a \in SUBSET a <=> a \subseteq a   BECAUSE \A(x <- a, z <- a);
+a \in SUBSET a   BECAUSE MODUS_PONENS;
+(x \in SUBSET a <=> a \in SUBSET a) => x \in SUBSET a   BECAUSE EquivTrue;
+x = a => x \in SUBSET a   BECAUSE TransitImplication;
+x = a => x = a   BECAUSE ImplyOneself;
+x = a => (x \in SUBSET a /\ x = a)   BECAUSE CombineImplicationsEnd;
+x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
+
+(x \in b <=> (x \in SUBSET a /\ x = a)) => (x \in b <=> x = a)   BECAUSE TransitEquiv2;
+(\A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\E b : \A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> x = a)   BECAUSE MODUS_PONENS;
+(\A x : x \in { a } <=> x = a)   BECAUSE MODUS_PONENS;
+singletonExists   BECAUSE GENERALIZATION;
+QED
+
+{ c, d } == CHOOSE b : \A y : y \in b <=> (y = c \/ y = d)
+
+pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
+THEOREM pairExists
+PROOF
+VARIABLES a,b,c,d,i,j,x,y,z;
+\* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
+(\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE;
+F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
+(\A x : \A y : \A z : (F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
+   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F)   BECAUSE AXIOM_SCHEME;
+
+   \* Proof that F is functional
+(F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d)))
+   => ((F /\ (x = {} /\ z = c)) \/ (F /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrLeft;
+\* Case x = {}
+(F /\ (x = {} /\ z = c))
+   => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))   BECAUSE DistribAndOrRight;
+(x = {} /\ z = c) => x = {}   BECAUSE PT7;
+(x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE PT7;
+((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => (x = ordinalOne /\ x = {})   BECAUSE MergeImplicationsAnd;
+(x = ordinalOne /\ x = {}) => ordinalOne = {}   BECAUSE E_SCHEME;
+((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => ordinalOne = {}   BECAUSE TransitImplication;
+(x = {} /\ y = c) => y = c   BECAUSE PT8;
+(x = {} /\ z = c) => z = c   BECAUSE PT8;
+((x = {} /\ y = c) /\ (x = {} /\ z = c)) => (y = c /\ z = c)   BECAUSE MergeImplicationsAnd;
+(y = c /\ z = c) => y = z   BECAUSE E_SCHEME;
+((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
+(((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c))) => ((y = z) \/ (ordinalOne = {}))   BECAUSE MergeImplicationsOr;
+(F /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TransitImplication;
+
+\* Proof that ordinalOne # {}
+powersetExists   BECAUSE AXIOM;
+{} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
+inclusionInOneself   BECAUSE THEOREM;
+{} \subseteq {}   BECAUSE \A(x <- {});
+{} \in ordinalOne   BECAUSE MODUS_PONENS;
+emptySetExists   BECAUSE THEOREM;
+\A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
+ordinalOne = {} => ((\A x : x \notin ordinalOne) <=> emptySetExists)   BECAUSE \A(i <- ordinalOne, j <- {});
+((\A x : x \notin ordinalOne) <=> emptySetExists) => (\A x : x \notin ordinalOne)   BECAUSE EquivTrue;
+ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE TransitImplication;
+(\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
+ordinalOne = {} => {} \notin ordinalOne   BECAUSE TransitImplication;
+~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
+{} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE PT3;
+{} \in ordinalOne => ordinalOne # {}   BECAUSE TransitImplication;
+ordinalOne # {}   BECAUSE MODUS_PONENS;
+
+(y = z \/ ordinalOne = {}) => y = z   BECAUSE OrFalseStart;
+(F /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
+
+\* Case x = ordinalOne
+(F /\ (x = ordinalOne /\ z = d))
+   => (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrRight;
+(x = {} /\ y = c) => x = {}   BECAUSE PT7;
+(x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE PT7;
+((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => (x = {} /\ x = ordinalOne)   BECAUSE MergeImplicationsAnd;
+(x = {} /\ x = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
+((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => {} = ordinalOne   BECAUSE TransitImplication;
+(x = ordinalOne /\ y = d) => y = d   BECAUSE PT8;
+(x = ordinalOne /\ z = d) => z = d   BECAUSE PT8;
+((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => (y = d /\ z = d)   BECAUSE MergeImplicationsAnd;
+(y = d /\ z = d) => y = z   BECAUSE E_SCHEME;
+((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
+(((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d))) => ({} = ordinalOne \/ y = z)   BECAUSE MergeImplicationsOr;
+(F /\ (x = ordinalOne /\ z = d)) => ({} = ordinalOne \/ y = z)   BECAUSE TransitImplication;
+{} = ordinalOne => ordinalOne = {}   BECAUSE E_SCHEME;
+ordinalOne # {} => {} # ordinalOne   BECAUSE Contraposition;
+{} # ordinalOne   BECAUSE MODUS_PONENS;
+({} = ordinalOne \/ y = z) => y = z   BECAUSE FalseOrStart;
+(F /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
+
+((F /\ (x = {} /\ z = c)) \/ (F /\ (x = ordinalOne /\ z = d))) => y = z   BECAUSE CombineImplicationsStart;
+(F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE TransitImplication;
+\A x : \A y : \A z : (F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE GENERALIZATION;
+\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F   BECAUSE MODUS_PONENS;
+\E b : \A y : y \in b <=> \E x : x \in ordinalTwo /\ F   BECAUSE \A(a <- ordinalTwo);
+
+   \* Proof that b works, ie that (\E x : x \in ordinalTwo /\ F) <=> (y = c \/ y = d)
+elemOfTwo   BECAUSE THEOREM;
+x \in ordinalTwo <=> (x = {} \/ x = ordinalOne)   BECAUSE \A(x <- x);
+x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE EquivToImpl;
+(x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE EquivToImplReverse;
+
+F => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
+(x \in ordinalTwo /\ F) => F   BECAUSE PT8;
+(x \in ordinalTwo /\ F) => (y = c \/ y = d)   BECAUSE TransitImplication;
+(\E x : x \in ordinalTwo /\ F) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
+(\E x : y = c \/ y = d) => (y = c \/ y = d)   BECAUSE Q_SCHEME;
+(\E x : x \in ordinalTwo /\ F) => (y = c \/ y = d)   BECAUSE TransitImplication;
+
+\* Case y = c
+({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
+{} = {}   BECAUSE E_SCHEME;
+y = c => ({} = {} /\ y = c)   BECAUSE TrueAndEnd;
+({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE PT9;
+y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TransitImplication;
+x = {} => (x = {} \/ x = ordinalOne)   BECAUSE PT9;
+x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
+\A x : x = {} => x \in ordinalTwo   BECAUSE GENERALIZATION;
+{} = {} => {} \in ordinalTwo   BECAUSE \A(x <- {});
+{} \in ordinalTwo   BECAUSE MODUS_PONENS;
+(({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))
+   => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TrueAndEnd;
+y = c => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
+y = c => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
+
+\* Case y = d
+(ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
+ordinalOne = ordinalOne   BECAUSE E_SCHEME;
+y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE TrueAndEnd;
+(ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE PT10;
+y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TransitImplication;
+x = ordinalOne => (x = {} \/ x = ordinalOne)   BECAUSE PT10;
+x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
+\A x : x = ordinalOne => x \in ordinalTwo   BECAUSE GENERALIZATION;
+ordinalOne = ordinalOne => ordinalOne \in ordinalTwo   BECAUSE \A(x <- ordinalOne);
+ordinalOne \in ordinalTwo   BECAUSE MODUS_PONENS;
+((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))
+   => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TrueAndEnd;
+y = d => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
+y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
+
+(y = c \/ y = d) => (\E x : x \in ordinalTwo /\ F)   BECAUSE CombineImplicationsStart;
+(y = c \/ y = d) <=> (\E x : x \in ordinalTwo /\ F)   BECAUSE IntroEquiv;
+(y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (y \in b <=> (y = c \/ y = d))   BECAUSE TransitEquiv2;
+(\A y : y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (\A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
+(\E b : \A y : y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
+(\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE MODUS_PONENS;
+\A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
+pairExists   BECAUSE GENERALIZATION;
+QED

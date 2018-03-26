@@ -1,0 +1,143 @@
+\* Those are propositional tautologies, ie formulas true with any boolean
+\* assignments of the variables.
+
+\* First-order logic tautologies are harder to define, because they have
+\* primitive symbols that must be interpreted first, either by axioms
+\* or by an embedding into the ZFC set theory (a model).
+\* The 2 points of view are equivalent by Gödel's completeness theorem.
+
+\* Propositional tautologies serve as axiom schemes for first-order logic proofs :
+\* any substitution of first-order formulas in them is an axiom.
+\* They are named for easier invocations in first-order proofs.
+
+PT1(a,b) == a => (b => a)
+PROPO_TAUTO PT1
+
+PT2(a,b,c) == (a => (b => c)) => ((a => b) => (a => c))
+PROPO_TAUTO PT2
+
+PT3(a) == a => ~~a
+PROPO_TAUTO PT3
+
+PT4(a) == ~~a => a
+PROPO_TAUTO PT4
+
+Contraposition(a,b) == (a => b) => (~b => ~a)
+PROPO_TAUTO Contraposition
+
+PT6(a,b) == a => (b => (a /\ b))
+PROPO_TAUTO PT6
+
+PT7(a,b) == (a /\ b) => a
+PROPO_TAUTO PT7
+
+PT8(a,b) == (a /\ b) => b
+PROPO_TAUTO PT8
+
+PT9(a,b) == a => (a \/ b)
+PROPO_TAUTO PT9
+
+PT10(a,b) == b => (a \/ b)
+PROPO_TAUTO PT10
+
+PT11(a,b) == ~a => ((a \/ b) => b)
+PROPO_TAUTO PT11
+
+Cases(c,p) == ((c => p) /\ (~c => p)) => p
+PROPO_TAUTO Cases
+
+ContradictionEquiv(a,h) == (h => (a <=> ~a)) => ~h;
+PROPO_TAUTO ContradictionEquiv
+
+ContradictionAnd(a,h) == (h => (a /\ ~a)) => ~h;
+PROPO_TAUTO ContradictionAnd
+
+TransitImplication(a,b,c) == (a => b) => ((b => c) => (a => c))
+PROPO_TAUTO TransitImplication
+
+TransitEquiv(a,b,c) == (a <=> b) => ((b <=> c) => (a <=> c))
+PROPO_TAUTO TransitEquiv
+
+TransitEquiv2(a,b,c) == (a <=> b) => ((c <=> b) => (c <=> a))
+PROPO_TAUTO TransitEquiv2
+
+TwoImplications(a,b,h) == (h => a) => ((h => b) => (h => (a /\ b)))
+PROPO_TAUTO TwoImplications
+
+EquivToImpl(a,b) == (a <=> b) => (a => b)
+PROPO_TAUTO EquivToImpl
+
+EquivToImplReverse(a,b) == (a <=> b) => (b => a)
+PROPO_TAUTO EquivToImplReverse
+
+IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
+PROPO_TAUTO IntroEquiv
+
+AssocAnd(a,b,c) == (a /\ (b /\ c)) <=> ((a /\ b) /\ c)
+PROPO_TAUTO AssocAnd
+
+ImplyOneself(a) == a => a
+PROPO_TAUTO ImplyOneself
+
+EquivTrue(a,t) == t => ((a <=> t) => a)
+PROPO_TAUTO EquivTrue
+
+ImplyFalse(a,f) == ~f => ((a => f) => ~a)
+PROPO_TAUTO ImplyFalse
+
+AddHypothesis(a,b,h) == (a => b) => ((h => a) => (h => b))
+PROPO_TAUTO AddHypothesis
+
+ExcludedMiddle(a) == a \/ ~a
+PROPO_TAUTO ExcludedMiddle
+
+ImplyExcludedMiddle(a,b,c) == (a => (~b => c)) => (a => (b \/ c))
+PROPO_TAUTO ImplyExcludedMiddle
+
+Explosion(a,b) == a => (~a => b)
+PROPO_TAUTO Explosion
+
+MergeImplicationsAnd(a,b,c,d) == (a => b) => ((c => d) => ((a /\ c) => (b /\ d)))
+PROPO_TAUTO MergeImplicationsAnd
+
+MergeImplicationsOr(a,b,c,d) == (a => b) => ((c => d) => ((a \/ c) => (b \/ d)))
+PROPO_TAUTO MergeImplicationsOr
+
+CombineImplicationsStart(a,b,c) == (a => c) => ((b => c) => ((a \/ b) => c))
+PROPO_TAUTO CombineImplicationsStart
+
+CombineImplicationsEnd(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
+PROPO_TAUTO CombineImplicationsEnd
+
+HypoImplToAnd(a,b,c) == (a => (b => c)) => ((a /\ b) => c)
+PROPO_TAUTO HypoImplToAnd
+
+HypoAndToImpl(a,b,c) == ((a /\ b) => c) => (a => (b => c))
+PROPO_TAUTO HypoAndToImpl
+
+SwitchHypos(a,b,c) == (a => (b => c)) => (b => (a => c))
+PROPO_TAUTO SwitchHypos
+
+AndSymmetry(a,b) == (a /\ b) => (b /\ a)
+PROPO_TAUTO AndSymmetry
+
+EquivSymmetry(a,b) == (a <=> b) => (b <=> a)
+PROPO_TAUTO EquivSymmetry
+
+DistribAndOrLeft(a,b,c) == (a /\ (b \/ c)) => ((a /\ b) \/ (a /\ c))
+PROPO_TAUTO DistribAndOrLeft
+
+DistribAndOrRight(a,b,c) == ((b \/ c) /\ a) => ((b /\ a) \/ (c /\ a))
+PROPO_TAUTO DistribAndOrRight
+
+OrFalseStart(a,f) == ~f => ((a \/ f) => a)
+PROPO_TAUTO OrFalseStart
+
+FalseOrStart(a,f) == ~f => ((f \/ a) => a)
+PROPO_TAUTO FalseOrStart
+
+AndTrueEnd(a,t) == t => (a => (a /\ t))
+PROPO_TAUTO AndTrueEnd
+
+TrueAndEnd(a,t) == t => (a => (t /\ a))
+PROPO_TAUTO TrueAndEnd

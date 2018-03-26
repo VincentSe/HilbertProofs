@@ -1,0 +1,8 @@
+bin/*
+math/test.fol
+tests
+src/*.output
+src/*.tab.*
+src/lex.fol.*
+*~
+*#
