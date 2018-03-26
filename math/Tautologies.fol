@@ -6,8 +6,8 @@
 \* or by an embedding into the ZFC set theory (a model).
 \* The 2 points of view are equivalent by Gödel's completeness theorem.
 
-\* Propositional tautologies serve as axiom schemes for first-order logic proofs :
-\* any substitution of first-order formulas in them is an axiom.
+\* Propositional tautologies serve as axiom schemes for first-order logic
+\* proofs : any substitution of first-order formulas in them is an axiom.
 \* They are named for easier invocations in first-order proofs.
 
 PT1(a,b) == a => (b => a)
@@ -39,12 +39,6 @@ PROPO_TAUTO PT9
 
 PT10(a,b) == b => (a \/ b)
 PROPO_TAUTO PT10
-
-PT11(a,b) == ~a => ((a \/ b) => b)
-PROPO_TAUTO PT11
-
-Cases(c,p) == ((c => p) /\ (~c => p)) => p
-PROPO_TAUTO Cases
 
 ContradictionEquiv(a,h) == (h => (a <=> ~a)) => ~h;
 PROPO_TAUTO ContradictionEquiv

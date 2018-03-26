@@ -232,11 +232,10 @@ short is_custom_operator(const formula* op)
       || op->builtInOp == in
       || op->builtInOp == subseteq
       || op->builtInOp == powerset
-      || op->builtInOp == plus)
+      || op->builtInOp == plus
+      || op->builtInOp == setEnumerate  // empty set, singleton, pairs, ...
+      || op->builtInOp == tuple)
     return 1;
-
-  if (op->builtInOp == setEnumerate)
-    return 1; // empty set, singleton, pairs, ...
 
   return 0;
 }
@@ -652,6 +651,10 @@ unsigned char free_define(const struct formula_list* operands,
   return !find_variable(def->definingFormula, 0, capture);
 }
 
+/**
+   Assume f <=> opDef->definingFormula (was checked by free_define) :
+   clone and substitute variables in opDef->definingFormula.
+ */
 formula* defining_formula(const formula* f, const formula* opDef)
 {
   if (!f->operands)

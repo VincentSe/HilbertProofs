@@ -18,12 +18,14 @@ x = x   BECAUSE E_SCHEME;
 aSetExists   BECAUSE MODUS_PONENS;
 QED
 
-(* The theorem above uses only logical axioms, the constant binary
+(*
+   The theorem above uses only logical axioms, the constant binary
    relation \in does not appear in the proof. It is a general property
    of first-order logic with equality : something exists.
 
    Let's continue with a property of binary relations in
-   first-order logic. *)
+   first-order logic.
+*)
 russellParadox == ~\E x : \A y : y \in x <=> ~(y \in y)
 
 contraposNeg(a,b) == (a <=> ~b) => (b => ~a)  PROPO_TAUTO contraposNeg
@@ -40,16 +42,18 @@ VARIABLES x,y,a,h,b;
 russellParadox   BECAUSE MODUS_PONENS;
 QED
 
-(* We still don't have axioms to define what sets are.
+(*
+   We still don't have axioms to define what sets are.
    The proof of Russell's paradox works with any binary relation,
    for example < in Peano arithmetic : it then states that there
    is no number greater than all others.
 
    Russell's paradox constrains what axioms we can take for sets.
-   If we are not careful, we can choose axioms proving its contrary. *)
+   If we are not careful, we can choose axioms proving its contrary.
+*)
 
-\* The first axiom for sets : two sets are equal iif they have the same elements,
-\* and an element appears at most once in a set.
+\* The first axiom for sets : two sets are equal iif they have the same
+\* elements, and an element appears at most once in a set.
 extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
 AXIOM extensionality
 
@@ -93,14 +97,16 @@ QED
    The axiom scheme of separation. Although it can be deduced from the
    axiom scheme of replacement, we declare it for easier use
    and better tracking of where replacement is needed.
-   
+
    The variable "a" can be free in F as in the axiom
        \A a : \E b : \A x : x \in b <=> (x \in a /\ x \subseteq a)
-   However we exclude b from the free variables of F, to avoid the self-contradicting formula
+   However we exclude b from the free variables of F, to avoid the
+   self-contradicting formula
        \A a : \E b : \A x : x \in b <=> (x \in a /\ x \notin b)
    t is contrary to Russell's paradox so we cannot have it as an axiom.
 
-   Here is the derivation of the separation axiom scheme from the replacement axiom scheme :
+   Here is the derivation of the separation axiom scheme from the
+   replacement axiom scheme :
    sep(x,y) == x = y /\ F(x)
    sep(x,y) /\ sep(x,y') => x = y /\ x = y'   BECAUSE PT;
    (x = y /\ x = y') => y = y'   BECAUSE AXIOM_SCHEME;
@@ -126,12 +132,13 @@ AXIOM_SCHEME BOUND_VAR(b) replacement
 
 
 (*
-   There exists a set such that any set is not a member of it. It is called the empty set.
-   This empty set is rather mysterious : it exists so it is something, however there is
-   nothing in it, so by extensionality it should be nothing too.
+   There exists a set such that any set is not a member of it. It is called
+   the empty set. This empty set is rather mysterious : it exists so it is
+   something, however there is nothing in it, so by extensionality it should
+   be nothing too.
 
-   Besides, we will see with the axiom of foundation that this empty set is the atom,
-   the elementary building block for all sets, ie all mathematics.
+   Besides, we will see with the axiom of foundation that this empty set is
+   the atom, the elementary building block for all sets, ie all mathematics.
 *)
 {} == CHOOSE b : \A x : x \notin b
 emptySetExists == \A x : x \notin {}
@@ -568,3 +575,28 @@ y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 \A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
 pairExists   BECAUSE GENERALIZATION;
 QED
+
+(* Tuples *)
+<< c, d >> == { { c } , {c,d} }
+
+\* The above definition of a binary tuple is a bit cryptic at first glance ;
+\* it does yield the usual decomposition theorem :
+tupleDecomposition == \A a : \A b : \A c : \A d : <<a, b>> = <<c, d>>  =>  (a = c /\ b = d)
+
+(*
+THEOREM tupleDecomposition
+PROOF
+VARIABLES a,b,c,d,x,y,z;
+pairExists   BECAUSE THEOREM;
+y \in { { a } , {a,b} } <=> (y = {a} \/ y = {a,b})   BECAUSE \A(c <- {a}, d <- {a,b}, y <- y);
+y \in { { c } , {c,d} } <=> (y = {c} \/ y = {c,d})   BECAUSE \A(c <- {c}, d <- {c,d}, y <- y);
+\A x : \A z : x = z => (y \in x <=> y \in z)   BECAUSE E_SCHEME;
+<<a,b>> = <<c,d>>  =>  (y \in <<a,b>> <=> y \in <<c,d>>)   BECAUSE \A(x <- <<a,b>>, z <- <<c,d>>);
+(y = {a} \/ y = {a,b}) <=> y \in <<a,b>>   BECAUSE EquivSymmetry;
+(y \in <<a,b>> <=> y \in <<c,d>>) => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TransitEquiv;
+<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TransitImplication;
+(y = {c} \/ y = {c,d}) <=> y \in <<c,d>>   BECAUSE EquivSymmetry;
+((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>) => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TransitEquiv2;
+\* TODO
+QED
+*)
