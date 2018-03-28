@@ -134,7 +134,7 @@ void formula_free(formula* f)
 {
   if (!f)
     return;
-  //printf("FORMULA_FREE "); print_formula(f); printf("\n");
+  //  printf("\n %p FORMULA_FREE ", f); print_formula(f);
 
   if (f->definingFormula && f->definingFormula->first_line == 0)
     {
@@ -682,6 +682,8 @@ formula* equivalent_defining_formula(const formula* f,
   sub->variable = (char*)0;
 
   formula* def = formula_clone(opDef->definingFormula, subs);
+
+  // Recursively clone the defining formulas
   formula* resolvedF = formula_set_find(def, operatorDefinitions);
   if (resolvedF)
     def->definingFormula = equivalent_defining_formula(def, resolvedF, operatorDefinitions);
@@ -691,7 +693,13 @@ formula* equivalent_defining_formula(const formula* f,
 struct formula_list* formula_list_map(const struct formula_list* l,
 				      formula* (*func)(formula* x))
 {
-  return l ? make_formula_list(func(l->formula_elem), formula_list_map(l->next, func)) : 0;
+  if (l)
+    {
+      formula* g = func(l->formula_elem);
+      return make_formula_list(g, formula_list_map(l->next, func));
+    }
+  else
+    return (struct formula_list*)0;
 }
 
 formula* formula_clone(const formula* f, variable_substitution* freeSubs)
@@ -700,12 +708,14 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
     return (formula*)0;
   
   variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
-  formula* c = (sub && sub->variable) ? formula_clone(sub->subst, (variable_substitution*)0) // recursive substitutions ?
-    : make_formula(f->builtInOp,
-		   f->name ? strdup(f->name) : 0,
-		   (struct formula_list*) 0,
-		   (const char*) 0,
-		   0);
+  if (sub && sub->variable)
+    return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
+
+  formula* c = make_formula(f->builtInOp,
+			    f->name ? strdup(f->name) : 0,
+			    (struct formula_list*) 0,
+			    (const char*) 0,
+			    0);
 
   formula* clone_closure(formula* x)
   {
@@ -713,7 +723,6 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
   }
 
   c->operands = formula_list_map(f->operands, clone_closure);
-
   // c->definingFormula = formula_clone(f->definingFormula, freeSubs) ???
   // risk that freeSubs capture variables in f->definingFormula
   return c;

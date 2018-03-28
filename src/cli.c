@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "folAST.h"
 #include <dirent.h>
+#include <string.h>
 
 // make command :
 // D:\msys64\mingw64\bin\mingw32-make.exe -C d:/projects/HilbertProofs -k build
