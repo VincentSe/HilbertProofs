@@ -51,7 +51,8 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 "BOUND_VAR" { return BOUND_VAR; }
 "<-" { return LEFT_ARROW; }
 
-\\\*[^\n]*$ { /* ignore line comments for now */ }
+\\\*[^\n]*$ { /* discard line comments */ }
+\r { /* discard carriage returns */ }
 
 "PROOF" { return PROOF; }
 "QED" { return QED; }
@@ -75,7 +76,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 "}"   { return RIGHT_BRACE; }
 "<<"  { return LEFT_TUPLE; }
 ">>"  { return RIGHT_TUPLE; }
-\n+   { yylineno += strlen(yytext); } // return EOL;
+\n+   { yylineno += strlen(yytext); }
 
 .     { folerror (yylloc, yyscanner, (struct folAST*)0, "unknown character"); }  // don't silently convert "y'" to "y" as a variable name for instance
 

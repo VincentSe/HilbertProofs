@@ -707,7 +707,14 @@ QED
 \* The class of graphs
 IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
 
-\* The class of functions
+\* The domain of a graph, ie its inputs and outputs,
+\* can be retrieved as its double union
+Domain(x) == UNION UNION x
+DomainIsInputOutputs == \A g : IsGraph(g)
+   => \A x : x \in Domain(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
+THEOREM DomainIsInputOutputs
+
+\* The class of functions : graphs that have at most one output for each given input
 IsFunction(f) == IsGraph(f)
    /\ \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
 

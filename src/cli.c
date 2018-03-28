@@ -26,6 +26,7 @@ unsigned int list_fol_files(const char* dirPath,
 	  if (endFile && !endFile[4])
 	    {
 	      sprintf(fileName, "%s/%s", dirPath, dir->d_name);
+	      printf("Parsing file %s\n", fileName);
 	      asts[numberFound] = make_folAST(fileName);
 	      numberFound++;
 	    }
