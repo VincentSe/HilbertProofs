@@ -76,6 +76,18 @@ PROPO_TAUTO ImplyOneself
 EquivTrue(a,t) == t => ((a <=> t) => a)
 PROPO_TAUTO EquivTrue
 
+ImplyEquivTrue(a,b,t) == t => ((b => (a <=> t)) => (b => a))
+PROPO_TAUTO ImplyEquivTrue
+
+ImplyEquivSelf(a,b) == (a => (b <=> a)) => (a => b)
+PROPO_TAUTO ImplyEquivSelf
+
+TrueEquiv(a,t) == t => ((t <=> a) => a)
+PROPO_TAUTO TrueEquiv
+
+ImplyTrueEquiv(a,b,t) == t => ((b => (t <=> a)) => (b => a))
+PROPO_TAUTO ImplyTrueEquiv
+
 ImplyFalse(a,f) == ~f => ((a => f) => ~a)
 PROPO_TAUTO ImplyFalse
 
@@ -124,6 +136,9 @@ PROPO_TAUTO DistribAndOrLeft
 DistribAndOrRight(a,b,c) == ((b \/ c) /\ a) => ((b /\ a) \/ (c /\ a))
 PROPO_TAUTO DistribAndOrRight
 
+FactorOrAndRight(a,b,c) == ((a \/ c) /\ (b \/ c)) => ((a /\ b) \/ c)
+PROPO_TAUTO FactorOrAndRight
+
 OrFalseStart(a,f) == ~f => ((a \/ f) => a)
 PROPO_TAUTO OrFalseStart
 
@@ -135,3 +150,9 @@ PROPO_TAUTO AndTrueEnd
 
 TrueAndEnd(a,t) == t => (a => (t /\ a))
 PROPO_TAUTO TrueAndEnd
+
+TrueAndStart(a,t) == t => ((t /\ a) => a)
+PROPO_TAUTO TrueAndStart
+
+OrSelf(a) == (a \/ a) => a
+PROPO_TAUTO OrSelf

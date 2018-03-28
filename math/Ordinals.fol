@@ -1,0 +1,10 @@
+EXTENDS ZFC
+
+TransitiveSet(x) == \A a : a \in x => a \subseteq x
+
+WellOrderedByIn(x) == (\A a : a \in x => a \notin a) 
+   /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)
+   /\ (\A p : (p # {} /\ p \subseteq x) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b))
+
+\* The class of ordinals, which starts with the natural numbers
+Ordinal(o) == TransitiveSet(o) /\ WellOrderedByIn(o)

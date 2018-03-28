@@ -231,6 +231,8 @@ short is_custom_operator(const formula* op)
   if (op->builtInOp == lnone
       || op->builtInOp == in
       || op->builtInOp == subseteq
+      || op->builtInOp == binIntersect
+      || op->builtInOp == binUnion
       || op->builtInOp == powerset
       || op->builtInOp == plus
       || op->builtInOp == setEnumerate  // empty set, singleton, pairs, ...
@@ -652,11 +654,16 @@ unsigned char free_define(const struct formula_list* operands,
 }
 
 /**
-   Assume f <=> opDef->definingFormula (was checked by free_define) :
+   Test whether f <=> opDef->definingFormula and if it is,
    clone and substitute variables in opDef->definingFormula.
  */
-formula* defining_formula(const formula* f, const formula* opDef)
+formula* equivalent_defining_formula(const formula* f,
+				     const formula* opDef,
+				     const formula_set operatorDefinitions)
 {
+  if (!f || !free_define(f->operands, opDef))
+    return (formula*)0;
+  
   if (!f->operands)
     return opDef->definingFormula; // share the formula when there is no substitution of variables
 
@@ -675,6 +682,9 @@ formula* defining_formula(const formula* f, const formula* opDef)
   sub->variable = (char*)0;
 
   formula* def = formula_clone(opDef->definingFormula, subs);
+  formula* resolvedF = formula_set_find(def, operatorDefinitions);
+  if (resolvedF)
+    def->definingFormula = equivalent_defining_formula(def, resolvedF, operatorDefinitions);
   return def;
 }
 
@@ -686,6 +696,9 @@ struct formula_list* formula_list_map(const struct formula_list* l,
 
 formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 {
+  if (!f)
+    return (formula*)0;
+  
   variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
   formula* c = (sub && sub->variable) ? formula_clone(sub->subst, (variable_substitution*)0) // recursive substitutions ?
     : make_formula(f->builtInOp,
@@ -750,8 +763,7 @@ short resolve_operator_or_variable(formula* f,
     }
   if (resolvedF)
     {
-      if (free_define(f->operands, resolvedF))
-	f->definingFormula = defining_formula(f, resolvedF);
+      f->definingFormula = equivalent_defining_formula(f, resolvedF, operatorDefinitions);
       return 1;
     }
 
@@ -802,7 +814,8 @@ unsigned char resolve_names(formula* f,
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
 				       variables, opVariables, proofLocalDecl))
     {
-      printf("%d: Unknown name %s\n",
+      printf("%s:%d: Unknown name %s\n",
+	     f->file,
 	     f->first_line,
 	     f->name ? f->name : op_to_string(f->builtInOp));
       return 0;

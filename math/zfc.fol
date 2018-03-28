@@ -1,3 +1,17 @@
+(*
+   This file contains the basic definitions for mathematics, the ZFC axioms of set theory.
+   The membership relation \in is declared (without a definition because it is primitive),
+   then the inclusion relation \subseteq.
+
+   The axioms defined are extensionality, powerset, union and infinity. The axiom schemes
+   of separation and replacement are also defined.
+
+   The operators defined are the empty set, singleton of a set, pair of sets, couples,
+   union of 2 sets.
+
+   The relations defined are graphs and functions.
+*)
+
 EXTENDS Tautologies
 
 \* The membership binary relation, the only primitive symbol of ZFC :
@@ -318,8 +332,7 @@ inclusionInOneself   BECAUSE THEOREM;
 {} \in ordinalOne   BECAUSE MODUS_PONENS;
 
 x = {} => (x \in ordinalOne <=> {} \in ordinalOne)   BECAUSE E_SCHEME;
-(x \in ordinalOne <=> {} \in ordinalOne) => x \in ordinalOne   BECAUSE EquivTrue;
-x = {} => x \in ordinalOne   BECAUSE TransitImplication;
+x = {} => x \in ordinalOne   BECAUSE ImplyEquivTrue;
 
 x \in ordinalOne <=> x = {}   BECAUSE IntroEquiv;
 elemOfOne   BECAUSE GENERALIZATION;
@@ -389,16 +402,14 @@ inclusionInOneself   BECAUSE THEOREM;
 ordinalOne \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
 x \subseteq ordinalOne => x \in ordinalTwo   BECAUSE EquivToImplReverse;
 x = ordinalOne => (x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne)   BECAUSE E_SCHEME;
-(x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne) => x \subseteq ordinalOne   BECAUSE EquivTrue;
-x = ordinalOne => x \subseteq ordinalOne   BECAUSE TransitImplication;
+x = ordinalOne => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
 x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
 
 x \in ordinalOne <=> x = {}   BECAUSE \A(x <- x);
 x = {} => (x \subseteq ordinalOne <=> {} \subseteq ordinalOne)   BECAUSE E_SCHEME;
 emptyIncludedInAny   BECAUSE THEOREM;
 {} \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
-(x \subseteq ordinalOne <=> {} \subseteq ordinalOne) => x \subseteq ordinalOne   BECAUSE EquivTrue;
-x = {} => x \subseteq ordinalOne   BECAUSE TransitImplication;
+x = {} => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
 x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
 
 (x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE CombineImplicationsStart;
@@ -428,8 +439,7 @@ a \subseteq a   BECAUSE \A(x <- a);
 powersetExists   BECAUSE AXIOM;
 a \in SUBSET a <=> a \subseteq a   BECAUSE \A(x <- a, z <- a);
 a \in SUBSET a   BECAUSE MODUS_PONENS;
-(x \in SUBSET a <=> a \in SUBSET a) => x \in SUBSET a   BECAUSE EquivTrue;
-x = a => x \in SUBSET a   BECAUSE TransitImplication;
+x = a => x \in SUBSET a   BECAUSE ImplyEquivTrue;
 x = a => x = a   BECAUSE ImplyOneself;
 x = a => (x \in SUBSET a /\ x = a)   BECAUSE CombineImplicationsEnd;
 x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
@@ -443,6 +453,8 @@ singletonExists   BECAUSE GENERALIZATION;
 QED
 
 { c, d } == CHOOSE b : \A y : y \in b <=> (y = c \/ y = d)
+
+x \union y == UNION { x, y }
 
 pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
 THEOREM pairExists
@@ -482,8 +494,7 @@ inclusionInOneself   BECAUSE THEOREM;
 emptySetExists   BECAUSE THEOREM;
 \A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
 ordinalOne = {} => ((\A x : x \notin ordinalOne) <=> emptySetExists)   BECAUSE \A(i <- ordinalOne, j <- {});
-((\A x : x \notin ordinalOne) <=> emptySetExists) => (\A x : x \notin ordinalOne)   BECAUSE EquivTrue;
-ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE TransitImplication;
+ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE ImplyEquivTrue;
 (\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
 ordinalOne = {} => {} \notin ordinalOne   BECAUSE TransitImplication;
 ~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
@@ -576,14 +587,56 @@ y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 pairExists   BECAUSE GENERALIZATION;
 QED
 
+sameFirstPairs == \A a : \A b : \A c : {a,b} = {a,c} => b = c
+THEOREM sameFirstPairs
+PROOF
+VARIABLES a,b,c,d,x,y;
+pairExists   BECAUSE THEOREM;
+b \in { a, b } <=> (b = a \/ b = b)   BECAUSE \A(c <- a, d <- b, y <- b);
+b = b   BECAUSE E_SCHEME;
+b = a \/ b = b   BECAUSE PT10;
+b \in {a,b}   BECAUSE MODUS_PONENS;
+\A x : \A y : x = y => (b \in x <=> b \in y)   BECAUSE E_SCHEME;
+{a,b} = {a,c} => (b \in {a,b} <=> b \in {a,c})   BECAUSE \A(x <- {a,b}, y <- {a,c});
+{a,b} = {a,c} => b \in {a,c}   BECAUSE ImplyTrueEquiv;
+b \in { a,c } <=> (b = a \/ b = c)   BECAUSE \A(c <- a, d <- c, y <- b);
+b \in { a,c } => (b = a \/ b = c)   BECAUSE EquivToImpl;
+{a,b} = {a,c} => (b = a \/ b = c)   BECAUSE TransitImplication;
+
+c \in { a, c } <=> (c = a \/ c = c)   BECAUSE \A(c <- a, d <- c, y <- c);
+c = c   BECAUSE E_SCHEME;
+c = a \/ c = c   BECAUSE PT10;
+c \in {a,c}   BECAUSE MODUS_PONENS;
+\A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
+{a,b} = {a,c} => (c \in {a,b} <=> c \in {a,c})   BECAUSE \A(x <- {a,b}, y <- {a,c});
+{a,b} = {a,c} => c \in {a,b}   BECAUSE ImplyEquivTrue;
+c \in { a,b } <=> (c = a \/ c = b)   BECAUSE \A(c <- a, d <- b, y <- c);
+c \in { a,b } => (c = a \/ c = b)   BECAUSE EquivToImpl;
+{a,b} = {a,c} => (c = a \/ c = b)   BECAUSE TransitImplication;
+c = b => b = c   BECAUSE E_SCHEME;
+c = a => c = a   BECAUSE ImplyOneself;
+(c = a \/ c = b) => (c = a \/ b = c)  BECAUSE MergeImplicationsOr;
+{a,b} = {a,c} => (c = a \/ b = c)  BECAUSE TransitImplication;
+
+{a,b} = {a,c} => ((b = a \/ b = c) /\ (c = a \/ b = c))   BECAUSE CombineImplicationsEnd;
+((b = a \/ b = c) /\ (c = a \/ b = c)) => ((b = a /\ c = a) \/ b = c)  BECAUSE FactorOrAndRight;
+{a,b} = {a,c} => ((b = a /\ c = a) \/ b = c)  BECAUSE TransitImplication;
+(b = a /\ c = a) => b = c   BECAUSE E_SCHEME;
+b = c => b = c   BECAUSE ImplyOneself;
+((b = a /\ c = a) \/ b = c) => (b = c \/ b = c)   BECAUSE MergeImplicationsOr;
+{a,b} = {a,c} => (b = c \/ b = c)  BECAUSE TransitImplication;
+(b = c \/ b = c) => b = c   BECAUSE OrSelf;
+{a,b} = {a,c} => b = c  BECAUSE TransitImplication;
+sameFirstPairs   BECAUSE GENERALIZATION;
+QED
+
 (* Tuples *)
 << c, d >> == { { c } , {c,d} }
 
-\* The above definition of a binary tuple is a bit cryptic at first glance ;
+\* This definition of binary tuples is a bit cryptic at first glance ;
 \* it does yield the usual decomposition theorem :
 tupleDecomposition == \A a : \A b : \A c : \A d : <<a, b>> = <<c, d>>  =>  (a = c /\ b = d)
 
-(*
 THEOREM tupleDecomposition
 PROOF
 VARIABLES a,b,c,d,x,y,z;
@@ -597,6 +650,66 @@ y \in { { c } , {c,d} } <=> (y = {c} \/ y = {c,d})   BECAUSE \A(c <- {c}, d <- {
 <<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TransitImplication;
 (y = {c} \/ y = {c,d}) <=> y \in <<c,d>>   BECAUSE EquivSymmetry;
 ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>) => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TransitEquiv2;
-\* TODO
+<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TransitImplication;
+\A y : <<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE GENERALIZATION;
+
+\* Proof of <<a,b>> = <<c,d>> => a = c
+<<a,b>> = <<c,d>> => (({c} = {a} \/ {c} = {a,b}) <=> ({c} = {c} \/ {c} = {c,d}))   BECAUSE \A(y <- {c});
+{c} = {c}   BECAUSE E_SCHEME;
+{c} = {c} \/ {c} = {c,d}   BECAUSE PT9;
+<<a,b>> = <<c,d>> => ({c} = {a} \/ {c} = {a,b})   BECAUSE ImplyEquivTrue;
+
+singletonExists   BECAUSE THEOREM;
+c \in { a } <=> c = a   BECAUSE \A(a <- a, x <- c);
+c \in { a } => c = a   BECAUSE EquivToImpl;
+c \in { c } <=> c = c   BECAUSE \A(a <- c, x <- c);
+c = c   BECAUSE E_SCHEME;
+c \in { c }   BECAUSE MODUS_PONENS;
+\A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
+{c} = {a} => (c \in {c} <=> c \in {a})   BECAUSE \A(x <- {c}, y <- {a});
+(c \in {c} <=> c \in {a}) => c \in {a}   BECAUSE TrueEquiv;
+{c} = {a} => c \in {a}   BECAUSE TransitImplication;
+{c} = {a} => c = a   BECAUSE TransitImplication;
+c = a => a = c   BECAUSE E_SCHEME;
+{c} = {a} => a = c   BECAUSE TransitImplication;
+
+a \in {a,b} <=> (a = a \/ a = b)   BECAUSE \A(c <- a, d <- b, y <- a);
+a = a   BECAUSE E_SCHEME;
+a = a \/ a = b   BECAUSE PT9;
+a \in {a,b}   BECAUSE MODUS_PONENS;
+\A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
+{c} = {a,b} => (a \in {c} <=> a \in {a,b})   BECAUSE \A(x <- {c}, y <- {a,b});
+(a \in {c} <=> a \in {a,b}) => a \in {c}   BECAUSE EquivTrue;
+{c} = {a,b} => a \in {c}   BECAUSE TransitImplication;
+a \in { c } <=> a = c   BECAUSE \A(a <- c, x <- a);
+a \in { c } => a = c   BECAUSE EquivToImpl;
+{c} = {a,b} => a = c   BECAUSE TransitImplication;
+
+({c} = {a} \/ {c} = {a,b}) => a = c   BECAUSE CombineImplicationsStart;
+<<a,b>> = <<c,d>> => a = c   BECAUSE TransitImplication;
+
+\* Replace c by a
+\A x : \A y : x = y => (<<a,b>> = <<x,d>> <=> <<a,b>> = <<y,d>>)   BECAUSE E_SCHEME;
+a = c => (<<a,b>> = <<a,d>> <=> <<a,b>> = <<c,d>>)   BECAUSE \A(x <- a, y <- c);
+<<a,b>> = <<c,d>> => (<<a,b>> = <<a,d>> <=> <<a,b>> = <<c,d>>)   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => <<a,b>> = <<a,d>>   BECAUSE ImplyEquivSelf;
+
+\* Proof of <<a,b>> = <<a,d>> => b = d
+sameFirstPairs   BECAUSE THEOREM;
+{ {a},{a,b} } = {{a},{a,d}} => {a,b} = {a,d}   BECAUSE \A(a <- {a}, b <- {a,b}, c <- {a,d});
+<<a,b>> = <<c,d>> => {a,b} = {a,d}   BECAUSE TransitImplication;
+{ a,b } = {a,d} => b = d   BECAUSE \A(a <- a, b <- b, c <- d);
+<<a,b>> = <<c,d>> => b = d   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => (a = c /\ b = d)   BECAUSE CombineImplicationsEnd;
+tupleDecomposition   BECAUSE GENERALIZATION;
 QED
-*)
+
+\* The class of graphs
+IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
+
+\* The class of functions
+IsFunction(f) == IsGraph(f)
+   /\ \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
+
+Infinity == \E a : {} \in a /\ \A x : x \in a => x \union {x} \in a
+AXIOM Infinity

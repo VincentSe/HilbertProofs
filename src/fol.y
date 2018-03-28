@@ -250,7 +250,7 @@ NAME { $$ = make_reason(propoTautology,
 setDef:
 LEFT_BRACE commaSeparatedFormulas RIGHT_BRACE {
   $$ = make_formula(setEnumerate,
-		    strdup(op_to_string(setEnumerate)),
+		    (char*)0,
 		    $2,
 		    ast->file,
 		    @1.first_line); }
@@ -271,7 +271,7 @@ LEFT_BRACE commaSeparatedFormulas RIGHT_BRACE {
 tuple:
 LEFT_TUPLE commaSeparatedFormulas RIGHT_TUPLE {
   $$ = make_formula(tuple,
-		    strdup(op_to_string(setEnumerate)),
+		    (char*)0,
 		    $2,
 		    ast->file,
 		    @1.first_line); }

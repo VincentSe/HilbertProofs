@@ -229,6 +229,15 @@ short merge_asts(/*out*/struct folAST* ast,
   }
   twalk(knownAst->proofs, insert_proof);
 
+  struct formula_list* prim = knownAst->constants;
+  while (prim)
+    {
+      // TODO share formulas
+      ast->constants = make_formula_list(formula_clone(prim->formula_elem, (variable_substitution*)0),
+					 ast->constants);
+      prim = prim->next;
+    }
+
   return 1;
 }
 
@@ -294,7 +303,8 @@ unsigned char resolve_extends(/*out*/struct folAST** asts)
       return;
 		
     proof* p = *(proof**)nodep;
-    check_proof(p, ast->operators, ast->proofs, ast->axiomSchemes);
+    if (strcmp(ast->file, p->formulaToProve->file) == 0) // don't check proofs coming from other ASTs
+      check_proof(p, ast->operators, ast->proofs, ast->axiomSchemes);
   }
 
   // semantic check of sorted asts

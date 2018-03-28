@@ -4,21 +4,47 @@
 
 #include <stdio.h>
 #include "folAST.h"
-
+#include <dirent.h>
 
 // make command :
-// D:\msys64\mingw64\bin\mingw32-make.exe -C d:/projects/proofs -k build
+// D:\msys64\mingw64\bin\mingw32-make.exe -C d:/projects/HilbertProofs -k build
 // D:\msys64\mingw64\bin\gdb.exe bin\proveMath.exe
+
+unsigned int list_fol_files(const char* dirPath,
+			    /*out*/ struct folAST** asts)
+{
+  struct dirent *dir;
+  DIR* d = opendir(dirPath);
+  unsigned int numberFound = 0;
+  char fileName[128];
+  if (d)
+    {
+      while ((dir = readdir(d)))
+	{
+	  char* endFile = strstr(dir->d_name, ".fol");
+	  if (endFile && !endFile[4])
+	    {
+	      sprintf(fileName, "%s/%s", dirPath, dir->d_name);
+	      asts[numberFound] = make_folAST(fileName);
+	      numberFound++;
+	    }
+	}
+      closedir(d);
+    }
+  asts[numberFound] = (struct folAST*)0;
+  return numberFound;
+}
 
 int main(int argc, char** argv)
 {
   struct folAST* asts[16];
   if (argc == 1)
     {
-      // TODO take all fol files in math directory
       asts[0] = make_folAST("math/Tautologies.fol");
-      asts[1] = make_folAST("math/zfc.fol"); // tests/forall.fol
-      asts[2] = (struct folAST*)0;
+      asts[1] = make_folAST("math/ZFC.fol"); 
+      asts[2] = make_folAST("math/Ordinals.fol");
+      asts[3] = (struct folAST*)0;
+      //list_fol_files("math", /*out*/asts); TODO
     }
   else
     {
