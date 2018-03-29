@@ -100,6 +100,33 @@ void print_formula(const formula* f)
   printf(")");
 }
 
+unsigned char formula_is_term(const formula* f)
+{
+  // TODO many operators here (setEnumerate, binUnion, in, ...) are defined in FOL files.
+  // Their definition should be used instead.
+  switch (f->builtInOp)
+    {
+    case choose:
+    case variable:
+    case setEnumerate:
+      return 1;
+    case in:
+    case notin:
+    case limplies:
+    case lnot:
+    case lequiv:
+    case land:
+    case lor:
+    case forall:
+    case exists:
+      return 0;
+    }
+
+  if (f->definingFormula)
+    return formula_is_term(f->definingFormula);
+  return 0;
+}
+
 const char* op_to_string(enum builtin_operator op)
 {
   switch (op)
@@ -872,7 +899,9 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
 	{
 	  // do not substitute a variable with itself
 	  freeSub->variable = sub->formula_elem->name;
-	  freeSub->subst = sub->next->formula_elem; // TODO test it is a term ?
+	  freeSub->subst = sub->next->formula_elem;
+	  if (!formula_is_term(freeSub->subst))
+	    return 0;
 	  freeSub++;
 	}
       sub = sub->next->next;
@@ -895,9 +924,22 @@ short check_propositional_tautology_statement_one(const formula* statement,
 
   variable_substitution propositionalVariables[16];
   propositionalVariables[0].variable = (char*)0;
-  return formula_equal(statement, propoTaut,
-		       (struct string_list*)0, // no extra bound variables
-		       propositionalVariables, 1);
+  unsigned char eq = formula_equal(statement, propoTaut,
+				   (struct string_list*)0, // no extra bound variables
+				   propositionalVariables, 1);
+  if (eq)
+    {
+      // Check all substitutions are propositional (not terms)
+      variable_substitution* sub = propositionalVariables;
+      while (sub->variable)
+	{
+	  if (formula_is_term(sub->subst))
+	    return 0;
+	  sub++;
+	}
+      return 1;
+    }
+  return 0;
 }
 
 impl_list_type(formula)
