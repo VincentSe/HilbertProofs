@@ -294,7 +294,7 @@ short implicit_propositional_tautology(const struct FormulaDList* statement,
 
 short check_propositional_tautology_statement(const struct FormulaDList* statement,
 					      const proof_set assumedProofs,
-					      const void* operators)
+					      const formula_set operators)
 {
   formula* tauto = statement->jf->reason->formula;
   proof searchP;
@@ -305,7 +305,7 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
     {
       // tauto was proved as a propositional tautology
       tauto = tauto->definingFormula;
-      if (check_propositional_tautology_statement_one(statement->jf->formula, tauto)
+      if (check_propositional_tautology_statement_one(statement->jf->formula, tauto, operators)
 	  || implicit_propositional_tautology(statement, tauto, operators))
 	return 1;
     }
@@ -316,7 +316,8 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
 }
 
 short check_quantifier_instance_statement(enum reason_kind rk,
-					  const struct FormulaDList* statement)
+					  const struct FormulaDList* statement,
+					  const formula_set operators)
 {
   // TODO check that the substitution is a term, not a formula.
   // Impossible if the substitution is a user-defined symbol :(
@@ -325,7 +326,8 @@ short check_quantifier_instance_statement(enum reason_kind rk,
 
   if (check_quantifier_instance_statement_one(rk,
 					      statement->jf->formula,
-					      statement->jf->reason->formula->operands))
+					      statement->jf->reason->formula->operands,
+					      operators))
     return 1;
 
   // Try to prove statement as BECAUSE MODUS_PONENS instead of BECAUSE \A.
@@ -353,7 +355,8 @@ short check_quantifier_instance_statement(enum reason_kind rk,
     secondOperand.next = 0;
     return check_quantifier_instance_statement_one(rk,
 						   &f,
-						   statement->jf->reason->formula->operands);
+						   statement->jf->reason->formula->operands,
+						   operators);
   }
 
   const struct FormulaDList* implicitMP = find_previous_formula(statement, implicitModusPonens);
@@ -940,7 +943,7 @@ short check_proof_statement(const struct FormulaDList* statement,
       return equality_axiom(statement->jf->formula);
     case forallInstance:
     case existInstance:
-      return check_quantifier_instance_statement(statement->jf->reason->rk, statement);
+      return check_quantifier_instance_statement(statement->jf->reason->rk, statement, operators);
     case generalization:
       return check_generalization_statement(statement, operators);
     case propoTautology:

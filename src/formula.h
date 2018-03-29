@@ -256,8 +256,8 @@ unsigned char resolve_names(formula* f,
 */
 short check_quantifier_instance_statement_one(enum reason_kind rk,
 					      const formula* f,
-					      struct formula_list* substitutions // TODO variable_substitution_set
-					      );
+					      struct formula_list* substitutions, // TODO variable_substitution_set
+					      const formula_set ops);
 
 /**
    Assume propoTaut is a propositional formula (only logical operators) and
@@ -267,4 +267,5 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
    by first-order formulas, which are no longer propositional.
 */
 short check_propositional_tautology_statement_one(const formula* f,
-						  const formula* propoTaut);
+						  const formula* propoTaut,
+						  const formula_set ops);

@@ -100,17 +100,15 @@ void print_formula(const formula* f)
   printf(")");
 }
 
-unsigned char formula_is_term(const formula* f)
+unsigned char formula_is_term(const formula* f,
+			      const formula_set ops)
 {
-  // TODO many operators here (setEnumerate, binUnion, in, ...) are defined in FOL files.
-  // Their definition should be used instead.
   switch (f->builtInOp)
     {
     case choose:
     case variable:
-    case setEnumerate:
       return 1;
-    case in:
+    case in: // TODO look at axioms using it to know its a relational operator
     case notin:
     case limplies:
     case lnot:
@@ -123,7 +121,10 @@ unsigned char formula_is_term(const formula* f)
     }
 
   if (f->definingFormula)
-    return formula_is_term(f->definingFormula);
+    return formula_is_term(f->definingFormula, ops);
+  formula* opDef = formula_set_find(f, ops);
+  if (opDef)
+    return formula_is_term(opDef, ops); // even if the variables don't substitute, the type is that of the defining formula
   return 0;
 }
 
@@ -874,7 +875,8 @@ const formula* get_named_quantifier(enum builtin_operator q, const formula* f, c
 
 short check_quantifier_instance_statement_one(enum reason_kind rk,
 					      const formula* f,
-					      struct formula_list* subs)
+					      struct formula_list* subs,
+					      const formula_set ops)
 {
   if (f->builtInOp != limplies)
     return 0;
@@ -900,7 +902,7 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
 	  // do not substitute a variable with itself
 	  freeSub->variable = sub->formula_elem->name;
 	  freeSub->subst = sub->next->formula_elem;
-	  if (!formula_is_term(freeSub->subst))
+	  if (!formula_is_term(freeSub->subst, ops))
 	    return 0;
 	  freeSub++;
 	}
@@ -917,7 +919,8 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
 }
 
 short check_propositional_tautology_statement_one(const formula* statement,
-						  const formula* propoTaut)
+						  const formula* propoTaut,
+						  const formula_set ops)
 {
   // Propositional tautologies have no quantifiers, so all susbtitutions into them
   // are free. Search for up to 16 such substitutions.
@@ -933,7 +936,7 @@ short check_propositional_tautology_statement_one(const formula* statement,
       variable_substitution* sub = propositionalVariables;
       while (sub->variable)
 	{
-	  if (formula_is_term(sub->subst))
+	  if (formula_is_term(sub->subst, ops))
 	    return 0;
 	  sub++;
 	}
