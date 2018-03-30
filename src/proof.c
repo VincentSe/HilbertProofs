@@ -203,7 +203,9 @@ short check_generalization_statement(const struct FormulaDList* statement,
       if (find_previous_formula(statement, equal_f))
 	return 1; // implicit modus ponens
     }
-  printf("%d : Bad generalization\n", statement->jf->formula->first_line);
+  printf("%s:%d: Bad generalization\n",
+	 statement->jf->formula->file,
+	 statement->jf->formula->first_line);
   return 0;
 }
 
@@ -310,7 +312,8 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
 	return 1;
     }
 
-  printf("%d : bad propositional tautology\n",
+  printf("%s:%d: bad propositional tautology\n",
+	 statement->jf->formula->file,
 	 statement->jf->formula->first_line);
   return 0;
 }
@@ -519,7 +522,7 @@ short equality_axiom(const formula* f)
 	return 1;
     }
 
-  printf("%d: ", f->first_line);
+  printf("%s:%d: ", f->file, f->first_line);
   print_formula(f);
   printf(" is not an instance of an equality axiom scheme\n");
   return 0;
@@ -839,7 +842,9 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
   if (proof_list_find_const(axiomSchemes, scheme_instance))
     return 1;
 
-  printf("%d: ", statement->jf->formula->first_line);
+  printf("%s:%d: ",
+	 statement->jf->formula->file,
+	 statement->jf->formula->first_line);
   print_formula(statement->jf->formula);
   printf(" is not an instance of an axiom scheme\n");
   return 0;
@@ -884,23 +889,24 @@ short check_choose_statement(const formula* f)
 }
 
 // Check XXX BECAUSE THEOREM;
-short check_theorem_invocation_statement(const formula* f, void* assumedProofs)
+short check_theorem_invocation_statement(const formula* f, const proof_set assumedProofs)
 {
   proof searchP;
   searchP.formulaToProve = (formula*)f;
-  const proof** otherProof = tfind(&searchP, (void**)&assumedProofs, compare_proofs);
+  const proof* otherProof = proof_set_find(&searchP, assumedProofs);
   if (otherProof
-      && (*otherProof)->goal == theorem
-      && (*otherProof)->cumulativeTruths)
+      && otherProof->goal == theorem
+      && otherProof->cumulativeTruths)
     {
-      if (f->first_line < (*otherProof)->formulaToProve->first_line)
+      if (strcmp(f->file, otherProof->formulaToProve->file) == 0
+	  && f->first_line < otherProof->formulaToProve->first_line)
 	{
 	  // Prevent cycles in proofs, to avoid for example giving two names
 	  // to the same closed formula and incorrectly proving it
 	  // by invoking each other.
 	  // Equivalently, invoking a theorem is copying its proof : if there
 	  // are cycles, those copies will create an infinite text.
-	  printf("%d: Invocation of a theorem proven later\n", f->first_line);
+	  printf("%s:%d: Invocation of a theorem proven later\n", f->file, f->first_line);
 	  return 0;
 	}
       return 1;
@@ -975,14 +981,13 @@ short check_proof(const proof* proof,
       return is_propositional_formula(proof->formulaToProve)
 	&& prove_propositional_tautology(proof->formulaToProve);
     case theorem:
-
-      printf("Proving %s ", reason_kind_to_string(proof->goal));
-      print_formula(proof->formulaToProve);
-      printf(": ");
-
       if (!proof->cumulativeTruths)
 	{
-	  printf("there is no proof\n");
+	  printf("%s:%d: there is no proof of theorem ",
+		 proof->formulaToProve->file,
+		 proof->formulaToProve->first_line);
+	  print_formula(proof->formulaToProve);
+	  printf("\n");
 	  return 0;
 	}
 
@@ -1003,15 +1008,21 @@ short check_proof(const proof* proof,
 	  if (!formula_equal(lastStatement->jf->formula,
 			     proof->formulaToProve, 0, 0, 0))
 	    {
-	      printf("The proof does not end with its goal\n");
+	      printf("%s:%d: the proof does not end with its goal\n",
+		     proof->formulaToProve->file,
+		     lastStatement->jf->formula->first_line);
 	      return 0;
 	    }
 
-	  printf("proven.\n"); // if there are errors in the proofs, the wrong statement has printed its specialized error message
+	  printf("%s ", reason_kind_to_string(proof->goal));
+	  print_formula(proof->formulaToProve);
+	  printf(" proven.\n"); // if there are errors in the proofs, the wrong statement has printed its specialized error message
 	  return 1;
 	}
     };
 
+  // In case an error in a statement silently returns (bug),
+  // complain here once more :
   printf("Error in proof of ");
   print_formula(proof->formulaToProve);
   printf("\n");

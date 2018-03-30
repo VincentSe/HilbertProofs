@@ -2,13 +2,120 @@ EXTENDS ZFC
 
 TransitiveSet(x) == \A a : a \in x => a \subseteq x
 
+(*
+   Predicate asserting that the set x is strictly well-ordered by the membership relation \in.
+   In those sets, \in behaves like < on the natural numbers. Actually, those sets start with
+   the natural numbers and \in will be the definition of <.
+*)
 WellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
    /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
    /\ (\A p : (p # {} /\ p \subseteq x) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)) \* existence of minimums
 
-\* The class of ordinals, which starts with the natural numbers
-Ordinal(o) == TransitiveSet(o) /\ WellOrderedByIn(o)
+(*
+   The class of ordinals, which starts with the natural numbers. This predicate rigorously
+   defines what could be naively stated as
+      0 = {}
+      n = { 0, ..., n-1 }
+*)
+IsOrdinal(o) == TransitiveSet(o) /\ WellOrderedByIn(o)
 
 \* The empty set is the smallest ordinal, called "zero" as an ordinal
-ordinalZero == Ordinal( {} )
+ordinalZero == IsOrdinal( {} )
 THEOREM ordinalZero
+PROOF
+\* Just check implications starting with the false formula x \in {}
+VARIABLES a,b,c,p,x;
+\* Proof of TransitiveSet( {} )
+emptySetExists   BECAUSE THEOREM;
+a \notin {}   BECAUSE \A(x <- a);
+a \in {} => a \subseteq {}   BECAUSE Explosion;
+TransitiveSet( {} )   BECAUSE GENERALIZATION;
+
+\* Proof of irreflexive
+a \in {} => a \notin a   BECAUSE Explosion;
+\A a : a \in {} => a \notin a   BECAUSE GENERALIZATION;
+
+\* Proof of transitive order
+(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c)
+   => (a \in {} /\ b \in {} /\ c \in {})   BECAUSE DropAndRight2;
+(a \in {} /\ b \in {} /\ c \in {}) => a \in {}   BECAUSE DropAndRight2;
+(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in {}   BECAUSE TransitImplication;
+a \in {} => a \in c   BECAUSE Explosion;
+(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE TransitImplication;
+\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE GENERALIZATION;
+
+\* Proof of minimums
+includedInEmpty   BECAUSE THEOREM;
+p \subseteq {} => p = {}   BECAUSE \A(x <- p);
+(p \subseteq {} => p = {}) <=> (~(p \subseteq {}) \/ p = {})   BECAUSE BooleanImplication;
+~(p \subseteq {}) \/ p = {}   BECAUSE MODUS_PONENS;
+p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
+~~(p = {} \/ ~(p \subseteq {}))   BECAUSE PT3;
+~(p = {} \/ ~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE Explosion;
+~(p = {} \/ ~(p \subseteq {})) <=> (p # {} /\ ~~(p \subseteq {}))   BECAUSE DistribNotOr;
+(p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE EquivToImplReverse;
+(p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
+p \subseteq {} => ~~(p \subseteq {})   BECAUSE PT3;
+p # {} => p # {}   BECAUSE ImplyOneself;
+(p # {} /\ p \subseteq {}) => (p # {} /\ ~~(p \subseteq {}))   BECAUSE MergeImplicationsAnd;
+(p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
+\A p : (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE GENERALIZATION;
+
+\* Conclude with PT6
+(\A a : a \in {} => a \notin a)
+   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE PT6;
+WellOrderedByIn( {} )   BECAUSE PT6;
+ordinalZero   BECAUSE PT6;
+QED
+
+\* The +1 operation on ordinals
+successor(o) == o \union { o }
+
+ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
+THEOREM ordinalSuccessorStable
+
+IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
+
+(*
+   Definition of the set of natural numbers. They are the finite ordinals.
+*)
+Nat == CHOOSE o : IsLimitOrdinal(o) /\ \A x : x \in o => ~IsLimitOrdinal(x)
+naturalNumbersExist == IsLimitOrdinal(Nat) /\ \A x : x \in Nat => ~IsLimitOrdinal(x)
+THEOREM naturalNumbersExist
+
+(*
+   The addition function on natural numbers. It could be declared as an operator
+   natAddition(x,y) = CHOOSE z : ...
+   however it would be recursive (or use well-orders). Keep it a simple function here.
+*)
+natAddition == CHOOSE f : IsFunction(f)
+   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in f) \* f : Nat \X Nat -> Nat
+   /\ (\A x : x \in Nat => << <<x,{}>>, x >> \in f) \* f(x,0) = x
+   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
+         => \E u : << <<x,y>>, u >> \in f /\ << <<x,successor(y)>>, successor(u) >> \in f) \* f(x,y+1) = f(x,y)+1
+
+natAdditionExists == IsFunction(natAddition)
+   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in natAddition)
+   /\ (\A x : x \in Nat => << <<x,{}>>, x >> \in natAddition)
+   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
+         => \E u : << <<x,y>>, u >> \in natAddition /\ << <<x,successor(y)>>, successor(u) >> \in natAddition)
+
+THEOREM natAdditionExists
+
+(*
+   The multiplication function on natural numbers.
+*)
+natMultiplication == CHOOSE f : IsFunction(f)
+   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in f) \* f : Nat \X Nat -> Nat
+   /\ (\A x : x \in Nat => << <<x,{}>>, {} >> \in f) \* f(x,0) = 0
+   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
+         => \E u : \E v : << <<x,y>>, u >> \in f /\ << <<x,successor(y)>>, v>> \in f
+	                  /\ << <<u,x>>, v >> \in natAddition) \* u=f(x,y) and v=f(x,y+1) and v=u+x, ie f(x,y+1) = f(x,y)+x
+
+natMultiplicationExists == IsFunction(natMultiplication)
+   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in natMultiplication)
+   /\ (\A x : x \in Nat => << <<x,{}>>, {} >> \in natMultiplication)
+   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
+         => \E u : \E v : << <<x,y>>, u >> \in natMultiplication /\ << <<x,successor(y)>>, v>> \in natMultiplication /\ << <<u,x>>, v >> \in natAddition)
+
+THEOREM natMultiplicationExists

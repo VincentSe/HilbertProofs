@@ -203,9 +203,7 @@ PROOF
 VARIABLES x,z;
 emptySetExists   BECAUSE THEOREM;
 z \notin {}   BECAUSE \A(x <- z);
-~(z \notin {}) => z \in x   BECAUSE Explosion;
-z \in {} => ~(z \notin {})   BECAUSE PT3;
-z \in {} => z \in x   BECAUSE TransitImplication;
+z \in {} => z \in x   BECAUSE Explosion;
 {} \subseteq x   BECAUSE GENERALIZATION;
 emptyIncludedInAny   BECAUSE GENERALIZATION;
 QED
@@ -387,7 +385,7 @@ z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TransitImplication;
 {} \in x => ordinalOne \subseteq x   BECAUSE Q_SCHEME;
 (x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TransitImplication;
 
-(x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE PT7;
+(x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE DropAndRight;
 (x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CombineImplicationsEnd;
 bothInclusions BECAUSE THEOREM;
 (x \subseteq ordinalOne /\ ordinalOne \subseteq x) => x = ordinalOne   BECAUSE \A(a <- x, b <- ordinalOne);
@@ -432,7 +430,7 @@ VARIABLES a,b,c,x,z;
 \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)   BECAUSE \A(c <- a);
 
 \* Proof that (x \in SUBSET a /\ x = a) <=> x = a
-(x \in SUBSET a /\ x = a) => x = a   BECAUSE PT8;
+(x \in SUBSET a /\ x = a) => x = a   BECAUSE DropAndLeft;
 x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE E_SCHEME;
 inclusionInOneself   BECAUSE THEOREM;
 a \subseteq a   BECAUSE \A(x <- a);
@@ -463,8 +461,9 @@ VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
 (\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE;
 F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
-(\A x : \A y : \A z : (F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
-   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F)   BECAUSE AXIOM_SCHEME;
+(\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
+      	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
+   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE AXIOM_SCHEME;
 
    \* Proof that F is functional
 (F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d)))
@@ -472,13 +471,13 @@ F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 \* Case x = {}
 (F /\ (x = {} /\ z = c))
    => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))   BECAUSE DistribAndOrRight;
-(x = {} /\ z = c) => x = {}   BECAUSE PT7;
-(x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE PT7;
+(x = {} /\ z = c) => x = {}   BECAUSE DropAndRight;
+(x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE DropAndRight;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => (x = ordinalOne /\ x = {})   BECAUSE MergeImplicationsAnd;
 (x = ordinalOne /\ x = {}) => ordinalOne = {}   BECAUSE E_SCHEME;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => ordinalOne = {}   BECAUSE TransitImplication;
-(x = {} /\ y = c) => y = c   BECAUSE PT8;
-(x = {} /\ z = c) => z = c   BECAUSE PT8;
+(x = {} /\ y = c) => y = c   BECAUSE DropAndLeft;
+(x = {} /\ z = c) => z = c   BECAUSE DropAndLeft;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => (y = c /\ z = c)   BECAUSE MergeImplicationsAnd;
 (y = c /\ z = c) => y = z   BECAUSE E_SCHEME;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
@@ -508,13 +507,13 @@ ordinalOne # {}   BECAUSE MODUS_PONENS;
 \* Case x = ordinalOne
 (F /\ (x = ordinalOne /\ z = d))
    => (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrRight;
-(x = {} /\ y = c) => x = {}   BECAUSE PT7;
-(x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE PT7;
+(x = {} /\ y = c) => x = {}   BECAUSE DropAndRight;
+(x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE DropAndRight;
 ((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => (x = {} /\ x = ordinalOne)   BECAUSE MergeImplicationsAnd;
 (x = {} /\ x = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
 ((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => {} = ordinalOne   BECAUSE TransitImplication;
-(x = ordinalOne /\ y = d) => y = d   BECAUSE PT8;
-(x = ordinalOne /\ z = d) => z = d   BECAUSE PT8;
+(x = ordinalOne /\ y = d) => y = d   BECAUSE DropAndLeft;
+(x = ordinalOne /\ z = d) => z = d   BECAUSE DropAndLeft;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => (y = d /\ z = d)   BECAUSE MergeImplicationsAnd;
 (y = d /\ z = d) => y = z   BECAUSE E_SCHEME;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
@@ -539,7 +538,7 @@ x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE EquivToImpl;
 (x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE EquivToImplReverse;
 
 F => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
-(x \in ordinalTwo /\ F) => F   BECAUSE PT8;
+(x \in ordinalTwo /\ F) => F   BECAUSE DropAndLeft;
 (x \in ordinalTwo /\ F) => (y = c \/ y = d)   BECAUSE TransitImplication;
 (\E x : x \in ordinalTwo /\ F) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
 (\E x : y = c \/ y = d) => (y = c \/ y = d)   BECAUSE Q_SCHEME;
@@ -707,12 +706,12 @@ QED
 \* The class of graphs
 IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
 
-\* The domain of a graph, ie its inputs and outputs,
+\* The nodes of a graph, ie its inputs and outputs,
 \* can be retrieved as its double union
-Domain(x) == UNION UNION x
-DomainIsInputOutputs == \A g : IsGraph(g)
-   => \A x : x \in Domain(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
-THEOREM DomainIsInputOutputs
+Nodes(x) == UNION UNION x
+LOCAL NodesIsInputOutputs == \A g : IsGraph(g)
+   => \A x : x \in Nodes(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
+THEOREM NodesIsInputOutputs
 
 \* The class of functions : graphs that have at most one output for each given input
 IsFunction(f) == IsGraph(f)

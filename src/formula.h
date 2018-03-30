@@ -34,7 +34,7 @@ enum builtin_operator
     tuple,
     binIntersect, binUnion, unaryUnion, powerset,
 
-    plus,
+    plus, cartesianProduct,
 
     // This type is set by the semantic checker, after the bison parsing.
     // A variable is either declared by

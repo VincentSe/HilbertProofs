@@ -37,43 +37,42 @@ unsigned int list_fol_files(const char* dirPath,
   return numberFound;
 }
 
+void free_first_asts(struct folAST** asts, unsigned int count)
+{
+  for (int j = 0; j < count; j++)
+    folAST_free(asts[j]);  
+}
+
 int main(int argc, char** argv)
 {
   struct folAST* asts[16];
+  unsigned int astCount = 0, i;
   if (argc == 1)
-    {
-      asts[0] = make_folAST("math/Tautologies.fol");
-      asts[1] = make_folAST("math/ZFC.fol"); 
-      asts[2] = make_folAST("math/Ordinals.fol");
-      asts[3] = (struct folAST*)0;
-      //list_fol_files("math", /*out*/asts); TODO
-    }
+    astCount = list_fol_files("math", /*out*/asts);
   else
     {
       // Assume all arguments are file names
-      int i;
-      for (i = 1; i<argc; i++)
-	{
-	  asts[i-1] = make_folAST(argv[i]);
-	}
-      asts[i-1] = (struct folAST*)0;
+      for (astCount = 0; astCount<argc-1; astCount++)
+	asts[astCount] = make_folAST(argv[astCount+1]);
     }
+  asts[astCount] = (struct folAST*)0;
 
-  struct folAST** ast = asts;
-  while (*ast && (parse_fo_formulas(*ast) == 0)) // 0 means success in bison
-    ast++;
+  for (i = 0; i < astCount; i++)
+    if (parse_fo_formulas(asts[i]) != 0) // 0 means bison succeeded
+      {
+	printf("parsing failure\n");
+	free_first_asts(asts, astCount);
+	return 1;
+      }
 
-  unsigned char success = 1;
-  if (*ast // parsing failed
-      || !resolve_extends(/*out*/asts))
-    success = 0;
+  unsigned int astSort[16];
+  unsigned char success = resolve_extends(/*out*/asts, /*out*/astSort);
 
-  // Destroy asts in reverse order of dependencies
-  while (ast >= asts)
-    {
-      folAST_free(*ast);
-      ast--;
-    }
+  // Destroy asts in reverse order of dependencies.
+  // Even in case of error, resolve_extends must cleanup what it did
+  // so that the following destruction loop works :
+  for (int i = astCount-1; i >= 0; i--)
+    folAST_free(asts[astSort[i]]);
   return !success;
 }
 

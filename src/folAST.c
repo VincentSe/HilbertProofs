@@ -267,12 +267,13 @@ unsigned int ast_idx(struct folAST ** asts, const char* name)
   return -1;
 }
 
-unsigned char resolve_extends(/*out*/struct folAST** asts)
+unsigned char resolve_extends(/*out*/struct folAST** asts,
+			      /*out*/unsigned int* astSort)
 {
   // topological sort of asts
   arc extends[32];
   int extCount = 0;
-  unsigned int astIdx = 0;
+  unsigned int astIdx = 0, i;
   while (asts[astIdx])
     {
       struct string_list* ext = asts[astIdx]->extends;
@@ -280,7 +281,10 @@ unsigned char resolve_extends(/*out*/struct folAST** asts)
 	{
 	  extends[extCount].first = ast_idx(asts, ext->string_elem);
 	  if (extends[extCount].first == -1)
-	    return 0;
+	    {
+	      printf("module %s extends unknown module %s\n", asts[astIdx]->file, ext->string_elem);
+	      return 0;
+	    }
 	  extends[extCount].second = astIdx;
 	  extCount++;
 	  ext = ext->next;
@@ -288,10 +292,12 @@ unsigned char resolve_extends(/*out*/struct folAST** asts)
       astIdx++;
     }
 
-  unsigned int sort[32];
-  if (!topological_sort(extends, extCount, astIdx, /*out*/sort))
+  if (!topological_sort(extends, extCount, astIdx, /*out*/astSort))
     {
       printf("Cycle in module extensions\n");
+      // The ASTs can be deleted in any order, put identity
+      for (i = 0; i < astIdx; i++)
+	astSort[i] = i;
       return 0;
     }
 
@@ -308,9 +314,9 @@ unsigned char resolve_extends(/*out*/struct folAST** asts)
   }
 
   // semantic check of sorted asts
-  for (int i = 0; i < astIdx; i++)
+  for (i = 0; i < astIdx; i++)
     {
-      ast = asts[sort[i]];
+      ast = asts[astSort[i]];
       if (!semantic_check(ast))
 	return 0;
       
@@ -319,7 +325,7 @@ unsigned char resolve_extends(/*out*/struct folAST** asts)
 
       // asts[sort[i]] is checked, merge it into all asts that extend it.
       for (int j = 0; j < extCount; j++)
-	if (extends[j].first == sort[i]
+	if (extends[j].first == astSort[i]
 	    && !merge_asts(/*out*/asts[extends[j].second], ast))
 	  return 0;
     }
@@ -432,8 +438,9 @@ short semantic_check_proof(proof* p, struct folAST* ast)
 		     0, p->operators))
     {
       // finish the error message
-      printf(" in formula ");
+      printf("in formula ");
       print_formula(p->formulaToProve);
+      printf("\n");
       return 0;
     }
 
@@ -458,8 +465,9 @@ short semantic_check_proof(proof* p, struct folAST* ast)
   if (t)
     {
       // finish the error message
-      printf(" in formula ");
+      printf("in formula ");
       print_formula(t->jf->formula);
+      printf("\n");
     }
 
   if (p->goal == axiomScheme && !t)
@@ -508,9 +516,6 @@ short semantic_check(struct folAST* ast)
     proofsOk &= semantic_check_proof(p, ast);
   }
   twalk(ast->proofs, all_proofs_ok);
-
-  if (!proofsOk)
-    printf("Semantic error in proof\n");
 
   // TODO use axioms to type primitive operators (relations or operations).
   // If a primitive operator s has no axiom or cannot be typed, refuse it

@@ -45,7 +45,7 @@
 
 %precedence <sVal> NAME
 %precedence LEFT_PARENTHESIS
-%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW
+%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW LOCAL
 
 %type  <formulaVal> formula
 %type  <formulaVal> setDef
@@ -106,6 +106,10 @@ NAME { $$ = make_string_list($1, 0); }
 operatorDefinition:
 formula NAME_SEPARATOR formula {
   $$ = check_operator_definition($1, $3);
+  if (!$$)
+    yyerror(&@$, scanner, ast, "Bad operator definition"); }
+| LOCAL formula NAME_SEPARATOR formula {
+  $$ = check_operator_definition($2, $4);
   if (!$$)
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
 | formula NAME_SEPARATOR formula SEMICOLON { // local operators in proofs

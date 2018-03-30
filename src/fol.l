@@ -31,6 +31,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 "\\subseteq"  { folget_lval(yyscanner)->lopVal = subseteq; return INFIX_OP; }
 "\\intersect" { folget_lval(yyscanner)->lopVal = binIntersect; return INFIX_OP; }
 "\\union"     { folget_lval(yyscanner)->lopVal = binUnion; return INFIX_OP; }
+"\\X"         { folget_lval(yyscanner)->lopVal = cartesianProduct; return INFIX_OP; }
 "+"           { folget_lval(yyscanner)->lopVal = plus; return INFIX_OP; }
 
 
@@ -54,6 +55,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 \\\*[^\n]*$ { /* discard line comments */ }
 \r { /* discard carriage returns */ }
 
+"LOCAL" { return LOCAL; }
 "PROOF" { return PROOF; }
 "QED" { return QED; }
 "BECAUSE" { return BECAUSE; }

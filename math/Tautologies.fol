@@ -28,11 +28,14 @@ PROPO_TAUTO Contraposition
 PT6(a,b) == a => (b => (a /\ b))
 PROPO_TAUTO PT6
 
-PT7(a,b) == (a /\ b) => a
-PROPO_TAUTO PT7
+DropAndRight(a,b) == (a /\ b) => a
+PROPO_TAUTO DropAndRight
 
-PT8(a,b) == (a /\ b) => b
-PROPO_TAUTO PT8
+DropAndRight2(a,b,c) == (a /\ b /\ c) => a
+PROPO_TAUTO DropAndRight2
+
+DropAndLeft(a,b) == (a /\ b) => b
+PROPO_TAUTO DropAndLeft
 
 PT9(a,b) == a => (a \/ b)
 PROPO_TAUTO PT9
@@ -97,10 +100,15 @@ PROPO_TAUTO AddHypothesis
 ExcludedMiddle(a) == a \/ ~a
 PROPO_TAUTO ExcludedMiddle
 
+BooleanImplication(a,b) == (a => b) <=> (~a \/ b)
+PROPO_TAUTO BooleanImplication
+
 ImplyExcludedMiddle(a,b,c) == (a => (~b => c)) => (a => (b \/ c))
 PROPO_TAUTO ImplyExcludedMiddle
 
-Explosion(a,b) == a => (~a => b)
+\* This is better than f => (~f => b), because when the negation is needed,
+\* it is easier to write ~~f BECAUSE PT3 than the full PT4 and a TransitImplication.
+Explosion(f,b) == ~f => (f => b)
 PROPO_TAUTO Explosion
 
 MergeImplicationsAnd(a,b,c,d) == (a => b) => ((c => d) => ((a /\ c) => (b /\ d)))
@@ -127,8 +135,14 @@ PROPO_TAUTO SwitchHypos
 AndSymmetry(a,b) == (a /\ b) => (b /\ a)
 PROPO_TAUTO AndSymmetry
 
+OrSymmetry(a,b) == (a \/ b) => (b \/ a)
+PROPO_TAUTO OrSymmetry
+
 EquivSymmetry(a,b) == (a <=> b) => (b <=> a)
 PROPO_TAUTO EquivSymmetry
+
+DistribNotOr(a,b) == ~(a \/ b) <=> (~a /\ ~b)
+PROPO_TAUTO DistribNotOr
 
 DistribAndOrLeft(a,b,c) == (a /\ (b \/ c)) => ((a /\ b) \/ (a /\ c))
 PROPO_TAUTO DistribAndOrLeft

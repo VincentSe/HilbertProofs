@@ -438,29 +438,7 @@ unsigned char formula_equal(const formula* f,
     }
   else
     {
-      if (is_custom_operator(f) && f->definingFormula)
-	{
-	  // Assume f <=> f->definingFormula (which was tested in
-	  // resolve_operator_or_variable).
-	  // This actually checks that f <=> g, rather than equality of formulas.
-	  // freeSubs does not apply to f so it doesn't matter here.
-	  return formula_equal(f->definingFormula, g,
-			       boundVariables, freeSubs,
-			       substituteMore);
-	}
-
-      if (is_custom_operator(g) && g->definingFormula && !freeSubs)
-	{
-	  // Assume g <=> g->definingFormula (which was tested in
-	  // resolve_operator_or_variable).
-	  // This actually checks that f <=> g, rather than equality of formulas.
-	  // PROBLEM : y<-z is a free substitution of x \subseteq y,
-	  // yielding x \subseteq z ; but not in \A z : z \in x => z \in y
-	  return formula_equal(f, g->definingFormula,
-			       boundVariables, freeSubs,
-			       substituteMore);
-	}
-
+      // Different operators or f->builtInOp==variable
       if (g->builtInOp == variable)
 	{
 	  const unsigned char sameBoundVar = string_list_contains(boundVariables, g->name)
@@ -513,6 +491,30 @@ unsigned char formula_equal(const formula* f,
 	      schemeFormulaSubst[1].variable = (char*)0;
 	      return 1;
 	    }
+	}
+
+      // Try defining formulas last, after we know the true ops don't work
+      if (is_custom_operator(f) && f->definingFormula)
+	{
+	  // Assume f <=> f->definingFormula (which was tested in
+	  // resolve_operator_or_variable).
+	  // This actually checks that f <=> g, rather than equality of formulas.
+	  // freeSubs does not apply to f so it doesn't matter here.
+	  return formula_equal(f->definingFormula, g,
+			       boundVariables, freeSubs,
+			       substituteMore);
+	}
+
+      if (is_custom_operator(g) && g->definingFormula && !freeSubs)
+	{
+	  // Assume g <=> g->definingFormula (which was tested in
+	  // resolve_operator_or_variable).
+	  // This actually checks that f <=> g, rather than equality of formulas.
+	  // PROBLEM : y<-z is a free substitution of x \subseteq y,
+	  // yielding x \subseteq z ; but not in \A z : z \in x => z \in y
+	  return formula_equal(f, g->definingFormula,
+			       boundVariables, freeSubs,
+			       substituteMore);
 	}
       return 0;
     }
@@ -851,7 +853,7 @@ unsigned char resolve_names(formula* f,
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
 				       variables, opVariables, proofLocalDecl))
     {
-      printf("%s:%d: Unknown name %s\n",
+      printf("%s:%d: Unknown name %s ",
 	     f->file,
 	     f->first_line,
 	     f->name ? f->name : op_to_string(f->builtInOp));

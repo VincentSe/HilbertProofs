@@ -33,4 +33,4 @@ void add_constants(struct formula_list* p, /*out*/struct folAST* ast);
 formula* check_operator_definition(formula* left, formula* right);
 int parse_fo_formulas(/*out*/struct folAST* ast);
 short semantic_check(struct folAST* ast);
-unsigned char resolve_extends(/*out*/struct folAST** asts);
+unsigned char resolve_extends(/*out*/struct folAST** asts, /*out*/unsigned int* astSort);
