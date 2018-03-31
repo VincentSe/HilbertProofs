@@ -365,7 +365,9 @@ short check_quantifier_instance_statement(enum reason_kind rk,
   const struct FormulaDList* implicitMP = find_previous_formula(statement, implicitModusPonens);
   if (!implicitMP)
     {
-      printf("%d : Bad %s instance ", statement->jf->formula->first_line,
+      printf("%s:%d: Bad %s instance ",
+	     statement->jf->formula->file,
+	     statement->jf->formula->first_line,
 	     rk == forallInstance ? "forall" : "exists");
       print_formula(statement->jf->formula);
       printf("\n");
@@ -427,7 +429,9 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
   const struct FormulaDList* success = find_previous_formula(statement, is_mp);
   if (!success)
     {
-      printf("%d : Bad modus ponens : ", statement->jf->formula->first_line);
+      printf("%s:%d: Bad modus ponens : ",
+	     statement->jf->formula->file,
+	     statement->jf->formula->first_line);
       print_formula(statement->jf->formula);
     }
   return success != 0;
@@ -758,7 +762,9 @@ short existence_quantifier_axiom_schemes(const struct FormulaDList* statement)
 	return 1;
     }
 
-  printf("%d: ", statement->jf->formula->first_line);
+  printf("%s:%d: ",
+	 statement->jf->formula->file,
+	 statement->jf->formula->first_line);
   print_formula(statement->jf->formula);
   printf(" is not an instance of a quantifier axiom scheme\n");
   return 0;
@@ -860,7 +866,7 @@ short check_choose_statement(const formula* f)
       || f->builtInOp != lequiv
       || secondF->builtInOp != exists)
     {
-      printf("%d: bad choose reason\n", f->first_line);
+      printf("%s:%d: bad choose reason\n", f->file, f->first_line);
       return 0;
     }
 
@@ -884,7 +890,7 @@ short check_choose_statement(const formula* f)
 		    before, 0))
     return 1;
 
-  printf("%d: bad choose reason\n", f->first_line);
+  printf("%s:%d: bad choose reason\n", f->file, f->first_line);
   return 0;
 }
 
@@ -912,7 +918,7 @@ short check_theorem_invocation_statement(const formula* f, const proof_set assum
       return 1;
     }
 
-  printf("%d: Unknown theorem\n", f->first_line);
+  printf("%s:%d: Unknown theorem\n", f->file, f->first_line);
   return 0;
 }
 

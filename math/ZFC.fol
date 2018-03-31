@@ -294,11 +294,22 @@ QED
 
 \* The union of a set x is the set of elements of elements of x.
 UNION b == CHOOSE u : \A z : (z \in u <=> \E t : (t \in b /\ z \in t))
-unionExists == \A b : \A z : (z \in UNION b <=> \E t : (t \in b /\ z \in t))
+unionExists == \A b : \A z : (z \in UNION b <=> \E t : t \in b /\ z \in t)
 AXIOM unionExists
 
-\* unionUnique == \A b : \A u : (\A a : (a \in u <=> \E t : (t \in b /\ a \in t))) <=> u = UNION b
-\* THEOREM unionUnique
+inInUnion == \A a : \A b : \A c : (a \in b /\ b \in c) => a \in UNION c
+THEOREM inInUnion
+PROOF
+VARIABLES a,b,c,t,z;
+unionExists   BECAUSE AXIOM;
+a \in UNION c <=> \E t : (t \in c /\ a \in t)   BECAUSE \A(b <- c, z <- a);
+(\E t : t \in c /\ a \in t) => a \in UNION c   BECAUSE EquivToImplReverse;
+(b \in c /\ a \in b) => \E t : t \in c /\ a \in t   BECAUSE \E(t <- b);
+(b \in c /\ a \in b) => a \in UNION c   BECAUSE TransitImplication;
+(a \in b /\ b \in c) => (b \in c /\ a \in b)   BECAUSE AndSymmetry;
+(a \in b /\ b \in c) => a \in UNION c   BECAUSE TransitImplication;
+inInUnion   BECAUSE GENERALIZATION;
+QED
 
 \* \* The intersection of two sets is the set of common elements
 \* x \intersect y == CHOOSE z : \A a : (a \in z <=> (a \in x /\ a \in y))
@@ -715,10 +726,47 @@ LOCAL NodesIsInputOutputs == \A g : IsGraph(g)
    => \A x : x \in Nodes(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
 THEOREM NodesIsInputOutputs
 
-Domain(g) == CHOOSE d : \A x : x \in d <=> IsDefinedOn(g,x)
+Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 
 domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
 THEOREM domainExists
+PROOF
+VARIABLES a,b,c,d,g,t,x,y,z;
+\* By separation in UNION UNION g
+(\A x : x \in Domain(g) <=> IsDefinedOn(g,x)) <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
+(x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
+pairExists   BECAUSE THEOREM;
+{x} \in <<x,y>> <=> ({x} = {x} \/ {x} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x});
+{x} = {x}   BECAUSE E_SCHEME;
+{x} = {x} \/ {x} = {x,y}   BECAUSE PT9;
+{x} \in <<x,y>>   BECAUSE MODUS_PONENS;
+inInUnion   BECAUSE THEOREM;
+({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
+<<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE PT6;
+<<x,y>> \in g => {x} \in UNION g   BECAUSE TransitImplication;
+IsDefinedOn(g,x) => \E y : {x} \in UNION g   BECAUSE Q_SCHEME;
+(\E y : {x} \in UNION g) => {x} \in UNION g   BECAUSE Q_SCHEME;
+IsDefinedOn(g,x) => {x} \in UNION g   BECAUSE TransitImplication;
+singletonExists   BECAUSE THEOREM;
+x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
+x = x   BECAUSE E_SCHEME;
+x \in { x }   BECAUSE MODUS_PONENS;
+(x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
+{x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE PT6;
+{x} \in UNION g => x \in UNION UNION g   BECAUSE TransitImplication;
+IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
+IsDefinedOn(g,x) => IsDefinedOn(g,x)   BECAUSE ImplyOneself;
+IsDefinedOn(g,x) => (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE CombineImplicationsEnd;
+IsDefinedOn(g,x) <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE IntroEquiv;
+(x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE TransitEquiv2;
+(\A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\E b : \A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
+\A x : x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
+domainExists   BECAUSE GENERALIZATION;
+QED
 
 (*
    The class of functions : graphs that have at most one output for each
