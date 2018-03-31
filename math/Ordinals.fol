@@ -1,19 +1,51 @@
 EXTENDS ZFC
 
+(*
+   The class of well-orders, orders where each subset has a minimum. These
+      - start with the natural numbers (the finite well-orders)
+      - are stable under disjoint unions, which they call addition
+      - are stable under cartesian products, which they call multiplication
+*)
+IsWellOrder(w) == IsOrder(w)
+   /\ (\A part : (part # {} /\ (\A x : x \in part => IsDefinedOn(w,x)))
+         => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in w)
+
+\* Define a well-order on the disjoint union of two well-orders.
+\* This order simply pastes v after u.
+wellOrderAddition(u,v) == CHOOSE w : IsWellOrder(w)
+   /\ w \subseteq (disjointUnion(u,v) \X disjointUnion(u,v))
+   /\ \A x : \A y : \A i : \A j : << <<x,i>>, <<y,j>> >> \in w <=>
+           ( (i={} /\ j=ordinalOne)
+	     \/ (i={} /\ j={} /\ <<x,y>> \in u)
+	     \/ (i=ordinalOne /\ j=ordinalOne /\ <<x,y>> \in v) )
+
+wellOrderAdditionExists == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) =>
+  (   IsWellOrder(wellOrderAddition(u,v))
+   /\ wellOrderAddition(u,v) \subseteq (disjointUnion(u,v) \X disjointUnion(u,v))
+   /\ \A x : \A y : \A i : \A j : << <<x,i>>, <<y,j>> >> \in wellOrderAddition(u,v) <=>
+           ( (i={} /\ j=ordinalOne)
+	     \/ (i={} /\ j={} /\ <<x,y>> \in u)
+	     \/ (i=ordinalOne /\ j=ordinalOne /\ <<x,y>> \in v) ) )
+THEOREM wellOrderAdditionExists
+
+(*
+   Beginning of ordinals : special well-orders that represent all well-orders
+   by isomorphism.
+*)
 TransitiveSet(x) == \A a : a \in x => a \subseteq x
 
 (*
-   Predicate asserting that the set x is strictly well-ordered by the membership relation \in.
-   In those sets, \in behaves like < on the natural numbers. Actually, those sets start with
-   the natural numbers and \in will be the definition of <.
+   Predicate asserting that the set x is strictly well-ordered by the membership
+   relation \in. In those sets, \in behaves like < on the natural numbers. Actually,
+   those sets start with the natural numbers and \in will be the definition of <.
 *)
 WellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
    /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
    /\ (\A p : (p # {} /\ p \subseteq x) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)) \* existence of minimums
 
 (*
-   The class of ordinals, which starts with the natural numbers. This predicate rigorously
-   defines what could be naively stated as
+   The class of ordinals, which starts with the natural numbers. This predicate
+   rigorously defines what could be naively stated as
       0 = {}
       n = { 0, ..., n-1 }
 *)

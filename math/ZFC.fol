@@ -706,6 +706,8 @@ QED
 \* The class of graphs
 IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
 
+IsDefinedOn(g,x) == \E y : <<x,y>> \in g
+
 \* The nodes of a graph, ie its inputs and outputs,
 \* can be retrieved as its double union
 Nodes(x) == UNION UNION x
@@ -713,9 +715,44 @@ LOCAL NodesIsInputOutputs == \A g : IsGraph(g)
    => \A x : x \in Nodes(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
 THEOREM NodesIsInputOutputs
 
-\* The class of functions : graphs that have at most one output for each given input
+Domain(g) == CHOOSE d : \A x : x \in d <=> IsDefinedOn(g,x)
+
+domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
+THEOREM domainExists
+
+(*
+   The class of functions : graphs that have at most one output for each
+   input. A function as a set represents a computation, like addition
+   or multiplication, something that always produces the same output
+   when given the same input.
+*)
 IsFunction(f) == IsGraph(f)
    /\ \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
+
+(*
+   The class of orders : graphs that are reflexive, symmetric and transitive.
+*)
+IsOrder(o) == IsGraph(o)
+   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)) \* reflexivity
+   /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o) \* transitivity
+   /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y) \* symmetry
+
+(*
+   Definition of the cartesian product, the set of couples between two sets.
+*)
+x \X y == CHOOSE z : \A a : a \in z <=> \E u : \E v : u \in x /\ v \in y /\ a = <<u,v>>
+
+cartesianProductExists == \A x : \A y : \A a : a \in x \X y <=> \E u : \E v : u \in x /\ v \in y /\ a = <<u,v>>
+
+THEOREM cartesianProductExists
+
+(*
+   Definition of the disjoint union : the union of 2 sets where the common
+   elements are copied so that they are different in the union. The disjoint
+   union of natural number is very close to their addition, this will be
+   made rigorous in the Ordinals module.
+*)
+disjointUnion(x,y) == (x \X {{}}) \union (y \X {ordinalOne})
 
 Infinity == \E a : {} \in a /\ \A x : x \in a => x \union {x} \in a
 AXIOM Infinity

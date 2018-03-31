@@ -1,5 +1,5 @@
 (setq fol-keywords
-      '(("EXTENDS\\|CHOOSE\\|BECAUSE\\|PROOF\\|VARIABLES\\|THEOREM\\|PROPO_TAUTO\\|AXIOM_SCHEME\\|Q_SCHEME\\|E_SCHEME\\|AXIOM\\|QED\\|CONSTANT" . font-lock-keyword-face)
+      '(("LOCAL\\|EXTENDS\\|CHOOSE\\|BECAUSE\\|PROOF\\|VARIABLES\\|THEOREM\\|PROPO_TAUTO\\|AXIOM_SCHEME\\|Q_SCHEME\\|E_SCHEME\\|AXIOM\\|QED\\|CONSTANT" . font-lock-keyword-face)
         ("UNION\\|SUBSET\\|MODUS_PONENS\\|GENERALIZATION" . font-lock-constant-face)))
 
 ;; Defines fol comments. Line comments are \* and block comments are (* *)
@@ -16,3 +16,5 @@
 				 nil ;; activate syntactic fontification (for comments)
 				 nil ;; case-sensitive
 				 fol-syntax-alist)))
+
+(define-key fol-mode-map (kbd "<f7>") 'compile)
