@@ -817,41 +817,56 @@ short check_axiom_statement(const struct JustifiedFormula* jf,
   return 1;
 }
 
+unsigned char check_scheme_instance_one(const struct FormulaDList* statement,
+					const proof* scheme)
+{
+  variable_substitution substitutions[2];
+  substitutions[0].variable = (char*)0;
+  if (!formula_equal(statement->jf->formula,
+		     scheme->formulaToProve->definingFormula, // contains a formula variable F
+		     (struct string_list*)0,
+		     /*out*/ substitutions, // find a substitution for F
+		     1))
+    return 0;
+
+  // Check all scheme variables were substituted, and no other variable
+  unsigned int substCount = 0;
+  while (substitutions[substCount].variable)
+    substCount++;
+  unsigned char is_not_substituted(const formula* op)
+  {
+    for (int i=0; i<substCount; i++)
+      if (strcmp(op->name, substitutions[i].variable) == 0)
+	return 0;
+    return 1;
+  }
+  if (substCount != formula_list_size(scheme->formulaToProve->operands)
+      || formula_list_find_const(scheme->formulaToProve->operands,
+				 is_not_substituted))
+    return 0;
+
+  // Check all forbidden variables are bound
+  const struct string_list* var = scheme->variables;
+  while (var)
+    {
+      if (!is_bound_variable(substitutions[0].subst, var->string_elem))
+	return 0; // cannot print an error message : another axiom scheme might succeed, validating statement
+      var = var->next;
+    }
+  return 1;
+}
+
 short check_axiom_scheme_statement(const struct FormulaDList* statement,
 				   const struct proof_list* axiomSchemes)
 {
   // Search for a declared AXIOM_SCHEME in a fol file
   // and get its substituted formula.
   // Those only have one formula argument.
-  unsigned char scheme_instance(const proof* scheme)
+  unsigned char check_scheme_closure(const proof* p)
   {
-    variable_substitution substitutions[2];
-    substitutions[0].variable = (char*)0;
-    if (!formula_equal(statement->jf->formula,
-		       scheme->formulaToProve->definingFormula, // contains a formula variable F
-		       (struct string_list*)0,
-		       /*out*/ substitutions, // find a substitution for F
-		       1))
-      return 0;
-
-    unsigned int substCount = 0;
-    while (substitutions[substCount].variable)
-      substCount++;
-
-    if (substCount != 1)
-      return 0; // don't substitute other free variables than F
-
-    // Check all forbidden variables are bound
-    const struct string_list* var = scheme->variables;
-    while (var)
-      {
-	if (!is_bound_variable(substitutions[0].subst, var->string_elem))
-	  return 0; // cannot print an error message : another axiom scheme might succeed, validating statement
-	var = var->next;
-      }
-    return 1;
+    return check_scheme_instance_one(statement, p);
   }
-  if (proof_list_find_const(axiomSchemes, scheme_instance))
+  if (proof_list_find_const(axiomSchemes, check_scheme_closure))
     return 1;
 
   printf("%s:%d: ",

@@ -722,7 +722,7 @@ formula* equivalent_defining_formula(const formula* f,
 }
 
 struct formula_list* formula_list_map(const struct formula_list* l,
-				      formula* (*func)(formula* x))
+				      formula* (*func)(const formula* x))
 {
   if (l)
     {
@@ -748,7 +748,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 			    (const char*) 0,
 			    0);
 
-  formula* clone_closure(formula* x)
+  formula* clone_closure(const formula* x)
   {
     return formula_clone(x, freeSubs);
   }

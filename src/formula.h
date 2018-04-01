@@ -147,6 +147,8 @@ formula* make_formula(enum builtin_operator builtInOp,
 void formula_free(formula* f);
 declare_list_type(formula)
 declare_set_type(formula)
+struct formula_list* formula_list_map(const struct formula_list* l,
+				      formula* (*func)(const formula* x));
 
 typedef struct
 {

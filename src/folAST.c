@@ -475,6 +475,13 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       formula* resolvedF = formula_set_find(p->formulaToProve, ast->operators);
       set_scheme_variables(resolvedF->operands,
 			   p->formulaToProve->definingFormula);
+
+      // Copy scheme variables
+      formula* clone_closure(const formula* f)
+      {
+	return formula_clone(f, 0);
+      }
+      p->formulaToProve->operands = formula_list_map(resolvedF->operands, clone_closure);
       ast->axiomSchemes = make_proof_list(p, ast->axiomSchemes);
     }
   return !t;
