@@ -34,7 +34,7 @@
 
 %token NAME_SEPARATOR
 %token RIGHT_PARENTHESIS
-%token LEFT_BRACE RIGHT_BRACE LEFT_TUPLE RIGHT_TUPLE
+%token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_TUPLE RIGHT_TUPLE
 %token <rkVal> REASON_KIND
 
 %precedence <lopVal> QUANTIFIER
@@ -52,6 +52,7 @@
 %type  <formulaVal> tuple
 %type  <formulaVal> operatorDefinition
 %type  <formulaVal> constant
+%type  <formulaVal> funcApply
 %type  <jflVal> justifiedFormulas
 %type  <jVal> justifiedFormula
 %type  <rVal> reason
@@ -213,7 +214,20 @@ NAME { // operator or variable as a leaf of this formula
 		    make_formula_list($2, 0),
 		    ast->file,
 		    @1.first_line); }
-| setDef | tuple
+| setDef | tuple | funcApply
+;
+
+funcApply: NAME LEFT_BRACKET formula RIGHT_BRACKET {
+  formula* funcFormula = make_formula(lnone,
+				      $1,
+				      (struct formula_list*)0,
+				      ast->file,
+				      @1.first_line);
+  $$ = make_formula(funcApply, (char*)0,
+		    make_formula_list(funcFormula, make_formula_list($3, 0)),
+		    ast->file,
+		    @1.first_line);
+}
 ;
 
 justifiedFormula:

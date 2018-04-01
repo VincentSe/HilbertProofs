@@ -76,6 +76,8 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 ")"   { return RIGHT_PARENTHESIS; }
 "{"   { return LEFT_BRACE; }
 "}"   { return RIGHT_BRACE; }
+"["   { return LEFT_BRACKET; }
+"]"   { return RIGHT_BRACKET; }
 "<<"  { return LEFT_TUPLE; }
 ">>"  { return RIGHT_TUPLE; }
 \n+   { yylineno += strlen(yytext); }

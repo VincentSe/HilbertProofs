@@ -791,6 +791,9 @@ QED
 IsFunction(f) == IsGraph(f)
    /\ \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
 
+\* The application of functions :
+f[x] == CHOOSE y : <<x,y>> \in f
+
 (*
    The class of orders : graphs that are reflexive, symmetric and transitive.
 *)

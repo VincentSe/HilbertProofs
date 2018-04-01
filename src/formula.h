@@ -32,6 +32,7 @@ enum builtin_operator
     setEnumerate, // definition of a set by its elements, like {2, 8, 13}
     setSeparation,
     tuple,
+    funcApply,
     binIntersect, binUnion, unaryUnion, powerset,
 
     plus, cartesianProduct,
