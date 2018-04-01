@@ -485,8 +485,6 @@ QED
 
 { c, d } == CHOOSE b : \A y : y \in b <=> (y = c \/ y = d)
 
-x \union y == UNION { x, y }
-
 pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
 THEOREM pairExists
 PROOF
@@ -662,6 +660,26 @@ b = c => b = c   BECAUSE ImplyOneself;
 sameFirstPairs   BECAUSE GENERALIZATION;
 QED
 
+\* The pair allows to define the union of two sets
+x \union y == UNION { x, y }
+
+unionBigger == \A x : \A y : x \subseteq (x \union y)
+THEOREM unionBigger
+PROOF
+VARIABLES a,b,c,d,x,y,z;
+pairExists   BECAUSE THEOREM;
+x \in { x, y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
+x = x   BECAUSE E_SCHEME;
+x = x \/ x = y   BECAUSE PT9;
+x \in {x,y}   BECAUSE MODUS_PONENS;
+inInUnion   BECAUSE THEOREM;
+(z \in x /\ x \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- x, c <- {x,y});
+z \in x => (z \in x /\ x \in {x,y})   BECAUSE AndTrueEnd;
+z \in x => z \in (x \union y)   BECAUSE TransitImplication;
+unionBigger   BECAUSE GENERALIZATION;
+QED
+
+
 (* Tuples *)
 << c, d >> == { { c } , {c,d} }
 
@@ -816,13 +834,38 @@ cartesianProductExists == \A i : \A j : \A x :
 
 THEOREM cartesianProductExists
 PROOF
-VARIABLES a,i,j;
-\* By separation in UNION UNION (x \union y)
+VARIABLES a,c,d,i,j,u,v,x,y,z;
+\* By separation in SUBSET SUBSET (x \union y)
 (\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
    <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in UNION UNION (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE \A(a <- UNION UNION (i \union j));
-\* TODO
+\E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE \A(a <- SUBSET SUBSET (i \union j));
+\* Proof that <<u,v>> \subseteq SUBSET (i \union j), ie that {u} \in SUBSET (i \union j),
+\* ie that {u} \subseteq (i \union j)
+unionBigger   BECAUSE THEOREM;
+i \subseteq (i \union j)   BECAUSE \A(x <- i, y <- j);
+u \in i => u \in (i \union j)   BECAUSE \A(z <- u);
+singletonExists   BECAUSE THEOREM;
+z \in { u } <=> z = u   BECAUSE \A(a <-u, x <- z);
+z \in { u } => z = u   BECAUSE EquivToImpl;
+(u \in i /\ z \in {u}) => (u \in (i \union j) /\ z = u)   BECAUSE MergeImplicationsAnd;
+z = u => (z \in (i \union j) <=> u \in (i \union j))   BECAUSE E_SCHEME;
+(z \in (i \union j) <=> u \in (i \union j)) => (u \in (i \union j) => z \in (i \union j))   BECAUSE EquivToImplReverse;
+z = u => (u \in (i \union j) => z \in (i \union j))   BECAUSE TransitImplication;
+(z = u /\ u \in (i \union j)) => z \in (i \union j)   BECAUSE HypoImplToAnd;
+(u \in (i \union j) /\ z = u) => (z = u /\ u \in (i \union j))   BECAUSE AndSymmetry;
+(u \in (i \union j) /\ z = u) => z \in (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ z \in {u}) => z \in (i \union j)   BECAUSE TransitImplication;
+u \in i => (z \in {u} => z \in (i \union j))   BECAUSE HypoAndToImpl;
+\A z : u \in i => (z \in {u} => z \in (i \union j))   BECAUSE GENERALIZATION;
+u \in i => {u} \subseteq (i \union j)   BECAUSE Q_SCHEME;
+
+powersetExists   BECAUSE AXIOM;
+{u} \in SUBSET (i \union j) <=> {u} \subseteq (i \union j)   BECAUSE \A(x <- i \union j, z <- {u});
+{u} \subseteq (i \union j) => {u} \in SUBSET (i \union j)   BECAUSE EquivToImplReverse;
+u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+
+\* TODO {u,v} \in SUBSET (i \union j)
 QED
 
 (*
