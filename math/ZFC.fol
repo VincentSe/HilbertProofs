@@ -311,8 +311,30 @@ a \in UNION c <=> \E t : (t \in c /\ a \in t)   BECAUSE \A(b <- c, z <- a);
 inInUnion   BECAUSE GENERALIZATION;
 QED
 
-\* \* The intersection of two sets is the set of common elements
-\* x \intersect y == CHOOSE z : \A a : (a \in z <=> (a \in x /\ a \in y))
+\* The intersection of two sets is the set of common elements
+u \intersect v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \in v)
+
+LOCAL dropRedundantAnd(a,b) == (a /\ b) <=> (a /\ (a /\ b))
+PROPO_TAUTO dropRedundantAnd
+
+intersectionExists == \A u : \A v : \A x :
+   x \in (u \intersect v) <=> (x \in u /\ x \in v)
+THEOREM intersectionExists
+PROOF
+VARIABLES a,b,u,v,x;
+\* By separation in u
+(\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)) <=> \E b : (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
+\E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
+(x \in u /\ x \in v) <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE dropRedundantAnd;
+(x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (x \in b <=> (x \in u /\ x \in v))   BECAUSE TransitEquiv2;
+(\A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\E b : \A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
+\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
+intersectionExists   BECAUSE GENERALIZATION;
+QED
+
 
 SUBSET x == CHOOSE y : \A z : z \in y <=> z \subseteq x
 
@@ -714,18 +736,10 @@ sameFirstPairs   BECAUSE THEOREM;
 tupleDecomposition   BECAUSE GENERALIZATION;
 QED
 
-\* The class of graphs
+\* The class of oriented graphs, ie sets of couples.
 IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
 
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
-
-\* The nodes of a graph, ie its inputs and outputs,
-\* can be retrieved as its double union
-Nodes(x) == UNION UNION x
-LOCAL NodesIsInputOutputs == \A g : IsGraph(g)
-   => \A x : x \in Nodes(g) <=> \E y : <<x,y>> \in g \/ <<y,x>> \in g
-THEOREM NodesIsInputOutputs
-
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 
 domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
@@ -781,18 +795,32 @@ IsFunction(f) == IsGraph(f)
    The class of orders : graphs that are reflexive, symmetric and transitive.
 *)
 IsOrder(o) == IsGraph(o)
-   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)) \* reflexivity
-   /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o) \* transitivity
-   /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y) \* symmetry
+   \* reflexivity
+   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   \* transitivity
+   /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
+   \* symmetry
+   /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
 
 (*
    Definition of the cartesian product, the set of couples between two sets.
 *)
-x \X y == CHOOSE z : \A a : a \in z <=> \E u : \E v : u \in x /\ v \in y /\ a = <<u,v>>
+i \X j == CHOOSE b : \A x : x \in b
+   <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>
 
-cartesianProductExists == \A x : \A y : \A a : a \in x \X y <=> \E u : \E v : u \in x /\ v \in y /\ a = <<u,v>>
+cartesianProductExists == \A i : \A j : \A x :
+   x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>
 
 THEOREM cartesianProductExists
+PROOF
+VARIABLES a,i,j;
+\* By separation in UNION UNION (x \union y)
+(\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
+   <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in UNION UNION (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE \A(a <- UNION UNION (i \union j));
+\* TODO
+QED
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common

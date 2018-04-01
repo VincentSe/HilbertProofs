@@ -264,6 +264,7 @@ short is_custom_operator(const formula* op)
       || op->builtInOp == powerset
       || op->builtInOp == plus
       || op->builtInOp == setEnumerate  // empty set, singleton, pairs, ...
+      || op->builtInOp == cartesianProduct
       || op->builtInOp == tuple)
     return 1;
 

@@ -831,9 +831,15 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
 		       scheme->formulaToProve->definingFormula, // contains a formula variable F
 		       (struct string_list*)0,
 		       /*out*/ substitutions, // find a substitution for F
-		       1)
-	|| !substitutions[0].variable)
+		       1))
       return 0;
+
+    unsigned int substCount = 0;
+    while (substitutions[substCount].variable)
+      substCount++;
+
+    if (substCount != 1)
+      return 0; // don't substitute other free variables than F
 
     // Check all forbidden variables are bound
     const struct string_list* var = scheme->variables;
