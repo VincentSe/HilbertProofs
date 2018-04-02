@@ -1,5 +1,7 @@
 (*
    This file contains the basic definitions for mathematics, the ZFC axioms of set theory.
+   For more information : en.wikipedia.org/wiki/Zermelo-Fraenkel_set_theory.
+   
    The membership relation \in is declared (without a definition because it is primitive),
    then the inclusion relation \subseteq.
 
@@ -7,9 +9,10 @@
    of separation and replacement are also defined.
 
    The operators defined are the empty set, singleton of a set, pair of sets, couples,
-   union of 2 sets.
+   union of two sets, intersection of two sets, cartesian product and disjoint union.
 
-   The relations defined are graphs and functions.
+   The relations defined are graphs, functions and orders. The function application
+   operator is also defined.
 *)
 
 EXTENDS Tautologies
@@ -660,6 +663,38 @@ b = c => b = c   BECAUSE ImplyOneself;
 sameFirstPairs   BECAUSE GENERALIZATION;
 QED
 
+pairInclusion == \A x : \A y : \A t : (x \in t /\ y \in t) => {x,y} \subseteq t
+THEOREM pairInclusion
+PROOF
+VARIABLES a,c,d,t,x,y,z;
+z = x => (z \in t <=> x \in t)   BECAUSE E_SCHEME;
+(z \in t <=> x \in t) => (x \in t => z \in t)   BECAUSE EquivToImplReverse;
+z = x => (x \in t => z \in t)   BECAUSE TransitImplication;
+(z = x /\ x \in t) => z \in t   BECAUSE HypoImplToAnd;
+(x \in t /\ z = x) => (z = x /\ x \in t)   BECAUSE AndSymmetry;
+(x \in t /\ z = x) => z \in t   BECAUSE TransitImplication;
+x \in t => (z = x => z \in t)   BECAUSE HypoAndToImpl;
+z = y => (z \in t <=> y \in t)   BECAUSE E_SCHEME;
+(z \in t <=> y \in t) => (y \in t => z \in t)   BECAUSE EquivToImplReverse;
+z = y => (y \in t => z \in t)   BECAUSE TransitImplication;
+(z = y /\ y \in t) => z \in t   BECAUSE HypoImplToAnd;
+(y \in t /\ z = y) => (z = y /\ y \in t)   BECAUSE AndSymmetry;
+(y \in t /\ z = y) => z \in t   BECAUSE TransitImplication;
+y \in t => (z = y => z \in t)   BECAUSE HypoAndToImpl;
+
+(x \in t /\ y \in t) => ((z = x => z \in t) /\ (z = y => z \in t))   BECAUSE MergeImplicationsAnd;
+((z = x => z \in t) /\ (z = y => z \in t)) => ((z=x \/ z=y) => z \in t)   BECAUSE FactorAndImpl;
+(x \in t /\ y \in t) => ((z = x \/ z = y) => z \in t)   BECAUSE TransitImplication;
+pairExists   BECAUSE THEOREM;
+z \in { x, y } <=> (z = x \/ z = y)   BECAUSE \A(c <- x, d <- y, y <- z);
+z \in { x, y } => (z = x \/ z = y)   BECAUSE EquivToImpl;
+((z = x \/ z = y) => z \in t) => (z \in {x,y} => z \in t)   BECAUSE TransitImplication;
+(x \in t /\ y \in t) => (z \in {x,y} => z \in t)   BECAUSE TransitImplication;
+\A z : (x \in t /\ y \in t) => (z \in {x,y} => z \in t)   BECAUSE GENERALIZATION;
+(x \in t /\ y \in t) => {x,y} \subseteq t   BECAUSE Q_SCHEME;
+pairInclusion   BECAUSE GENERALIZATION;
+QED
+
 \* The pair allows to define the union of two sets
 x \union y == UNION { x, y }
 
@@ -834,7 +869,7 @@ cartesianProductExists == \A i : \A j : \A x :
 
 THEOREM cartesianProductExists
 PROOF
-VARIABLES a,c,d,i,j,u,v,x,y,z;
+VARIABLES a,c,d,i,j,t,u,v,x,y,z;
 \* By separation in SUBSET SUBSET (x \union y)
 (\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
    <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE;
@@ -866,6 +901,11 @@ powersetExists   BECAUSE AXIOM;
 u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
 
 \* TODO {u,v} \in SUBSET (i \union j)
+j \subseteq (j \union i)   BECAUSE \A(x <- j, y <- i);
+v \in j => v \in (j \union i)   BECAUSE \A(z <- v);
+pairInclusion   BECAUSE THEOREM;
+(u \in (i \union j) /\ v \in (i \union j)) => {u,v} \subseteq (i \union j)   BECAUSE \A(x <- u, y <- v, t <- i \union j);
+z = v => (z \in (i \union j) <=> v \in (i \union j))   BECAUSE E_SCHEME;
 QED
 
 (*

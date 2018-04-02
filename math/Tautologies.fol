@@ -123,6 +123,9 @@ PROPO_TAUTO CombineImplicationsStart
 CombineImplicationsEnd(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
 PROPO_TAUTO CombineImplicationsEnd
 
+FactorAndImpl(a,b,c) == ((a => c) /\ (b => c)) => ((a \/ b) => c)
+PROPO_TAUTO FactorAndImpl
+
 HypoImplToAnd(a,b,c) == (a => (b => c)) => ((a /\ b) => c)
 PROPO_TAUTO HypoImplToAnd
 
