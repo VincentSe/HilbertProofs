@@ -899,7 +899,7 @@ cartesianProductExists == \A i : \A j : \A x :
 
 THEOREM cartesianProductExists
 PROOF
-VARIABLES a,c,d,i,j,t,u,v,x,y,z;
+VARIABLES a,b,c,d,i,j,t,u,v,x,y,z;
 \* By separation in SUBSET SUBSET (x \union y)
 (\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
    <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE;
@@ -924,13 +924,12 @@ z = u => (u \in (i \union j) => z \in (i \union j))   BECAUSE TransitImplication
 u \in i => (z \in {u} => z \in (i \union j))   BECAUSE HypoAndToImpl;
 \A z : u \in i => (z \in {u} => z \in (i \union j))   BECAUSE GENERALIZATION;
 u \in i => {u} \subseteq (i \union j)   BECAUSE Q_SCHEME;
-
 powersetExists   BECAUSE AXIOM;
 {u} \in SUBSET (i \union j) <=> {u} \subseteq (i \union j)   BECAUSE \A(x <- i \union j, z <- {u});
 {u} \subseteq (i \union j) => {u} \in SUBSET (i \union j)   BECAUSE EquivToImplReverse;
 u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
 
-\* TODO {u,v} \in SUBSET (i \union j)
+\* Proof of {u,v} \in SUBSET (i \union j)
 j \subseteq (j \union i)   BECAUSE \A(x <- j, y <- i);
 unionSymmetry   BECAUSE THEOREM;
 (i \union j) = (j \union i)   BECAUSE \A(x <- i, y <- j);
@@ -943,6 +942,51 @@ v \in j => v \in (i \union j)   BECAUSE \A(z <- v);
 pairInclusion   BECAUSE THEOREM;
 (u \in (i \union j) /\ v \in (i \union j)) => {u,v} \subseteq (i \union j)   BECAUSE \A(x <- u, y <- v, t <- i \union j);
 (u \in i /\ v \in j) => {u,v} \subseteq (i \union j)   BECAUSE TransitImplication;
+{u,v} \in SUBSET (i \union j) <=> {u,v} \subseteq (i \union j)   BECAUSE \A(x <- i \union j, z <- {u,v});
+{u,v} \subseteq (i \union j) => {u,v} \in SUBSET (i \union j)   BECAUSE EquivToImplReverse;
+(u \in i /\ v \in j) => {u,v} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+
+\* Proof of (u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)
+(u \in i /\ v \in j) => u \in i   BECAUSE DropAndRight;
+(u \in i /\ v \in j) => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))   BECAUSE CombineImplicationsEnd;
+({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))
+   => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE \A(x <- {u}, y <- {u,v}, t <- SUBSET (i \union j));
+(u \in i /\ v \in j) => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE TransitImplication;
+<<u,v>> \in SUBSET SUBSET (i \union j)
+   <=> <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE \A(x <- SUBSET (i \union j), z <- <<u,v>>);
+<<u,v>> \subseteq SUBSET (i \union j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE EquivToImplReverse;
+(u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+
+x = <<u,v>> => (x \in SUBSET SUBSET (i \union j) <=> <<u,v>> \in SUBSET SUBSET (i \union j))   BECAUSE E_SCHEME;
+(x \in SUBSET SUBSET (i \union j) <=> <<u,v>> \in SUBSET SUBSET (i \union j))
+   => (<<u,v>> \in SUBSET SUBSET (i \union j) => x \in SUBSET SUBSET (i \union j))   BECAUSE EquivToImplReverse;
+x = <<u,v>> => (<<u,v>> \in SUBSET SUBSET (i \union j) => x \in SUBSET SUBSET (i \union j))   BECAUSE TransitImplication;
+<<u,v>> \in SUBSET SUBSET (i \union j) => (x = <<u,v>> => x \in SUBSET SUBSET (i \union j))   BECAUSE SwitchHypos;
+(u \in i /\ v \in j) => (x = <<u,v>> => x \in SUBSET SUBSET (i \union j))   BECAUSE TransitImplication;
+(u \in i /\ v \in j /\ x = <<u,v>>) => x \in SUBSET SUBSET (i \union j)   BECAUSE HypoImplToAnd;
+(\E v : u \in i /\ v \in j /\ x = <<u,v>>) => \E v : x \in SUBSET SUBSET (i \union j)   BECAUSE Q_SCHEME;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => \E u : \E v : x \in SUBSET SUBSET (i \union j)   BECAUSE Q_SCHEME;
+(\E u : \E v : x \in SUBSET SUBSET (i \union j)) => \E v : x \in SUBSET SUBSET (i \union j)   BECAUSE Q_SCHEME;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => \E v : x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+(\E v : x \in SUBSET SUBSET (i \union j)) => x \in SUBSET SUBSET (i \union j)   BECAUSE Q_SCHEME;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE ImplyOneself;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
+   => (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE CombineImplicationsEnd;
+(x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))
+   => (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE DropAndLeft;
+(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
+   <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE IntroEquiv;
+(x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
+   => (x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE TransitEquiv2;
+(\A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
+   => (\A x : x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
+   => (\E b : \A x : x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) BECAUSE MODUS_PONENS;
+\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>   BECAUSE MODUS_PONENS;
+cartesianProductExists   BECAUSE GENERALIZATION;
 QED
 
 (*

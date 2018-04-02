@@ -454,10 +454,12 @@ unsigned char equality_implies_equivalence_scheme(const formula* f)
 	return 0;
       implies = get_first_operand(firstOp);
       eq = get_first_operand(implies);
-      const char* x = get_first_operand(eq)->name;
-      if (!x
-	  || strcmp(f->name, x) != 0 // x
-	  || strcmp(firstOp->name, get_second_operand(eq)->name) != 0) // y
+      const formula* x = get_first_operand(eq);
+      const formula* y = get_second_operand(eq);
+      if (x->builtInOp != variable
+	  || y->builtInOp != variable
+	  || strcmp(f->name, x->name) != 0 // x
+	  || strcmp(firstOp->name, y->name) != 0) // y
 	return 0;
     }
   else
