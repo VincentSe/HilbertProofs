@@ -438,6 +438,7 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
 }
 
 // Axiom scheme \A x : \A y : x = y => (s <=> s(x <- y))
+// and scheme   \A x : \A y : x = y => (s  =  s(x <- y))
 // for all formulas s. The substitution must be free,
 // otherwise we would take as an axiom :
 // x = y => ((\A y : x = y) <=> \A y : y = y)
@@ -453,7 +454,9 @@ unsigned char equality_implies_equivalence_scheme(const formula* f)
 	return 0;
       implies = get_first_operand(firstOp);
       eq = get_first_operand(implies);
-      if (strcmp(f->name, get_first_operand(eq)->name) != 0 // x
+      const char* x = get_first_operand(eq)->name;
+      if (!x
+	  || strcmp(f->name, x) != 0 // x
 	  || strcmp(firstOp->name, get_second_operand(eq)->name) != 0) // y
 	return 0;
     }
@@ -464,7 +467,7 @@ unsigned char equality_implies_equivalence_scheme(const formula* f)
   const formula* firstFirstOp = get_first_operand(eq);
   if (implies->builtInOp == limplies
       && eq->builtInOp == equal
-      && secondOp->builtInOp == lequiv
+      && (secondOp->builtInOp == lequiv || secondOp->builtInOp == equal)
       && firstFirstOp->builtInOp == variable)
     {
       variable_substitution subs[2];

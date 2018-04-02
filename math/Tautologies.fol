@@ -16,17 +16,17 @@ PROPO_TAUTO PT1
 PT2(a,b,c) == (a => (b => c)) => ((a => b) => (a => c))
 PROPO_TAUTO PT2
 
-PT3(a) == a => ~~a
-PROPO_TAUTO PT3
+IntroNotNot(a) == a => ~~a
+PROPO_TAUTO IntroNotNot
 
-PT4(a) == ~~a => a
-PROPO_TAUTO PT4
+DropNotNot(a) == ~~a => a
+PROPO_TAUTO DropNotNot
 
 Contraposition(a,b) == (a => b) => (~b => ~a)
 PROPO_TAUTO Contraposition
 
-PT6(a,b) == a => (b => (a /\ b))
-PROPO_TAUTO PT6
+IntroAnd(a,b) == a => (b => (a /\ b))
+PROPO_TAUTO IntroAnd
 
 DropAndRight(a,b) == (a /\ b) => a
 PROPO_TAUTO DropAndRight

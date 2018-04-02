@@ -82,12 +82,12 @@ p \subseteq {} => p = {}   BECAUSE \A(x <- p);
 (p \subseteq {} => p = {}) <=> (~(p \subseteq {}) \/ p = {})   BECAUSE BooleanImplication;
 ~(p \subseteq {}) \/ p = {}   BECAUSE MODUS_PONENS;
 p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
-~~(p = {} \/ ~(p \subseteq {}))   BECAUSE PT3;
+~~(p = {} \/ ~(p \subseteq {}))   BECAUSE IntroNotNot;
 ~(p = {} \/ ~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE Explosion;
 ~(p = {} \/ ~(p \subseteq {})) <=> (p # {} /\ ~~(p \subseteq {}))   BECAUSE DistribNotOr;
 (p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE EquivToImplReverse;
 (p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
-p \subseteq {} => ~~(p \subseteq {})   BECAUSE PT3;
+p \subseteq {} => ~~(p \subseteq {})   BECAUSE IntroNotNot;
 p # {} => p # {}   BECAUSE ImplyOneself;
 (p # {} /\ p \subseteq {}) => (p # {} /\ ~~(p \subseteq {}))   BECAUSE MergeImplicationsAnd;
 (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
@@ -95,9 +95,9 @@ p # {} => p # {}   BECAUSE ImplyOneself;
 
 \* Conclude with PT6
 (\A a : a \in {} => a \notin a)
-   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE PT6;
-WellOrderedByIn( {} )   BECAUSE PT6;
-ordinalZero   BECAUSE PT6;
+   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAnd;
+WellOrderedByIn( {} )   BECAUSE IntroAnd;
+ordinalZero   BECAUSE IntroAnd;
 QED
 
 \* The +1 operation on ordinals

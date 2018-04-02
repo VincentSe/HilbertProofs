@@ -27,7 +27,7 @@ PROOF
 VARIABLES x;
 (\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
 ~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
-x = x => ~~(x = x)   BECAUSE PT3;
+x = x => ~~(x = x)   BECAUSE IntroNotNot;
 x = x   BECAUSE E_SCHEME;
 ~~(x = x)   BECAUSE MODUS_PONENS;
 ~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
@@ -219,7 +219,7 @@ emptyIncludedInAny   BECAUSE THEOREM;
 {} \subseteq x   BECAUSE \A(x <- x);
 bothInclusions BECAUSE THEOREM;
 (x \subseteq {} /\ {} \subseteq x) => x = {}   BECAUSE \A(a <- x, b <- {});
-x \subseteq {} => ({} \subseteq x /\ x \subseteq {})   BECAUSE PT6;
+x \subseteq {} => ({} \subseteq x /\ x \subseteq {})   BECAUSE IntroAnd;
 ({} \subseteq x /\ x \subseteq {}) => (x \subseteq {} /\ {} \subseteq x)   BECAUSE AndSymmetry;
 x \subseteq {} => (x \subseteq {} /\ {} \subseteq x)   BECAUSE TransitImplication;
 x \subseteq {} => x = {}   BECAUSE TransitImplication;
@@ -284,13 +284,13 @@ russellParadox   BECAUSE THEOREM;
 ~(\A x : ~\A y : y \in x <=> ~(y \in y)) => (\E x : \A y : y \in x <=> ~(y \in y))   BECAUSE EquivToImplReverse;
 russellParadox => ~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE Contraposition;
 ~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE MODUS_PONENS;
-\A x : ~\A y : y \in x <=> ~(y \in y)   BECAUSE PT4;
+\A x : ~\A y : y \in x <=> ~(y \in y)   BECAUSE DropNotNot;
 ~\A y : y \in b <=> ~(y \in y)   BECAUSE \A(x <- b);
 \A b : ~\A y : y \in b <=> ~(y \in y)   BECAUSE GENERALIZATION;
 (\E b : \A y : y \in b <=> ~(y \in y)) <=> ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
 (\E b : \A y : y \in b <=> ~(y \in y)) => ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE EquivToImpl;
 ~~(\A b : ~\A y : y \in b <=> ~(y \in y)) => ~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Contraposition;
-~~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE PT3;
+~~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE IntroNotNot;
 ~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
 noSetOfSets  BECAUSE MODUS_PONENS;
 QED
@@ -531,7 +531,7 @@ ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE ImplyEquivTrue;
 (\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
 ordinalOne = {} => {} \notin ordinalOne   BECAUSE TransitImplication;
 ~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
-{} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE PT3;
+{} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE IntroNotNot;
 {} \in ordinalOne => ordinalOne # {}   BECAUSE TransitImplication;
 ordinalOne # {}   BECAUSE MODUS_PONENS;
 
@@ -618,6 +618,25 @@ y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE MODUS_PONENS;
 \A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
 pairExists   BECAUSE GENERALIZATION;
+QED
+
+pairSymmetry == \A a : \A b : {a, b} = {b, a}
+THEOREM pairSymmetry
+PROOF
+VARIABLES a,b,c,d,x,y;
+pairExists   BECAUSE THEOREM;
+x \in { a, b } <=> (x = a \/ x = b)   BECAUSE \A(c <- a, d <- b, y <- x);
+x \in { b, a } <=> (x = b \/ x = a)   BECAUSE \A(c <- b, d <- a, y <- x);
+(x = a \/ x = b) => (x = b \/ x = a)   BECAUSE OrSymmetry;
+(x = b \/ x = a) => (x = a \/ x = b)   BECAUSE OrSymmetry;
+(x = a \/ x = b) <=> (x = b \/ x = a)   BECAUSE IntroEquiv;
+x \in { a, b } <=> (x = b \/ x = a)   BECAUSE   TransitEquiv;
+x \in { a, b } <=> x \in { b, a }   BECAUSE   TransitEquiv2;
+\A x : x \in { a, b } <=> x \in { b, a }   BECAUSE   GENERALIZATION;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in {a,b} <=> x \in {b,a}) => {a,b} = {b,a}   BECAUSE \A(a <- {a,b}, b <- {b,a});
+{a,b} = {b,a}   BECAUSE MODUS_PONENS;
+pairSymmetry   BECAUSE GENERALIZATION;
 QED
 
 sameFirstPairs == \A a : \A b : \A c : {a,b} = {a,c} => b = c
@@ -714,6 +733,17 @@ z \in x => z \in (x \union y)   BECAUSE TransitImplication;
 unionBigger   BECAUSE GENERALIZATION;
 QED
 
+unionSymmetry == \A x : \A y : (x \union y) = (y \union x)
+THEOREM unionSymmetry
+PROOF
+VARIABLES a,b,x,y;
+pairSymmetry   BECAUSE THEOREM;
+{x, y} = {y, x}   BECAUSE \A(a <- x, b <- y);
+\A x : \A y : x = y => (UNION x = UNION y)   BECAUSE E_SCHEME;
+{x, y} = {y, x} => (UNION {x,y} = UNION {y,x})   BECAUSE \A(x <- {x,y}, y <- {y,x});
+(x \union y) = (y \union x)   BECAUSE MODUS_PONENS;
+unionSymmetry   BECAUSE GENERALIZATION;
+QED
 
 (* Tuples *)
 << c, d >> == { { c } , {c,d} }
@@ -811,7 +841,7 @@ pairExists   BECAUSE THEOREM;
 {x} \in <<x,y>>   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 ({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
-<<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE PT6;
+<<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAnd;
 <<x,y>> \in g => {x} \in UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => \E y : {x} \in UNION g   BECAUSE Q_SCHEME;
 (\E y : {x} \in UNION g) => {x} \in UNION g   BECAUSE Q_SCHEME;
@@ -821,7 +851,7 @@ x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
 x = x   BECAUSE E_SCHEME;
 x \in { x }   BECAUSE MODUS_PONENS;
 (x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
-{x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE PT6;
+{x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAnd;
 {x} \in UNION g => x \in UNION UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => IsDefinedOn(g,x)   BECAUSE ImplyOneself;
@@ -902,10 +932,17 @@ u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
 
 \* TODO {u,v} \in SUBSET (i \union j)
 j \subseteq (j \union i)   BECAUSE \A(x <- j, y <- i);
-v \in j => v \in (j \union i)   BECAUSE \A(z <- v);
+unionSymmetry   BECAUSE THEOREM;
+(i \union j) = (j \union i)   BECAUSE \A(x <- i, y <- j);
+\A x : \A y : x = y => (j \subseteq x <=> j \subseteq y)   BECAUSE E_SCHEME;
+(i \union j) = (j \union i) => (j \subseteq (i \union j) <=> j \subseteq (j \union i))  BECAUSE \A(x <- i \union j, y <- j \union i);
+j \subseteq (i \union j) <=> j \subseteq (j \union i)  BECAUSE MODUS_PONENS;
+j \subseteq (i \union j)   BECAUSE MODUS_PONENS;
+v \in j => v \in (i \union j)   BECAUSE \A(z <- v);
+(u \in i /\ v \in j) => (u \in (i \union j) /\ v \in (i \union j))   BECAUSE MergeImplicationsAnd;
 pairInclusion   BECAUSE THEOREM;
 (u \in (i \union j) /\ v \in (i \union j)) => {u,v} \subseteq (i \union j)   BECAUSE \A(x <- u, y <- v, t <- i \union j);
-z = v => (z \in (i \union j) <=> v \in (i \union j))   BECAUSE E_SCHEME;
+(u \in i /\ v \in j) => {u,v} \subseteq (i \union j)   BECAUSE TransitImplication;
 QED
 
 (*
