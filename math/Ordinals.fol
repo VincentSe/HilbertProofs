@@ -1,10 +1,17 @@
 EXTENDS ZFC
 
 (*
-   The class of well-orders, orders where each subset has a minimum. These
-      - start with the natural numbers (the finite well-orders)
-      - are stable under disjoint unions, which they call addition
-      - are stable under cartesian products, which they call multiplication
+   The class of well-orders, orders where each nonempty subset has a minimum.
+   They allow to count :
+      - in the well-order, take the minimum and call it zero
+      - in the nonzero elements of the well-order, take the minimum and call it one
+      - in the elements of the well-order that are neither zero nor one,
+        take the minimum and call it two
+      - iterate
+   
+   For this reason, some well-orders (the finite ones) define the natural numbers.
+   The well-orders are stable under disjoint unions, which they call addition.
+   They are also stable under cartesian products, which they call multiplication.
 *)
 IsWellOrder(w) == IsOrder(w)
    /\ (\A part : (part # {} /\ (\A x : x \in part => IsDefinedOn(w,x)))
