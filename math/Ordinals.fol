@@ -21,8 +21,8 @@ IsWellOrder(w) == IsOrder(w)
 \* This order simply pastes v after u.
 IsInWellOrderAddition(x,u,v) == \E m : \E n :
    (m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
-     \/ (<<m,n>> \in u /\ x = << <<m,{}>>, <<n,{}>> >>)
-     \/ (<<m,n>> \in v /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+     \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
 wellOrderAddition(u,v) == CHOOSE b : \A x : x \in b <=> IsInWellOrderAddition(x,u,v)
 
 woAddDomain(u,v) == disjointUnion(Domain(u), Domain(v))
@@ -44,6 +44,7 @@ disjUnionSecondInc   BECAUSE THEOREM;
 m \in Domain(v) => <<m,ordinalOne>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- m);
 n \in Domain(v) => <<n,ordinalOne>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- n);
 
+\* First case m \in Domain(u) /\ n \in Domain(v)
 (m \in Domain(u) /\ n \in Domain(v)) => (<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
 cartesianProductInc   BECAUSE THEOREM;
 (<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))
@@ -52,15 +53,109 @@ cartesianProductInc   BECAUSE THEOREM;
    => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
 x = << <<m,{}>>, <<n,ordinalOne>> >>
    => (x \in (woAddDomain(u,v) \X woAddDomain(u,v)) <=> << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE E_SCHEME;
-\* TODO
+(x = << <<m,{}>>, <<n,ordinalOne>> >> /\ << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE HypoEquivToAndReverse;
+x = << <<m,{}>>, <<n,ordinalOne>> >> => x = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE ImplyOneself;
+(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+   => (<< <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)   BECAUSE MergeImplicationsAnd;
+(<< <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+   => (x = << <<m,{}>>, <<n,ordinalOne>> >> /\ << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE AndSymmetry;
+(<< <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+   
+\* Second case <<m,n>> \in u
+(m \in Domain(u) /\ n \in Domain(u)) => (<<m,{}>> \in woAddDomain(u,v) /\ <<n,{}>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
+(<<m,{}>> \in woAddDomain(u,v) /\ <<n,{}>> \in woAddDomain(u,v))
+   => << <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,{}>>, b <- <<n,{}>>);
+(m \in Domain(u) /\ n \in Domain(u))
+   => << <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+x = << <<m,{}>>, <<n,{}>> >>
+   => (x \in (woAddDomain(u,v) \X woAddDomain(u,v)) <=> << <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE E_SCHEME;
+(x = << <<m,{}>>, <<n,{}>> >> /\ << <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE HypoEquivToAndReverse;
+x = << <<m,{}>>, <<n,{}>> >> => x = << <<m,{}>>, <<n,{}>> >>   BECAUSE ImplyOneself;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)
+   => (<< <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,{}>> >>)   BECAUSE MergeImplicationsAnd;
+(<< <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,{}>> >>)
+   => (x = << <<m,{}>>, <<n,{}>> >> /\ << <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE AndSymmetry;
+(<< <<m,{}>>, <<n,{}>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,{}>>, <<n,{}>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+   => (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)   BECAUSE DropAndRight;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+
+\* Thirs case <<m,n>> \in v
+(m \in Domain(v) /\ n \in Domain(v)) => (<<m,ordinalOne>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
+(<<m,ordinalOne>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))
+   => << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,ordinalOne>>, b <- <<n,ordinalOne>>);
+(m \in Domain(v) /\ n \in Domain(v))
+   => << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>
+   => (x \in (woAddDomain(u,v) \X woAddDomain(u,v)) <=> << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE E_SCHEME;
+(x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE HypoEquivToAndReverse;
+x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>   BECAUSE ImplyOneself;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+   => (<< <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)   BECAUSE MergeImplicationsAnd;
+(<< <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+   => (x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE AndSymmetry;
+(<< <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
+   => (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)   BECAUSE DropAndRight;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
+   => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+
+\* Drop the holding set in the separation
+((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+    \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u))
+ => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE CombineImplicationsStart;
+((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+    \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+    \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
+ => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE CombineImplicationsStart;
+(\E n : (m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+    \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+    \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
+ => \E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE Q_SCHEME;
+IsInWellOrderAddition(x,u,v) => \E m : \E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE Q_SCHEME;
+(\E m : \E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))) => \E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))  BECAUSE Q_SCHEME;
+(\E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))) => x \in (woAddDomain(u,v) \X woAddDomain(u,v))  BECAUSE Q_SCHEME;
+IsInWellOrderAddition(x,u,v) => \E n : x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+IsInWellOrderAddition(x,u,v) => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+IsInWellOrderAddition(x,u,v) => IsInWellOrderAddition(x,u,v)   BECAUSE ImplyOneself;
+IsInWellOrderAddition(x,u,v) => ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) )   BECAUSE CombineImplicationsEnd;
+( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) ) => IsInWellOrderAddition(x,u,v)   BECAUSE DropAndLeft;
+IsInWellOrderAddition(x,u,v) <=> ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) )   BECAUSE IntroEquiv;
+(x \in b <=> ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) ))
+   => (x \in b <=> IsInWellOrderAddition(x,u,v) )   BECAUSE TransitEquiv2;
+(\A x : x \in b <=> ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) ))
+   => (\A x : x \in b <=> IsInWellOrderAddition(x,u,v) )   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v))) /\ IsInWellOrderAddition(x,u,v) ))
+   => (\E b : \A x : x \in b <=> IsInWellOrderAddition(x,u,v) )   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> IsInWellOrderAddition(x,u,v)   BECAUSE MODUS_PONENS;
+\A x : x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v)   BECAUSE MODUS_PONENS;
+wellOrderAdditionExists   BECAUSE GENERALIZATION;
 QED
 
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
 
 (*
-   Beginning of ordinals : special well-orders that represent all well-orders
-   by isomorphism.
+   At the moment, the addition and multiplication of well-orders are not commutative,
+   even for finite ones. wellOrderAddition(u,v) and wellOrderAddition(v,u) are
+   isomorphic as well-orders, but not equal.
+
+   It would be convenient to fix one representative in each well-order isomorphy
+   class, so that addition and multiplication get their usual properties. The
+   ordinals achieve that, they find canonical elements for the well-orders' domains.
 *)
 TransitiveSet(x) == \A a : a \in x => a \subseteq x
 

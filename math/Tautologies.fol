@@ -136,6 +136,12 @@ PROPO_TAUTO HypoImplToAnd
 HypoAndToImpl(a,b,c) == ((a /\ b) => c) => (a => (b => c))
 PROPO_TAUTO HypoAndToImpl
 
+HypoEquivToAnd(a,b,c) == (a => (b <=> c)) => ((a /\ b) => c)
+PROPO_TAUTO HypoEquivToAnd
+
+HypoEquivToAndReverse(a,b,c) == (a => (b <=> c)) => ((a /\ c) => b)
+PROPO_TAUTO HypoEquivToAndReverse
+
 SwitchHypos(a,b,c) == (a => (b => c)) => (b => (a => c))
 PROPO_TAUTO SwitchHypos
 

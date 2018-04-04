@@ -640,7 +640,7 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
     && find_previous_formula(statement, is_impl);
 }
 
-short existence_quantifier_axiom_schemes(const struct FormulaDList* statement)
+short quantifier_axiom_schemes(const struct FormulaDList* statement)
 {
   const formula* f = statement->jf->formula;
 
@@ -766,12 +766,6 @@ short existence_quantifier_axiom_schemes(const struct FormulaDList* statement)
 			   0,0,0))
 	return 1;
     }
-
-  printf("%s:%d: ",
-	 statement->jf->formula->file,
-	 statement->jf->formula->first_line);
-  print_formula(statement->jf->formula);
-  printf(" is not an instance of a quantifier axiom scheme\n");
   return 0;
 }
 
@@ -1005,7 +999,14 @@ short check_proof_statement(const struct FormulaDList* statement,
     case axiomScheme:
       return check_axiom_scheme_statement(statement, axiomSchemes);
     case quantifierScheme:
-      return existence_quantifier_axiom_schemes(statement);
+      if (quantifier_axiom_schemes(statement))
+	return 1;
+      printf("%s:%d: ",
+	     statement->jf->formula->file,
+	     statement->jf->formula->first_line);
+      print_formula(statement->jf->formula);
+      printf(" is not an instance of a quantifier axiom scheme\n");
+      return 0;
     case equalityScheme:
       return equality_axiom(statement->jf->formula);
     case forallInstance:
