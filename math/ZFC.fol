@@ -219,9 +219,7 @@ emptyIncludedInAny   BECAUSE THEOREM;
 {} \subseteq x   BECAUSE \A(x <- x);
 bothInclusions BECAUSE THEOREM;
 (x \subseteq {} /\ {} \subseteq x) => x = {}   BECAUSE \A(a <- x, b <- {});
-x \subseteq {} => ({} \subseteq x /\ x \subseteq {})   BECAUSE IntroAnd;
-({} \subseteq x /\ x \subseteq {}) => (x \subseteq {} /\ {} \subseteq x)   BECAUSE AndSymmetry;
-x \subseteq {} => (x \subseteq {} /\ {} \subseteq x)   BECAUSE TransitImplication;
+x \subseteq {} => (x \subseteq {} /\ {} \subseteq x)   BECAUSE IntroAndLeft;
 x \subseteq {} => x = {}   BECAUSE TransitImplication;
 includedInEmpty   BECAUSE GENERALIZATION;
 QED
@@ -581,7 +579,7 @@ F => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
 \* Case y = c
 ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
 {} = {}   BECAUSE E_SCHEME;
-y = c => ({} = {} /\ y = c)   BECAUSE TrueAndEnd;
+y = c => ({} = {} /\ y = c)   BECAUSE IntroAndRight;
 ({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE PT9;
 y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TransitImplication;
 x = {} => (x = {} \/ x = ordinalOne)   BECAUSE PT9;
@@ -590,14 +588,14 @@ x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
 {} = {} => {} \in ordinalTwo   BECAUSE \A(x <- {});
 {} \in ordinalTwo   BECAUSE MODUS_PONENS;
 (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))
-   => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TrueAndEnd;
+   => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
 y = c => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
 y = c => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 
 \* Case y = d
 (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
 ordinalOne = ordinalOne   BECAUSE E_SCHEME;
-y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE TrueAndEnd;
+y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE IntroAndRight;
 (ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE PT10;
 y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TransitImplication;
 x = ordinalOne => (x = {} \/ x = ordinalOne)   BECAUSE PT10;
@@ -606,7 +604,7 @@ x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
 ordinalOne = ordinalOne => ordinalOne \in ordinalTwo   BECAUSE \A(x <- ordinalOne);
 ordinalOne \in ordinalTwo   BECAUSE MODUS_PONENS;
 ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))
-   => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TrueAndEnd;
+   => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
 y = d => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
 y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 
@@ -717,8 +715,8 @@ QED
 \* The pair allows to define the union of two sets
 x \union y == UNION { x, y }
 
-unionBigger == \A x : \A y : x \subseteq (x \union y)
-THEOREM unionBigger
+unionFirstInc == \A x : \A y : x \subseteq (x \union y)
+THEOREM unionFirstInc
 PROOF
 VARIABLES a,b,c,d,x,y,z;
 pairExists   BECAUSE THEOREM;
@@ -728,9 +726,25 @@ x = x \/ x = y   BECAUSE PT9;
 x \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 (z \in x /\ x \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- x, c <- {x,y});
-z \in x => (z \in x /\ x \in {x,y})   BECAUSE AndTrueEnd;
+z \in x => (z \in x /\ x \in {x,y})   BECAUSE IntroAndLeft;
 z \in x => z \in (x \union y)   BECAUSE TransitImplication;
-unionBigger   BECAUSE GENERALIZATION;
+unionFirstInc   BECAUSE GENERALIZATION;
+QED
+
+unionSecondInc == \A x : \A y : y \subseteq (x \union y)
+THEOREM unionSecondInc
+PROOF
+VARIABLES a,b,c,d,x,y,z;
+pairExists   BECAUSE THEOREM;
+y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
+y = y   BECAUSE E_SCHEME;
+y = x \/ y = y   BECAUSE PT10;
+y \in {x,y}   BECAUSE MODUS_PONENS;
+inInUnion   BECAUSE THEOREM;
+(z \in y /\ y \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- y, c <- {x,y});
+z \in y => (z \in y /\ y \in {x,y})   BECAUSE IntroAndLeft;
+z \in y => z \in (x \union y)   BECAUSE TransitImplication;
+unionSecondInc   BECAUSE GENERALIZATION;
 QED
 
 unionSymmetry == \A x : \A y : (x \union y) = (y \union x)
@@ -841,7 +855,7 @@ pairExists   BECAUSE THEOREM;
 {x} \in <<x,y>>   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 ({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
-<<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAnd;
+<<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
 <<x,y>> \in g => {x} \in UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => \E y : {x} \in UNION g   BECAUSE Q_SCHEME;
 (\E y : {x} \in UNION g) => {x} \in UNION g   BECAUSE Q_SCHEME;
@@ -851,7 +865,7 @@ x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
 x = x   BECAUSE E_SCHEME;
 x \in { x }   BECAUSE MODUS_PONENS;
 (x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
-{x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAnd;
+{x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAndRight;
 {x} \in UNION g => x \in UNION UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
 IsDefinedOn(g,x) => IsDefinedOn(g,x)   BECAUSE ImplyOneself;
@@ -907,7 +921,7 @@ VARIABLES a,b,c,d,i,j,t,u,v,x,y,z;
 \E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE \A(a <- SUBSET SUBSET (i \union j));
 \* Proof that <<u,v>> \subseteq SUBSET (i \union j), ie that {u} \in SUBSET (i \union j),
 \* ie that {u} \subseteq (i \union j)
-unionBigger   BECAUSE THEOREM;
+unionFirstInc   BECAUSE THEOREM;
 i \subseteq (i \union j)   BECAUSE \A(x <- i, y <- j);
 u \in i => u \in (i \union j)   BECAUSE \A(z <- u);
 singletonExists   BECAUSE THEOREM;
@@ -930,13 +944,8 @@ powersetExists   BECAUSE AXIOM;
 u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
 
 \* Proof of {u,v} \in SUBSET (i \union j)
-j \subseteq (j \union i)   BECAUSE \A(x <- j, y <- i);
-unionSymmetry   BECAUSE THEOREM;
-(i \union j) = (j \union i)   BECAUSE \A(x <- i, y <- j);
-\A x : \A y : x = y => (j \subseteq x <=> j \subseteq y)   BECAUSE E_SCHEME;
-(i \union j) = (j \union i) => (j \subseteq (i \union j) <=> j \subseteq (j \union i))  BECAUSE \A(x <- i \union j, y <- j \union i);
-j \subseteq (i \union j) <=> j \subseteq (j \union i)  BECAUSE MODUS_PONENS;
-j \subseteq (i \union j)   BECAUSE MODUS_PONENS;
+unionSecondInc   BECAUSE THEOREM;
+j \subseteq (i \union j)   BECAUSE \A(x <- i, y <- j);
 v \in j => v \in (i \union j)   BECAUSE \A(z <- v);
 (u \in i /\ v \in j) => (u \in (i \union j) /\ v \in (i \union j))   BECAUSE MergeImplicationsAnd;
 pairInclusion   BECAUSE THEOREM;
@@ -989,6 +998,22 @@ x = <<u,v>> => (<<u,v>> \in SUBSET SUBSET (i \union j) => x \in SUBSET SUBSET (i
 cartesianProductExists   BECAUSE GENERALIZATION;
 QED
 
+cartesianProductInc == \A x : \A y : \A a : \A b :
+   (a \in x /\ b \in y) => <<a,b>> \in (x \X y)
+THEOREM cartesianProductInc
+PROOF
+VARIABLES a,b,i,j,u,v,x,y;
+cartesianProductExists   BECAUSE THEOREM;
+<<a,b>> \in (x \X y) <=> \E u : \E v : u \in x /\ v \in y /\ <<a,b>> = <<u,v>>   BECAUSE \A(i <- x, j <- y, x <- <<a,b>>);
+(\E u : \E v : u \in x /\ v \in y /\ <<a,b>> = <<u,v>>) => <<a,b>> \in (x \X y)   BECAUSE EquivToImplReverse;
+(a \in x /\ b \in y /\ <<a,b>> = <<a,b>>) => \E u : \E v : u \in x /\ v \in y /\ <<a,b>> = <<u,v>>   BECAUSE \E(u <- a, v <- b);
+<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+(a \in x /\ b \in y) => (a \in x /\ b \in y /\ <<a,b>> = <<a,b>>)   BECAUSE IntroAndLeft;
+(a \in x /\ b \in y) => \E u : \E v : u \in x /\ v \in y /\ <<a,b>> = <<u,v>>   BECAUSE TransitImplication;
+(a \in x /\ b \in y) => <<a,b>> \in (x \X y)   BECAUSE TransitImplication;
+cartesianProductInc   BECAUSE GENERALIZATION;
+QED
+
 (*
    Definition of the disjoint union : the union of 2 sets where the common
    elements are copied so that they are different in the union. The disjoint
@@ -996,6 +1021,44 @@ QED
    made rigorous in the Ordinals module.
 *)
 disjointUnion(x,y) == (x \X {{}}) \union (y \X {ordinalOne})
+
+disjUnionFirstInc == \A x : \A y : \A z : z \in x => <<z,{}>> \in disjointUnion(x,y)
+THEOREM disjUnionFirstInc
+PROOF
+VARIABLES a,b,i,j,x,y,z;
+cartesianProductInc   BECAUSE THEOREM;
+(z \in x /\ {} \in {{}}) => <<z,{}>> \in (x \X {{}})   BECAUSE \A(x <- x, y <- {{}}, a <- z, b <- {});
+singletonExists   BECAUSE THEOREM;
+{} \in { {} } <=> {} = {}   BECAUSE \A(a <- {}, x <- {});
+{} = {}   BECAUSE E_SCHEME;
+{} \in { {} }   BECAUSE MODUS_PONENS;
+z \in x => (z \in x /\ {} \in {{}})   BECAUSE IntroAndLeft;
+z \in x => <<z,{}>> \in (x \X {{}})   BECAUSE TransitImplication;
+unionFirstInc   BECAUSE THEOREM;
+(x \X {{}}) \subseteq disjointUnion(x,y)   BECAUSE \A(x <- x \X {{}}, y <- y \X {ordinalOne});
+<<z,{}>> \in (x \X {{}}) => <<z,{}>> \in disjointUnion(x,y)   BECAUSE \A(z <- <<z,{}>>);
+z \in x => <<z,{}>> \in disjointUnion(x,y)   BECAUSE TransitImplication;
+disjUnionFirstInc   BECAUSE GENERALIZATION;
+QED
+
+disjUnionSecondInc == \A x : \A y : \A z : z \in y => <<z,ordinalOne>> \in disjointUnion(x,y)
+THEOREM disjUnionSecondInc
+PROOF
+VARIABLES a,b,i,j,x,y,z;
+cartesianProductInc   BECAUSE THEOREM;
+(z \in y /\ ordinalOne \in {ordinalOne}) => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE \A(x <- y, y <- {ordinalOne}, a <- z, b <- ordinalOne);
+singletonExists   BECAUSE THEOREM;
+ordinalOne \in { ordinalOne } <=> ordinalOne = ordinalOne   BECAUSE \A(a <- ordinalOne, x <- ordinalOne);
+ordinalOne = ordinalOne   BECAUSE E_SCHEME;
+ordinalOne \in { ordinalOne }   BECAUSE MODUS_PONENS;
+z \in y => (z \in y /\ ordinalOne \in {ordinalOne})   BECAUSE IntroAndLeft;
+z \in y => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE TransitImplication;
+unionSecondInc   BECAUSE THEOREM;
+(y \X {ordinalOne}) \subseteq disjointUnion(x,y)   BECAUSE \A(x <- x \X {{}}, y <- y \X {ordinalOne});
+<<z,ordinalOne>> \in (y \X {ordinalOne}) => <<z,ordinalOne>> \in disjointUnion(x,y)   BECAUSE \A(z <- <<z,ordinalOne>>);
+z \in y => <<z,ordinalOne>> \in disjointUnion(x,y)   BECAUSE TransitImplication;
+disjUnionSecondInc   BECAUSE GENERALIZATION;
+QED
 
 Infinity == \E a : {} \in a /\ \A x : x \in a => x \union {x} \in a
 AXIOM Infinity

@@ -804,12 +804,30 @@ short resolve_operator_or_variable(formula* f,
     }
   if (resolvedF)
     {
+      int fOperCount = formula_list_size(f->operands);
+      int resFOperCount = formula_list_size(resolvedF->operands);
+      if (fOperCount != resFOperCount
+	  && fOperCount > 0 && resFOperCount > 0) // TODO handle propositional tautologies better
+	{
+	  printf("%s:%d: bad number of operands for %s ",
+		 f->file,
+		 f->first_line,
+		 f->name ? f->name : op_to_string(f->builtInOp));
+	  return 0;
+	}
       f->definingFormula = equivalent_defining_formula(f, resolvedF, operatorDefinitions);
       return 1;
     }
 
   // Try primitive symbols (which have no defining formulas)
-  return formula_list_find_const(primitives, same_op_as_f) != 0;
+  if (formula_list_find_const(primitives, same_op_as_f))
+    return 1;
+
+  printf("%s:%d: Unknown name %s ",
+	 f->file,
+	 f->first_line,
+	 f->name ? f->name : op_to_string(f->builtInOp));
+  return 0;
 }
 
 /**
@@ -855,10 +873,7 @@ unsigned char resolve_names(formula* f,
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
 				       variables, opVariables, proofLocalDecl))
     {
-      printf("%s:%d: Unknown name %s ",
-	     f->file,
-	     f->first_line,
-	     f->name ? f->name : op_to_string(f->builtInOp));
+      
       return 0;
     }
   return 1;

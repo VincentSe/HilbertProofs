@@ -19,21 +19,44 @@ IsWellOrder(w) == IsOrder(w)
 
 \* Define a well-order on the disjoint union of two well-orders.
 \* This order simply pastes v after u.
-wellOrderAddition(u,v) == CHOOSE w : IsWellOrder(w)
-   /\ w \subseteq (disjointUnion(u,v) \X disjointUnion(u,v))
-   /\ \A x : \A y : \A i : \A j : << <<x,i>>, <<y,j>> >> \in w <=>
-           ( (i={} /\ j=ordinalOne)
-	     \/ (i={} /\ j={} /\ <<x,y>> \in u)
-	     \/ (i=ordinalOne /\ j=ordinalOne /\ <<x,y>> \in v) )
+IsInWellOrderAddition(x,u,v) == \E m : \E n :
+   (m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+     \/ (<<m,n>> \in u /\ x = << <<m,{}>>, <<n,{}>> >>)
+     \/ (<<m,n>> \in v /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)
+wellOrderAddition(u,v) == CHOOSE b : \A x : x \in b <=> IsInWellOrderAddition(x,u,v)
 
-wellOrderAdditionExists == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) =>
-  (   IsWellOrder(wellOrderAddition(u,v))
-   /\ wellOrderAddition(u,v) \subseteq (disjointUnion(u,v) \X disjointUnion(u,v))
-   /\ \A x : \A y : \A i : \A j : << <<x,i>>, <<y,j>> >> \in wellOrderAddition(u,v) <=>
-           ( (i={} /\ j=ordinalOne)
-	     \/ (i={} /\ j={} /\ <<x,y>> \in u)
-	     \/ (i=ordinalOne /\ j=ordinalOne /\ <<x,y>> \in v) ) )
+woAddDomain(u,v) == disjointUnion(Domain(u), Domain(v))
+wellOrderAdditionExists == \A u : \A v : \A x : x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v)
 THEOREM wellOrderAdditionExists
+PROOF
+\* By separation in woAddDomain(u,v) \X woAddDomain(u,v)
+VARIABLES a,b,m,n,u,v,x,y,z;
+(\A x : x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v))
+   <=> (\E b : \A x : x \in b <=> IsInWellOrderAddition(x,u,v))   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> ( (x \in a) /\ IsInWellOrderAddition(x,u,v) )   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> ( (x \in (woAddDomain(u,v) \X woAddDomain(u,v)))
+   /\ IsInWellOrderAddition(x,u,v) )   BECAUSE \A(a <- woAddDomain(u,v) \X woAddDomain(u,v));
+
+disjUnionFirstInc   BECAUSE THEOREM;
+m \in Domain(u) => <<m,{}>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- m);
+n \in Domain(u) => <<n,{}>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- n);
+disjUnionSecondInc   BECAUSE THEOREM;
+m \in Domain(v) => <<m,ordinalOne>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- m);
+n \in Domain(v) => <<n,ordinalOne>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), z <- n);
+
+(m \in Domain(u) /\ n \in Domain(v)) => (<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
+cartesianProductInc   BECAUSE THEOREM;
+(<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))
+   => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,{}>>, b <- <<n,ordinalOne>>);
+(m \in Domain(u) /\ n \in Domain(v))
+   => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
+x = << <<m,{}>>, <<n,ordinalOne>> >>
+   => (x \in (woAddDomain(u,v) \X woAddDomain(u,v)) <=> << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v)))   BECAUSE E_SCHEME;
+\* TODO
+QED
+
+woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
+THEOREM woAddIsWo
 
 (*
    Beginning of ordinals : special well-orders that represent all well-orders
@@ -102,9 +125,9 @@ p # {} => p # {}   BECAUSE ImplyOneself;
 
 \* Conclude with PT6
 (\A a : a \in {} => a \notin a)
-   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAnd;
-WellOrderedByIn( {} )   BECAUSE IntroAnd;
-ordinalZero   BECAUSE IntroAnd;
+   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAndRight;
+WellOrderedByIn( {} )   BECAUSE IntroAndRight;
+ordinalZero   BECAUSE IntroAndRight;
 QED
 
 \* The +1 operation on ordinals

@@ -25,8 +25,11 @@ PROPO_TAUTO DropNotNot
 Contraposition(a,b) == (a => b) => (~b => ~a)
 PROPO_TAUTO Contraposition
 
-IntroAnd(a,b) == a => (b => (a /\ b))
-PROPO_TAUTO IntroAnd
+IntroAndRight(a,b) == a => (b => (a /\ b))
+PROPO_TAUTO IntroAndRight
+
+IntroAndLeft(a,b) == a => (b => (b /\ a))
+PROPO_TAUTO IntroAndLeft
 
 DropAndRight(a,b) == (a /\ b) => a
 PROPO_TAUTO DropAndRight
@@ -34,6 +37,7 @@ PROPO_TAUTO DropAndRight
 DropAndRight2(a,b,c) == (a /\ b /\ c) => a
 PROPO_TAUTO DropAndRight2
 
+\* DropAndLeft2 is included in DropAndLeft, because of left-associativity
 DropAndLeft(a,b) == (a /\ b) => b
 PROPO_TAUTO DropAndLeft
 
@@ -161,12 +165,6 @@ PROPO_TAUTO OrFalseStart
 
 FalseOrStart(a,f) == ~f => ((f \/ a) => a)
 PROPO_TAUTO FalseOrStart
-
-AndTrueEnd(a,t) == t => (a => (a /\ t))
-PROPO_TAUTO AndTrueEnd
-
-TrueAndEnd(a,t) == t => (a => (t /\ a))
-PROPO_TAUTO TrueAndEnd
 
 TrueAndStart(a,t) == t => ((t /\ a) => a)
 PROPO_TAUTO TrueAndStart

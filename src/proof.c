@@ -882,6 +882,35 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
   return 0;
 }
 
+/**
+   Let T be a theory. When defining on top of T,
+   someNewOp(x,y,z) == CHOOSE t : P(t,x,y,z)
+   it inroduces a new ternary operator someNewOp and an axiom for it,
+   \A x : \A y : \A z : P(someNewOp(x,y,z),x,y,z) <=> \E t : P(t,x,y,z)
+
+   For example, the empty set :
+   {} == CHOOSE t : \A x : x \notin t
+
+   Let T+ be the extension of T by someNewOp and its axiom. Any model M of T
+   can be extended into a model M+ of T+ by
+      - the same universe U
+      - the interpretation of someNewOp as an application U^3 -> U such that
+         - when M satisfies \E t : P(t,x,y,z), someNewOp(x,y,z) is interpreted
+	   as one of those t's in U
+	 - otherwise someNewOp(x,y,z) is interpreted as any element of U.
+   The axiom above is satisfied in M+.
+
+   By Gödel's completeness theorem, if T+ has a contradiction then so does T
+   (neither has models). Put differently, the introduction of operator 
+   someNewOp does not introduce contradictions.
+
+   Can T+ prove formulas of T that are undecidable in T ? An undecidable
+   formula F of T assumes T is consistent (otherwise T proves every formula).
+   By Gödel's completeness theorem, T has models, some in which F is true
+   and some in which F is false. Take a model M of T where F is false.
+   In the extended model M+, F is still false because model extensions
+   preserve truth values. Hence T+ does not prove F.
+*/
 short check_choose_statement(const formula* f)
 {
   // axiom scheme : P(CHOOSE x : P) <=> \E x : P

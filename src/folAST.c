@@ -197,7 +197,6 @@ short declare_operator(formula* op, struct folAST* ast)
 short merge_asts(/*out*/struct folAST* ast,
 		 const struct folAST* knownAst)
 {
-  // TODO look at ast->extends  semantic_check(astTauto)
   void insert_operator(const void* nodep, VISIT value, int level)
   {
     if (value == preorder || value == postorder)
@@ -238,6 +237,13 @@ short merge_asts(/*out*/struct folAST* ast,
       prim = prim->next;
     }
 
+  struct proof_list* schemes = knownAst->axiomSchemes;
+  while (schemes)
+    {
+      // folAST don't delete the proofs in axiomSchemes, sharing is OK
+      ast->axiomSchemes = make_proof_list(schemes->proof_elem, ast->axiomSchemes);
+      schemes = schemes->next;
+    }
   return 1;
 }
 
