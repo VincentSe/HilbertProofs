@@ -177,3 +177,6 @@ PROPO_TAUTO TrueAndStart
 
 OrSelf(a) == (a \/ a) => a
 PROPO_TAUTO OrSelf
+
+AndSelf(a) == a => (a /\ a)
+PROPO_TAUTO AndSelf

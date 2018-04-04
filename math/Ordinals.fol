@@ -48,7 +48,8 @@ n \in Domain(v) => <<n,ordinalOne>> \in woAddDomain(u,v)   BECAUSE \A(x <- Domai
 (m \in Domain(u) /\ n \in Domain(v)) => (<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
 cartesianProductInc   BECAUSE THEOREM;
 (<<m,{}>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))
-   => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,{}>>, b <- <<n,ordinalOne>>);
+   => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))
+   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,{}>>, b <- <<n,ordinalOne>>);
 (m \in Domain(u) /\ n \in Domain(v))
    => << <<m,{}>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
 x = << <<m,{}>>, <<n,ordinalOne>> >>
@@ -89,7 +90,7 @@ x = << <<m,{}>>, <<n,{}>> >> => x = << <<m,{}>>, <<n,{}>> >>   BECAUSE ImplyOnes
 (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
    => x \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE TransitImplication;
 
-\* Thirs case <<m,n>> \in v
+\* Third case <<m,n>> \in v
 (m \in Domain(v) /\ n \in Domain(v)) => (<<m,ordinalOne>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))   BECAUSE MergeImplicationsAnd;
 (<<m,ordinalOne>> \in woAddDomain(u,v) /\ <<n,ordinalOne>> \in woAddDomain(u,v))
    => << <<m,ordinalOne>>, <<n,ordinalOne>> >> \in (woAddDomain(u,v) \X woAddDomain(u,v))   BECAUSE \A(x <- woAddDomain(u,v), y <- woAddDomain(u,v), a <- <<m,ordinalOne>>, b <- <<n,ordinalOne>>);
@@ -147,6 +148,67 @@ QED
 
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
+PROOF
+VARIABLES a,b,g,m,n,u,v,x,y,z;
+\* Proof that wellOrderAddition(u,v) is a graph
+(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => x = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE DropAndLeft;
+x = << <<m,{}>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>))   BECAUSE E_SCHEME;
+(<< <<m,{}>>, <<n,ordinalOne>> >> = << <<m,{}>>, <<n,ordinalOne>> >>
+   => \E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,{}>>, b <- <<n,ordinalOne>>);
+<< <<m,{}>>, <<n,ordinalOne>> >> = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
+\E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
+x = << <<m,{}>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
+(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+   => (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)   BECAUSE DropAndRight;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => x = << <<m,{}>>, <<n,{}>> >> BECAUSE DropAndLeft;
+x = << <<m,{}>>, <<n,{}>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>))   BECAUSE E_SCHEME;
+(<< <<m,{}>>, <<n,{}>> >> = << <<m,{}>>, <<n,{}>> >>
+   => \E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,{}>>, b <- <<n,{}>>);
+<< <<m,{}>>, <<n,{}>> >> = << <<m,{}>>, <<n,{}>> >>   BECAUSE E_SCHEME;
+\E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
+x = << <<m,{}>>, <<n,{}>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
+   => (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)   BECAUSE DropAndRight;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> BECAUSE DropAndLeft;
+x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>))   BECAUSE E_SCHEME;
+(<< <<m,ordinalOne>>, <<n,ordinalOne>> >> = << <<m,ordinalOne>>, <<n,ordinalOne>> >>
+   => \E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,ordinalOne>>, b <- <<n,ordinalOne>>);
+<< <<m,ordinalOne>>, <<n,ordinalOne>> >> = << <<m,ordinalOne>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
+\E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
+x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u))
+  => (\E a : \E b : x = <<a,b>>)   BECAUSE CombineImplicationsStart;
+((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+     \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
+  => (\E a : \E b : x = <<a,b>>)   BECAUSE CombineImplicationsStart;
+(\E n : (m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
+     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
+     \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
+  => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
+IsInWellOrderAddition(x,u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
+wellOrderAdditionExists   BECAUSE THEOREM;
+x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v)   BECAUSE \A(u <- u, v <- v, x <- x);
+x \in wellOrderAddition(u,v) => IsInWellOrderAddition(x,u,v)   BECAUSE EquivToImpl;
+x \in wellOrderAddition(u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(\E m : \E n : \E a : \E b : x = <<a,b>>) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
+(\E n : \E a : \E b : x = <<a,b>>) => (\E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
+x \in wellOrderAddition(u,v) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+x \in wellOrderAddition(u,v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+IsGraph(wellOrderAddition(u,v))   BECAUSE GENERALIZATION;
+
+\* Proof that wellOrderAddition is reflexive
+   \* Proof that (IsOrder(u) /\ m \in Domain(u) /\ x = << <<m,{}>>, <<m,{}>> >>) => IsInWellOrderAddition(x,u,v)
+domainExists   BECAUSE THEOREM;
+m \in Domain(u) <=> IsDefinedOn(u,m)   BECAUSE \A(g <- u, x <- m);
+QED
+
 
 (*
    At the moment, the addition and multiplication of well-orders are not commutative,

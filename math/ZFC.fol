@@ -892,14 +892,14 @@ IsFunction(f) == IsGraph(f)
 f[x] == CHOOSE y : <<x,y>> \in f
 
 (*
-   The class of orders : graphs that are reflexive, symmetric and transitive.
+   The class of orders : graphs that are reflexive, anti-symmetric and transitive.
 *)
 IsOrder(o) == IsGraph(o)
    \* reflexivity
    /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
    \* transitivity
    /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
-   \* symmetry
+   \* anti-symmetry
    /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
 
 (*
