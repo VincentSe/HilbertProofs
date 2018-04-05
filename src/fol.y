@@ -217,14 +217,9 @@ NAME { // operator or variable as a leaf of this formula
 | setDef | tuple | funcApply
 ;
 
-funcApply: NAME LEFT_BRACKET formula RIGHT_BRACKET {
-  formula* funcFormula = make_formula(lnone,
-				      $1,
-				      (struct formula_list*)0,
-				      ast->file,
-				      @1.first_line);
+funcApply: formula LEFT_BRACKET formula RIGHT_BRACKET {
   $$ = make_formula(funcApply, (char*)0,
-		    make_formula_list(funcFormula, make_formula_list($3, 0)),
+		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
 		    @1.first_line);
 }

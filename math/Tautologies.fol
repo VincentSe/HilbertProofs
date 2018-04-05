@@ -44,8 +44,8 @@ PROPO_TAUTO DropAndLeft
 PT9(a,b) == a => (a \/ b)
 PROPO_TAUTO PT9
 
-PT10(a,b) == b => (a \/ b)
-PROPO_TAUTO PT10
+IntroOrRight(a,b) == b => (a \/ b)
+PROPO_TAUTO IntroOrRight
 
 ContradictionEquiv(a,h) == (h => (a <=> ~a)) => ~h;
 PROPO_TAUTO ContradictionEquiv
@@ -74,7 +74,7 @@ PROPO_TAUTO EquivToImplReverse
 IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
 PROPO_TAUTO IntroEquiv
 
-AssocAnd(a,b,c) == (a /\ (b /\ c)) <=> ((a /\ b) /\ c)
+AssocAnd(a,b,c) == ((a /\ b) /\ c) => (a /\ (b /\ c))
 PROPO_TAUTO AssocAnd
 
 ImplyOneself(a) == a => a
@@ -180,3 +180,7 @@ PROPO_TAUTO OrSelf
 
 AndSelf(a) == a => (a /\ a)
 PROPO_TAUTO AndSelf
+
+\* Tautology useful for the separation axiom scheme
+SeparationTauto(a,b,c) == (a => b) => ((c <=> (b /\ a)) => (c <=> a))
+PROPO_TAUTO SeparationTauto

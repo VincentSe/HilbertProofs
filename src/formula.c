@@ -823,7 +823,7 @@ short resolve_operator_or_variable(formula* f,
   if (formula_list_find_const(primitives, same_op_as_f))
     return 1;
 
-  printf("%s:%d: Unknown name %s ",
+  printf("%s:%d: Unknown name %s\n",
 	 f->file,
 	 f->first_line,
 	 f->name ? f->name : op_to_string(f->builtInOp));

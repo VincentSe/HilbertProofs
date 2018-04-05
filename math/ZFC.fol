@@ -11,8 +11,8 @@
    The operators defined are the empty set, singleton of a set, pair of sets, couples,
    union of two sets, intersection of two sets, cartesian product and disjoint union.
 
-   The relations defined are graphs, functions and orders. The function application
-   operator is also defined.
+   The relations defined are graphs, functions and equivalence relations. The function
+   application operator is also defined.
 *)
 
 EXTENDS Tautologies
@@ -315,9 +315,6 @@ QED
 \* The intersection of two sets is the set of common elements
 u \intersect v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \in v)
 
-LOCAL dropRedundantAnd(a,b) == (a /\ b) <=> (a /\ (a /\ b))
-PROPO_TAUTO dropRedundantAnd
-
 intersectionExists == \A u : \A v : \A x :
    x \in (u \intersect v) <=> (x \in u /\ x \in v)
 THEOREM intersectionExists
@@ -327,8 +324,8 @@ VARIABLES a,b,u,v,x;
 (\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)) <=> \E b : (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE CHOOSE;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
-(x \in u /\ x \in v) <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE dropRedundantAnd;
-(x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (x \in b <=> (x \in u /\ x \in v))   BECAUSE TransitEquiv2;
+(x \in u /\ x \in v) => x \in u   BECAUSE DropAndRight;
+(x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (x \in b <=> (x \in u /\ x \in v))   BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\E b : \A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
 \E b : \A x : x \in b <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
@@ -596,9 +593,9 @@ y = c => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
 (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
 ordinalOne = ordinalOne   BECAUSE E_SCHEME;
 y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE IntroAndRight;
-(ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE PT10;
+(ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE IntroOrRight;
 y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TransitImplication;
-x = ordinalOne => (x = {} \/ x = ordinalOne)   BECAUSE PT10;
+x = ordinalOne => (x = {} \/ x = ordinalOne)   BECAUSE IntroOrRight;
 x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
 \A x : x = ordinalOne => x \in ordinalTwo   BECAUSE GENERALIZATION;
 ordinalOne = ordinalOne => ordinalOne \in ordinalTwo   BECAUSE \A(x <- ordinalOne);
@@ -644,7 +641,7 @@ VARIABLES a,b,c,d,x,y;
 pairExists   BECAUSE THEOREM;
 b \in { a, b } <=> (b = a \/ b = b)   BECAUSE \A(c <- a, d <- b, y <- b);
 b = b   BECAUSE E_SCHEME;
-b = a \/ b = b   BECAUSE PT10;
+b = a \/ b = b   BECAUSE IntroOrRight;
 b \in {a,b}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (b \in x <=> b \in y)   BECAUSE E_SCHEME;
 {a,b} = {a,c} => (b \in {a,b} <=> b \in {a,c})   BECAUSE \A(x <- {a,b}, y <- {a,c});
@@ -655,7 +652,7 @@ b \in { a,c } => (b = a \/ b = c)   BECAUSE EquivToImpl;
 
 c \in { a, c } <=> (c = a \/ c = c)   BECAUSE \A(c <- a, d <- c, y <- c);
 c = c   BECAUSE E_SCHEME;
-c = a \/ c = c   BECAUSE PT10;
+c = a \/ c = c   BECAUSE IntroOrRight;
 c \in {a,c}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
 {a,b} = {a,c} => (c \in {a,b} <=> c \in {a,c})   BECAUSE \A(x <- {a,b}, y <- {a,c});
@@ -738,7 +735,7 @@ VARIABLES a,b,c,d,x,y,z;
 pairExists   BECAUSE THEOREM;
 y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
 y = y   BECAUSE E_SCHEME;
-y = x \/ y = y   BECAUSE PT10;
+y = x \/ y = y   BECAUSE IntroOrRight;
 y \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 (z \in y /\ y \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- y, c <- {x,y});
@@ -833,21 +830,51 @@ sameFirstPairs   BECAUSE THEOREM;
 tupleDecomposition   BECAUSE GENERALIZATION;
 QED
 
+IsCouple(c) == \E x : \E y : c = <<x,y>>
+fst(c) == CHOOSE x : \E y : c = <<x,y>>
+snd(c) == CHOOSE y : c = <<fst(c), y>>
+
+tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
+THEOREM tupleComposition
+PROOF
+VARIABLES c,x,y;
+(\E y : c = <<fst(c),y>>) <=> \E x : \E y : c = <<x,y>>   BECAUSE CHOOSE;
+IsCouple(c) => (\E y : c = <<fst(c),y>>)   BECAUSE EquivToImplReverse;
+c = <<fst(c),snd(c)>> <=> \E y : c = <<fst(c),y>>   BECAUSE CHOOSE;
+(\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE EquivToImplReverse;
+IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TransitImplication;
+tupleComposition   BECAUSE GENERALIZATION;
+QED
+
+fstExists == \A a : \A b : a = fst(<<a,b>>)
+THEOREM fstExists
+PROOF
+VARIABLES a,b,c,d,x,y;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
+<<a,b>> = <<a,b>> => \E x : \E y : <<a,b>> = <<x,y>>   BECAUSE \E(x <- a, y <- b);
+<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+IsCouple(<<a,b>>)   BECAUSE MODUS_PONENS;
+<<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
+tupleDecomposition   BECAUSE THEOREM;
+<<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
+a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
+a = fst(<<a,b>>)   BECAUSE DropAndRight;
+fstExists   BECAUSE GENERALIZATION;
+QED
+
 \* The class of oriented graphs, ie sets of couples.
-IsGraph(g) == \A x : x \in g => \E a : \E b : x = <<a, b>>
+IsGraph(g) == \A x : x \in g => IsCouple(x)
 
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
+Image(g) == CHOOSE b : \A x : x \in b <=> \E y : <<y,x>> \in g
 
-domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
-THEOREM domainExists
+nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
+   => (x \in UNION UNION g /\ y \in UNION UNION g)
+THEOREM nodesInUnionUnion
 PROOF
-VARIABLES a,b,c,d,g,t,x,y,z;
-\* By separation in UNION UNION g
-(\A x : x \in Domain(g) <=> IsDefinedOn(g,x)) <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE;
-\A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
-(x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
+VARIABLES a,b,c,d,g,x,y;
 pairExists   BECAUSE THEOREM;
 {x} \in <<x,y>> <=> ({x} = {x} \/ {x} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x});
 {x} = {x}   BECAUSE E_SCHEME;
@@ -857,9 +884,6 @@ inInUnion   BECAUSE THEOREM;
 ({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
 <<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
 <<x,y>> \in g => {x} \in UNION g   BECAUSE TransitImplication;
-IsDefinedOn(g,x) => \E y : {x} \in UNION g   BECAUSE Q_SCHEME;
-(\E y : {x} \in UNION g) => {x} \in UNION g   BECAUSE Q_SCHEME;
-IsDefinedOn(g,x) => {x} \in UNION g   BECAUSE TransitImplication;
 singletonExists   BECAUSE THEOREM;
 x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
 x = x   BECAUSE E_SCHEME;
@@ -867,16 +891,88 @@ x \in { x }   BECAUSE MODUS_PONENS;
 (x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
 {x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAndRight;
 {x} \in UNION g => x \in UNION UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
+
+{x,y} \in <<x,y>> <=> ({x,y} = {x} \/ {x,y} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x,y});
+{x,y} = {x,y}   BECAUSE E_SCHEME;
+{x,y} = {x} \/ {x,y} = {x,y}   BECAUSE IntroOrRight;
+{x,y} \in <<x,y>>   BECAUSE MODUS_PONENS;
+({x,y} \in <<x,y>> /\ <<x,y>> \in g) => {x,y} \in UNION g   BECAUSE \A(a <- {x,y}, b <- <<x,y>>, c <- g);
+<<x,y>> \in g => ({x,y} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
+<<x,y>> \in g => {x,y} \in UNION g   BECAUSE TransitImplication;
+y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
+y = y   BECAUSE E_SCHEME;
+y = x \/ y = y   BECAUSE IntroOrRight;
+y \in { x, y }   BECAUSE MODUS_PONENS;
+(y \in {x,y} /\ {x,y} \in UNION g) => y \in UNION UNION g   BECAUSE \A(a <- y, b <- {x,y}, c <- UNION g);
+{x,y} \in UNION g => (y \in {x,y} /\ {x,y} \in UNION g)   BECAUSE IntroAndRight;
+{x,y} \in UNION g => y \in UNION UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => y \in UNION UNION g   BECAUSE TransitImplication;
+
+<<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE CombineImplicationsEnd;
+nodesInUnionUnion   BECAUSE GENERALIZATION;
+QED
+
+domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
+THEOREM domainExists
+PROOF
+VARIABLES a,b,g,x,y;
+\* By separation in UNION UNION g
+(\A x : x \in Domain(g) <=> IsDefinedOn(g,x))
+   <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
+(x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
+nodesInUnionUnion   BECAUSE THEOREM;
+<<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
+(x \in UNION UNION g /\ y \in UNION UNION g) => x \in UNION UNION g   BECAUSE DropAndRight;
+<<x,y>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
+IsDefinedOn(g,x) => \E y : x \in UNION UNION g   BECAUSE Q_SCHEME;
+(\E y : x \in UNION UNION g) => x \in UNION UNION g   BECAUSE Q_SCHEME;
 IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
-IsDefinedOn(g,x) => IsDefinedOn(g,x)   BECAUSE ImplyOneself;
-IsDefinedOn(g,x) => (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE CombineImplicationsEnd;
-IsDefinedOn(g,x) <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE IntroEquiv;
-(x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE TransitEquiv2;
+(x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\E b : \A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
 \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
 \A x : x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
 domainExists   BECAUSE GENERALIZATION;
+QED
+
+imageExists == \A g : \A x : x \in Image(g) <=> \E y : <<y,x>> \in g
+THEOREM imageExists
+PROOF
+VARIABLES a,b,g,x,y;
+\* By separation in UNION UNION g
+(\A x : x \in Image(g) <=> \E y : <<y,x>> \in g)
+   <=> (\E b : \A x : x \in b <=> \E y : <<y,x>> \in g)   BECAUSE CHOOSE;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ \E y : <<y,x>> \in g)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in UNION UNION g /\ \E y : <<y,x>> \in g)   BECAUSE \A(a <- UNION UNION g);
+(x \in UNION UNION g /\ \E y : <<y,x>> \in g) => \E y : <<y,x>> \in g   BECAUSE DropAndLeft;
+nodesInUnionUnion   BECAUSE THEOREM;
+<<y,x>> \in g => (y \in UNION UNION g /\ x \in UNION UNION g)   BECAUSE \A(x <- y, y <- x, g <- g);
+(y \in UNION UNION g /\ x \in UNION UNION g) => x \in UNION UNION g   BECAUSE DropAndLeft;
+<<y,x>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
+(\E y : <<y,x>> \in g) => \E y : x \in UNION UNION g   BECAUSE Q_SCHEME;
+(\E y : x \in UNION UNION g) => x \in UNION UNION g   BECAUSE Q_SCHEME;
+(\E y : <<y,x>> \in g) => x \in UNION UNION g   BECAUSE TransitImplication;
+(x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE SeparationTauto;
+(\A x : x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (\A x : x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (\E b : \A x : x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> (\E y : <<y,x>> \in g)   BECAUSE MODUS_PONENS;
+\A x : x \in Image(g) <=> (\E y : <<y,x>> \in g)   BECAUSE MODUS_PONENS;
+imageExists   BECAUSE GENERALIZATION;
+QED
+
+imageInc == \A g : \A x : \A y : <<y,x>> \in g => x \in Image(g)
+THEOREM imageInc
+PROOF
+VARIABLES g,x,y;
+imageExists   BECAUSE THEOREM;
+x \in Image(g) <=> \E y : <<y,x>> \in g   BECAUSE \A(g <- g, x <- x);
+(\E y : <<y,x>> \in g) => x \in Image(g)   BECAUSE EquivToImplReverse;
+<<y,x>> \in g => (\E y : <<y,x>> \in g)   BECAUSE \E(y <- y);
+<<y,x>> \in g => x \in Image(g)   BECAUSE TransitImplication;
+imageInc   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -891,16 +987,8 @@ IsFunction(f) == IsGraph(f)
 \* The application of functions :
 f[x] == CHOOSE y : <<x,y>> \in f
 
-(*
-   The class of orders : graphs that are reflexive, anti-symmetric and transitive.
-*)
-IsOrder(o) == IsGraph(o)
-   \* reflexivity
-   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
-   \* transitivity
-   /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
-   \* anti-symmetry
-   /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
+IsInjection(f) == IsFunction(f)
+   /\ \A a : \A b : \A c : (<<a,c>> \in f /\ <<b,c>> \in f) => a = b
 
 (*
    Definition of the cartesian product, the set of couples between two sets.
@@ -980,15 +1068,8 @@ x = <<u,v>> => (<<u,v>> \in SUBSET SUBSET (i \union j) => x \in SUBSET SUBSET (i
 (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => \E v : x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
 (\E v : x \in SUBSET SUBSET (i \union j)) => x \in SUBSET SUBSET (i \union j)   BECAUSE Q_SCHEME;
 (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
-(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>) => (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE ImplyOneself;
-(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
-   => (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE CombineImplicationsEnd;
-(x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))
-   => (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE DropAndLeft;
-(\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
-   <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE IntroEquiv;
 (x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
-   => (x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE TransitEquiv2;
+   => (x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
    => (\A x : x \in b <=> (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)) BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)))
