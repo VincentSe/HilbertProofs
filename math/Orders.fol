@@ -11,6 +11,21 @@ IsOrder(o) == IsGraph(o)
    \* anti-symmetry
    /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
 
+domainOrderReflex == \A o : \A x : (IsOrder(o) /\ IsDefinedOn(o,x)) => <<x,x>> \in o
+THEOREM domainOrderReflex
+PROOF
+VARIABLES m,n,o,x,y;
+IsOrder(o) => (IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))
+   BECAUSE DropAndRight2;
+(IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))
+   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndLeft;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TransitImplication;
+(\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   => <<m,n>> \in o => (<<m,m>> \in o /\ <<n,n>> \in o)   BECAUSE \A(x <- m, y <- n);
+IsOrder(o) => (<<m,n>> \in o => (<<m,m>> \in o /\ <<n,n>> \in o))   BECAUSE TransitImplication;
+(IsOrder(o) /\ <<m,n>> \in o) => (<<m,m>> \in o /\ <<n,n>> \in o)   BECAUSE HypoImplToAnd;
+QED
+
 \* An injection f transports an order o
 injectOrder(o,f) == CHOOSE b : \A x : x \in b <=> (IsCouple(x) /\
    \E m : \E n : <<m,fst(x)>> \in f /\ <<n,snd(x)>> \in f /\ <<m,n>> \in o)
@@ -132,7 +147,7 @@ injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsInjection(f))
    => IsOrder(injectOrder(o,f))
 THEOREM injectOrderIsOrder
 PROOF
-VARIABLES a,b,f,i,j,m,n,o,x;
+VARIABLES a,b,f,m,n,o,x,y;
 \* Proof that injectOrder(o,f) is a graph
 injectOrderExists   BECAUSE THEOREM;
 x \in injectOrder(o,f) <=> (IsCouple(x) /\ \E m : \E n : <<m,fst(x)>> \in f /\ <<n,snd(x)>> \in f /\ <<m,n>> \in o)
@@ -144,7 +159,35 @@ x \in injectOrder(o,f) => IsCouple(x)   BECAUSE TransitImplication;
 IsGraph(injectOrder(o,f))   BECAUSE GENERALIZATION;
 
 \* Proof that injectOrder(o,f) is reflexive
-\* Proof that <<i,j>> \in injectOrder(o,f) <=> (\E m : \E n : <<m,i>> \in f /\ <<n,j>> \in f /\ <<m,n>> \in o)
+injectOrderInc   BECAUSE THEOREM;
+<<x,y>> \in injectOrder(o,f) <=> (\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   BECAUSE \A(o <- o, f <- f, a <- x, b <- y);
+<<x,x>> \in injectOrder(o,f) <=> (\E m : \E n : <<m,x>> \in f /\ <<n,x>> \in f /\ <<m,n>> \in o)
+   BECAUSE \A(o <- o, f <- f, a <- x, b <- x);
+<<y,y>> \in injectOrder(o,f) <=> (\E m : \E n : <<m,y>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   BECAUSE \A(o <- o, f <- f, a <- y, b <- y);
+<<x,y>> \in injectOrder(o,f) => (\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   BECAUSE EquivToImpl;
+(\E m : \E n : <<m,x>> \in f /\ <<n,x>> \in f /\ <<m,n>> \in o) => <<x,x>> \in injectOrder(o,f)
+   BECAUSE EquivToImplReverse;
+(<<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o) => <<m,x>> \in f   BECAUSE DropAndRight2;
+(<<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o) => <<m,n>> \in o   BECAUSE DropAndLeft;
+<<m,n>> \in o => \E y : <<m,y>> \in o   BECAUSE \E(y <- n);
+(<<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o) => IsDefinedOn(o,m)   BECAUSE TransitImplication;
+(<<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   => (<<m,x>> \in f /\ IsDefinedOn(o,m))   BECAUSE CombineImplicationsEnd;
+(\E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   => \E n : <<m,x>> \in f /\ IsDefinedOn(o,m)  BECAUSE Q_SCHEME;
+(\E n : <<m,x>> \in f /\ IsDefinedOn(o,m)) => (<<m,x>> \in f /\ IsDefinedOn(o,m))   BECAUSE Q_SCHEME;
+(\E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   => (<<m,x>> \in f /\ IsDefinedOn(o,m))   BECAUSE TransitImplication;
+(\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o)
+   => \E m : <<m,x>> \in f /\ IsDefinedOn(o,m)   BECAUSE Q_SCHEME;
+<<x,y>> \in injectOrder(o,f) => \E m : <<m,x>> \in f /\ IsDefinedOn(o,m)   BECAUSE TransitImplication;
+
+(<<m,x>> \in f /\ <<m,x>> \in f /\ <<m,m>> \in o)
+   => \E n : <<m,x>> \in f /\ <<n,x>> \in f /\ <<m,n>> \in o   BECAUSE \E(n <- m);
+\* TODO
 QED
 
 disjointOrders == \A u : \A v : (IsOrder(u) /\ IsOrder(v) /\ (u \intersect v = {}))

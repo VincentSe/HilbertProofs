@@ -306,15 +306,15 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
   if (tautoProof && tautoProof->goal == propoTautology)
     {
       // tauto was proved as a propositional tautology
-      tauto = tauto->definingFormula;
-      if (check_propositional_tautology_statement_one(statement->jf->formula, tauto, operators)
-	  || implicit_propositional_tautology(statement, tauto, operators))
+      if (check_propositional_tautology_statement_one(statement->jf->formula, tauto->definingFormula, operators)
+	  || implicit_propositional_tautology(statement, tauto->definingFormula, operators))
 	return 1;
     }
 
-  printf("%s:%d: bad propositional tautology\n",
+  printf("%s:%d: tautology %s does not match\n",
 	 statement->jf->formula->file,
-	 statement->jf->formula->first_line);
+	 statement->jf->formula->first_line,
+	 tauto->name);
   return 0;
 }
 
@@ -437,7 +437,9 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
   return success != 0;
 }
 
-// Parse one or several equalities separated by logical ands
+// Parse one or several equalities separated by logical ands.
+// lands associate to the left, a /\ b /\ c equals (a /\ b) /\ c
+// so this function unfolds the f's first operand
 void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
 {
   subs[0].variable = (char*)0; // means failure
@@ -455,12 +457,12 @@ void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
 
   if (f->builtInOp == land)
     {
-      const formula* eq = get_first_operand(f);
+      const formula* eq = get_second_operand(f);
       if (eq->builtInOp == equal)
 	parse_equalities(eq, subs);
       if (subs[0].variable)
 	{
-	  parse_equalities(get_second_operand(f), subs+1);
+	  parse_equalities(get_first_operand(f), subs+1);
 	  if (!subs[1].variable)
 	    subs[0].variable = 0; // means failure
 	}
