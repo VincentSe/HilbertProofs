@@ -437,11 +437,51 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
   return success != 0;
 }
 
-// Axiom scheme \A x : \A y : x = y => (s <=> s(x <- y))
-// and scheme   \A x : \A y : x = y => (s  =  s(x <- y))
-// for all formulas s. The substitution must be free,
-// otherwise we would take as an axiom :
-// x = y => ((\A y : x = y) <=> \A y : y = y)
+// Parse one or several equalities separated by logical ands
+void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
+{
+  subs[0].variable = (char*)0; // means failure
+  if (f->builtInOp == equal)
+    {
+      const formula* v = get_first_operand(f);
+      if (v->builtInOp == variable)
+	{
+	  subs[0].variable = v->name;
+	  subs[0].subst = get_second_operand(f);
+	  subs[1].variable = (char*)0;
+	}
+      return;
+    }
+
+  if (f->builtInOp == land)
+    {
+      const formula* eq = get_first_operand(f);
+      if (eq->builtInOp == equal)
+	parse_equalities(eq, subs);
+      if (subs[0].variable)
+	{
+	  parse_equalities(get_second_operand(f), subs+1);
+	  if (!subs[1].variable)
+	    subs[0].variable = 0; // means failure
+	}
+    }
+}
+
+/**
+   Axiom scheme \A x : \A y : x = y => (s <=> s(x <- y))
+   and scheme   \A x : \A y : x = y => (s  =  s(x <- y))
+   for all formulas s.
+
+   The substitution must be free, otherwise we would take as an axiom :
+   x = y => ((\A y : x = y) <=> \A y : y = y)
+   which implies that False <=> True.
+
+   Although x = x, this axiom scheme refuses
+   x = y => (s(x) <=> s(x))
+   because it checks that all free occurrences of x are replaced by y
+   in the last term. To substitute in only a part of formula s, apply
+   this scheme to that part of formula s.
+*/
 unsigned char equality_implies_equivalence_scheme(const formula* f)
 {
   const formula* firstOp = get_first_operand(f);
@@ -465,17 +505,14 @@ unsigned char equality_implies_equivalence_scheme(const formula* f)
   else
     eq = get_first_operand(implies);
 
+  variable_substitution subs[8];
   const formula* secondOp = get_second_operand(implies);
-  const formula* firstFirstOp = get_first_operand(eq);
   if (implies->builtInOp == limplies
-      && eq->builtInOp == equal
-      && (secondOp->builtInOp == lequiv || secondOp->builtInOp == equal)
-      && firstFirstOp->builtInOp == variable)
+      && (secondOp->builtInOp == lequiv || secondOp->builtInOp == equal))
     {
-      variable_substitution subs[2];
-      subs[0].variable = firstFirstOp->name;
-      subs[0].subst = get_second_operand(eq);
-      subs[1].variable = (char*)0;
+      parse_equalities(eq, /*out*/subs);
+      if (!subs->variable)
+	return 0;
       if (formula_equal(get_second_operand(secondOp),
 			get_first_operand(secondOp),
 			0, subs, 0))

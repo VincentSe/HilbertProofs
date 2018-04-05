@@ -89,6 +89,9 @@ IsCouple(x) => (x \in (Image(f) \X Image(f)) <=> <<fst(x),snd(x)>> \in (Image(f)
 injectOrderExists   BECAUSE GENERALIZATION;
 QED
 
+equivTrueAnd(a,b,t) == t => ((a <=> (t /\ b)) => (a <=> b))
+PROPO_TAUTO equivTrueAnd
+
 injectOrderInc == \A o : \A f : \A a : \A b : <<a,b>> \in injectOrder(o,f)
    <=> (\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
 THEOREM injectOrderInc
@@ -97,23 +100,32 @@ VARIABLES a,b,c,d,f,m,n,o,x,y;
 injectOrderExists   BECAUSE THEOREM;
 <<a,b>> \in injectOrder(o,f) <=> (IsCouple(<<a,b>>) /\ \E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
    BECAUSE \A(o <- o, f <- f, x <- <<a,b>>);
-
 <<a,b>> = <<a,b>> => \E x : \E y : <<a,b>> = <<x,y>>   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
 IsCouple(<<a,b>>)   BECAUSE MODUS_PONENS;
+<<a,b>> \in injectOrder(o,f)
+   <=> (\E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
+   BECAUSE equivTrueAnd;
 
-<<a,b>> \in injectOrder(o,f) => (IsCouple(<<a,b>>) /\ \E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
-   BECAUSE EquivToImpl;
-(IsCouple(<<a,b>>) /\ \E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
-   => \E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o   BECAUSE TrueAndStart;
-<<a,b>> \in injectOrder(o,f) => (\E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
-   BECAUSE TransitImplication;
-
-\* TODO fstExists and sndExists
 fstExists   BECAUSE THEOREM;
 a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE IntroAndRight;
 (a = x /\ b = y) => ((\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
-    	   <=> (\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o))   BECAUSE E_SCHEME;
+                      <=> (\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o))   BECAUSE E_SCHEME;
+\A x : \A y : (a = x /\ b = y) => ((\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
+        <=> (\E m : \E n : <<m,x>> \in f /\ <<n,y>> \in f /\ <<m,n>> \in o))   BECAUSE GENERALIZATION;
+(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => ((\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
+        <=> (\E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o))
+	BECAUSE \A(x <- fst(<<a,b>>), y <- snd(<<a,b>>));
+(\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
+   <=> (\E m : \E n : <<m,fst(<<a,b>>)>> \in f /\ <<n,snd(<<a,b>>)>> \in f /\ <<m,n>> \in o)
+   BECAUSE MODUS_PONENS;
+<<a,b>> \in injectOrder(o,f)
+   <=> (\E m : \E n : <<m,a>> \in f /\ <<n,b>> \in f /\ <<m,n>> \in o)
+   BECAUSE TransitEquiv2;
+injectOrderInc   BECAUSE GENERALIZATION;
 QED
 
 injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsInjection(f))

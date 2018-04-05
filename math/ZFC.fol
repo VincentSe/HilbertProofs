@@ -863,6 +863,24 @@ a = fst(<<a,b>>)   BECAUSE DropAndRight;
 fstExists   BECAUSE GENERALIZATION;
 QED
 
+sndExists == \A a : \A b : b = snd(<<a,b>>)
+THEOREM sndExists
+PROOF
+VARIABLES a,b,c,d,x,y;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
+<<a,b>> = <<a,b>> => \E x : \E y : <<a,b>> = <<x,y>>   BECAUSE \E(x <- a, y <- b);
+<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+IsCouple(<<a,b>>)   BECAUSE MODUS_PONENS;
+<<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
+tupleDecomposition   BECAUSE THEOREM;
+<<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
+a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
+b = snd(<<a,b>>)   BECAUSE DropAndLeft;
+sndExists   BECAUSE GENERALIZATION;
+QED
+
+
 \* The class of oriented graphs, ie sets of couples.
 IsGraph(g) == \A x : x \in g => IsCouple(x)
 
