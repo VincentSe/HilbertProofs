@@ -19,7 +19,7 @@ PROOF
 VARIABLES a,b,f,g,m,n,o,u,x,y,multiX;
 \* Proof that injectOrder(o,f) is a graph
 multiApplySubsetImage   BECAUSE THEOREM;
-multiApply(parallelFunc(f,f), o) \subseteq Image(parallelFunc(f,f))   BECAUSE \A(f <- parallelFunc(f,f), x <- o);
+multiApply(parallelFunc(f,f), o) \subseteq Image(parallelFunc(f,f))   BECAUSE \A(f <- parallelFunc(f,f), multiX <- o);
 parallelImage   BECAUSE THEOREM;
 Image(parallelFunc(f,f)) = Image(f) \X Image(f)   BECAUSE \A(f <- f, g <- f);
 \A x : \A y : x = y => (multiApply(parallelFunc(f,f), o) \subseteq x <=> multiApply(parallelFunc(f,f), o) \subseteq y)   BECAUSE E_SCHEME;

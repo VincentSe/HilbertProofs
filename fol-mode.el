@@ -18,3 +18,17 @@
 				 fol-syntax-alist)))
 
 (define-key fol-mode-map (kbd "<f7>") 'compile)
+
+(defun fol-theo-dfn (theo)
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward (concat theo " == ") nil t)
+    (let ((start (point)))
+      (end-of-line)
+      (buffer-substring start (point)))))
+
+(defun fol-invoke-theorem (theo)
+  "Insert theo BECAUSE THEOREM; and the definition of theo"
+  (interactive "sTheorem name: ")
+  (insert theo "   BECAUSE THEOREM;\n"
+	  (fol-theo-dfn theo) "   BECAUSE "))

@@ -1041,8 +1041,23 @@ imageInc   BECAUSE THEOREM;
 multiApplyExists   BECAUSE GENERALIZATION;
 QED
 
-multiApplySubsetImage == \A f : \A x : multiApply(f,x) \subseteq Image(f)
+multiApplySubsetImage == \A f : \A multiX : multiApply(f,multiX) \subseteq Image(f)
 THEOREM multiApplySubsetImage
+PROOF
+VARIABLES f,g,u,x,y,z,multiX;
+multiApplyExists   BECAUSE THEOREM;
+z \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,z>> \in f   BECAUSE \A(f <- f, multiX <- multiX, x <- z);
+z \in multiApply(f,multiX) => \E u : u \in multiX /\ <<u,z>> \in f   BECAUSE EquivToImpl;
+(u \in multiX /\ <<u,z>> \in f) => <<u,z>> \in f   BECAUSE DropAndLeft;
+(\E u : u \in multiX /\ <<u,z>> \in f) => \E u : <<u,z>> \in f   BECAUSE Q_SCHEME;
+(\E u : <<u,z>> \in f) => <<u,z>> \in f   BECAUSE Q_SCHEME;
+(\E u : u \in multiX /\ <<u,z>> \in f) => <<u,z>> \in f   BECAUSE TransitImplication;
+z \in multiApply(f,multiX) => <<u,z>> \in f   BECAUSE TransitImplication;
+imageInc   BECAUSE THEOREM;
+<<u,z>> \in f => z \in Image(f)   BECAUSE \A(g <- f, x <- z, y <- u);
+z \in multiApply(f,multiX) => z \in Image(f)   BECAUSE TransitImplication;
+multiApplySubsetImage   BECAUSE GENERALIZATION;
+QED
 
 IsInjection(f) == IsFunction(f)
    /\ \A a : \A b : \A c : (<<a,c>> \in f /\ <<b,c>> \in f) => a = b
@@ -1152,12 +1167,32 @@ cartesianProductExists   BECAUSE THEOREM;
 cartesianProductInc   BECAUSE GENERALIZATION;
 QED
 
-parallelFunc(f,g) == CHOOSE h : IsFunction(h)
-   /\ Domain(h) = Domain(f) \X Domain(g)
-   /\ \A x : x \in Domain(h) => h[x] = << f[fst(x)], g[snd(x)] >>
+\* Two functions called in parallel
+parallelFunc(f,g) == CHOOSE h : \A x : x \in h <=> \* x = << <<a, b>>, <<f[a], f[b]>> >>
+  (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
+   /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g)
+
+parallelFuncExists == \A f : \A g : \A x : x \in parallelFunc(f,g) <=>
+  (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
+   /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g)
+THEOREM parallelFuncExists
+PROOF
+VARIABLES x;
+x = x   BECAUSE E_SCHEME;
+\* TODO
+\* By separation in (Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))
+QED
 
 parallelImage == \A f : \A g : Image(parallelFunc(f,g)) = Image(f) \X Image(g)
 THEOREM parallelImage
+PROOF
+VARIABLES a,b,f,g;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in Image(parallelFunc(f,g)) <=> x \in (Image(f) \X Image(g)))
+   => Image(parallelFunc(f,g)) = (Image(f) \X Image(g))
+   BECAUSE \A(a <- Image(parallelFunc(f,g)), b <- Image(f) \X Image(g));
+parallelFuncExists   BECAUSE THEOREM;
+QED
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common
