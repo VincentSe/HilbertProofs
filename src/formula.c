@@ -772,6 +772,9 @@ short resolve_operator_or_variable(formula* f,
 				   const struct formula_list* opVariables, // should be a union with variables
 				   const struct formula_list* proofLocalDecl)
 {
+  if (!f || (f->builtInOp == lnone && !f->name))
+    return 1; // nothing to resolve
+  
   unsigned char same_name_as_f(const formula* op)
   {
     // Cannot use formula_compare_operators for variables,
@@ -834,7 +837,7 @@ short resolve_operator_or_variable(formula* f,
    Mark all variables inside f with builtInOp variable.
    Link all operators inside f to their defining formulas.
 */
-unsigned char resolve_names(formula* f,
+unsigned char resolve_names(/*out*/formula* f,
 			    const struct formula_list* primitives,
 			    const formula_set operatorDefinitions,
 			    const struct string_list* variables,
@@ -845,11 +848,11 @@ unsigned char resolve_names(formula* f,
 
   // TODO check that operators (\in, +) are declared in CONSTANT clauses
 
-  // resolve operands first, because they can go in f->definingFormula
   if (f->builtInOp == forall
       || f->builtInOp == exists
       || f->builtInOp == choose)
     {
+      // Only one operand to check
       struct string_list bindVariable;
       bindVariable.string_elem = f->name;
       bindVariable.next = (struct string_list*)variables;
@@ -859,6 +862,7 @@ unsigned char resolve_names(formula* f,
     }
   else
     {
+      // resolve operands first, because they can go in f->definingFormula
       unsigned char resolve_error(formula* oper)
       {
 	return !resolve_names(oper, primitives,

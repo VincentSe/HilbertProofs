@@ -366,26 +366,32 @@ short semantic_check_reason(struct reason* r,
   if (!r->formula)
     return 1; // ok, nothing to check
 
-  if (r->formula->name) // propositional tautology
-    {
-      return resolve_names(r->formula, ast->constants,
-			   ast->operators, p->variables,
-			   0, p->operators);
-    }
-  else // forall instantiation
-    {
-      struct formula_list* subs = r->formula->operands;
-      while (subs)
-	{
-	  if (!resolve_names(subs->formula_elem, ast->constants,
-			     ast->operators, p->variables,
-			     0, p->operators))
-	    return 0;
-	  subs = subs->next;
-	}
-    }
+  return resolve_names(/*out*/r->formula,
+		       ast->constants,
+		       ast->operators, p->variables,
+		       0, p->operators);
+  
+  /* if (r->formula->name || r->rk == reasonChoose) // propositional tautology */
+  /*   { */
+  /*     return resolve_names(/\*out*\/r->formula, */
+  /* 			   ast->constants, */
+  /* 			   ast->operators, p->variables, */
+  /* 			   0, p->operators); */
+  /*   } */
+  /* else // forall instantiation */
+  /*   { */
+  /*     struct formula_list* subs = r->formula->operands; */
+  /*     while (subs) */
+  /* 	{ */
+  /* 	  if (!resolve_names(subs->formula_elem, ast->constants, */
+  /* 			     ast->operators, p->variables, */
+  /* 			     0, p->operators)) */
+  /* 	    return 0; */
+  /* 	  subs = subs->next; */
+  /* 	} */
+  /*   } */
 
-  return 1;
+  /* return 1; */
 }
 
 short semantic_error_in_proof_statement(const struct JustifiedFormula* jf,

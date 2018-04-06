@@ -165,7 +165,7 @@ equivFalse(a,b,t) == t => ((a <=> (b /\ ~t)) => ~a)   PROPO_TAUTO equivFalse
 THEOREM emptySetExists
 PROOF
 VARIABLES x, a, b;
-(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE;
+(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE {};
 
 \* Construct the empty by the separation axiom with a contradictory formula
 \A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x = x))   BECAUSE AXIOM_SCHEME; \* separation
@@ -321,7 +321,8 @@ THEOREM intersectionExists
 PROOF
 VARIABLES a,b,u,v,x;
 \* By separation in u
-(\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)) <=> \E b : (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE CHOOSE;
+(\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)) <=> \E b : (\A x : x \in b <=> (x \in u /\ x \in v))
+   BECAUSE CHOOSE u \intersect v;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
 (x \in u /\ x \in v) => x \in u   BECAUSE DropAndRight;
@@ -454,7 +455,7 @@ THEOREM singletonExists
 PROOF
 VARIABLES a,b,c,x,z;
 \* Proof by separation in the powerset of a
-(\A x : x \in { a } <=> x = a) <=> \E b : \A x : x \in b <=> x = a   BECAUSE CHOOSE;
+(\A x : x \in { a } <=> x = a) <=> \E b : \A x : x \in b <=> x = a   BECAUSE CHOOSE { a };
 \A a : \E b : \A x : x \in b <=> (x \in a /\ x = c)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE \A(a <- SUBSET a);
 \A c : \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE GENERALIZATION;
@@ -488,7 +489,7 @@ THEOREM pairExists
 PROOF
 VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
-(\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE;
+(\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
 F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
       	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
@@ -838,9 +839,9 @@ tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
 THEOREM tupleComposition
 PROOF
 VARIABLES c,x,y;
-(\E y : c = <<fst(c),y>>) <=> \E x : \E y : c = <<x,y>>   BECAUSE CHOOSE;
+(\E y : c = <<fst(c),y>>) <=> \E x : \E y : c = <<x,y>>   BECAUSE CHOOSE fst(c);
 IsCouple(c) => (\E y : c = <<fst(c),y>>)   BECAUSE EquivToImplReverse;
-c = <<fst(c),snd(c)>> <=> \E y : c = <<fst(c),y>>   BECAUSE CHOOSE;
+c = <<fst(c),snd(c)>> <=> \E y : c = <<fst(c),y>>   BECAUSE CHOOSE snd(c);
 (\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE EquivToImplReverse;
 IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TransitImplication;
 tupleComposition   BECAUSE GENERALIZATION;
@@ -887,6 +888,7 @@ IsGraph(g) == \A x : x \in g => IsCouple(x)
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A x : x \in b <=> \E y : <<y,x>> \in g
+IsReflexive(g) == \A u : u \in g => (<<fst(u), fst(u)>> \in g /\ <<snd(u), snd(u)>> \in g) 
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -937,7 +939,7 @@ PROOF
 VARIABLES a,b,g,x,y;
 \* By separation in UNION UNION g
 (\A x : x \in Domain(g) <=> IsDefinedOn(g,x))
-   <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE;
+   <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE Domain(g);
 \A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
 (x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
@@ -962,7 +964,7 @@ PROOF
 VARIABLES a,b,g,x,y;
 \* By separation in UNION UNION g
 (\A x : x \in Image(g) <=> \E y : <<y,x>> \in g)
-   <=> (\E b : \A x : x \in b <=> \E y : <<y,x>> \in g)   BECAUSE CHOOSE;
+   <=> (\E b : \A x : x \in b <=> \E y : <<y,x>> \in g)   BECAUSE CHOOSE Image(g);
 \A a : \E b : \A x : x \in b <=> (x \in a /\ \E y : <<y,x>> \in g)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ \E y : <<y,x>> \in g)   BECAUSE \A(a <- UNION UNION g);
 (x \in UNION UNION g /\ \E y : <<y,x>> \in g) => \E y : <<y,x>> \in g   BECAUSE DropAndLeft;
@@ -1004,6 +1006,43 @@ IsFunction(f) == IsGraph(f)
 
 \* The application of functions :
 f[x] == CHOOSE y : <<x,y>> \in f
+multiApply(f,multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
+
+multiApplyExists == \A f : \A multiX : \A x : x \in multiApply(f,multiX)
+   <=> \E u : u \in multiX /\ <<u,x>> \in f
+THEOREM multiApplyExists
+PROOF
+VARIABLES a,b,c,f,g,u,x,y,multiX;
+\* By separation in Image(f)
+(\A x : x \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,x>> \in f)
+   <=> (\E b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f)
+   BECAUSE CHOOSE multiApply(f,multiX);
+\A a : \E b : \A x : x \in b <=> ( x \in a /\ (\E u : u \in multiX /\ <<u,x>> \in f) )   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) )   BECAUSE \A(a <- Image(f));
+
+imageInc   BECAUSE THEOREM;
+<<u,x>> \in f => x \in Image(f)   BECAUSE \A(g <- f, x <- x, y <- u);
+(u \in multiX /\ <<u,x>> \in f) => <<u,x>> \in f   BECAUSE DropAndLeft;
+(u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TransitImplication;
+(\E u : u \in multiX /\ <<u,x>> \in f) => \E u : x \in Image(f)   BECAUSE Q_SCHEME;
+(\E u : x \in Image(f)) => x \in Image(f)   BECAUSE Q_SCHEME;
+(\E u : u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TransitImplication;
+(x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) ))
+   => (x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f) )
+   BECAUSE SeparationTauto;
+(\A x : x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) ))
+   => (\A x : x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f) )
+   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) ))
+   => (\E b : \A x : x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f) )
+   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f)   BECAUSE MODUS_PONENS;
+\A x : x \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,x>> \in f   BECAUSE MODUS_PONENS;
+multiApplyExists   BECAUSE GENERALIZATION;
+QED
+
+multiApplySubsetImage == \A f : \A x : multiApply(f,x) \subseteq Image(f)
+THEOREM multiApplySubsetImage
 
 IsInjection(f) == IsFunction(f)
    /\ \A a : \A b : \A c : (<<a,c>> \in f /\ <<b,c>> \in f) => a = b
@@ -1022,7 +1061,7 @@ PROOF
 VARIABLES a,b,c,d,i,j,t,u,v,x,y,z;
 \* By separation in SUBSET SUBSET (x \union y)
 (\A x : x \in (i \X j) <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)
-   <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE;
+   <=> (\E b : \A x : x \in b <=> \E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>)   BECAUSE CHOOSE i \X j;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (\E u : \E v : u \in i /\ v \in j /\ x = <<u,v>>))   BECAUSE \A(a <- SUBSET SUBSET (i \union j));
 \* Proof that <<u,v>> \subseteq SUBSET (i \union j), ie that {u} \in SUBSET (i \union j),
@@ -1112,6 +1151,13 @@ cartesianProductExists   BECAUSE THEOREM;
 (a \in x /\ b \in y) => <<a,b>> \in (x \X y)   BECAUSE TransitImplication;
 cartesianProductInc   BECAUSE GENERALIZATION;
 QED
+
+parallelFunc(f,g) == CHOOSE h : IsFunction(h)
+   /\ Domain(h) = Domain(f) \X Domain(g)
+   /\ \A x : x \in Domain(h) => h[x] = << f[fst(x)], g[snd(x)] >>
+
+parallelImage == \A f : \A g : Image(parallelFunc(f,g)) = Image(f) \X Image(g)
+THEOREM parallelImage
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common

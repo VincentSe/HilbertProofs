@@ -34,7 +34,7 @@
 
 %token NAME_SEPARATOR
 %token RIGHT_PARENTHESIS
-%token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_TUPLE RIGHT_TUPLE
+%token LEFT_BRACE RIGHT_BRACE LEFT_TUPLE RIGHT_TUPLE
 %token <rkVal> REASON_KIND
 
 %precedence <lopVal> QUANTIFIER
@@ -42,6 +42,9 @@
 %precedence <lopVal> LNOT
 %left       <lopVal> INFIX_OP
 %precedence <lopVal> PREFIX_OP
+
+%precedence LEFT_BRACKET
+%token RIGHT_BRACKET
 
 %precedence <sVal> NAME
 %precedence LEFT_PARENTHESIS
@@ -214,9 +217,11 @@ NAME { // operator or variable as a leaf of this formula
 		    make_formula_list($2, 0),
 		    ast->file,
 		    @1.first_line); }
-| setDef | tuple | funcApply
+| setDef | tuple
+| funcApply
 ;
 
+// SHIFT REDUCE CONFLICTS
 funcApply: formula LEFT_BRACKET formula RIGHT_BRACKET {
   $$ = make_formula(funcApply, (char*)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
@@ -253,10 +258,10 @@ NAME { $$ = make_reason(propoTautology,
 				$3,
 				ast->file,
 				@1.first_line)); }
-| QUANTIFIER {
+| QUANTIFIER formula {
   if ($1 != choose)
     yyerror(&@$, scanner, ast, "A quantifier in a reason should be CHOOSE.\n");
-  $$ = make_reason(reasonChoose, (formula*)0);
+  $$ = make_reason(reasonChoose, $2);
   }
 ;
 

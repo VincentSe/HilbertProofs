@@ -715,9 +715,13 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
   if (add_quantifiers_axiom_schemes(statement))
     return 1;
 
-  /* axiom scheme : (\A x : p => q) => (p => \A x : q)
+  /* 
+     axiom scheme : (\A x : p => q) => (p => \A x : q)
      and scheme     (\E x : p => q) => (p => \E x : q)
      when varibale x has no free occurrences in p.
+
+     It is fine to use equivalent defining formulas in
+     formula_equal, because they never introduce free variables.
 
      Only the universal scheme is a rule of first-order logic,
      the existential can be deduced as
@@ -803,6 +807,40 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
 	  && formula_equal(firstSecondFirstF,
 			   get_second_operand(firstSecondF),
 			   0,0,0))
+	return 1;
+    }
+
+  /* 
+     axiom scheme : ((\E x : q) /\ p) => (\E x : q /\ p)
+     when varibale x has no free occurrences in p.
+
+     It is fine to use equivalent defining formulas in
+     formula_equal, because they never introduce free variables.
+
+     Can be deduced as
+     (\A x : p => ~q) => (p => \A x : ~q)   BECAUSE AXIOM_SCHEME; (x has no free occurrences in p)
+     (\A x : ~(p /\ q)) => (p => \A x : ~q)   BECAUSE (p => ~q) <=> ~(p /\ q)
+     (\A x : ~(p /\ q)) => (~p \/ \A x : ~q)   BECAUSE (p => t) <=> (~p \/ t)
+     (\A x : ~(p /\ q)) => ~(p /\ \E x : q)
+     (\E x : p => q) => (p => \E x : q)   BECAUSE Contraposition;
+  */
+  if (firstFirstF && secondFirstF)
+    {
+      const formula* firstFirstFirstF = get_first_operand(firstFirstF);
+      const formula* firstSecondFirstF = get_first_operand(secondFirstF);
+      if (f->builtInOp == limplies
+	  && firstF->builtInOp == land
+	  && secondF->builtInOp == exists
+	  && firstSecondF->builtInOp == land
+	  && secondFirstF->builtInOp == exists
+	  && strcmp(secondF->name, firstFirstF->name) == 0 // x
+	  && formula_equal(secondFirstF, // p
+			   get_second_operand(firstSecondF),
+			   0,0,0)
+	  && formula_equal(firstFirstFirstF,  // q
+			   get_first_operand(firstSecondF),
+			   0,0,0)
+	  && is_bound_variable(secondFirstF, secondF->name))
 	return 1;
     }
   return 0;
@@ -944,33 +982,34 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
    In the extended model M+, F is still false because model extensions
    preserve truth values. Hence T+ does not prove F.
 */
-short check_choose_statement(const formula* f)
+short check_choose_statement(const formula* f,
+			     const formula* chooseF)
 {
   // axiom scheme : P(CHOOSE x : P) <=> \E x : P
 
-  const formula* firstF = get_first_operand(f);
-  const formula* secondF = get_second_operand(f);
-  if (!firstF || !secondF
-      || f->builtInOp != lequiv
-      || secondF->builtInOp != exists)
+  chooseF = get_quantified_formula(chooseF, choose);
+  if (!chooseF)
     {
       printf("%s:%d: bad choose reason\n", f->file, f->first_line);
       return 0;
     }
 
-  const formula* firstSecondF = get_first_operand(secondF);
+  const formula* firstF = get_first_operand(f);
+  const formula* existsF = get_second_operand(f);
+  if (!firstF || !existsF
+      || f->builtInOp != lequiv
+      || existsF->builtInOp != exists
+      || !formula_equal(get_first_operand(chooseF), get_first_operand(existsF), 0, 0, 0))
+    {
+      printf("%s:%d: bad choose reason\n", f->file, f->first_line);
+      return 0;
+    }
 
-  formula chooseF;
-  struct formula_list operands;
-  chooseF.operands = &operands;
-  chooseF.builtInOp = choose;
-  chooseF.name = secondF->name;
-  chooseF.definingFormula = 0;
-  operands.formula_elem = (formula*) firstSecondF;
-  operands.next = 0;
+  const formula* firstSecondF = get_first_operand(existsF);
+
   variable_substitution before[2];
-  before[0].variable = secondF->name;
-  before[0].subst = &chooseF;
+  before[0].variable = existsF->name;
+  before[0].subst = chooseF;
   before[1].variable = (char*)0;
   if (formula_equal(firstF,
 		    firstSecondF,
@@ -1056,7 +1095,7 @@ short check_proof_statement(const struct FormulaDList* statement,
     case propoTautology:
       return check_propositional_tautology_statement(statement, assumedProofs, operators);
     case reasonChoose:
-      return check_choose_statement(statement->jf->formula);
+      return check_choose_statement(statement->jf->formula, statement->jf->reason->formula);
 
       // The only checking that looks at the previously proven formulas,
       // to cut proven hypotheses in proven implications.
