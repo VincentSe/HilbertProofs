@@ -1,3 +1,0 @@
-Detect twice THEOREM with the same name
-
-Check a theorem is a closed formula (no operands)

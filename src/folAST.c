@@ -119,7 +119,10 @@ void add_proof(proof* p, /*out*/struct folAST* ast)
   proof** tf = tsearch(p, &ast->proofs, compare_proofs);
   if (tf && p != *tf)
     {
-      printf("Multiply defined proof");
+      printf("%s:%d: Multiple proofs of %s\n",
+	     p->formulaToProve->file,
+	     p->formulaToProve->first_line,
+	     p->formulaToProve->name);
       proof_free(p);
     }
 }

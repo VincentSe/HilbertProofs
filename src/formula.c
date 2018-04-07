@@ -189,7 +189,7 @@ int formula_compare_operators(const void *l, const void *r)
       // is a total order : reflexive, anti-symmetric, transitive and total
       return formula_list_size(mr->operands) - formula_list_size(ml->operands);
     }
-  
+
   return 0;
 }
 
@@ -365,7 +365,7 @@ short is_free_substitution(const formula* f,
 {
   if (variable_capture(f, boundVariables))
     return 0;
-  
+
   variable_substitution* sub = variable_substitution_find(var, freeSubs);
 
   if (sub && sub->variable)
@@ -408,7 +408,7 @@ unsigned char formula_equal(const formula* f,
 	{
 	  if (strcmp(f->name, g->name) != 0)
 	    return 0; // different quantified variables
-	  
+
 	  // Compare operands of g and f with variable g->name bound
 	  struct string_list bindVariable;
 	  bindVariable.string_elem = g->name;
@@ -466,7 +466,7 @@ unsigned char formula_equal(const formula* f,
 		break;
 	      schemeFormulaSubst++;
 	    }
-	  
+
 	  if (schemeFormulaSubst->variable)
 	    {
 	      variable_substitution schemeVarSubst[16];
@@ -695,7 +695,7 @@ formula* equivalent_defining_formula(const formula* f,
 {
   if (!f || !free_define(f->operands, opDef))
     return (formula*)0;
-  
+
   if (!f->operands)
     return opDef->definingFormula; // share the formula when there is no substitution of variables
 
@@ -718,13 +718,14 @@ formula* equivalent_defining_formula(const formula* f,
   // Recursively clone the defining formulas
   formula* resolvedF = formula_set_find(def, operatorDefinitions);
   if (resolvedF)
-    def->definingFormula = equivalent_defining_formula(def, resolvedF, operatorDefinitions);
+    def->definingFormula = equivalent_defining_formula(def, resolvedF,
+						       operatorDefinitions);
   op = def->operands;
   while (op)
     {
       resolvedF = formula_set_find(op->formula_elem, operatorDefinitions);
       if (resolvedF)
-	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions); 
+	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions);
       op = op->next;
     }
   return def;
@@ -746,7 +747,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 {
   if (!f)
     return (formula*)0;
-  
+
   variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
   if (sub && sub->variable)
     return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
@@ -770,7 +771,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 
 
 /**
-   A name in a formula of a FOL file can either be a variable or a custom 
+   A name in a formula of a FOL file can either be a variable or a custom
    operator. Find which and link the defining formula when appropriate.
 */
 short resolve_operator_or_variable(formula* f,
@@ -782,7 +783,7 @@ short resolve_operator_or_variable(formula* f,
 {
   if (!f || (f->builtInOp == lnone && !f->name))
     return 1; // nothing to resolve
-  
+
   unsigned char same_name_as_f(const formula* op)
   {
     // Cannot use formula_compare_operators for variables,
@@ -825,7 +826,8 @@ short resolve_operator_or_variable(formula* f,
 		 f->name ? f->name : op_to_string(f->builtInOp));
 	  return 0;
 	}
-      f->definingFormula = equivalent_defining_formula(f, resolvedF, operatorDefinitions);
+      f->definingFormula = equivalent_defining_formula(f, resolvedF,
+						       operatorDefinitions);
       return 1;
     }
 
@@ -884,7 +886,7 @@ unsigned char resolve_names(/*out*/formula* f,
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
 				       variables, opVariables, proofLocalDecl))
     {
-      
+
       return 0;
     }
   return 1;
@@ -914,7 +916,7 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
     ? get_first_operand(f) : get_second_operand(f); // f is a =>, its first operand is a \A
   const formula* instance = rk == forallInstance
     ? get_second_operand(f) : get_first_operand(f);
-  
+
   // Check quant starts with forall quantifiers and fill substitutions
   variable_substitution freeSubst[16];
   variable_substitution* freeSub = freeSubst;

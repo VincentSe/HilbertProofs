@@ -1,7 +1,7 @@
 (*
    This file contains the basic definitions for mathematics, the ZFC axioms of set
    theory. For more information : en.wikipedia.org/wiki/Zermelo-Fraenkel_set_theory.
-   
+
    The membership relation \in is declared (without a definition because it is
    primitive), then the inclusion relation \subseteq.
 
@@ -108,27 +108,6 @@ VARIABLES z, x;
 z \in x => z \in x   BECAUSE ImplyOneself;
 \A z : z \in x => z \in x   BECAUSE GENERALIZATION;
 inclusionInOneself   BECAUSE GENERALIZATION;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 QED
 
 (*
@@ -181,24 +160,31 @@ AXIOM_SCHEME BOUND_VAR(b) replacement
 {} == CHOOSE b : \A x : x \notin b
 emptySetExists == \A x : x \notin {}
 
-equivFalse(a,b,t) == t => ((a <=> (b /\ ~t)) => ~a)   PROPO_TAUTO equivFalse
-
 THEOREM emptySetExists
 PROOF
 VARIABLES x, a, b;
-(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE {};
+\* Construct the empty set by the separation axiom with a contradictory formula
+\A a : \E b : \A x : x \in b <=> (x \in a /\ x # x)   BECAUSE AXIOM_SCHEME; \* separation
+\E b : \A x : x \in b <=> (x \in a /\ x # x)   BECAUSE \A(a <- a);
 
-\* Construct the empty by the separation axiom with a contradictory formula
-\A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x = x))   BECAUSE AXIOM_SCHEME; \* separation
-\E b : \A x : x \in b <=> (x \in a /\ ~(x = x))   BECAUSE \A(a <- a);
-
-\* Prove that this set b has no elements, because x \neq x is always false
+\* Take one such set b and show no set x can be in it
+chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
+(\A x : x \in chooseB(a) <=> (x \in a /\ x # x)) <=> \E b : \A x : x \in b <=> (x \in a /\ x # x)
+   BECAUSE CHOOSE chooseB(a);
+\A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE MODUS_PONENS;
+x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
+x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
+(x \in a /\ x # x) => x # x   BECAUSE DropAndLeft;
+x \in chooseB(a) => x # x   BECAUSE TransitImplication;
+~(x # x) => x \notin chooseB(a)   BECAUSE Contraposition;
 x = x   BECAUSE E_SCHEME;
-(x \in b <=> (x \in a /\ ~(x = x))) => x \notin b   BECAUSE equivFalse;
-(\A x : x \in b <=> (x \in a /\ ~(x = x))) => \A x : x \notin b   BECAUSE Q_SCHEME;
+~(x # x)   BECAUSE IntroNotNot;
+x \notin chooseB(a)   BECAUSE MODUS_PONENS;
+\A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
 
-(\E b : \A x : x \in b <=> (x \in a /\ ~(x = x))) => (\E b : \A x : x \notin b)   BECAUSE Q_SCHEME;
-\E b : \A x : x \notin b   BECAUSE MODUS_PONENS;
+\* Conclude chooseB(a) is the empty set
+(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE {};
+\E b : \A x : x \notin b   BECAUSE \E(b <- chooseB(a));
 emptySetExists   BECAUSE MODUS_PONENS;
 QED
 
@@ -909,7 +895,7 @@ IsGraph(g) == \A x : x \in g => IsCouple(x)
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A x : x \in b <=> \E y : <<y,x>> \in g
-IsReflexive(g) == \A u : u \in g => (<<fst(u), fst(u)>> \in g /\ <<snd(u), snd(u)>> \in g) 
+IsReflexive(g) == \A u : u \in g => (<<fst(u), fst(u)>> \in g /\ <<snd(u), snd(u)>> \in g)
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)

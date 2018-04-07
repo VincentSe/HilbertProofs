@@ -37,18 +37,23 @@ multiApplyExists   BECAUSE THEOREM;
 
 <<x,y>> \in injectOrder(o,f) => \E u : u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f)
    BECAUSE EquivToImpl;
-(u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f)) => <<u, <<x,y>> >> \in parallelFunc(f,f)   BECAUSE DropAndLeft;
-<<u, <<x,y>> >> \in parallelFunc(f,f) => <<fst(u),x>> \in f  BECAUSE DropAndLeft;
-(u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f)) => u \in o   BECAUSE DropAndLeft;
-(u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f))
-   => (<<fst(u),x>> \in f /\ u \in o)   BECAUSE CombineImplicationsEnd;
-(\E u : u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f))
-   => (\E u : <<fst(u),x>> \in f /\ u \in o)   BECAUSE Q_SCHEME;
-<<x,y>> \in injectOrder(o,f) => (\E u : <<fst(u),x>> \in f /\ u \in o)   BECAUSE TransitImplication;
-(IsOrder(o) /\ (\E u : <<fst(u),x>> \in f /\ u \in o))
-   => (\E u : IsOrder(o) /\ (<<fst(u),x>> \in f /\ u \in o))   BECAUSE Q_SCHEME;
-IsOrder(o) => (IsGraph(o) /\ IsReflexive(o))   BECAUSE DropAndRight2;
-(IsGraph(o) /\ IsReflexive(o)) => IsReflexive(o)   BECAUSE DropAndLeft;
+chooseU(f,o,x,y) == CHOOSE u : u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f);
+(chooseU(f,o,x,y) \in o /\ <<chooseU(f,o,x,y), <<x,y>> >> \in parallelFunc(f,f))
+   <=> \E u : u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f)   BECAUSE CHOOSE chooseU(f,o,x,y);
+<<x,y>> \in injectOrder(o,f)
+   => (chooseU(f,o,x,y) \in o /\ <<chooseU(f,o,x,y), <<x,y>> >> \in parallelFunc(f,f))   BECAUSE TransitImplication;
+
+<<chooseU(f,o,x,y), <<x,y>> >> \in parallelFunc(f,f)
+   => <<fst(chooseU(f,o,x,y)),x>> \in f  BECAUSE DropAndLeft; \* TODO parallel
+chooseU(f,o,x,y) \in o => chooseU(f,o,x,y) \in o   BECAUSE ImplyOneself;
+(chooseU(f,o,x,y) \in o /\ <<chooseU(f,o,x,y), <<x,y>> >> \in parallelFunc(f,f))
+   => (<<fst(chooseU(f,o,x,y)),x>> \in f /\ chooseU(f,o,x,y) \in o)   BECAUSE MergeImplicationsAnd;
+<<x,y>> \in injectOrder(o,f) => (<<fst(chooseU(f,o,x,y)),x>> \in f /\ chooseU(f,o,x,y) \in o)   BECAUSE TransitImplication;
+
+IsOrder(o) => IsOrder(o)   BECAUSE ImplyOneself;
+(<<x,y>> \in injectOrder(o,f) /\ IsOrder(o))
+   => (<<fst(chooseU(f,o,x,y)),x>> \in f /\ chooseU(f,o,x,y) \in o /\ IsOrder(o))   BECAUSE MergeImplicationsAnd;
+
 IsOrder(o) => IsReflexive(o)   BECAUSE TransitImplication;
 (\A u : u \in o => (<<fst(u), fst(u)>> \in o /\ <<snd(u), snd(u)>> \in o))
    => u \in o => (<<fst(u), fst(u)>> \in o /\ <<snd(u), snd(u)>> \in o)   BECAUSE \A(u <- u);

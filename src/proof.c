@@ -775,41 +775,6 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
 		       0,0,0))
     return 1;
 
-  const formula* secondFirstF = get_second_operand(firstF);
-
-  /* 
-     axiom scheme : ((\E x : q) /\ p) => (\E x : q /\ p)
-     when varibale x has no free occurrences in p.
-
-     It is fine to use equivalent defining formulas in
-     formula_equal, because they never introduce free variables.
-
-     Can be deduced as
-     (\A x : p => ~q) => (p => \A x : ~q)   BECAUSE AXIOM_SCHEME; (x has no free occurrences in p)
-     (\A x : ~(p /\ q)) => (p => \A x : ~q)   BECAUSE (p => ~q) <=> ~(p /\ q)
-     (\A x : ~(p /\ q)) => (~p \/ \A x : ~q)   BECAUSE (p => t) <=> (~p \/ t)
-     (\A x : ~(p /\ q)) => ~(p /\ \E x : q)
-     (\E x : p => q) => (p => \E x : q)   BECAUSE Contraposition;
-  */
-  if (firstFirstF && secondFirstF)
-    {
-      const formula* firstFirstFirstF = get_first_operand(firstFirstF);
-      const formula* firstSecondFirstF = get_first_operand(secondFirstF);
-      if (f->builtInOp == limplies
-	  && firstF->builtInOp == land
-	  && secondF->builtInOp == exists
-	  && firstSecondF->builtInOp == land
-	  && secondFirstF->builtInOp == exists
-	  && strcmp(secondF->name, firstFirstF->name) == 0 // x
-	  && formula_equal(secondFirstF, // p
-			   get_second_operand(firstSecondF),
-			   0,0,0)
-	  && formula_equal(firstFirstFirstF,  // q
-			   get_first_operand(firstSecondF),
-			   0,0,0)
-	  && is_bound_variable(secondFirstF, secondF->name))
-	return 1;
-    }
   return 0;
 }
 
