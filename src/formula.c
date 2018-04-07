@@ -561,7 +561,7 @@ short is_propositional_formula(const formula* f)
       if (!operands) // resolve only aliases
 	return is_propositional_formula(f->definingFormula);
     case variable:
-      return 1;
+      return 1; // propositional variable
     case lnot:
     case lor:
     case land:
@@ -809,8 +809,7 @@ short resolve_operator_or_variable(formula* f,
     {
       int fOperCount = formula_list_size(f->operands);
       int resFOperCount = formula_list_size(resolvedF->operands);
-      if (fOperCount != resFOperCount
-	  && fOperCount > 0 && resFOperCount > 0) // TODO handle propositional tautologies better
+      if (fOperCount != resFOperCount)
 	{
 	  printf("%s:%d: bad number of operands for %s ",
 		 f->file,

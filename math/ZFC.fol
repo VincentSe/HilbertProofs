@@ -1,12 +1,12 @@
 (*
-   This file contains the basic definitions for mathematics, the ZFC axioms of set theory.
-   For more information : en.wikipedia.org/wiki/Zermelo-Fraenkel_set_theory.
+   This file contains the basic definitions for mathematics, the ZFC axioms of set
+   theory. For more information : en.wikipedia.org/wiki/Zermelo-Fraenkel_set_theory.
    
-   The membership relation \in is declared (without a definition because it is primitive),
-   then the inclusion relation \subseteq.
+   The membership relation \in is declared (without a definition because it is
+   primitive), then the inclusion relation \subseteq.
 
-   The axioms defined are extensionality, powerset, union and infinity. The axiom schemes
-   of separation and replacement are also defined.
+   The axioms defined are extensionality, powerset, union and infinity. The axiom
+   schemes of separation and replacement are also defined.
 
    The operators defined are the empty set, singleton of a set, pair of sets, couples,
    union of two sets, intersection of two sets, cartesian product and disjoint union.
@@ -85,19 +85,19 @@ VARIABLES z, y, x, b, a, i, j, t;
 extensionality   BECAUSE AXIOM;
 (\A x : x \in a <=> x \in b) => a = b   BECAUSE \A(a <- a, b <- b);
 
-h == a \subseteq b /\ b \subseteq a;
+h(a,b) == a \subseteq b /\ b \subseteq a;
 ((\A z : z \in a => z \in b) /\ (\A z : z \in b => z \in a))
    => \A z : (z \in a => z \in b) /\ (z \in b => z \in a)   BECAUSE Q_SCHEME;
 (z \in a => z \in b) => ((z \in b => z \in a) => (z \in a <=> z \in b))   BECAUSE IntroEquiv;
 ((z \in a => z \in b) /\ (z \in b => z \in a)) => (z \in a <=> z \in b)   BECAUSE HypoImplToAnd;
 (\A z : (z \in a => z \in b) /\ (z \in b => z \in a)) => (\A z : z \in a <=> z \in b)   BECAUSE Q_SCHEME;
-h => \A z : z \in a <=> z \in b   BECAUSE TransitImplication;
+h(a,b) => \A z : z \in a <=> z \in b   BECAUSE TransitImplication;
 
 (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE \A(z <- x);
 \A x : (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
 (\A z : z \in a <=> z \in b) => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
-h => (\A x : x \in a <=> x \in b)   BECAUSE TransitImplication;
-h => a = b    BECAUSE TransitImplication;
+h(a,b) => (\A x : x \in a <=> x \in b)   BECAUSE TransitImplication;
+h(a,b) => a = b    BECAUSE TransitImplication;
 bothInclusions   BECAUSE GENERALIZATION;
 QED
 
@@ -490,16 +490,16 @@ PROOF
 VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
 (\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
-F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
+F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
       	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
    => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE AXIOM_SCHEME;
 
    \* Proof that F is functional
-(F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d)))
-   => ((F /\ (x = {} /\ z = c)) \/ (F /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrLeft;
+(F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d)))
+   => ((F(c,d,x,y) /\ (x = {} /\ z = c)) \/ (F(c,d,x,y) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrLeft;
 \* Case x = {}
-(F /\ (x = {} /\ z = c))
+(F(c,d,x,y) /\ (x = {} /\ z = c))
    => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))   BECAUSE DistribAndOrRight;
 (x = {} /\ z = c) => x = {}   BECAUSE DropAndRight;
 (x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE DropAndRight;
@@ -512,7 +512,7 @@ F == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (y = c /\ z = c) => y = z   BECAUSE E_SCHEME;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
 (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c))) => ((y = z) \/ (ordinalOne = {}))   BECAUSE MergeImplicationsOr;
-(F /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TransitImplication;
 
 \* Proof that ordinalOne # {}
 powersetExists   BECAUSE AXIOM;
@@ -532,10 +532,10 @@ ordinalOne = {} => {} \notin ordinalOne   BECAUSE TransitImplication;
 ordinalOne # {}   BECAUSE MODUS_PONENS;
 
 (y = z \/ ordinalOne = {}) => y = z   BECAUSE OrFalseStart;
-(F /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
 
 \* Case x = ordinalOne
-(F /\ (x = ordinalOne /\ z = d))
+(F(c,d,x,y) /\ (x = ordinalOne /\ z = d))
    => (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrRight;
 (x = {} /\ y = c) => x = {}   BECAUSE DropAndRight;
 (x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE DropAndRight;
@@ -548,18 +548,18 @@ ordinalOne # {}   BECAUSE MODUS_PONENS;
 (y = d /\ z = d) => y = z   BECAUSE E_SCHEME;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
 (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d))) => ({} = ordinalOne \/ y = z)   BECAUSE MergeImplicationsOr;
-(F /\ (x = ordinalOne /\ z = d)) => ({} = ordinalOne \/ y = z)   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => ({} = ordinalOne \/ y = z)   BECAUSE TransitImplication;
 {} = ordinalOne => ordinalOne = {}   BECAUSE E_SCHEME;
 ordinalOne # {} => {} # ordinalOne   BECAUSE Contraposition;
 {} # ordinalOne   BECAUSE MODUS_PONENS;
 ({} = ordinalOne \/ y = z) => y = z   BECAUSE FalseOrStart;
-(F /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
 
-((F /\ (x = {} /\ z = c)) \/ (F /\ (x = ordinalOne /\ z = d))) => y = z   BECAUSE CombineImplicationsStart;
-(F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE TransitImplication;
-\A x : \A y : \A z : (F /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE GENERALIZATION;
-\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F   BECAUSE MODUS_PONENS;
-\E b : \A y : y \in b <=> \E x : x \in ordinalTwo /\ F   BECAUSE \A(a <- ordinalTwo);
+((F(c,d,x,y) /\ (x = {} /\ z = c)) \/ (F(c,d,x,y) /\ (x = ordinalOne /\ z = d))) => y = z   BECAUSE CombineImplicationsStart;
+(F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE TransitImplication;
+\A x : \A y : \A z : (F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE GENERALIZATION;
+\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F(c,d,x,y)   BECAUSE MODUS_PONENS;
+\E b : \A y : y \in b <=> \E x : x \in ordinalTwo /\ F(c,d,x,y)   BECAUSE \A(a <- ordinalTwo);
 
    \* Proof that b works, ie that (\E x : x \in ordinalTwo /\ F) <=> (y = c \/ y = d)
 elemOfTwo   BECAUSE THEOREM;
@@ -567,12 +567,12 @@ x \in ordinalTwo <=> (x = {} \/ x = ordinalOne)   BECAUSE \A(x <- x);
 x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE EquivToImpl;
 (x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE EquivToImplReverse;
 
-F => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
-(x \in ordinalTwo /\ F) => F   BECAUSE DropAndLeft;
-(x \in ordinalTwo /\ F) => (y = c \/ y = d)   BECAUSE TransitImplication;
-(\E x : x \in ordinalTwo /\ F) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
+F(c,d,x,y) => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
+(x \in ordinalTwo /\ F(c,d,x,y)) => F(c,d,x,y)   BECAUSE DropAndLeft;
+(x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TransitImplication;
+(\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
 (\E x : y = c \/ y = d) => (y = c \/ y = d)   BECAUSE Q_SCHEME;
-(\E x : x \in ordinalTwo /\ F) => (y = c \/ y = d)   BECAUSE TransitImplication;
+(\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TransitImplication;
 
 \* Case y = c
 ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
@@ -588,7 +588,7 @@ x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
 (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))
    => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
 y = c => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
-y = c => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
+y = c => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TransitImplication;
 
 \* Case y = d
 (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
@@ -604,13 +604,13 @@ ordinalOne \in ordinalTwo   BECAUSE MODUS_PONENS;
 ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))
    => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
 y = d => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
-y = d => (\E x : x \in ordinalTwo /\ F)   BECAUSE TransitImplication;
+y = d => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TransitImplication;
 
-(y = c \/ y = d) => (\E x : x \in ordinalTwo /\ F)   BECAUSE CombineImplicationsStart;
-(y = c \/ y = d) <=> (\E x : x \in ordinalTwo /\ F)   BECAUSE IntroEquiv;
-(y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (y \in b <=> (y = c \/ y = d))   BECAUSE TransitEquiv2;
-(\A y : y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (\A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
-(\E b : \A y : y \in b <=> (\E x : x \in ordinalTwo /\ F)) => (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
+(y = c \/ y = d) => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE CombineImplicationsStart;
+(y = c \/ y = d) <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE IntroEquiv;
+(y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (y \in b <=> (y = c \/ y = d))   BECAUSE TransitEquiv2;
+(\A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
+(\E b : \A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
 (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE MODUS_PONENS;
 \A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
 pairExists   BECAUSE GENERALIZATION;
@@ -1172,15 +1172,27 @@ parallelFunc(f,g) == CHOOSE h : \A x : x \in h <=> \* x = << <<a, b>>, <<f[a], f
   (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
    /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g)
 
-parallelFuncExists == \A f : \A g : \A x : x \in parallelFunc(f,g) <=>
-  (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
-   /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g)
+parallelFuncExists == (\A f : \A g : \A x : x \in parallelFunc(f,g) <=>
+      (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
+      /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g))
+   /\ \A f : \A g : parallelFunc(f,g) \subseteq ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
 THEOREM parallelFuncExists
 PROOF
-VARIABLES x;
-x = x   BECAUSE E_SCHEME;
+VARIABLES a,c,f,g,x;
 \* TODO
 \* By separation in (Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))
+\A a : \E b : \A x : x \in b <=> (x \in a /\ (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x)) /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x)) /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g))   BECAUSE \A(a <- (Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)));
+
+\* Proof that fst(x) \in Domain(f) \X Domain(g)
+tupleComposition   BECAUSE THEOREM;
+IsCouple(x) => x = <<fst(x), snd(x)>>   BECAUSE \A(c <- x);
+x = <<fst(x), snd(x)>> => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
+   <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE E_SCHEME;
+IsCouple(fst(x)) => fst(x) = <<fst(fst(x)), snd(fst(x))>>   BECAUSE \A(c <- fst(x));
+fst(x) = <<fst(fst(x)), snd(fst(x))>> => (fst(x) \in (Domain(f) \X Domain(g))
+   <=> <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g)))   BECAUSE E_SCHEME;
+\*<<fst(fst(x)), fst(snd(x)) >> \in f => fst(fst(x)) \in Domain(f)   BECAUSE DomainInc
 QED
 
 parallelImage == \A f : \A g : Image(parallelFunc(f,g)) = Image(f) \X Image(g)

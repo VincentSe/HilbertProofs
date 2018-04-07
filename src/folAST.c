@@ -341,7 +341,6 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
 
 short semantic_check_operator_definition(formula* op,
 					 const struct folAST* ast,
-					 const struct string_list* variables,
 					 const struct formula_list* proofLocalDecl)
 {
   // A valid declaration is for example :
@@ -351,12 +350,37 @@ short semantic_check_operator_definition(formula* op,
   short success = resolve_names(/*out*/op->definingFormula,
 				ast->constants,
 				ast->operators,
-				variables,
+				(struct string_list*)0,
 				op->operands,
 				proofLocalDecl);
   return success;
 
   // TODO Check that op->freeVariables are not quantified in the right-hand side formula
+}
+
+unsigned char semantic_check_tautology(formula* tauto,
+				       const formula_set operators)
+{
+  if (tauto->builtInOp != lnone || !tauto->name)
+    {
+      printf("%s:%d: propositional tautologies must be named\n",
+	     tauto->file,
+	     tauto->first_line);
+      return 0;
+    }
+
+  formula* def = formula_set_find(tauto, operators);
+  if (!def)
+    {
+      printf("%s:%d: unknown tautology %s\n",
+	     tauto->file,
+	     tauto->first_line,
+	     tauto->name);
+      return 0;
+    }
+
+  tauto->definingFormula = def->definingFormula;
+  return 1;
 }
 
 short semantic_check_reason(struct reason* r,
@@ -366,32 +390,15 @@ short semantic_check_reason(struct reason* r,
   if (!r->formula)
     return 1; // ok, nothing to check
 
+  if (r->rk == propoTautology)
+    return semantic_check_tautology(r->formula, ast->operators);
+
   return resolve_names(/*out*/r->formula,
 		       ast->constants,
-		       ast->operators, p->variables,
-		       0, p->operators);
-  
-  /* if (r->formula->name || r->rk == reasonChoose) // propositional tautology */
-  /*   { */
-  /*     return resolve_names(/\*out*\/r->formula, */
-  /* 			   ast->constants, */
-  /* 			   ast->operators, p->variables, */
-  /* 			   0, p->operators); */
-  /*   } */
-  /* else // forall instantiation */
-  /*   { */
-  /*     struct formula_list* subs = r->formula->operands; */
-  /*     while (subs) */
-  /* 	{ */
-  /* 	  if (!resolve_names(subs->formula_elem, ast->constants, */
-  /* 			     ast->operators, p->variables, */
-  /* 			     0, p->operators)) */
-  /* 	    return 0; */
-  /* 	  subs = subs->next; */
-  /* 	} */
-  /*   } */
-
-  /* return 1; */
+		       ast->operators,
+		       p->variables,
+		       (struct formula_list*)0, // no operator variables
+		       p->operators);
 }
 
 short semantic_error_in_proof_statement(const struct JustifiedFormula* jf,
@@ -401,22 +408,25 @@ short semantic_error_in_proof_statement(const struct JustifiedFormula* jf,
   if (jf->reason)
     {
       if (!resolve_names(jf->formula, ast->constants,
-			 ast->operators, p->variables,
-			 0, p->operators)
+			 ast->operators,
+			 p->variables,
+			 0,
+			 p->operators)
 	  || !semantic_check_reason(jf->reason, p, ast))
 	return 1;
     }
   else
     {
-      // register this local operator
+      // A statement without reason in a proof is a local operator.
+      // Check it and register it in p->operators.
       if (!semantic_check_operator_definition(jf->formula,
 					      ast,
-					      p->variables, p->operators))
+					      p->operators))
 	return 1;
       p->operators = make_formula_list(jf->formula, p->operators);
     }
 
-  return 0; // means statement jf is correct
+  return 0; // no error, means statement jf is correct
 }
 
 void set_scheme_variables(const struct formula_list* variables,
@@ -444,6 +454,35 @@ short semantic_check_proof(proof* p, struct folAST* ast)
   if (p->formulaToProve->file && strcmp(p->formulaToProve->file, ast->file) != 0)
     return 1; // proof coming from EXTENDS statement, was already checked in its own module
 
+  if (p->goal == propoTautology)
+    return semantic_check_tautology(p->formulaToProve, ast->operators);
+
+  if (p->goal == axiomScheme)
+    {
+      formula* resolvedF = formula_set_find(p->formulaToProve, ast->operators);
+      if (!resolvedF)
+	{
+	  printf("%s:%d: unknown axiom scheme %s\n",
+		 p->formulaToProve->file,
+		 p->formulaToProve->first_line,
+		 p->formulaToProve->name);
+	  return 0;
+	}
+      p->formulaToProve->definingFormula = resolvedF->definingFormula;
+      set_scheme_variables(resolvedF->operands,
+			   /*out*/p->formulaToProve->definingFormula);
+
+      // Copy scheme variables
+      formula* clone_closure(const formula* f)
+      {
+	return formula_clone(f, 0);
+      }
+      p->formulaToProve->operands = formula_list_map(resolvedF->operands, clone_closure);
+      ast->axiomSchemes = make_proof_list(p, ast->axiomSchemes);
+      return 1;
+    }
+
+
   // Check p's formula to prove
   if (!resolve_names(p->formulaToProve, ast->constants,
 		     ast->operators, p->variables,
@@ -465,7 +504,8 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       struct FormulaDList* const u = t->next;
       if (!t->jf->reason)
 	{
-	  // Remove the list node, because it was registered in p->operators
+	  // Remove the list node, it is a proof's local operator
+	  // and was registered in p->operators.
 	  remove_list_node(t);
 	  if (p->cumulativeTruths == t)
 	    p->cumulativeTruths = u; // revalidate iterator to the beginning of the list
@@ -482,20 +522,6 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       printf("\n");
     }
 
-  if (p->goal == axiomScheme && !t)
-    {
-      formula* resolvedF = formula_set_find(p->formulaToProve, ast->operators);
-      set_scheme_variables(resolvedF->operands,
-			   p->formulaToProve->definingFormula);
-
-      // Copy scheme variables
-      formula* clone_closure(const formula* f)
-      {
-	return formula_clone(f, 0);
-      }
-      p->formulaToProve->operands = formula_list_map(resolvedF->operands, clone_closure);
-      ast->axiomSchemes = make_proof_list(p, ast->axiomSchemes);
-    }
   return !t;
 }
 
@@ -516,7 +542,6 @@ short semantic_check(struct folAST* ast)
     const struct formula_list* proofLocalDecl = 0; // not inside a proof
     opDefsOk &= semantic_check_operator_definition(op,
 						   ast,
-						   (struct string_list*)0,
 						   proofLocalDecl);
   }
 
