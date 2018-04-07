@@ -719,6 +719,14 @@ formula* equivalent_defining_formula(const formula* f,
   formula* resolvedF = formula_set_find(def, operatorDefinitions);
   if (resolvedF)
     def->definingFormula = equivalent_defining_formula(def, resolvedF, operatorDefinitions);
+  op = def->operands;
+  while (op)
+    {
+      resolvedF = formula_set_find(op->formula_elem, operatorDefinitions);
+      if (resolvedF)
+	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions); 
+      op = op->next;
+    }
   return def;
 }
 

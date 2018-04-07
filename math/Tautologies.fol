@@ -74,6 +74,9 @@ PROPO_TAUTO EquivToImplReverse
 IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
 PROPO_TAUTO IntroEquiv
 
+IntroEquivAnd(a,b) == ((a => b) /\ (b => a)) => (a <=> b)
+PROPO_TAUTO IntroEquivAnd
+
 AssocAnd(a,b,c) == ((a /\ b) /\ c) => (a /\ (b /\ c))
 PROPO_TAUTO AssocAnd
 

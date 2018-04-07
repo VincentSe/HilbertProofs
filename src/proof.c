@@ -775,40 +775,7 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
 		       0,0,0))
     return 1;
 
-  /* axiom scheme : ((\A x : p) /\ (\A x : q)) => (\A x : p /\ q)
-
-     Can be deduced as
-     (\A x : p) => p   BECAUSE \A(x);
-     ((\A x : p) /\ (\A x : q)) => p   BECAUSE PT;
-     (\A x : q) => q   BECAUSE \A(x);
-     ((\A x : p) /\ (\A x : q)) => q   BECAUSE PT;
-     ((\A x : p) /\ (\A x : q)) => (p /\ q)   BECAUSE PT;
-     \A x : ((\A x : p) /\ (\A x : q)) => (p /\ q)   BECAUSE GENERALIZATION;
-     (\A x : ((\A x : p) /\ (\A x : q)) => (p /\ q))
-     => (((\A x : p) /\ (\A x : q)) => \A x : p /\ q)   BECAUSE AXIOM_SCHEME;
-     ((\A x : p) /\ (\A x : q)) => \A x : p /\ q   BECAUSE MODUS_PONENS;
-  */
   const formula* secondFirstF = get_second_operand(firstF);
-  if (firstFirstF && secondFirstF)
-    {
-      const formula* firstFirstFirstF = get_first_operand(firstFirstF);
-      const formula* firstSecondFirstF = get_first_operand(secondFirstF);
-      if (f->builtInOp == limplies
-	  && firstF->builtInOp == land
-	  && secondF->builtInOp == forall
-	  && firstSecondF->builtInOp == land
-	  && firstFirstF->builtInOp == forall
-	  && secondFirstF->builtInOp == forall
-	  && strcmp(firstFirstF->name, secondFirstF->name) == 0
-	  && strcmp(secondFirstF->name, secondF->name) == 0
-	  && formula_equal(firstFirstFirstF,
-			   firstFirstSecondF,
-			   0,0,0)
-	  && formula_equal(firstSecondFirstF,
-			   get_second_operand(firstSecondF),
-			   0,0,0))
-	return 1;
-    }
 
   /* 
      axiom scheme : ((\E x : q) /\ p) => (\E x : q /\ p)

@@ -81,22 +81,22 @@ bothInclusions == \A a : \A b : (a \subseteq b /\ b \subseteq a) => a = b
 THEOREM bothInclusions
 
 PROOF
-VARIABLES z, y, x, b, a, i, j, t;
+VARIABLES z, y, x, b, a;
 extensionality   BECAUSE AXIOM;
 (\A x : x \in a <=> x \in b) => a = b   BECAUSE \A(a <- a, b <- b);
-
 h(a,b) == a \subseteq b /\ b \subseteq a;
-((\A z : z \in a => z \in b) /\ (\A z : z \in b => z \in a))
-   => \A z : (z \in a => z \in b) /\ (z \in b => z \in a)   BECAUSE Q_SCHEME;
-(z \in a => z \in b) => ((z \in b => z \in a) => (z \in a <=> z \in b))   BECAUSE IntroEquiv;
-((z \in a => z \in b) /\ (z \in b => z \in a)) => (z \in a <=> z \in b)   BECAUSE HypoImplToAnd;
-(\A z : (z \in a => z \in b) /\ (z \in b => z \in a)) => (\A z : z \in a <=> z \in b)   BECAUSE Q_SCHEME;
-h(a,b) => \A z : z \in a <=> z \in b   BECAUSE TransitImplication;
+(\A z : z \in a => z \in b) => (z \in a => z \in b)   BECAUSE \A(z <- z);
+(\A z : z \in b => z \in a) => (z \in b => z \in a)   BECAUSE \A(z <- z);
+h(a,b) => ((z \in a => z \in b) /\ (z \in b => z \in a))   BECAUSE MergeImplicationsAnd;
+((z \in a => z \in b) /\ (z \in b => z \in a)) => (z \in a <=> z \in b)   BECAUSE IntroEquivAnd;
+h(a,b) => (z \in a <=> z \in b)   BECAUSE TransitImplication;
+\A z : h(a,b) => (z \in a <=> z \in b)   BECAUSE GENERALIZATION;
+h(a,b) => (\A z : z \in a <=> z \in b)   BECAUSE Q_SCHEME;
 
 (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE \A(z <- x);
-\A x : (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
-(\A z : z \in a <=> z \in b) => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
-h(a,b) => (\A x : x \in a <=> x \in b)   BECAUSE TransitImplication;
+h(a,b) => (x \in a <=> x \in b)   BECAUSE TransitImplication;
+\A x : h(a,b) => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
+h(a,b) => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
 h(a,b) => a = b    BECAUSE TransitImplication;
 bothInclusions   BECAUSE GENERALIZATION;
 QED
@@ -108,6 +108,27 @@ VARIABLES z, x;
 z \in x => z \in x   BECAUSE ImplyOneself;
 \A z : z \in x => z \in x   BECAUSE GENERALIZATION;
 inclusionInOneself   BECAUSE GENERALIZATION;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 QED
 
 (*
