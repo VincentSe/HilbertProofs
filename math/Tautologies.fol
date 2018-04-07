@@ -37,6 +37,12 @@ PROPO_TAUTO DropAndRight
 DropAndRight2(a,b,c) == (a /\ b /\ c) => a
 PROPO_TAUTO DropAndRight2
 
+DropAndRight3(a,b,c,d) == (a /\ b /\ c /\ d) => a
+PROPO_TAUTO DropAndRight3
+
+DropAndBoth(a,b,c) == (a /\ b /\ c) => b
+PROPO_TAUTO DropAndBoth
+
 \* DropAndLeft2 is included in DropAndLeft, because of left-associativity
 DropAndLeft(a,b) == (a /\ b) => b
 PROPO_TAUTO DropAndLeft
