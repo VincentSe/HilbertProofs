@@ -1259,11 +1259,47 @@ IsParallelApply(f,g,x) => (IsCouple(fst(x)) /\ (fst(fst(x)) \in Domain(f) /\ snd
 IsParallelApply(f,g,x) => fst(x) \in (Domain(f) \X Domain(g))   BECAUSE TransitImplication;
 
 \* Stage snd(x)
+IsCouple(snd(x)) => snd(x) = <<fst(snd(x)), snd(snd(x))>>   BECAUSE \A(c <- snd(x));
+\A x : \A y : x = y => (x \in (Image(f) \X Image(g)) <=> y \in (Image(f) \X Image(g)))   BECAUSE E_SCHEME;
+snd(x) = <<fst(snd(x)), snd(snd(x))>> => (snd(x) \in (Image(f) \X Image(g))
+   <=> <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE \A(x <- snd(x), y <- <<fst(snd(x)), snd(snd(x))>>);
+IsCouple(snd(x)) => (snd(x) \in (Image(f) \X Image(g))
+   <=> <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE TransitImplication;
+(IsCouple(snd(x)) /\ <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))
+   => snd(x) \in (Image(f) \X Image(g))   BECAUSE HypoEquivToAndReverse;
+(fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g))
+   => <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g))
+   BECAUSE \A(x <- Image(f), y <- Image(g), a <- fst(snd(x)), b <- snd(snd(x)));
+IsCouple(snd(x)) => IsCouple(snd(x))   BECAUSE ImplyOneself;
+(IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))
+   => (IsCouple(snd(x)) /\ <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE MergeImplicationsAnd;
+(IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))
+   => snd(x) \in (Image(f) \X Image(g))   BECAUSE TransitImplication;
+
+IsParallelApply(f,g,x) => (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x)))   BECAUSE DropAndRight2;
+(IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))) => IsCouple(snd(x))   BECAUSE DropAndLeft;
+IsParallelApply(f,g,x) => IsCouple(snd(x))   BECAUSE TransitImplication;
+imageInc   BECAUSE THEOREM;
+<<fst(fst(x)), fst(snd(x)) >> \in f => fst(snd(x)) \in Image(f)   BECAUSE \A(g <- f, x <- fst(snd(x)), y <- fst(fst(x)));
+IsParallelApply(f,g,x) => fst(snd(x)) \in Image(f)   BECAUSE TransitImplication;
+<<snd(fst(x)), snd(snd(x)) >> \in g => snd(snd(x)) \in Image(g)   BECAUSE \A(g <- g, x <- snd(snd(x)), y <- snd(fst(x)));
+IsParallelApply(f,g,x) => snd(snd(x)) \in Image(g)   BECAUSE TransitImplication;
+IsParallelApply(f,g,x) => (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g))   BECAUSE CombineImplicationsEnd;
+IsParallelApply(f,g,x) => (IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))   BECAUSE CombineImplicationsEnd;
+IsParallelApply(f,g,x) => snd(x) \in (Image(f) \X Image(g))   BECAUSE TransitImplication;
+
+IsParallelApply(f,g,x) => (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g)))
+   BECAUSE CombineImplicationsEnd;
+(IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))) => IsCouple(x)   BECAUSE DropAndRight2;
+IsParallelApply(f,g,x) => IsCouple(x)   BECAUSE TransitImplication;
+IsParallelApply(f,g,x) => (IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))   BECAUSE CombineImplicationsEnd;
+IsParallelApply(f,g,x) => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
+   BECAUSE TransitImplication;
 
 x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE SeparationTauto;
 \A x : x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE GENERALIZATION;
-\E h : x \in h <=> IsParallelApply(f,g,x)   BECAUSE \E(h <- chooseB(f,g));
-(\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)) <=> \E h : x \in h <=> IsParallelApply(f,g,x)
+\E h : x \in h <=> IsParallelApply(f,g,x)   BECAUSE \E(h <- chooseB(f,g)); \* BUG !!!
+(\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)) <=> \E h : \A x : x \in h <=> IsParallelApply(f,g,x)
    BECAUSE CHOOSE parallelFunc(f,g);
 \A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)   BECAUSE MODUS_PONENS;
 QED
