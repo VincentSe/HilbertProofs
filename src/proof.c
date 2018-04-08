@@ -640,6 +640,7 @@ unsigned char match_parallel_quantifiers(const formula* f,
    (\A x : p => q) => ((\A x : ~q) => (\A x : ~p))   BECAUSE TransitImplication;
    ((\A x : ~q) => (\A x : ~p)) => (~(\A x : ~p) => ~(\A x : ~q))   BECAUSE Contraposition;
    (\A x : p => q) => (~(\A x : ~p) => ~(\A x : ~q))   BECAUSE TransitImplication;
+   (\A x : p => q) => ((\E x : p) => (\E x : q))   BECAUSE TransitImplication;
 
    Can be deduced as
    p => q   BECAUSE HYPOTHESIS;
@@ -664,7 +665,7 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
   short is_impl(const struct JustifiedFormula* f)
   {
     return is_forall(f->formula, x, p, q)
-      || ((f->formula->builtInOp == limplies || f->formula->builtInOp == lequiv)
+      || ((f->formula->builtInOp == statement->jf->formula->builtInOp)
 	  && formula_equal(p,
 			   get_first_operand(f->formula),
 			   0,0,0)

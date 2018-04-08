@@ -18,18 +18,26 @@ THEOREM injectOrderIsOrder
 PROOF
 VARIABLES a,b,f,g,m,n,o,u,x,y,multiX;
 \* Proof that injectOrder(o,f) is a graph
-multiApplySubsetImage   BECAUSE THEOREM;
-multiApply(parallelFunc(f,f), o) \subseteq Image(parallelFunc(f,f))   BECAUSE \A(f <- parallelFunc(f,f), multiX <- o);
-parallelImage   BECAUSE THEOREM;
-Image(parallelFunc(f,f)) = Image(f) \X Image(f)   BECAUSE \A(f <- f, g <- f);
-\A x : \A y : x = y => (multiApply(parallelFunc(f,f), o) \subseteq x <=> multiApply(parallelFunc(f,f), o) \subseteq y)   BECAUSE E_SCHEME;
-Image(parallelFunc(f,f)) = Image(f) \X Image(f)
-   => (multiApply(parallelFunc(f,f), o) \subseteq Image(parallelFunc(f,f)) <=> multiApply(parallelFunc(f,f), o) \subseteq Image(f) \X Image(f))   BECAUSE E_SCHEME;
-(multiApply(parallelFunc(f,f), o) \subseteq Image(parallelFunc(f,f)) <=> multiApply(parallelFunc(f,f), o) \subseteq Image(f) \X Image(f))   BECAUSE MODUS_PONENS;
-multiApply(parallelFunc(f,f), o) \subseteq Image(f) \X Image(f)   BECAUSE MODUS_PONENS;
+multiApplyExists   BECAUSE THEOREM;
+x \in multiApply(parallelFunc(f,f),o) <=> \E u : u \in o /\ <<u,x>> \in parallelFunc(f,f)
+   BECAUSE \A(f <- parallelFunc(f,f), multiX <- o, x <- x);
+x \in multiApply(parallelFunc(f,f),o) => \E u : u \in o /\ <<u,x>> \in parallelFunc(f,f)   BECAUSE EquivToImpl;
+(u \in o /\ <<u,x>> \in parallelFunc(f,f)) => <<u,x>> \in parallelFunc(f,f)   BECAUSE DropAndLeft;
+parallelFuncExists   BECAUSE THEOREM;
+<<u,x>> \in parallelFunc(f,f) <=> IsParallelApply(f,f,<<u,x>>)   BECAUSE \A(f <- f, g <- f, x <- <<u,x>>);
+<<u,x>> \in parallelFunc(f,f) => IsParallelApply(f,f,<<u,x>>)   BECAUSE EquivToImpl;
+(u \in o /\ <<u,x>> \in parallelFunc(f,f)) => IsParallelApply(f,f,<<u,x>>)   BECAUSE TransitImplication;
+IsParallelApply(f,f,<<u,x>>) => IsCouple(snd(<<u,x>>))   BECAUSE DropAndLeft;
+(\E u : u \in o /\ <<u,x>> \in parallelFunc(f,f)) => \E u : IsCouple(x)   BECAUSE Q_SCHEME;
+x \in multiApply(parallelFunc(f,f),o) => \E u : IsCouple(x)   BECAUSE TransitImplication;
 
 \* Proof that injectOrder(o,f) is reflexive
-multiApplyExists   BECAUSE THEOREM;
+multiInjection   BECAUSE THEOREM;
+IsInjection(parallelFunc(f,f)) => (x \in injectOrder(o,f) <=> pre(parallelFunc(f,f),x) \in o)
+   BECAUSE \A(f <- parallelFunc(f,f), multiX <- o, x <- x);
+parallelInject   BECAUSE THEOREM;
+(IsInjection(f) /\ IsInjection(f)) => IsInjection(parallelFunc(f,f))   BECAUSE \A(f <- f, g <- f);
+
 <<x,x>> \in multiApply(parallelFunc(f,f), o) <=> \E u : u \in o /\ <<u, <<x,x>> >> \in parallelFunc(f,f)
    BECAUSE \A(f <- parallelFunc(f,f), multiX <- o, x <- <<x,x>>);
 <<x,y>> \in multiApply(parallelFunc(f,f), o) <=> \E u : u \in o /\ <<u, <<x,y>> >> \in parallelFunc(f,f)
