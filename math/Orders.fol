@@ -33,7 +33,8 @@ x \in multiApply(parallelFunc(f,f),o) => \E u : IsCouple(x)   BECAUSE TransitImp
 
 \* Proof that injectOrder(o,f) is reflexive
 multiInjection   BECAUSE THEOREM;
-IsInjection(parallelFunc(f,f)) => (x \in injectOrder(o,f) <=> pre(parallelFunc(f,f),x) \in o)
+IsInjection(parallelFunc(f,f)) => (x \in injectOrder(o,f)
+   <=> (x \in Image(parallelFunc(f,f) /\ pre(parallelFunc(f,f),x) \in o)))
    BECAUSE \A(f <- parallelFunc(f,f), multiX <- o, x <- x);
 parallelInject   BECAUSE THEOREM;
 (IsInjection(f) /\ IsInjection(f)) => IsInjection(parallelFunc(f,f))   BECAUSE \A(f <- f, g <- f);

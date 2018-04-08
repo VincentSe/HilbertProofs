@@ -664,14 +664,15 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
 
   short is_impl(const struct JustifiedFormula* f)
   {
-    return is_forall(f->formula, x, p, q)
-      || ((f->formula->builtInOp == statement->jf->formula->builtInOp)
-	  && formula_equal(p,
-			   get_first_operand(f->formula),
-			   0,0,0)
-	  && formula_equal(q,
-			   get_second_operand(f->formula),
-			   0,0,0));
+    // When using a previously proven formula, the initial \A is optional, drop it
+    const formula* hypo = f->formula->builtInOp == forall ? get_first_operand(f->formula) : f->formula;
+    return (hypo->builtInOp == statement->jf->formula->builtInOp)
+      && formula_equal(p,
+		       get_first_operand(hypo),
+		       0,0,0)
+      && formula_equal(q,
+		       get_second_operand(hypo),
+		       0,0,0);
   }
 
   // Try implicit modus ponens

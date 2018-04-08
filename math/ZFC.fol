@@ -1058,29 +1058,40 @@ imageInc   BECAUSE THEOREM;
 multiApplyExists   BECAUSE GENERALIZATION;
 QED
 
-(*
-multiApplySubsetImage == \A f : \A multiX : multiApply(f,multiX) \subseteq Image(f)
-THEOREM multiApplySubsetImage
-PROOF
-VARIABLES f,g,u,x,y,z,multiX;
-multiApplyExists   BECAUSE THEOREM;
-z \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,z>> \in f   BECAUSE \A(f <- f, multiX <- multiX, x <- z);
-z \in multiApply(f,multiX) => \E u : u \in multiX /\ <<u,z>> \in f   BECAUSE EquivToImpl;
-(u \in multiX /\ <<u,z>> \in f) => <<u,z>> \in f   BECAUSE DropAndLeft;
-(\E u : u \in multiX /\ <<u,z>> \in f) => \E u : <<u,z>> \in f   BECAUSE Q_SCHEME;
-(\E u : <<u,z>> \in f) => <<u,z>> \in f   BECAUSE Q_SCHEME;
-(\E u : u \in multiX /\ <<u,z>> \in f) => <<u,z>> \in f   BECAUSE TransitImplication;
-z \in multiApply(f,multiX) => <<u,z>> \in f   BECAUSE TransitImplication;
-imageInc   BECAUSE THEOREM;
-<<u,z>> \in f => z \in Image(f)   BECAUSE \A(g <- f, x <- z, y <- u);
-z \in multiApply(f,multiX) => z \in Image(f)   BECAUSE TransitImplication;
-multiApplySubsetImage   BECAUSE GENERALIZATION;
-QED
-*)
-
 multiInjection == \A f : \A multiX : \A y :
-   IsInjection(f) => (y \in multiApply(f, multiX) <=> pre(f,y) \in multiX)
+   IsInjection(f) => (y \in multiApply(f, multiX) <=> (y \in Image(f) /\ pre(f,y) \in multiX))
 THEOREM multiInjection
+PROOF
+VARIABLES a,b,f,g,u,x,y,multiX;
+multiApplyExists   BECAUSE THEOREM;
+y \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,y>> \in f
+   BECAUSE \A(f <- f, multiX <- multiX, x <- y);
+chooseU(f,y,multiX) == CHOOSE u : u \in multiX /\ <<u,y>> \in f;
+(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) <=> \E u : u \in multiX /\ <<u,y>> \in f
+   BECAUSE CHOOSE chooseU(f,y,multiX);
+y \in multiApply(f,multiX) <=> (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
+   BECAUSE TransitEquiv2;
+   
+y \in multiApply(f,multiX) => (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)   BECAUSE EquivToImpl;
+(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE DropAndLeft;
+y \in multiApply(f,multiX) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE TransitImplication;
+imageInc   BECAUSE THEOREM;
+<<chooseU(f,y,multiX),y>> \in f => y \in Image(f)   BECAUSE \A(g <- f, x <- y,  y <- chooseU(f,y,multiX));
+y \in multiApply(f,multiX) => y \in Image(f)   BECAUSE TransitImplication;
+
+\* Proof that pre(f,y) works for u
+IsInjection(f) => \A a : \A b : <<a,b>> \in f => a = pre(f,b)   BECAUSE DropAndLeft;
+(\A a : \A b : <<a,b>> \in f => a = pre(f,b)) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))
+   BECAUSE \A(a <- chooseU(f,y,multiX), b <- y);
+IsInjection(f) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))    BECAUSE TransitImplication;
+(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => chooseU(f,y,multiX) = pre(f,y)    BECAUSE HypoImplToAnd;
+\A x : \A y : x = y => (x \in multiX <=> y \in multiX)    BECAUSE E_SCHEME;
+(chooseU(f,y,multiX) = pre(f,y)) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE \A(x <- chooseU(f,y,multiX), y <- pre(f,y));
+(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE TransitImplication;
+(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX) => pre(f,y) \in multiX
+   BECAUSE HypoEquivToAnd;
+\* TODO (y \in Image(f) /\ pre(f,y) \in multiX) => <<pre(f,y),y>> \in f
+QED
 
 (*
    Definition of the cartesian product, the set of couples between two sets.
@@ -1338,6 +1349,10 @@ QED
 parallelInject == \A f : \A g : (IsInjection(f) /\ IsInjection(g))
    => IsInjection(parallelFunc(f,g))
 THEOREM parallelInject
+
+parallelPreInject == \A f : \A g : \A y : (IsInjection(f) /\ IsInjection(g) /\ y \in Image(parallelFunc(f,g)))
+   => pre(parallelFunc(f,g), y) = <<pre(f,fst(y)), pre(g,snd(y))>>
+THEOREM parallelPreInject
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common
