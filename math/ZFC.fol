@@ -989,20 +989,20 @@ nodesInUnionUnion   BECAUSE THEOREM;
 imageExists   BECAUSE GENERALIZATION;
 QED
 
-imageInc == \A g : \A x : \A y : <<y,x>> \in g => x \in Image(g)
-THEOREM imageInc
-PROOF
-VARIABLES g,x,y;
-imageExists   BECAUSE THEOREM;
-x \in Image(g) <=> \E y : <<y,x>> \in g   BECAUSE \A(g <- g, x <- x);
-(\E y : <<y,x>> \in g) => x \in Image(g)   BECAUSE EquivToImplReverse;
-<<y,x>> \in g => (\E y : <<y,x>> \in g)   BECAUSE \E(y <- y);
-<<y,x>> \in g => x \in Image(g)   BECAUSE TransitImplication;
-imageInc   BECAUSE GENERALIZATION;
-QED
-
 domainInc == \A g : \A x : \A y : <<x,y>> \in g => x \in Domain(g)
 THEOREM domainInc
+PROOF
+VARIABLES g,x,y;
+domainExists   BECAUSE THEOREM;
+x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
+(\E y : <<x,y>> \in g) => x \in Domain(g)   BECAUSE EquivToImplReverse;
+<<x,y>> \in g => (\E y : <<x,y>> \in g)   BECAUSE \E(y <- y);
+<<x,y>> \in g => x \in Domain(g)   BECAUSE TransitImplication;
+domainInc   BECAUSE GENERALIZATION;
+QED
+
+imageInc == \A g : \A x : \A y : <<y,x>> \in g => x \in Image(g)
+THEOREM imageInc
 PROOF
 VARIABLES g,x,y;
 imageExists   BECAUSE THEOREM;
@@ -1190,8 +1190,8 @@ IsParallelApply(f,g,x) == IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
 parallelFunc(f,g) == CHOOSE h : \A x : x \in h <=> \* x = << <<a, b>>, <<f[a], g[b]>> >>
   IsParallelApply(f,g,x)
 
-parallelFuncExists == (\A f : \A g : \A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x))
-   /\ \A f : \A g : parallelFunc(f,g) \subseteq ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
+parallelFuncExists == \A f : \A g : (\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x))
+\*   /\ parallelFunc(f,g) \subseteq ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
 THEOREM parallelFuncExists
 PROOF
 VARIABLES a,b,c,f,g,h,x,y;
@@ -1225,6 +1225,9 @@ IsCouple(x) => IsCouple(x)   BECAUSE ImplyOneself;
 (IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))
    => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
    BECAUSE TransitImplication;
+
+x = <<fst(x), snd(x)>> => (IsParallelApply(f,g,x) <=> IsParallelApply(f,g, <<fst(x), snd(x)>>))   BECAUSE E_SCHEME;
+
 
 \* Stage fst(x)
 IsCouple(fst(x)) => fst(x) = <<fst(fst(x)), snd(fst(x))>>   BECAUSE \A(c <- fst(x));
@@ -1298,21 +1301,36 @@ IsParallelApply(f,g,x) => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(
 
 x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE SeparationTauto;
 \A x : x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE GENERALIZATION;
-\E h : x \in h <=> IsParallelApply(f,g,x)   BECAUSE \E(h <- chooseB(f,g)); \* BUG !!!
+\E h : \A x : x \in h <=> IsParallelApply(f,g,x)   BECAUSE \E(h <- chooseB(f,g));
 (\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)) <=> \E h : \A x : x \in h <=> IsParallelApply(f,g,x)
    BECAUSE CHOOSE parallelFunc(f,g);
 \A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)   BECAUSE MODUS_PONENS;
+parallelFuncExists   BECAUSE GENERALIZATION;
 QED
 
 parallelImage == \A f : \A g : Image(parallelFunc(f,g)) = Image(f) \X Image(g)
 THEOREM parallelImage
 PROOF
-VARIABLES a,b,f,g;
+VARIABLES a,b,f,g,i,j,x,y;
 extensionality   BECAUSE AXIOM;
 (\A x : x \in Image(parallelFunc(f,g)) <=> x \in (Image(f) \X Image(g)))
    => Image(parallelFunc(f,g)) = (Image(f) \X Image(g))
    BECAUSE \A(a <- Image(parallelFunc(f,g)), b <- Image(f) \X Image(g));
+imageExists   BECAUSE THEOREM;
+x \in Image(parallelFunc(f,g)) <=> \E y : <<y,x>> \in parallelFunc(f,g)   BECAUSE \A(g <- parallelFunc(f,g), x <- x);
 parallelFuncExists   BECAUSE THEOREM;
+<<y,x>> \in parallelFunc(f,g) <=> IsParallelApply(f,g,<<y,x>>)   BECAUSE \A(f <- f, g <- g, x <- <<y,x>>);
+(\E y : <<y,x>> \in parallelFunc(f,g)) <=> (\E y : IsParallelApply(f,g,<<y,x>>))   BECAUSE Q_SCHEME;
+x \in Image(parallelFunc(f,g)) <=> \E y : IsParallelApply(f,g,<<y,x>>)   BECAUSE TransitEquiv;
+
+
+pre(f,x) == CHOOSE y : <<y,x>> \in f;
+cartesianProductExists   BECAUSE THEOREM;
+x \in (Image(f) \X Image(g)) <=> \E u : \E v : u \in Image(f) /\ v \in Image(g) /\ x = <<u,v>>
+   BECAUSE \A(i <- Image(f), j <- Image(g), x <- x);
+
+x \in (Image(f) \X Image(g)) => (<<pre(f,fst(x)), fst(x)>> \in f /\ <<pre(g,snd(x)), snd(x)>> \in g)   BECAUSE E_SCHEME;
+x \in (Image(f) \X Image(g)) <=> IsParallelApply(f,g,<< <<pre(f,fst(x)),pre(g,snd(x))>>, x>>)   BECAUSE E_SCHEME;
 QED
 
 (*

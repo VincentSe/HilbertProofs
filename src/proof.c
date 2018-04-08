@@ -600,7 +600,7 @@ unsigned char match_parallel_quantifiers(const formula* f,
 					 /*out*/const formula** q)
 {
   // Test that f is (\E x : p) => (\E x : q) or forall
-  if (!f || f->builtInOp != limplies)
+  if (!f || (f->builtInOp != limplies && f->builtInOp != lequiv))
     return 0;
 
   const formula* secondOp = get_second_operand(f);
@@ -664,7 +664,7 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
   short is_impl(const struct JustifiedFormula* f)
   {
     return is_forall(f->formula, x, p, q)
-      || (f->formula->builtInOp == limplies
+      || ((f->formula->builtInOp == limplies || f->formula->builtInOp == lequiv)
 	  && formula_equal(p,
 			   get_first_operand(f->formula),
 			   0,0,0)
