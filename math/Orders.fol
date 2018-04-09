@@ -26,11 +26,10 @@ VARIABLES a,b,c,f,o,x,y;
 injectOrderExists   BECAUSE GENERALIZATION;
 QED
 
-injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsInjection(f))
-   => IsOrder(injectOrder(o,f))
+injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsFunction(f)) => IsOrder(injectOrder(o,f))
 THEOREM injectOrderIsOrder
 PROOF
-VARIABLES a,b,f,g,i,j,o,x,y;
+VARIABLES a,b,d,f,g,i,j,o,x,y;
 \* Proof that injectOrder(o,f) is a graph
 injectOrderExists   BECAUSE THEOREM;
 x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE \A(o <- o, f <- f, x <- x);
@@ -86,69 +85,65 @@ IsReflexive(o) => IsReflexive(o)   BECAUSE ImplyOneself;
 (IsReflexive(o) /\ x \in injectOrder(o,f)) => (IsReflexive(o) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)   BECAUSE MergeImplicationsAnd;
 (IsReflexive(o) /\ x \in injectOrder(o,f)) => (<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)   BECAUSE TransitImplication;
 
-   \* <<fst(x), fst(x)>>
-(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => fst(x) \in Image(f)   BECAUSE DropAndBoth;
-x \in (Image(f) \X Image(f)) => fst(x) \in Image(f)   BECAUSE TransitImplication;
-fst(x) \in Image(f) => (fst(x) \in Image(f) /\ fst(x) \in Image(f))   BECAUSE AndSelf;
+   \* Lemma : \A d : (d \in Image(f) /\ <<pre(f,d), pre(f,d)>>) \in o => <<d,d>> \in injectOrder
+d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
 cartesianProductInc   BECAUSE THEOREM;
-(fst(x) \in Image(f) /\ fst(x) \in Image(f)) => <<fst(x),fst(x)>> \in (Image(f) \X Image(f))
-   BECAUSE \A(x <- Image(f), y <- Image(f), a <- fst(x), b <- fst(x));
-fst(x) \in Image(f) => <<fst(x),fst(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-x \in (Image(f) \X Image(f)) => <<fst(x),fst(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => x \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => <<fst(x),fst(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => x \in injectOrder(o,f)   BECAUSE DropAndLeft;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<fst(x),fst(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-fst(x) = fst(<<fst(x),fst(x)>>)   BECAUSE \A(a <- fst(x), b <- fst(x));
-fst(x) = snd(<<fst(x),fst(x)>>)   BECAUSE \A(a <- fst(x), b <- fst(x));
+(d \in Image(f) /\ d \in Image(f)) => <<d,d>> \in (Image(f) \X Image(f))
+   BECAUSE \A(x <- Image(f), y <- Image(f), a <- d, b <- d);
+d \in Image(f) => <<d,d>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
+d = fst(<<d,d>>)   BECAUSE \A(a <- d, b <- d);
+d = snd(<<d,d>>)   BECAUSE \A(a <- d, b <- d);
 (x = a /\ y = b) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,a), pre(f,b)>> \in o)   BECAUSE E_SCHEME;
 \A x : \A y : \A a : \A b : (x = a /\ y = b) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,a), pre(f,b)>> \in o)
    BECAUSE GENERALIZATION;
-(fst(x) = fst(<<fst(x),fst(x)>>) /\ fst(x) = snd(<<fst(x),fst(x)>>))
-   => (<<pre(f,fst(x)), pre(f,fst(x))>> \in o <=> <<pre(f,fst(<<fst(x),fst(x)>>)), pre(f,snd(<<fst(x),fst(x)>>))>> \in o)
-   BECAUSE \A(x <- fst(x), y <- fst(x), a <- fst(<<fst(x),fst(x)>>), b <- snd(<<fst(x),fst(x)>>));
-fst(x) = fst(<<fst(x),fst(x)>>) /\ fst(x) = snd(<<fst(x),fst(x)>>)   BECAUSE IntroAndRight;
-<<pre(f,fst(x)), pre(f,fst(x))>> \in o <=> <<pre(f,fst(<<fst(x),fst(x)>>)), pre(f,snd(<<fst(x),fst(x)>>))>> \in o
+(d = fst(<<d,d>>) /\ d = snd(<<d,d>>))
+   => (<<pre(f,d), pre(f,d)>> \in o <=> <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o)
+   BECAUSE \A(x <- d, y <- d, a <- fst(<<d,d>>), b <- snd(<<d,d>>));
+d = fst(<<d,d>>) /\ d = snd(<<d,d>>)   BECAUSE IntroAndRight;
+<<pre(f,d), pre(f,d)>> \in o <=> <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o
    BECAUSE MODUS_PONENS;
-<<pre(f,fst(x)), pre(f,fst(x))>> \in o => <<pre(f,fst(<<fst(x),fst(x)>>)), pre(f,snd(<<fst(x),fst(x)>>))>> \in o
+<<pre(f,d), pre(f,d)>> \in o => <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o
    BECAUSE EquivToImpl;
-(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o) => <<pre(f,fst(x)), pre(f,fst(x))>> \in o   BECAUSE DropAndRight;
+(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => IsInInjectOrder(o,f,<<d,d>>) 
+   BECAUSE MergeImplicationsAnd;
+<<d,d>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<d,d>>)   BECAUSE \A(o <- o, f <- f, x <- <<d,d>>);
+IsInInjectOrder(o,f,<<d,d>>) => <<d,d>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
+(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)    BECAUSE TransitImplication;
+\A d : (d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE GENERALIZATION;
+   
+   \* <<fst(x), fst(x)>>
+(fst(x) \in Image(f) /\ <<pre(f,fst(x)), pre(f,fst(x))>> \in o) => <<fst(x),fst(x)>> \in injectOrder(o,f)
+   BECAUSE \A(d <- fst(x));
+(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => fst(x) \in Image(f)   BECAUSE DropAndBoth;
+x \in (Image(f) \X Image(f)) => fst(x) \in Image(f)   BECAUSE TransitImplication;
+IsInInjectOrder(o,f,x) => fst(x) \in Image(f)   BECAUSE TransitImplication;
+x \in injectOrder(o,f) => fst(x) \in Image(f)   BECAUSE TransitImplication;
+(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
+   => <<pre(f,fst(x)), pre(f,fst(x))>> \in o   BECAUSE DropAndRight;
 (IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,fst(x)), pre(f,fst(x))>> \in o   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,fst(<<fst(x),fst(x)>>)), pre(f,snd(<<fst(x),fst(x)>>))>> \in o
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => x \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => fst(x) \in Image(f)   BECAUSE TransitImplication;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => (fst(x) \in Image(f) /\ <<pre(f,fst(x)), pre(f,fst(x))>> \in o)
+   BECAUSE CombineImplicationsEnd;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<fst(x),fst(x)>> \in injectOrder(o,f)
    BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => IsInInjectOrder(o,f,<<fst(x),fst(x)>>)   BECAUSE CombineImplicationsEnd;
-<<fst(x),fst(x)>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<fst(x),fst(x)>>)   BECAUSE \A(o <- o, f <- f, x <- <<fst(x),fst(x)>>);
-IsInInjectOrder(o,f,<<fst(x),fst(x)>>) => <<fst(x),fst(x)>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<fst(x),fst(x)>> \in injectOrder(o,f)   BECAUSE TransitImplication;
 
    \* <<snd(x), snd(x)>>
+(snd(x) \in Image(f) /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o) => <<snd(x),snd(x)>> \in injectOrder(o,f)
+   BECAUSE \A(d <- snd(x));
 (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => snd(x) \in Image(f)   BECAUSE DropAndLeft;
 x \in (Image(f) \X Image(f)) => snd(x) \in Image(f)   BECAUSE TransitImplication;
-snd(x) \in Image(f) => (snd(x) \in Image(f) /\ snd(x) \in Image(f))   BECAUSE AndSelf;
-(snd(x) \in Image(f) /\ snd(x) \in Image(f)) => <<snd(x),snd(x)>> \in (Image(f) \X Image(f))
-   BECAUSE \A(x <- Image(f), y <- Image(f), a <- snd(x), b <- snd(x));
-snd(x) \in Image(f) => <<snd(x),snd(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-x \in (Image(f) \X Image(f)) => <<snd(x),snd(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => <<snd(x),snd(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<snd(x),snd(x)>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-snd(x) = fst(<<snd(x),snd(x)>>)   BECAUSE \A(a <- snd(x), b <- snd(x));
-snd(x) = snd(<<snd(x),snd(x)>>)   BECAUSE \A(a <- snd(x), b <- snd(x));
-(snd(x) = fst(<<snd(x),snd(x)>>) /\ snd(x) = snd(<<snd(x),snd(x)>>))
-   => (<<pre(f,snd(x)), pre(f,snd(x))>> \in o <=> <<pre(f,fst(<<snd(x),snd(x)>>)), pre(f,snd(<<snd(x),snd(x)>>))>> \in o)
-   BECAUSE \A(x <- snd(x), y <- snd(x), a <- fst(<<snd(x),snd(x)>>), b <- snd(<<snd(x),snd(x)>>));
-snd(x) = fst(<<snd(x),snd(x)>>) /\ snd(x) = snd(<<snd(x),snd(x)>>)   BECAUSE IntroAndRight;
-<<pre(f,snd(x)), pre(f,snd(x))>> \in o <=> <<pre(f,fst(<<snd(x),snd(x)>>)), pre(f,snd(<<snd(x),snd(x)>>))>> \in o
-   BECAUSE MODUS_PONENS;
-<<pre(f,snd(x)), pre(f,snd(x))>> \in o => <<pre(f,fst(<<snd(x),snd(x)>>)), pre(f,snd(<<snd(x),snd(x)>>))>> \in o
-   BECAUSE EquivToImpl;
-(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o) => <<pre(f,snd(x)), pre(f,snd(x))>> \in o   BECAUSE DropAndLeft;
+IsInInjectOrder(o,f,x) => snd(x) \in Image(f)   BECAUSE TransitImplication;
+x \in injectOrder(o,f) => snd(x) \in Image(f)   BECAUSE TransitImplication;
+(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
+   => <<pre(f,snd(x)), pre(f,snd(x))>> \in o   BECAUSE DropAndLeft;
 (IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,snd(x)), pre(f,snd(x))>> \in o   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,fst(<<snd(x),snd(x)>>)), pre(f,snd(<<snd(x),snd(x)>>))>> \in o
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => x \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => snd(x) \in Image(f)   BECAUSE TransitImplication;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => (snd(x) \in Image(f) /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
+   BECAUSE CombineImplicationsEnd;
+(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<snd(x),snd(x)>> \in injectOrder(o,f)
    BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => IsInInjectOrder(o,f,<<snd(x),snd(x)>>)   BECAUSE CombineImplicationsEnd;
-<<snd(x),snd(x)>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<snd(x),snd(x)>>)   BECAUSE \A(o <- o, f <- f, x <- <<snd(x),snd(x)>>);
-IsInInjectOrder(o,f,<<snd(x),snd(x)>>) => <<snd(x),snd(x)>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<snd(x),snd(x)>> \in injectOrder(o,f)   BECAUSE TransitImplication;
 
 (IsReflexive(o) /\ x \in injectOrder(o,f)) => (<<fst(x),fst(x)>> \in injectOrder(o,f) /\ <<snd(x),snd(x)>> \in injectOrder(o,f))
    BECAUSE CombineImplicationsEnd;
@@ -162,14 +157,48 @@ IsReflexive(o) => IsReflexive(injectOrder(o,f))   BECAUSE Q_SCHEME;
 <<x,y>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<x,y>>)   BECAUSE \A(o <- o, f <- f, x <- <<x,y>>);
 <<x,y>> \in injectOrder(o,f) => IsInInjectOrder(o,f,<<x,y>>)   BECAUSE EquivToImpl;
 IsInInjectOrder(o,f,<<x,y>>) => <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o   BECAUSE DropAndLeft;
-\* IsInInjectOrder(o,f,<<x,y>>) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE DropAndLeft;
+x = fst(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+y = snd(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+(x = fst(<<x,y>>) /\ y = snd(<<x,y>>)) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o)   BECAUSE E_SCHEME;
+x = fst(<<x,y>>) /\ y = snd(<<x,y>>)   BECAUSE IntroAndRight;
+<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o   BECAUSE MODUS_PONENS;
+<<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o => <<pre(f,x), pre(f,y)>> \in o    BECAUSE EquivToImplReverse;
+IsInInjectOrder(o,f,<<x,y>>) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE TransitImplication;
 <<y,x>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<y,x>>)   BECAUSE \A(o <- o, f <- f, x <- <<y,x>>);
 <<y,x>> \in injectOrder(o,f) => IsInInjectOrder(o,f,<<y,x>>)   BECAUSE EquivToImpl;
 IsInInjectOrder(o,f,<<y,x>>) => <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o   BECAUSE DropAndLeft;
-\* IsInInjectOrder(o,f,<<y,x>>) => <<pre(f,y), pre(f,x)>> \in o   BECAUSE DropAndLeft;
-\* (IsInInjectOrder(o,f,<<x,y>>) /\ IsInInjectOrder(o,f,<<y,x>>)) => pre(f,x) = pre(f,y)  by anti-symmetry of o
-\* x = y  by injectivity of f. Or maybe IsInjective(f) is useless in this proof, postponed when using a given injectOrder.
+y = fst(<<y,x>>)   BECAUSE \A(a <- y, b <- x);
+x = snd(<<y,x>>)   BECAUSE \A(a <- y, b <- x);
+(y = fst(<<y,x>>) /\ x = snd(<<y,x>>)) => (<<pre(f,y), pre(f,x)>> \in o <=> <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o)   BECAUSE E_SCHEME;
+y = fst(<<y,x>>) /\ x = snd(<<y,x>>)   BECAUSE IntroAndRight;
+<<pre(f,y), pre(f,x)>> \in o <=> <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o   BECAUSE MODUS_PONENS;
+<<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o => <<pre(f,y), pre(f,x)>> \in o    BECAUSE EquivToImplReverse;
+IsInInjectOrder(o,f,<<y,x>>) => <<pre(f,y), pre(f,x)>> \in o   BECAUSE TransitImplication;
+(IsInInjectOrder(o,f,<<x,y>>) /\ IsInInjectOrder(o,f,<<y,x>>))
+   => (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o)   BECAUSE MergeImplicationsAnd;
 
+IsOrder(o) => (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)   BECAUSE DropAndLeft;
+(\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
+   => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
+IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))   BECAUSE TransitImplication;
+(<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE SwitchHypos;
+(IsInInjectOrder(o,f,<<x,y>>) /\ IsInInjectOrder(o,f,<<y,x>>)) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE TransitImplication;
+
+imageExists   BECAUSE THEOREM;
+y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
+<<pre(f,y),y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
+y \in Image(f) <=> <<pre(f,y),y>> \in f   BECAUSE TransitEquiv2;
+y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE EquivToImpl; \* y = f[pre(f,y)]
+IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE DropAndLeft;
+(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- y);
+IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TransitImplication;
+<<pre(f,y),y>> \in f => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE SwitchHypos;
+y \in Image(f) => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE TransitImplication;
+\A y : y \in Image(f) => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE GENERALIZATION;
+x \in Image(f) => (IsFunction(f) => x = f[pre(f,x)])   BECAUSE \A(y <- x);
+\A x : \A y : x = y => (f[x] = f[y])   BECAUSE E_SCHEME;
+pre(f,x) = pre(f,y) => (f[pre(f,x)] = f[pre(f,y)])   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
+\* x = y  by funcitonnality of f
 \* TODO
 QED
 

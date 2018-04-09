@@ -886,7 +886,15 @@ unsigned char resolve_names(/*out*/formula* f,
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
 				       variables, opVariables, proofLocalDecl))
     {
+      return 0;
+    }
 
+  if (f->builtInOp == variable && f->operands)
+    {
+      printf("%s:%d: variable %s cannot have operands\n",
+	     f->file,
+	     f->first_line,
+	     f->name);
       return 0;
     }
   return 1;
