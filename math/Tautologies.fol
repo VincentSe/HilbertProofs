@@ -80,11 +80,17 @@ PROPO_TAUTO EquivToImplReverse
 IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
 PROPO_TAUTO IntroEquiv
 
+HypoIntroEquiv(a,b,h) == (h => (a => b)) => ((h => (b => a)) => (h => (a <=> b)))
+PROPO_TAUTO HypoIntroEquiv
+
 IntroEquivAnd(a,b) == ((a => b) /\ (b => a)) => (a <=> b)
 PROPO_TAUTO IntroEquivAnd
 
 AssocAnd(a,b,c) == ((a /\ b) /\ c) => (a /\ (b /\ c))
 PROPO_TAUTO AssocAnd
+
+AssocAndLeft(a,b,c) == (a /\ (b /\ c)) => ((a /\ b) /\ c)
+PROPO_TAUTO AssocAndLeft
 
 ImplyOneself(a) == a => a
 PROPO_TAUTO ImplyOneself

@@ -840,6 +840,7 @@ QED
 IsCouple(c) == \E x : \E y : c = <<x,y>>
 fst(c) == CHOOSE x : \E y : c = <<x,y>>
 snd(c) == CHOOSE y : c = <<fst(c), y>>
+swap(c) == <<snd(c), fst(c)>>
 
 tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
 THEOREM tupleComposition
@@ -859,9 +860,8 @@ PROOF
 VARIABLES a,b,c,d,x,y;
 tupleComposition   BECAUSE THEOREM;
 IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
-<<a,b>> = <<a,b>> => \E x : \E y : <<a,b>> = <<x,y>>   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
-IsCouple(<<a,b>>)   BECAUSE MODUS_PONENS;
+IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
 tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
@@ -876,9 +876,8 @@ PROOF
 VARIABLES a,b,c,d,x,y;
 tupleComposition   BECAUSE THEOREM;
 IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
-<<a,b>> = <<a,b>> => \E x : \E y : <<a,b>> = <<x,y>>   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
-IsCouple(<<a,b>>)   BECAUSE MODUS_PONENS;
+IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
 tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
@@ -892,9 +891,10 @@ QED
 IsGraph(g) == \A x : x \in g => IsCouple(x)
 
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
+Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
-Image(g) == CHOOSE b : \A x : x \in b <=> \E y : <<y,x>> \in g
-IsReflexive(g) == \A u : u \in g => (<<fst(u), fst(u)>> \in g /\ <<snd(u), snd(u)>> \in g)
+Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
+IsReflexive(g) == \A x : x \in g => (<<fst(x), fst(x)>> \in g /\ <<snd(x), snd(x)>> \in g)
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -964,28 +964,34 @@ IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
 domainExists   BECAUSE GENERALIZATION;
 QED
 
-imageExists == \A g : \A x : x \in Image(g) <=> \E y : <<y,x>> \in g
+imageExists == \A g : \A y : y \in Image(g) <=> Reaches(g,y)
 THEOREM imageExists
 PROOF
 VARIABLES a,b,g,x,y;
 \* By separation in UNION UNION g
-(\A x : x \in Image(g) <=> \E y : <<y,x>> \in g)
-   <=> (\E b : \A x : x \in b <=> \E y : <<y,x>> \in g)   BECAUSE CHOOSE Image(g);
-\A a : \E b : \A x : x \in b <=> (x \in a /\ \E y : <<y,x>> \in g)   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in UNION UNION g /\ \E y : <<y,x>> \in g)   BECAUSE \A(a <- UNION UNION g);
-(x \in UNION UNION g /\ \E y : <<y,x>> \in g) => \E y : <<y,x>> \in g   BECAUSE DropAndLeft;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ Reaches(g,x))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE \A(a <- UNION UNION g);
+
+chooseB(g) == CHOOSE b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x));
+(\A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x)))
+   <=> \E b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE CHOOSE chooseB(g);
+\A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE MODUS_PONENS;
+y \in chooseB(g) <=> (y \in UNION UNION g /\ Reaches(g,y))   BECAUSE \A(x <- y);
+
+(y \in UNION UNION g /\ Reaches(g,y)) => Reaches(g,y)   BECAUSE DropAndLeft;
 nodesInUnionUnion   BECAUSE THEOREM;
-<<y,x>> \in g => (y \in UNION UNION g /\ x \in UNION UNION g)   BECAUSE \A(x <- y, y <- x, g <- g);
-(y \in UNION UNION g /\ x \in UNION UNION g) => x \in UNION UNION g   BECAUSE DropAndLeft;
-<<y,x>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
-(\E y : <<y,x>> \in g) => \E y : x \in UNION UNION g   BECAUSE Q_SCHEME;
-(\E y : x \in UNION UNION g) => x \in UNION UNION g   BECAUSE Q_SCHEME;
-(\E y : <<y,x>> \in g) => x \in UNION UNION g   BECAUSE TransitImplication;
-(x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE SeparationTauto;
-(\A x : x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (\A x : x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> (x \in UNION UNION g /\ (\E y : <<y,x>> \in g))) => (\E b : \A x : x \in b <=> (\E y : <<y,x>> \in g))   BECAUSE Q_SCHEME;
-\E b : \A x : x \in b <=> (\E y : <<y,x>> \in g)   BECAUSE MODUS_PONENS;
-\A x : x \in Image(g) <=> (\E y : <<y,x>> \in g)   BECAUSE MODUS_PONENS;
+<<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
+(x \in UNION UNION g /\ y \in UNION UNION g) => y \in UNION UNION g   BECAUSE DropAndLeft;
+<<x,y>> \in g => y \in UNION UNION g   BECAUSE TransitImplication;
+(\E x : <<x,y>> \in g) => \E x : y \in UNION UNION g   BECAUSE Q_SCHEME;
+(\E x : y \in UNION UNION g) => y \in UNION UNION g   BECAUSE Q_SCHEME;
+Reaches(g,y) => y \in UNION UNION g   BECAUSE TransitImplication;
+y \in chooseB(g) <=> Reaches(g,y)   BECAUSE SeparationTauto;
+\A y : y \in chooseB(g) <=> Reaches(g,y)   BECAUSE GENERALIZATION;
+\E b : \A y : y \in b <=> Reaches(g,y)   BECAUSE \E(b <- chooseB(g));
+(\A y : y \in Image(g) <=> Reaches(g,y))
+   <=> (\E b : \A y : y \in b <=> Reaches(g,y))   BECAUSE CHOOSE Image(g);
+\A y : y \in Image(g) <=> Reaches(g,y)   BECAUSE MODUS_PONENS;
 imageExists   BECAUSE GENERALIZATION;
 QED
 
@@ -1001,15 +1007,15 @@ x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
 domainInc   BECAUSE GENERALIZATION;
 QED
 
-imageInc == \A g : \A x : \A y : <<y,x>> \in g => x \in Image(g)
+imageInc == \A g : \A x : \A y : <<x,y>> \in g => y \in Image(g)
 THEOREM imageInc
 PROOF
 VARIABLES g,x,y;
 imageExists   BECAUSE THEOREM;
-x \in Image(g) <=> \E y : <<y,x>> \in g   BECAUSE \A(g <- g, x <- x);
-(\E y : <<y,x>> \in g) => x \in Image(g)   BECAUSE EquivToImplReverse;
-<<y,x>> \in g => (\E y : <<y,x>> \in g)   BECAUSE \E(y <- y);
-<<y,x>> \in g => x \in Image(g)   BECAUSE TransitImplication;
+y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
+(\E x : <<x,y>> \in g) => y \in Image(g)   BECAUSE EquivToImplReverse;
+<<x,y>> \in g => (\E x : <<x,y>> \in g)   BECAUSE \E(x <- x);
+<<x,y>> \in g => y \in Image(g)   BECAUSE TransitImplication;
 imageInc   BECAUSE GENERALIZATION;
 QED
 
@@ -1038,7 +1044,7 @@ VARIABLES a,b,c,f,g,u,x,y,multiX;
 \E b : \A x : x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) )   BECAUSE \A(a <- Image(f));
 
 imageInc   BECAUSE THEOREM;
-<<u,x>> \in f => x \in Image(f)   BECAUSE \A(g <- f, x <- x, y <- u);
+<<u,x>> \in f => x \in Image(f)   BECAUSE \A(g <- f, x <- u, y <- x);
 (u \in multiX /\ <<u,x>> \in f) => <<u,x>> \in f   BECAUSE DropAndLeft;
 (u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TransitImplication;
 (\E u : u \in multiX /\ <<u,x>> \in f) => \E u : x \in Image(f)   BECAUSE Q_SCHEME;
@@ -1066,20 +1072,37 @@ VARIABLES a,b,f,g,u,x,y,multiX;
 multiApplyExists   BECAUSE THEOREM;
 y \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,y>> \in f
    BECAUSE \A(f <- f, multiX <- multiX, x <- y);
+
+\* Proof of (y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX) 
+<<pre(f,y), y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
+imageExists   BECAUSE THEOREM;
+y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
+<<pre(f,y), y>> \in f <=> y \in Image(f)   BECAUSE TransitEquiv2;
+y \in Image(f) => <<pre(f,y), y>> \in f   BECAUSE EquivToImplReverse;
+pre(f,y) \in multiX => pre(f,y) \in multiX   BECAUSE ImplyOneself;
+(y \in Image(f) /\ pre(f,y) \in multiX) => (<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX)
+   BECAUSE MergeImplicationsAnd;
+(<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE AndSymmetry;
+(y \in Image(f) /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE TransitImplication;
+(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => \E u : u \in multiX /\ <<u,y>> \in f   BECAUSE \E(u <- pre(f,y));
+(\E u : u \in multiX /\ <<u,y>> \in f) => y \in multiApply(f,multiX)   BECAUSE EquivToImplReverse;
+(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => y \in multiApply(f,multiX)   BECAUSE TransitImplication;
+(y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX)   BECAUSE TransitImplication;
+IsInjection(f) => ((y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX))   BECAUSE PT1;
+
+\* Converse
 chooseU(f,y,multiX) == CHOOSE u : u \in multiX /\ <<u,y>> \in f;
-(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) <=> \E u : u \in multiX /\ <<u,y>> \in f
-   BECAUSE CHOOSE chooseU(f,y,multiX);
+(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
+   <=> \E u : u \in multiX /\ <<u,y>> \in f   BECAUSE CHOOSE chooseU(f,y,multiX);
 y \in multiApply(f,multiX) <=> (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
-   BECAUSE TransitEquiv2;
-   
+   BECAUSE TransitEquiv2;   
 y \in multiApply(f,multiX) => (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)   BECAUSE EquivToImpl;
 (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE DropAndLeft;
 y \in multiApply(f,multiX) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE TransitImplication;
 imageInc   BECAUSE THEOREM;
-<<chooseU(f,y,multiX),y>> \in f => y \in Image(f)   BECAUSE \A(g <- f, x <- y,  y <- chooseU(f,y,multiX));
+<<chooseU(f,y,multiX),y>> \in f => y \in Image(f)   BECAUSE \A(g <- f, x <- chooseU(f,y,multiX), y <- y);
 y \in multiApply(f,multiX) => y \in Image(f)   BECAUSE TransitImplication;
 
-\* Proof that pre(f,y) works for u
 IsInjection(f) => \A a : \A b : <<a,b>> \in f => a = pre(f,b)   BECAUSE DropAndLeft;
 (\A a : \A b : <<a,b>> \in f => a = pre(f,b)) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))
    BECAUSE \A(a <- chooseU(f,y,multiX), b <- y);
@@ -1088,9 +1111,24 @@ IsInjection(f) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(
 \A x : \A y : x = y => (x \in multiX <=> y \in multiX)    BECAUSE E_SCHEME;
 (chooseU(f,y,multiX) = pre(f,y)) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE \A(x <- chooseU(f,y,multiX), y <- pre(f,y));
 (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE TransitImplication;
-(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX) => pre(f,y) \in multiX
-   BECAUSE HypoEquivToAnd;
-\* TODO (y \in Image(f) /\ pre(f,y) \in multiX) => <<pre(f,y),y>> \in f
+(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)
+   => pre(f,y) \in multiX   BECAUSE HypoEquivToAnd;
+(IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
+   => (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AssocAndLeft;
+(IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
+   => pre(f,y) \in multiX   BECAUSE TransitImplication;
+(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
+   => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AndSymmetry;
+y \in multiApply(f,multiX) => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE TransitImplication;
+IsInjection(f) => IsInjection(f)   BECAUSE ImplyOneself;
+(IsInjection(f) /\ y \in multiApply(f,multiX)) => (IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))   BECAUSE MergeImplicationsAnd;
+(IsInjection(f) /\ y \in multiApply(f,multiX)) => pre(f,y) \in multiX   BECAUSE TransitImplication;
+IsInjection(f) => (y \in multiApply(f,multiX) => y \in Image(f))   BECAUSE PT1;
+(IsInjection(f) /\ y \in multiApply(f,multiX)) => y \in Image(f)   BECAUSE HypoImplToAnd;
+(IsInjection(f) /\ y \in multiApply(f,multiX)) => (y \in Image(f) /\ pre(f,y) \in multiX)   BECAUSE CombineImplicationsEnd;
+IsInjection(f) => (y \in multiApply(f,multiX) => (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoAndToImpl;
+IsInjection(f) => (y \in multiApply(f,multiX) <=> (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoIntroEquiv;
+multiInjection   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -1222,137 +1260,6 @@ b \in y => snd(<<a,b>>) \in y   BECAUSE EquivToImpl;
 (a \in x /\ b \in y) => <<a,b>> \in (x \X y)   BECAUSE TransitImplication;
 cartesianProductInc   BECAUSE GENERALIZATION;
 QED
-
-\* Two functions called in parallel
-IsParallelApply(f,g,x) == IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
-   /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g
-parallelFunc(f,g) == CHOOSE h : \A x : x \in h <=> \* x = << <<a, b>>, <<f[a], g[b]>> >>
-  IsParallelApply(f,g,x)
-
-parallelFuncExists == \A f : \A g : (\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x))
-\*   /\ parallelFunc(f,g) \subseteq ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-THEOREM parallelFuncExists
-PROOF
-VARIABLES a,b,c,f,g,h,x,y;
-\* By separation in (Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))
-\A a : \E b : \A x : x \in b <=> (x \in a /\ IsParallelApply(f,g,x))   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x))   BECAUSE \A(a <- (Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)));
-
-\* Take one such b
-chooseB(f,g) == CHOOSE b : \A x : x \in b <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x));
-(\A x : x \in chooseB(f,g) <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x))) <=> \E b : \A x : x \in b <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x))   BECAUSE CHOOSE chooseB(f,g);
-\A x : x \in chooseB(f,g) <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x))   BECAUSE MODUS_PONENS;
-x \in chooseB(f,g) <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))) /\ IsParallelApply(f,g,x))   BECAUSE \A(x <- x);
-
-\* Stage x
-tupleComposition   BECAUSE THEOREM;
-IsCouple(x) => x = <<fst(x), snd(x)>>   BECAUSE \A(c <- x);
-x = <<fst(x), snd(x)>> => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE E_SCHEME;
-IsCouple(x) => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE TransitImplication;
-(IsCouple(x) /\ <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))
-   => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))   BECAUSE HypoEquivToAndReverse;
-cartesianProductInc   BECAUSE THEOREM;
-(fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g)))
-   => <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   BECAUSE \A(x <- (Domain(f) \X Domain(g)), y <- (Image(f) \X Image(g)), a <- fst(x), b <- snd(x));
-IsCouple(x) => IsCouple(x)   BECAUSE ImplyOneself;
-(IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))
-   => (IsCouple(x) /\ <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))
-   BECAUSE MergeImplicationsAnd;
-(IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))
-   => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   BECAUSE TransitImplication;
-
-x = <<fst(x), snd(x)>> => (IsParallelApply(f,g,x) <=> IsParallelApply(f,g, <<fst(x), snd(x)>>))   BECAUSE E_SCHEME;
-
-\* Stage fst(x)
-IsCouple(fst(x)) => fst(x) = <<fst(fst(x)), snd(fst(x))>>   BECAUSE \A(c <- fst(x));
-\A x : \A y : x = y => (x \in (Domain(f) \X Domain(g)) <=> y \in (Domain(f) \X Domain(g)))   BECAUSE E_SCHEME;
-fst(x) = <<fst(fst(x)), snd(fst(x))>> => (fst(x) \in (Domain(f) \X Domain(g))
-   <=> <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g)))   BECAUSE \A(x <- fst(x), y <- <<fst(fst(x)), snd(fst(x))>>);
-IsCouple(fst(x)) => (fst(x) \in (Domain(f) \X Domain(g))
-   <=> <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g)))   BECAUSE TransitImplication;
-(IsCouple(fst(x)) /\ <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g)))
-   => fst(x) \in (Domain(f) \X Domain(g))   BECAUSE HypoEquivToAndReverse;
-(fst(fst(x)) \in Domain(f) /\ snd(fst(x)) \in Domain(g))
-   => <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g))
-   BECAUSE \A(x <- Domain(f), y <- Domain(g), a <- fst(fst(x)), b <- snd(fst(x)));
-IsCouple(fst(x)) => IsCouple(fst(x))   BECAUSE ImplyOneself;
-(IsCouple(fst(x)) /\ (fst(fst(x)) \in Domain(f) /\ snd(fst(x)) \in Domain(g)))
-   => (IsCouple(fst(x)) /\ <<fst(fst(x)), snd(fst(x))>> \in (Domain(f) \X Domain(g)))   BECAUSE MergeImplicationsAnd;
-(IsCouple(fst(x)) /\ (fst(fst(x)) \in Domain(f) /\ snd(fst(x)) \in Domain(g)))
-   => fst(x) \in (Domain(f) \X Domain(g))   BECAUSE TransitImplication;
-
-IsParallelApply(f,g,x) => (IsCouple(x) /\ IsCouple(fst(x)))   BECAUSE DropAndRight3;
-(IsCouple(x) /\ IsCouple(fst(x))) => IsCouple(fst(x))   BECAUSE DropAndLeft;
-IsParallelApply(f,g,x) => IsCouple(fst(x))   BECAUSE TransitImplication;
-IsParallelApply(f,g,x) => <<fst(fst(x)), fst(snd(x)) >> \in f   BECAUSE DropAndBoth;
-domainInc   BECAUSE THEOREM;
-<<fst(fst(x)), fst(snd(x)) >> \in f => fst(fst(x)) \in Domain(f)   BECAUSE \A(g <- f, x <- fst(fst(x)), y <- fst(snd(x)));
-IsParallelApply(f,g,x) => fst(fst(x)) \in Domain(f)   BECAUSE TransitImplication;
-IsParallelApply(f,g,x) => <<snd(fst(x)), snd(snd(x)) >> \in g   BECAUSE DropAndLeft;
-<<snd(fst(x)), snd(snd(x)) >> \in g => snd(fst(x)) \in Domain(g)   BECAUSE \A(g <- g, x <- snd(fst(x)), y <- snd(snd(x)));
-IsParallelApply(f,g,x) => snd(fst(x)) \in Domain(g)   BECAUSE TransitImplication;
-IsParallelApply(f,g,x) => (fst(fst(x)) \in Domain(f) /\ snd(fst(x)) \in Domain(g))   BECAUSE CombineImplicationsEnd;
-IsParallelApply(f,g,x) => (IsCouple(fst(x)) /\ (fst(fst(x)) \in Domain(f) /\ snd(fst(x)) \in Domain(g)))   BECAUSE CombineImplicationsEnd;
-IsParallelApply(f,g,x) => fst(x) \in (Domain(f) \X Domain(g))   BECAUSE TransitImplication;
-
-\* Stage snd(x)
-IsCouple(snd(x)) => snd(x) = <<fst(snd(x)), snd(snd(x))>>   BECAUSE \A(c <- snd(x));
-\A x : \A y : x = y => (x \in (Image(f) \X Image(g)) <=> y \in (Image(f) \X Image(g)))   BECAUSE E_SCHEME;
-snd(x) = <<fst(snd(x)), snd(snd(x))>> => (snd(x) \in (Image(f) \X Image(g))
-   <=> <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE \A(x <- snd(x), y <- <<fst(snd(x)), snd(snd(x))>>);
-IsCouple(snd(x)) => (snd(x) \in (Image(f) \X Image(g))
-   <=> <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE TransitImplication;
-(IsCouple(snd(x)) /\ <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))
-   => snd(x) \in (Image(f) \X Image(g))   BECAUSE HypoEquivToAndReverse;
-(fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g))
-   => <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g))
-   BECAUSE \A(x <- Image(f), y <- Image(g), a <- fst(snd(x)), b <- snd(snd(x)));
-IsCouple(snd(x)) => IsCouple(snd(x))   BECAUSE ImplyOneself;
-(IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))
-   => (IsCouple(snd(x)) /\ <<fst(snd(x)), snd(snd(x))>> \in (Image(f) \X Image(g)))   BECAUSE MergeImplicationsAnd;
-(IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))
-   => snd(x) \in (Image(f) \X Image(g))   BECAUSE TransitImplication;
-
-IsParallelApply(f,g,x) => (IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x)))   BECAUSE DropAndRight2;
-(IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))) => IsCouple(snd(x))   BECAUSE DropAndLeft;
-IsParallelApply(f,g,x) => IsCouple(snd(x))   BECAUSE TransitImplication;
-imageInc   BECAUSE THEOREM;
-<<fst(fst(x)), fst(snd(x)) >> \in f => fst(snd(x)) \in Image(f)   BECAUSE \A(g <- f, x <- fst(snd(x)), y <- fst(fst(x)));
-IsParallelApply(f,g,x) => fst(snd(x)) \in Image(f)   BECAUSE TransitImplication;
-<<snd(fst(x)), snd(snd(x)) >> \in g => snd(snd(x)) \in Image(g)   BECAUSE \A(g <- g, x <- snd(snd(x)), y <- snd(fst(x)));
-IsParallelApply(f,g,x) => snd(snd(x)) \in Image(g)   BECAUSE TransitImplication;
-IsParallelApply(f,g,x) => (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g))   BECAUSE CombineImplicationsEnd;
-IsParallelApply(f,g,x) => (IsCouple(snd(x)) /\ (fst(snd(x)) \in Image(f) /\ snd(snd(x)) \in Image(g)))   BECAUSE CombineImplicationsEnd;
-IsParallelApply(f,g,x) => snd(x) \in (Image(f) \X Image(g))   BECAUSE TransitImplication;
-
-IsParallelApply(f,g,x) => (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g)))
-   BECAUSE CombineImplicationsEnd;
-(IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))) => IsCouple(x)   BECAUSE DropAndRight2;
-IsParallelApply(f,g,x) => IsCouple(x)   BECAUSE TransitImplication;
-IsParallelApply(f,g,x) => (IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))   BECAUSE CombineImplicationsEnd;
-IsParallelApply(f,g,x) => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   BECAUSE TransitImplication;
-
-x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE SeparationTauto;
-\A x : x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE GENERALIZATION;
-\E h : \A x : x \in h <=> IsParallelApply(f,g,x)   BECAUSE \E(h <- chooseB(f,g));
-(\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)) <=> \E h : \A x : x \in h <=> IsParallelApply(f,g,x)
-   BECAUSE CHOOSE parallelFunc(f,g);
-\A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)   BECAUSE MODUS_PONENS;
-parallelFuncExists   BECAUSE GENERALIZATION;
-QED
-
-parallelInject == \A f : \A g : (IsInjection(f) /\ IsInjection(g))
-   => IsInjection(parallelFunc(f,g))
-THEOREM parallelInject
-
-parallelPreInject == \A f : \A g : \A y : (IsInjection(f) /\ IsInjection(g) /\ y \in Image(parallelFunc(f,g)))
-   => pre(parallelFunc(f,g), y) = <<pre(f,fst(y)), pre(g,snd(y))>>
-THEOREM parallelPreInject
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common
