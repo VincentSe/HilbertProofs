@@ -89,15 +89,15 @@ h(a,b) == a \subseteq b /\ b \subseteq a;
 (\A z : z \in b => z \in a) => (z \in b => z \in a)   BECAUSE \A(z <- z);
 h(a,b) => ((z \in a => z \in b) /\ (z \in b => z \in a))   BECAUSE MergeImplicationsAnd;
 ((z \in a => z \in b) /\ (z \in b => z \in a)) => (z \in a <=> z \in b)   BECAUSE IntroEquivAnd;
-h(a,b) => (z \in a <=> z \in b)   BECAUSE TransitImplication;
+h(a,b) => (z \in a <=> z \in b)   BECAUSE TI;
 \A z : h(a,b) => (z \in a <=> z \in b)   BECAUSE GENERALIZATION;
 h(a,b) => (\A z : z \in a <=> z \in b)   BECAUSE Q_SCHEME;
 
 (\A z : z \in a <=> z \in b) => (x \in a <=> x \in b)   BECAUSE \A(z <- x);
-h(a,b) => (x \in a <=> x \in b)   BECAUSE TransitImplication;
+h(a,b) => (x \in a <=> x \in b)   BECAUSE TI;
 \A x : h(a,b) => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
 h(a,b) => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
-h(a,b) => a = b    BECAUSE TransitImplication;
+h(a,b) => a = b    BECAUSE TI;
 bothInclusions   BECAUSE GENERALIZATION;
 QED
 
@@ -127,7 +127,7 @@ QED
    sep(x,y) == x = y /\ F(x)
    sep(x,y) /\ sep(x,y') => x = y /\ x = y'   BECAUSE PT;
    (x = y /\ x = y') => y = y'   BECAUSE AXIOM_SCHEME;
-   sep(x,y) /\ sep(x,y') => y = y'   BECAUSE TransitImplication;
+   sep(x,y) /\ sep(x,y') => y = y'   BECAUSE TI;
    \A x : \A y : \A y' : sep(x,y) /\ sep(x,y') => y = y'   BECAUSE GENERALIZATION;
    \* replacement scheme : by hypothesis formula F has no free occurrences of variable b
    (\A x : \A y : \A y' : sep(x,y) /\ sep(x,y') => y = y')
@@ -175,7 +175,7 @@ chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
 x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
 x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
 (x \in a /\ x # x) => x # x   BECAUSE DropAndLeft;
-x \in chooseB(a) => x # x   BECAUSE TransitImplication;
+x \in chooseB(a) => x # x   BECAUSE TI;
 ~(x # x) => x \notin chooseB(a)   BECAUSE Contraposition;
 x = x   BECAUSE E_SCHEME;
 ~(x # x)   BECAUSE IntroNotNot;
@@ -202,7 +202,7 @@ x \notin {} BECAUSE \A(x <- x);
 
 extensionality   BECAUSE AXIOM;
 (\A x : x \in a <=> x \in {}) => a = {}   BECAUSE \A(a <- a, b <- {});
-(\A x : x \notin a) => a = {}   BECAUSE TransitImplication;
+(\A x : x \notin a) => a = {}   BECAUSE TI;
 \A a : (\A x : x \notin a) => a = {}   BECAUSE GENERALIZATION;
 QED
 
@@ -226,7 +226,7 @@ emptyIncludedInAny   BECAUSE THEOREM;
 bothInclusions BECAUSE THEOREM;
 (x \subseteq {} /\ {} \subseteq x) => x = {}   BECAUSE \A(a <- x, b <- {});
 x \subseteq {} => (x \subseteq {} /\ {} \subseteq x)   BECAUSE IntroAndLeft;
-x \subseteq {} => x = {}   BECAUSE TransitImplication;
+x \subseteq {} => x = {}   BECAUSE TI;
 includedInEmpty   BECAUSE GENERALIZATION;
 QED
 
@@ -239,11 +239,11 @@ emptySetUnique BECAUSE THEOREM;
 (\A z : z \notin a) => x \notin a   BECAUSE \A(z <- x);
 \A x : (\A z : z \notin a) => x \notin a   BECAUSE GENERALIZATION;
 (\A z : z \notin a) => \A x : x \notin a   BECAUSE Q_SCHEME;
-(\A z : z \notin a) => a = {} BECAUSE TransitImplication;
+(\A z : z \notin a) => a = {} BECAUSE TI;
 (\E z : z \in a) <=> ~(\A z : z \notin a)   BECAUSE Q_SCHEME;
 ~(\A z : z \notin a) => (\E z : z \in a)   BECAUSE EquivToImplReverse;
 a # {} => ~(\A z : z \notin a) BECAUSE Contraposition;
-a # {} => \E z : z \in a   BECAUSE TransitImplication;
+a # {} => \E z : z \in a   BECAUSE TI;
 \A a : a # {} => \E z : z \in a   BECAUSE GENERALIZATION;
 x # {} => \E z : z \in x   BECAUSE \A(a <- x);
 notEmpty   BECAUSE GENERALIZATION;
@@ -272,13 +272,13 @@ VARIABLES a,b,x,y;
 (y \in b <=> (y \in a /\ ~(y \in y))) => ((y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE pullHypo;
 (\A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\A y : (y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
 (\A y : (y \in a) => (y \in b <=> ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
-(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE TransitImplication;
+(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE TI;
 (\E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
 \E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
 (\A y : y \in a) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
 (\E a : \A y : y \in a) => (\E a : \E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
 (\E a : \E b : \A y : y \in b <=> ~(y \in y)) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
-(\E a : \A y : y \in a) => \E b : \A y : y \in b <=> ~(y \in y)   BECAUSE TransitImplication;
+(\E a : \A y : y \in a) => \E b : \A y : y \in b <=> ~(y \in y)   BECAUSE TI;
 
 ~(\E b : \A y : y \in b <=> ~(y \in y)) => noSetOfSets   BECAUSE Contraposition;
 
@@ -312,9 +312,9 @@ unionExists   BECAUSE AXIOM;
 a \in UNION c <=> \E t : (t \in c /\ a \in t)   BECAUSE \A(b <- c, z <- a);
 (\E t : t \in c /\ a \in t) => a \in UNION c   BECAUSE EquivToImplReverse;
 (b \in c /\ a \in b) => \E t : t \in c /\ a \in t   BECAUSE \E(t <- b);
-(b \in c /\ a \in b) => a \in UNION c   BECAUSE TransitImplication;
+(b \in c /\ a \in b) => a \in UNION c   BECAUSE TI;
 (a \in b /\ b \in c) => (b \in c /\ a \in b)   BECAUSE AndSymmetry;
-(a \in b /\ b \in c) => a \in UNION c   BECAUSE TransitImplication;
+(a \in b /\ b \in c) => a \in UNION c   BECAUSE TI;
 inInUnion   BECAUSE GENERALIZATION;
 QED
 
@@ -359,7 +359,7 @@ x \in ordinalOne <=> x \subseteq {}   BECAUSE \A(x <- {}, z <- x);
 includedInEmpty   BECAUSE THEOREM;
 x \subseteq {} => x = {}   BECAUSE \A(x <- x);
 x \in ordinalOne => x \subseteq {}   BECAUSE EquivToImpl;
-x \in ordinalOne => x = {}   BECAUSE TransitImplication;
+x \in ordinalOne => x = {}   BECAUSE TI;
 
 \* Proof that {} \in ordinalOne
 {} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
@@ -391,7 +391,7 @@ z \in ordinalOne => z = {}   BECAUSE EquivToImpl;
 (z \in x => z \in ordinalOne) => (z \in x => z = {})   BECAUSE AddHypothesis;
 z \in x => z \in x   BECAUSE ImplyOneself;
 (z \in x => z = {}) => (z \in x => (z \in x /\ z = {}))   BECAUSE CombineImplicationsEnd;
-(z \in x => z \in ordinalOne) => (z \in x => (z \in x /\ z = {}))   BECAUSE TransitImplication;
+(z \in x => z \in ordinalOne) => (z \in x => (z \in x /\ z = {}))   BECAUSE TI;
 x \subseteq ordinalOne => (\A z : z \in x => (z \in x /\ z = {}))   BECAUSE Q_SCHEME;
 
 notEmpty   BECAUSE THEOREM;
@@ -400,37 +400,37 @@ x # {} => \E z : z \in x   BECAUSE \A(x <- x);
 
 (\A z : z \in x => (z \in x /\ z = {})) => ((\E z : z \in x) => \E z : z \in x /\ z = {})   BECAUSE Q_SCHEME;
 ((\A z : z \in x => (z \in x /\ z = {})) /\ (\E z : z \in x)) => \E z : z \in x /\ z = {}   BECAUSE HypoImplToAnd;
-(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TI;
 
 z = {} => (z \in x <=> {} \in x)   BECAUSE E_SCHEME;
 (z \in x <=> {} \in x) => (z \in x => {} \in x)   BECAUSE EquivToImpl;
-z = {} => (z \in x => {} \in x)   BECAUSE TransitImplication;
+z = {} => (z \in x => {} \in x)   BECAUSE TI;
 (z = {} /\ z \in x) => {} \in x   BECAUSE HypoImplToAnd;
 (z \in x /\ z = {}) => (z = {} /\ z \in x)   BECAUSE AndSymmetry;
-(z \in x /\ z = {}) => {} \in x   BECAUSE TransitImplication;
+(z \in x /\ z = {}) => {} \in x   BECAUSE TI;
 (\E z : z \in x /\ z = {}) => \E z : {} \in x   BECAUSE Q_SCHEME;
 (\E z : {} \in x) => {} \in x   BECAUSE Q_SCHEME;
-(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TransitImplication;
-(x \subseteq ordinalOne /\ x # {}) => \E z : {} \in x   BECAUSE TransitImplication;
-(x \subseteq ordinalOne /\ x # {}) => {} \in x   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TI;
+(x \subseteq ordinalOne /\ x # {}) => \E z : {} \in x   BECAUSE TI;
+(x \subseteq ordinalOne /\ x # {}) => {} \in x   BECAUSE TI;
 
 \* Proof of {} \in x => ordinalOne \subseteq x
-z \in ordinalOne => (z \in x <=> {} \in x)   BECAUSE TransitImplication;
+z \in ordinalOne => (z \in x <=> {} \in x)   BECAUSE TI;
 (z \in x <=> {} \in x) => ({} \in x => z \in x)   BECAUSE EquivToImplReverse;
-z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TransitImplication;
+z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TI;
 {} \in x => (z \in ordinalOne => z \in x)   BECAUSE SwitchHypos;
 \A z : {} \in x => (z \in ordinalOne => z \in x)   BECAUSE GENERALIZATION;
 {} \in x => ordinalOne \subseteq x   BECAUSE Q_SCHEME;
-(x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TI;
 
 (x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE DropAndRight;
 (x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CombineImplicationsEnd;
 bothInclusions BECAUSE THEOREM;
 (x \subseteq ordinalOne /\ ordinalOne \subseteq x) => x = ordinalOne   BECAUSE \A(a <- x, b <- ordinalOne);
-(x \subseteq ordinalOne /\ x # {}) => x = ordinalOne   BECAUSE TransitImplication;
+(x \subseteq ordinalOne /\ x # {}) => x = ordinalOne   BECAUSE TI;
 
 x \subseteq ordinalOne => (x # {} => x = ordinalOne)   BECAUSE HypoAndToImpl;
-x \in ordinalTwo => (x # {} => x = ordinalOne)   BECAUSE TransitImplication;
+x \in ordinalTwo => (x # {} => x = ordinalOne)   BECAUSE TI;
 x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE ImplyExcludedMiddle;
 
 \* Reverse proof
@@ -439,14 +439,14 @@ ordinalOne \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
 x \subseteq ordinalOne => x \in ordinalTwo   BECAUSE EquivToImplReverse;
 x = ordinalOne => (x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne)   BECAUSE E_SCHEME;
 x = ordinalOne => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
-x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
+x = ordinalOne => x \in ordinalTwo   BECAUSE TI;
 
 x \in ordinalOne <=> x = {}   BECAUSE \A(x <- x);
 x = {} => (x \subseteq ordinalOne <=> {} \subseteq ordinalOne)   BECAUSE E_SCHEME;
 emptyIncludedInAny   BECAUSE THEOREM;
 {} \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
 x = {} => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
-x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
+x = {} => x \in ordinalTwo   BECAUSE TI;
 
 (x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE CombineImplicationsStart;
 x \in ordinalTwo <=> (x = {} \/ x = ordinalOne)   BECAUSE IntroEquiv;
@@ -511,14 +511,14 @@ F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE DropAndRight;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => (x = ordinalOne /\ x = {})   BECAUSE MergeImplicationsAnd;
 (x = ordinalOne /\ x = {}) => ordinalOne = {}   BECAUSE E_SCHEME;
-((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => ordinalOne = {}   BECAUSE TransitImplication;
+((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => ordinalOne = {}   BECAUSE TI;
 (x = {} /\ y = c) => y = c   BECAUSE DropAndLeft;
 (x = {} /\ z = c) => z = c   BECAUSE DropAndLeft;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => (y = c /\ z = c)   BECAUSE MergeImplicationsAnd;
 (y = c /\ z = c) => y = z   BECAUSE E_SCHEME;
-((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
+((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
 (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c))) => ((y = z) \/ (ordinalOne = {}))   BECAUSE MergeImplicationsOr;
-(F(c,d,x,y) /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TI;
 
 \* Proof that ordinalOne # {}
 powersetExists   BECAUSE AXIOM;
@@ -531,14 +531,14 @@ emptySetExists   BECAUSE THEOREM;
 ordinalOne = {} => ((\A x : x \notin ordinalOne) <=> emptySetExists)   BECAUSE \A(i <- ordinalOne, j <- {});
 ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE ImplyEquivTrue;
 (\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
-ordinalOne = {} => {} \notin ordinalOne   BECAUSE TransitImplication;
+ordinalOne = {} => {} \notin ordinalOne   BECAUSE TI;
 ~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
 {} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE IntroNotNot;
-{} \in ordinalOne => ordinalOne # {}   BECAUSE TransitImplication;
+{} \in ordinalOne => ordinalOne # {}   BECAUSE TI;
 ordinalOne # {}   BECAUSE MODUS_PONENS;
 
 (y = z \/ ordinalOne = {}) => y = z   BECAUSE OrFalseStart;
-(F(c,d,x,y) /\ (x = {} /\ z = c)) => y = z   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
 
 \* Case x = ordinalOne
 (F(c,d,x,y) /\ (x = ordinalOne /\ z = d))
@@ -547,22 +547,22 @@ ordinalOne # {}   BECAUSE MODUS_PONENS;
 (x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE DropAndRight;
 ((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => (x = {} /\ x = ordinalOne)   BECAUSE MergeImplicationsAnd;
 (x = {} /\ x = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
-((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => {} = ordinalOne   BECAUSE TransitImplication;
+((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => {} = ordinalOne   BECAUSE TI;
 (x = ordinalOne /\ y = d) => y = d   BECAUSE DropAndLeft;
 (x = ordinalOne /\ z = d) => z = d   BECAUSE DropAndLeft;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => (y = d /\ z = d)   BECAUSE MergeImplicationsAnd;
 (y = d /\ z = d) => y = z   BECAUSE E_SCHEME;
-((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
+((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TI;
 (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d))) => ({} = ordinalOne \/ y = z)   BECAUSE MergeImplicationsOr;
-(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => ({} = ordinalOne \/ y = z)   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => ({} = ordinalOne \/ y = z)   BECAUSE TI;
 {} = ordinalOne => ordinalOne = {}   BECAUSE E_SCHEME;
 ordinalOne # {} => {} # ordinalOne   BECAUSE Contraposition;
 {} # ordinalOne   BECAUSE MODUS_PONENS;
 ({} = ordinalOne \/ y = z) => y = z   BECAUSE FalseOrStart;
-(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TI;
 
 ((F(c,d,x,y) /\ (x = {} /\ z = c)) \/ (F(c,d,x,y) /\ (x = ordinalOne /\ z = d))) => y = z   BECAUSE CombineImplicationsStart;
-(F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE TransitImplication;
+(F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE TI;
 \A x : \A y : \A z : (F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z   BECAUSE GENERALIZATION;
 \A a : \E b : \A y : y \in b <=> \E x : x \in a /\ F(c,d,x,y)   BECAUSE MODUS_PONENS;
 \E b : \A y : y \in b <=> \E x : x \in ordinalTwo /\ F(c,d,x,y)   BECAUSE \A(a <- ordinalTwo);
@@ -575,42 +575,42 @@ x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE EquivToImpl;
 
 F(c,d,x,y) => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
 (x \in ordinalTwo /\ F(c,d,x,y)) => F(c,d,x,y)   BECAUSE DropAndLeft;
-(x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TransitImplication;
+(x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TI;
 (\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
 (\E x : y = c \/ y = d) => (y = c \/ y = d)   BECAUSE Q_SCHEME;
-(\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TransitImplication;
+(\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TI;
 
 \* Case y = c
 ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
 {} = {}   BECAUSE E_SCHEME;
 y = c => ({} = {} /\ y = c)   BECAUSE IntroAndRight;
 ({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE PT9;
-y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TransitImplication;
+y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TI;
 x = {} => (x = {} \/ x = ordinalOne)   BECAUSE PT9;
-x = {} => x \in ordinalTwo   BECAUSE TransitImplication;
+x = {} => x \in ordinalTwo   BECAUSE TI;
 \A x : x = {} => x \in ordinalTwo   BECAUSE GENERALIZATION;
 {} = {} => {} \in ordinalTwo   BECAUSE \A(x <- {});
 {} \in ordinalTwo   BECAUSE MODUS_PONENS;
 (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))
    => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
-y = c => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
-y = c => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TransitImplication;
+y = c => ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d)))   BECAUSE TI;
+y = c => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TI;
 
 \* Case y = d
 (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
 ordinalOne = ordinalOne   BECAUSE E_SCHEME;
 y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE IntroAndRight;
 (ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE IntroOrRight;
-y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TransitImplication;
+y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TI;
 x = ordinalOne => (x = {} \/ x = ordinalOne)   BECAUSE IntroOrRight;
-x = ordinalOne => x \in ordinalTwo   BECAUSE TransitImplication;
+x = ordinalOne => x \in ordinalTwo   BECAUSE TI;
 \A x : x = ordinalOne => x \in ordinalTwo   BECAUSE GENERALIZATION;
 ordinalOne = ordinalOne => ordinalOne \in ordinalTwo   BECAUSE \A(x <- ordinalOne);
 ordinalOne \in ordinalTwo   BECAUSE MODUS_PONENS;
 ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))
    => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE IntroAndRight;
-y = d => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TransitImplication;
-y = d => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TransitImplication;
+y = d => (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d)))   BECAUSE TI;
+y = d => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TI;
 
 (y = c \/ y = d) => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE CombineImplicationsStart;
 (y = c \/ y = d) <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE IntroEquiv;
@@ -655,7 +655,7 @@ b \in {a,b}   BECAUSE MODUS_PONENS;
 {a,b} = {a,c} => b \in {a,c}   BECAUSE ImplyTrueEquiv;
 b \in { a,c } <=> (b = a \/ b = c)   BECAUSE \A(c <- a, d <- c, y <- b);
 b \in { a,c } => (b = a \/ b = c)   BECAUSE EquivToImpl;
-{a,b} = {a,c} => (b = a \/ b = c)   BECAUSE TransitImplication;
+{a,b} = {a,c} => (b = a \/ b = c)   BECAUSE TI;
 
 c \in { a, c } <=> (c = a \/ c = c)   BECAUSE \A(c <- a, d <- c, y <- c);
 c = c   BECAUSE E_SCHEME;
@@ -666,21 +666,21 @@ c \in {a,c}   BECAUSE MODUS_PONENS;
 {a,b} = {a,c} => c \in {a,b}   BECAUSE ImplyEquivTrue;
 c \in { a,b } <=> (c = a \/ c = b)   BECAUSE \A(c <- a, d <- b, y <- c);
 c \in { a,b } => (c = a \/ c = b)   BECAUSE EquivToImpl;
-{a,b} = {a,c} => (c = a \/ c = b)   BECAUSE TransitImplication;
+{a,b} = {a,c} => (c = a \/ c = b)   BECAUSE TI;
 c = b => b = c   BECAUSE E_SCHEME;
 c = a => c = a   BECAUSE ImplyOneself;
 (c = a \/ c = b) => (c = a \/ b = c)  BECAUSE MergeImplicationsOr;
-{a,b} = {a,c} => (c = a \/ b = c)  BECAUSE TransitImplication;
+{a,b} = {a,c} => (c = a \/ b = c)  BECAUSE TI;
 
 {a,b} = {a,c} => ((b = a \/ b = c) /\ (c = a \/ b = c))   BECAUSE CombineImplicationsEnd;
 ((b = a \/ b = c) /\ (c = a \/ b = c)) => ((b = a /\ c = a) \/ b = c)  BECAUSE FactorOrAndRight;
-{a,b} = {a,c} => ((b = a /\ c = a) \/ b = c)  BECAUSE TransitImplication;
+{a,b} = {a,c} => ((b = a /\ c = a) \/ b = c)  BECAUSE TI;
 (b = a /\ c = a) => b = c   BECAUSE E_SCHEME;
 b = c => b = c   BECAUSE ImplyOneself;
 ((b = a /\ c = a) \/ b = c) => (b = c \/ b = c)   BECAUSE MergeImplicationsOr;
-{a,b} = {a,c} => (b = c \/ b = c)  BECAUSE TransitImplication;
+{a,b} = {a,c} => (b = c \/ b = c)  BECAUSE TI;
 (b = c \/ b = c) => b = c   BECAUSE OrSelf;
-{a,b} = {a,c} => b = c  BECAUSE TransitImplication;
+{a,b} = {a,c} => b = c  BECAUSE TI;
 sameFirstPairs   BECAUSE GENERALIZATION;
 QED
 
@@ -690,27 +690,27 @@ PROOF
 VARIABLES a,c,d,t,x,y,z;
 z = x => (z \in t <=> x \in t)   BECAUSE E_SCHEME;
 (z \in t <=> x \in t) => (x \in t => z \in t)   BECAUSE EquivToImplReverse;
-z = x => (x \in t => z \in t)   BECAUSE TransitImplication;
+z = x => (x \in t => z \in t)   BECAUSE TI;
 (z = x /\ x \in t) => z \in t   BECAUSE HypoImplToAnd;
 (x \in t /\ z = x) => (z = x /\ x \in t)   BECAUSE AndSymmetry;
-(x \in t /\ z = x) => z \in t   BECAUSE TransitImplication;
+(x \in t /\ z = x) => z \in t   BECAUSE TI;
 x \in t => (z = x => z \in t)   BECAUSE HypoAndToImpl;
 z = y => (z \in t <=> y \in t)   BECAUSE E_SCHEME;
 (z \in t <=> y \in t) => (y \in t => z \in t)   BECAUSE EquivToImplReverse;
-z = y => (y \in t => z \in t)   BECAUSE TransitImplication;
+z = y => (y \in t => z \in t)   BECAUSE TI;
 (z = y /\ y \in t) => z \in t   BECAUSE HypoImplToAnd;
 (y \in t /\ z = y) => (z = y /\ y \in t)   BECAUSE AndSymmetry;
-(y \in t /\ z = y) => z \in t   BECAUSE TransitImplication;
+(y \in t /\ z = y) => z \in t   BECAUSE TI;
 y \in t => (z = y => z \in t)   BECAUSE HypoAndToImpl;
 
 (x \in t /\ y \in t) => ((z = x => z \in t) /\ (z = y => z \in t))   BECAUSE MergeImplicationsAnd;
 ((z = x => z \in t) /\ (z = y => z \in t)) => ((z=x \/ z=y) => z \in t)   BECAUSE FactorAndImpl;
-(x \in t /\ y \in t) => ((z = x \/ z = y) => z \in t)   BECAUSE TransitImplication;
+(x \in t /\ y \in t) => ((z = x \/ z = y) => z \in t)   BECAUSE TI;
 pairExists   BECAUSE THEOREM;
 z \in { x, y } <=> (z = x \/ z = y)   BECAUSE \A(c <- x, d <- y, y <- z);
 z \in { x, y } => (z = x \/ z = y)   BECAUSE EquivToImpl;
-((z = x \/ z = y) => z \in t) => (z \in {x,y} => z \in t)   BECAUSE TransitImplication;
-(x \in t /\ y \in t) => (z \in {x,y} => z \in t)   BECAUSE TransitImplication;
+((z = x \/ z = y) => z \in t) => (z \in {x,y} => z \in t)   BECAUSE TI;
+(x \in t /\ y \in t) => (z \in {x,y} => z \in t)   BECAUSE TI;
 \A z : (x \in t /\ y \in t) => (z \in {x,y} => z \in t)   BECAUSE GENERALIZATION;
 (x \in t /\ y \in t) => {x,y} \subseteq t   BECAUSE Q_SCHEME;
 pairInclusion   BECAUSE GENERALIZATION;
@@ -718,6 +718,9 @@ QED
 
 \* The pair allows to define the union of two sets
 x \union y == UNION { x, y }
+
+unionInc == \A x : \A y : \A z : z \in (x \union y) <=> (z \in x \/ z \in y)
+THEOREM unionInc
 
 unionFirstInc == \A x : \A y : x \subseteq (x \union y)
 THEOREM unionFirstInc
@@ -731,7 +734,7 @@ x \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 (z \in x /\ x \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- x, c <- {x,y});
 z \in x => (z \in x /\ x \in {x,y})   BECAUSE IntroAndLeft;
-z \in x => z \in (x \union y)   BECAUSE TransitImplication;
+z \in x => z \in (x \union y)   BECAUSE TI;
 unionFirstInc   BECAUSE GENERALIZATION;
 QED
 
@@ -747,7 +750,7 @@ y \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 (z \in y /\ y \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- y, c <- {x,y});
 z \in y => (z \in y /\ y \in {x,y})   BECAUSE IntroAndLeft;
-z \in y => z \in (x \union y)   BECAUSE TransitImplication;
+z \in y => z \in (x \union y)   BECAUSE TI;
 unionSecondInc   BECAUSE GENERALIZATION;
 QED
 
@@ -780,10 +783,10 @@ y \in { { c } , {c,d} } <=> (y = {c} \/ y = {c,d})   BECAUSE \A(c <- {c}, d <- {
 <<a,b>> = <<c,d>>  =>  (y \in <<a,b>> <=> y \in <<c,d>>)   BECAUSE \A(x <- <<a,b>>, z <- <<c,d>>);
 (y = {a} \/ y = {a,b}) <=> y \in <<a,b>>   BECAUSE EquivSymmetry;
 (y \in <<a,b>> <=> y \in <<c,d>>) => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TransitEquiv;
-<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>)   BECAUSE TI;
 (y = {c} \/ y = {c,d}) <=> y \in <<c,d>>   BECAUSE EquivSymmetry;
 ((y = {a} \/ y = {a,b}) <=> y \in <<c,d>>) => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TransitEquiv2;
-<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE TI;
 \A y : <<a,b>> = <<c,d>> => ((y = {a} \/ y = {a,b}) <=> (y = {c} \/ y = {c,d}))   BECAUSE GENERALIZATION;
 
 \* Proof of <<a,b>> = <<c,d>> => a = c
@@ -801,10 +804,10 @@ c \in { c }   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
 {c} = {a} => (c \in {c} <=> c \in {a})   BECAUSE \A(x <- {c}, y <- {a});
 (c \in {c} <=> c \in {a}) => c \in {a}   BECAUSE TrueEquiv;
-{c} = {a} => c \in {a}   BECAUSE TransitImplication;
-{c} = {a} => c = a   BECAUSE TransitImplication;
+{c} = {a} => c \in {a}   BECAUSE TI;
+{c} = {a} => c = a   BECAUSE TI;
 c = a => a = c   BECAUSE E_SCHEME;
-{c} = {a} => a = c   BECAUSE TransitImplication;
+{c} = {a} => a = c   BECAUSE TI;
 
 a \in {a,b} <=> (a = a \/ a = b)   BECAUSE \A(c <- a, d <- b, y <- a);
 a = a   BECAUSE E_SCHEME;
@@ -813,26 +816,26 @@ a \in {a,b}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
 {c} = {a,b} => (a \in {c} <=> a \in {a,b})   BECAUSE \A(x <- {c}, y <- {a,b});
 (a \in {c} <=> a \in {a,b}) => a \in {c}   BECAUSE EquivTrue;
-{c} = {a,b} => a \in {c}   BECAUSE TransitImplication;
+{c} = {a,b} => a \in {c}   BECAUSE TI;
 a \in { c } <=> a = c   BECAUSE \A(a <- c, x <- a);
 a \in { c } => a = c   BECAUSE EquivToImpl;
-{c} = {a,b} => a = c   BECAUSE TransitImplication;
+{c} = {a,b} => a = c   BECAUSE TI;
 
 ({c} = {a} \/ {c} = {a,b}) => a = c   BECAUSE CombineImplicationsStart;
-<<a,b>> = <<c,d>> => a = c   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => a = c   BECAUSE TI;
 
 \* Replace c by a
 \A x : \A y : x = y => (<<a,b>> = <<x,d>> <=> <<a,b>> = <<y,d>>)   BECAUSE E_SCHEME;
 a = c => (<<a,b>> = <<a,d>> <=> <<a,b>> = <<c,d>>)   BECAUSE \A(x <- a, y <- c);
-<<a,b>> = <<c,d>> => (<<a,b>> = <<a,d>> <=> <<a,b>> = <<c,d>>)   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => (<<a,b>> = <<a,d>> <=> <<a,b>> = <<c,d>>)   BECAUSE TI;
 <<a,b>> = <<c,d>> => <<a,b>> = <<a,d>>   BECAUSE ImplyEquivSelf;
 
 \* Proof of <<a,b>> = <<a,d>> => b = d
 sameFirstPairs   BECAUSE THEOREM;
 { {a},{a,b} } = {{a},{a,d}} => {a,b} = {a,d}   BECAUSE \A(a <- {a}, b <- {a,b}, c <- {a,d});
-<<a,b>> = <<c,d>> => {a,b} = {a,d}   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => {a,b} = {a,d}   BECAUSE TI;
 { a,b } = {a,d} => b = d   BECAUSE \A(a <- a, b <- b, c <- d);
-<<a,b>> = <<c,d>> => b = d   BECAUSE TransitImplication;
+<<a,b>> = <<c,d>> => b = d   BECAUSE TI;
 <<a,b>> = <<c,d>> => (a = c /\ b = d)   BECAUSE CombineImplicationsEnd;
 tupleDecomposition   BECAUSE GENERALIZATION;
 QED
@@ -850,7 +853,7 @@ VARIABLES c,x,y;
 IsCouple(c) => (\E y : c = <<fst(c),y>>)   BECAUSE EquivToImplReverse;
 c = <<fst(c),snd(c)>> <=> \E y : c = <<fst(c),y>>   BECAUSE CHOOSE snd(c);
 (\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE EquivToImplReverse;
-IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TransitImplication;
+IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TI;
 tupleComposition   BECAUSE GENERALIZATION;
 QED
 
@@ -894,7 +897,6 @@ IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
-IsReflexive(g) == \A x : x \in g => (<<fst(x), fst(x)>> \in g /\ <<snd(x), snd(x)>> \in g)
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -909,15 +911,15 @@ pairExists   BECAUSE THEOREM;
 inInUnion   BECAUSE THEOREM;
 ({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
 <<x,y>> \in g => ({x} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
-<<x,y>> \in g => {x} \in UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => {x} \in UNION g   BECAUSE TI;
 singletonExists   BECAUSE THEOREM;
 x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
 x = x   BECAUSE E_SCHEME;
 x \in { x }   BECAUSE MODUS_PONENS;
 (x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
 {x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAndRight;
-{x} \in UNION g => x \in UNION UNION g   BECAUSE TransitImplication;
-<<x,y>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
+{x} \in UNION g => x \in UNION UNION g   BECAUSE TI;
+<<x,y>> \in g => x \in UNION UNION g   BECAUSE TI;
 
 {x,y} \in <<x,y>> <=> ({x,y} = {x} \/ {x,y} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x,y});
 {x,y} = {x,y}   BECAUSE E_SCHEME;
@@ -925,15 +927,15 @@ x \in { x }   BECAUSE MODUS_PONENS;
 {x,y} \in <<x,y>>   BECAUSE MODUS_PONENS;
 ({x,y} \in <<x,y>> /\ <<x,y>> \in g) => {x,y} \in UNION g   BECAUSE \A(a <- {x,y}, b <- <<x,y>>, c <- g);
 <<x,y>> \in g => ({x,y} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
-<<x,y>> \in g => {x,y} \in UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => {x,y} \in UNION g   BECAUSE TI;
 y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
 y = y   BECAUSE E_SCHEME;
 y = x \/ y = y   BECAUSE IntroOrRight;
 y \in { x, y }   BECAUSE MODUS_PONENS;
 (y \in {x,y} /\ {x,y} \in UNION g) => y \in UNION UNION g   BECAUSE \A(a <- y, b <- {x,y}, c <- UNION g);
 {x,y} \in UNION g => (y \in {x,y} /\ {x,y} \in UNION g)   BECAUSE IntroAndRight;
-{x,y} \in UNION g => y \in UNION UNION g   BECAUSE TransitImplication;
-<<x,y>> \in g => y \in UNION UNION g   BECAUSE TransitImplication;
+{x,y} \in UNION g => y \in UNION UNION g   BECAUSE TI;
+<<x,y>> \in g => y \in UNION UNION g   BECAUSE TI;
 
 <<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE CombineImplicationsEnd;
 nodesInUnionUnion   BECAUSE GENERALIZATION;
@@ -952,10 +954,10 @@ VARIABLES a,b,g,x,y;
 nodesInUnionUnion   BECAUSE THEOREM;
 <<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
 (x \in UNION UNION g /\ y \in UNION UNION g) => x \in UNION UNION g   BECAUSE DropAndRight;
-<<x,y>> \in g => x \in UNION UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => x \in UNION UNION g   BECAUSE TI;
 IsDefinedOn(g,x) => \E y : x \in UNION UNION g   BECAUSE Q_SCHEME;
 (\E y : x \in UNION UNION g) => x \in UNION UNION g   BECAUSE Q_SCHEME;
-IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TransitImplication;
+IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TI;
 (x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\E b : \A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
@@ -982,10 +984,10 @@ y \in chooseB(g) <=> (y \in UNION UNION g /\ Reaches(g,y))   BECAUSE \A(x <- y);
 nodesInUnionUnion   BECAUSE THEOREM;
 <<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
 (x \in UNION UNION g /\ y \in UNION UNION g) => y \in UNION UNION g   BECAUSE DropAndLeft;
-<<x,y>> \in g => y \in UNION UNION g   BECAUSE TransitImplication;
+<<x,y>> \in g => y \in UNION UNION g   BECAUSE TI;
 (\E x : <<x,y>> \in g) => \E x : y \in UNION UNION g   BECAUSE Q_SCHEME;
 (\E x : y \in UNION UNION g) => y \in UNION UNION g   BECAUSE Q_SCHEME;
-Reaches(g,y) => y \in UNION UNION g   BECAUSE TransitImplication;
+Reaches(g,y) => y \in UNION UNION g   BECAUSE TI;
 y \in chooseB(g) <=> Reaches(g,y)   BECAUSE SeparationTauto;
 \A y : y \in chooseB(g) <=> Reaches(g,y)   BECAUSE GENERALIZATION;
 \E b : \A y : y \in b <=> Reaches(g,y)   BECAUSE \E(b <- chooseB(g));
@@ -1003,7 +1005,7 @@ domainExists   BECAUSE THEOREM;
 x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
 (\E y : <<x,y>> \in g) => x \in Domain(g)   BECAUSE EquivToImplReverse;
 <<x,y>> \in g => (\E y : <<x,y>> \in g)   BECAUSE \E(y <- y);
-<<x,y>> \in g => x \in Domain(g)   BECAUSE TransitImplication;
+<<x,y>> \in g => x \in Domain(g)   BECAUSE TI;
 domainInc   BECAUSE GENERALIZATION;
 QED
 
@@ -1015,7 +1017,7 @@ imageExists   BECAUSE THEOREM;
 y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 (\E x : <<x,y>> \in g) => y \in Image(g)   BECAUSE EquivToImplReverse;
 <<x,y>> \in g => (\E x : <<x,y>> \in g)   BECAUSE \E(x <- x);
-<<x,y>> \in g => y \in Image(g)   BECAUSE TransitImplication;
+<<x,y>> \in g => y \in Image(g)   BECAUSE TI;
 imageInc   BECAUSE GENERALIZATION;
 QED
 
@@ -1029,6 +1031,55 @@ f[x] == CHOOSE y : <<x,y>> \in f
 pre(f,y) == CHOOSE x : <<x,y>> \in f
 IsFunction(f) == IsGraph(f)  /\ \A a : \A b : <<a,b>> \in f => b = f[a]
 IsInjection(f) == IsFunction(f) /\ \A a : \A b : <<a,b>> \in f => a = pre(f,b)
+
+funcUniqueImage == \A f : \A x : \A y :
+   (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y
+THEOREM funcUniqueImage
+PROOF
+VARIABLES a,b,f,g,x,y;
+imageExists   BECAUSE THEOREM;
+y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
+<<pre(f,y),y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
+y \in Image(f) <=> <<pre(f,y),y>> \in f   BECAUSE TransitEquiv2;
+y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE EquivToImpl;
+\A y : y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE GENERALIZATION;
+x \in Image(f) => <<pre(f,x),x>> \in f   BECAUSE \A(y <- x);
+(x \in Image(f) /\ y \in Image(f)) => (<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE MergeImplicationsAnd;
+pre(f,x) = pre(f,y) => pre(f,x) = pre(f,y)   BECAUSE ImplyOneself;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
+   => (<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f /\ pre(f,x) = pre(f,y))   BECAUSE MergeImplicationsAnd;
+\A a : \A b : a = b => (<<a,x>> \in f <=> <<b,x>> \in f)   BECAUSE E_SCHEME;
+pre(f,x) = pre(f,y) => (<<pre(f,x),x>> \in f <=> <<pre(f,y),x>> \in f)   BECAUSE \A(a <- pre(f,x), b <- pre(f,y));
+(pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f) => <<pre(f,y),x>> \in f   BECAUSE HypoEquivToAnd;
+(<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f /\ pre(f,x) = pre(f,y))
+   => (pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE AndCycle;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
+   => (pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE TI;
+<<pre(f,y),y>> \in f => <<pre(f,y),y>> \in f   BECAUSE ImplyOneself;
+(pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f) => (<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE MergeImplicationsAnd;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
+   => (<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE TI;
+
+IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE DropAndLeft;
+(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- y);
+IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TI;
+(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- x);
+IsFunction(f) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE TI;
+IsFunction(f) => ((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
+   BECAUSE CombineImplicationsEnd;
+((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
+   => ((<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE MergeImplicationsAnd2;
+IsFunction(f) => ((<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE TI;
+(<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (IsFunction(f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE SwitchHypos;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
+   => (IsFunction(f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE TI;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f))
+   => (x = f[pre(f,y)] /\ y = f[pre(f,y)])   BECAUSE HypoImplToAnd;
+(x = f[pre(f,y)] /\ y = f[pre(f,y)]) => x = y   BECAUSE E_SCHEME;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y   BECAUSE TI;
+funcUniqueImage   BECAUSE GENERALIZATION;
+QED
+
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
 multiApplyExists == \A f : \A multiX : \A x : x \in multiApply(f,multiX)
@@ -1046,10 +1097,10 @@ VARIABLES a,b,c,f,g,u,x,y,multiX;
 imageInc   BECAUSE THEOREM;
 <<u,x>> \in f => x \in Image(f)   BECAUSE \A(g <- f, x <- u, y <- x);
 (u \in multiX /\ <<u,x>> \in f) => <<u,x>> \in f   BECAUSE DropAndLeft;
-(u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TransitImplication;
+(u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TI;
 (\E u : u \in multiX /\ <<u,x>> \in f) => \E u : x \in Image(f)   BECAUSE Q_SCHEME;
 (\E u : x \in Image(f)) => x \in Image(f)   BECAUSE Q_SCHEME;
-(\E u : u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TransitImplication;
+(\E u : u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TI;
 (x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) ))
    => (x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f) )
    BECAUSE SeparationTauto;
@@ -1083,11 +1134,11 @@ pre(f,y) \in multiX => pre(f,y) \in multiX   BECAUSE ImplyOneself;
 (y \in Image(f) /\ pre(f,y) \in multiX) => (<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX)
    BECAUSE MergeImplicationsAnd;
 (<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE AndSymmetry;
-(y \in Image(f) /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE TransitImplication;
+(y \in Image(f) /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE TI;
 (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => \E u : u \in multiX /\ <<u,y>> \in f   BECAUSE \E(u <- pre(f,y));
 (\E u : u \in multiX /\ <<u,y>> \in f) => y \in multiApply(f,multiX)   BECAUSE EquivToImplReverse;
-(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => y \in multiApply(f,multiX)   BECAUSE TransitImplication;
-(y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX)   BECAUSE TransitImplication;
+(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => y \in multiApply(f,multiX)   BECAUSE TI;
+(y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX)   BECAUSE TI;
 IsInjection(f) => ((y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX))   BECAUSE PT1;
 
 \* Converse
@@ -1098,31 +1149,31 @@ y \in multiApply(f,multiX) <=> (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,
    BECAUSE TransitEquiv2;   
 y \in multiApply(f,multiX) => (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)   BECAUSE EquivToImpl;
 (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE DropAndLeft;
-y \in multiApply(f,multiX) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE TransitImplication;
+y \in multiApply(f,multiX) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE TI;
 imageInc   BECAUSE THEOREM;
 <<chooseU(f,y,multiX),y>> \in f => y \in Image(f)   BECAUSE \A(g <- f, x <- chooseU(f,y,multiX), y <- y);
-y \in multiApply(f,multiX) => y \in Image(f)   BECAUSE TransitImplication;
+y \in multiApply(f,multiX) => y \in Image(f)   BECAUSE TI;
 
 IsInjection(f) => \A a : \A b : <<a,b>> \in f => a = pre(f,b)   BECAUSE DropAndLeft;
 (\A a : \A b : <<a,b>> \in f => a = pre(f,b)) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))
    BECAUSE \A(a <- chooseU(f,y,multiX), b <- y);
-IsInjection(f) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))    BECAUSE TransitImplication;
+IsInjection(f) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))    BECAUSE TI;
 (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => chooseU(f,y,multiX) = pre(f,y)    BECAUSE HypoImplToAnd;
 \A x : \A y : x = y => (x \in multiX <=> y \in multiX)    BECAUSE E_SCHEME;
 (chooseU(f,y,multiX) = pre(f,y)) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE \A(x <- chooseU(f,y,multiX), y <- pre(f,y));
-(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE TransitImplication;
+(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE TI;
 (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)
    => pre(f,y) \in multiX   BECAUSE HypoEquivToAnd;
 (IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
    => (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AssocAndLeft;
 (IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
-   => pre(f,y) \in multiX   BECAUSE TransitImplication;
+   => pre(f,y) \in multiX   BECAUSE TI;
 (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
    => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AndSymmetry;
-y \in multiApply(f,multiX) => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE TransitImplication;
+y \in multiApply(f,multiX) => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE TI;
 IsInjection(f) => IsInjection(f)   BECAUSE ImplyOneself;
 (IsInjection(f) /\ y \in multiApply(f,multiX)) => (IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))   BECAUSE MergeImplicationsAnd;
-(IsInjection(f) /\ y \in multiApply(f,multiX)) => pre(f,y) \in multiX   BECAUSE TransitImplication;
+(IsInjection(f) /\ y \in multiApply(f,multiX)) => pre(f,y) \in multiX   BECAUSE TI;
 IsInjection(f) => (y \in multiApply(f,multiX) => y \in Image(f))   BECAUSE PT1;
 (IsInjection(f) /\ y \in multiApply(f,multiX)) => y \in Image(f)   BECAUSE HypoImplToAnd;
 (IsInjection(f) /\ y \in multiApply(f,multiX)) => (y \in Image(f) /\ pre(f,y) \in multiX)   BECAUSE CombineImplicationsEnd;
@@ -1166,18 +1217,18 @@ z \in { u } => z = u   BECAUSE EquivToImpl;
 (u \in i /\ z \in {u}) => (u \in (i \union j) /\ z = u)   BECAUSE MergeImplicationsAnd;
 z = u => (z \in (i \union j) <=> u \in (i \union j))   BECAUSE E_SCHEME;
 (z \in (i \union j) <=> u \in (i \union j)) => (u \in (i \union j) => z \in (i \union j))   BECAUSE EquivToImplReverse;
-z = u => (u \in (i \union j) => z \in (i \union j))   BECAUSE TransitImplication;
+z = u => (u \in (i \union j) => z \in (i \union j))   BECAUSE TI;
 (z = u /\ u \in (i \union j)) => z \in (i \union j)   BECAUSE HypoImplToAnd;
 (u \in (i \union j) /\ z = u) => (z = u /\ u \in (i \union j))   BECAUSE AndSymmetry;
-(u \in (i \union j) /\ z = u) => z \in (i \union j)   BECAUSE TransitImplication;
-(u \in i /\ z \in {u}) => z \in (i \union j)   BECAUSE TransitImplication;
+(u \in (i \union j) /\ z = u) => z \in (i \union j)   BECAUSE TI;
+(u \in i /\ z \in {u}) => z \in (i \union j)   BECAUSE TI;
 u \in i => (z \in {u} => z \in (i \union j))   BECAUSE HypoAndToImpl;
 \A z : u \in i => (z \in {u} => z \in (i \union j))   BECAUSE GENERALIZATION;
 u \in i => {u} \subseteq (i \union j)   BECAUSE Q_SCHEME;
 powersetExists   BECAUSE AXIOM;
 {u} \in SUBSET (i \union j) <=> {u} \subseteq (i \union j)   BECAUSE \A(x <- i \union j, z <- {u});
 {u} \subseteq (i \union j) => {u} \in SUBSET (i \union j)   BECAUSE EquivToImplReverse;
-u \in i => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+u \in i => {u} \in SUBSET (i \union j)   BECAUSE TI;
 
 \* Proof of {u,v} \in SUBSET (i \union j)
 unionSecondInc   BECAUSE THEOREM;
@@ -1186,22 +1237,22 @@ v \in j => v \in (i \union j)   BECAUSE \A(z <- v);
 (u \in i /\ v \in j) => (u \in (i \union j) /\ v \in (i \union j))   BECAUSE MergeImplicationsAnd;
 pairInclusion   BECAUSE THEOREM;
 (u \in (i \union j) /\ v \in (i \union j)) => {u,v} \subseteq (i \union j)   BECAUSE \A(x <- u, y <- v, t <- i \union j);
-(u \in i /\ v \in j) => {u,v} \subseteq (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => {u,v} \subseteq (i \union j)   BECAUSE TI;
 {u,v} \in SUBSET (i \union j) <=> {u,v} \subseteq (i \union j)   BECAUSE \A(x <- i \union j, z <- {u,v});
 {u,v} \subseteq (i \union j) => {u,v} \in SUBSET (i \union j)   BECAUSE EquivToImplReverse;
-(u \in i /\ v \in j) => {u,v} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => {u,v} \in SUBSET (i \union j)   BECAUSE TI;
 
 \* Proof of (u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)
 (u \in i /\ v \in j) => u \in i   BECAUSE DropAndRight;
-(u \in i /\ v \in j) => {u} \in SUBSET (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => {u} \in SUBSET (i \union j)   BECAUSE TI;
 (u \in i /\ v \in j) => ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))   BECAUSE CombineImplicationsEnd;
 ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))
    => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE \A(x <- {u}, y <- {u,v}, t <- SUBSET (i \union j));
-(u \in i /\ v \in j) => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE TI;
 <<u,v>> \in SUBSET SUBSET (i \union j)
    <=> <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE \A(x <- SUBSET (i \union j), z <- <<u,v>>);
 <<u,v>> \subseteq SUBSET (i \union j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE EquivToImplReverse;
-(u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+(u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE TI;
 
 \* Substitution of fst(x) and snd(x) into u and v
 \A u : \A v : (u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)   BECAUSE GENERALIZATION;
@@ -1215,10 +1266,10 @@ x = <<fst(x),snd(x)>> => (x \in SUBSET SUBSET (i \union j) <=> <<fst(x),snd(x)>>
 (x = <<fst(x),snd(x)>> /\ <<fst(x),snd(x)>> \in SUBSET SUBSET (i \union j))
    => x \in SUBSET SUBSET (i \union j)   BECAUSE HypoEquivToAndReverse;
 (IsCouple(x) /\ (fst(x) \in i /\ snd(x) \in j))
-   => x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+   => x \in SUBSET SUBSET (i \union j)   BECAUSE TI;
 (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j) => (IsCouple(x) /\ (fst(x) \in i /\ snd(x) \in j))   BECAUSE AssocAnd;
 (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)
-   => x \in SUBSET SUBSET (i \union j)   BECAUSE TransitImplication;
+   => x \in SUBSET SUBSET (i \union j)   BECAUSE TI;
 x \in chooseB(i,j) <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)   BECAUSE SeparationTauto;
 \A x : x \in chooseB(i,j) <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)   BECAUSE GENERALIZATION;
 \E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)   BECAUSE \E(b <- chooseB(i,j));
@@ -1226,21 +1277,25 @@ x \in chooseB(i,j) <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)   BECAUSE S
 cartesianProductExists   BECAUSE GENERALIZATION;
 QED
 
-cartesianProductInc == \A x : \A y : \A a : \A b : (a \in x /\ b \in y) => <<a,b>> \in (x \X y)
-THEOREM cartesianProductInc
+(*
+   Convenience theorem for which couples are in a cartesian product.
+   It is weaker than the definition of cartesian products, which adds
+   that all elements are couples.
+*)
+cartesianProductCouples == \A x : \A y : \A a : \A b : (a \in x /\ b \in y) <=> <<a,b>> \in (x \X y)
+
+dropTrue(a,b,t) == t => ((t /\ a /\ b) <=> (a /\ b))   PROPO_TAUTO dropTrue
+
+THEOREM cartesianProductCouples
 PROOF
 VARIABLES a,b,c,d,i,j,u,v,x,y;
 cartesianProductExists   BECAUSE THEOREM;
-<<a,b>> \in (x \X y) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE \A(i <- x, j <- y, x <- <<a,b>>);
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) => <<a,b>> \in (x \X y)   BECAUSE EquivToImplReverse;
+<<a,b>> \in (x \X y) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)
+   BECAUSE \A(i <- x, j <- y, x <- <<a,b>>);
 <<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
-fst(<<a,b>>) \in x => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x)   BECAUSE IntroAndRight;
-snd(<<a,b>>) \in y => snd(<<a,b>>) \in y   BECAUSE ImplyOneself;
-(fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)
-   BECAUSE MergeImplicationsAnd;
-(fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) => <<a,b>> \in (x \X y)   BECAUSE TransitImplication;
-
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE dropTrue;
+<<a,b>> \in (x \X y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE TransitEquiv;
 tupleComposition   BECAUSE THEOREM;
 IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
 <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
@@ -1248,17 +1303,11 @@ tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))
    BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
 a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-a = fst(<<a,b>>)   BECAUSE DropAndRight;
-b = snd(<<a,b>>)   BECAUSE DropAndLeft;
-a = fst(<<a,b>>) => (a \in x <=> fst(<<a,b>>) \in x)   BECAUSE E_SCHEME;
-a \in x <=> fst(<<a,b>>) \in x   BECAUSE MODUS_PONENS;
-a \in x => fst(<<a,b>>) \in x   BECAUSE EquivToImpl;
-b = snd(<<a,b>>) => (b \in y <=> snd(<<a,b>>) \in y)   BECAUSE E_SCHEME;
-b \in y <=> snd(<<a,b>>) \in y   BECAUSE MODUS_PONENS;
-b \in y => snd(<<a,b>>) \in y   BECAUSE EquivToImpl;
-(a \in x /\ b \in y) => (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE MergeImplicationsAnd;
-(a \in x /\ b \in y) => <<a,b>> \in (x \X y)   BECAUSE TransitImplication;
-cartesianProductInc   BECAUSE GENERALIZATION;
+(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => ((a \in x /\ b \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y))   BECAUSE E_SCHEME;
+(a \in x /\ b \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE MODUS_PONENS;
+<<a,b>> \in (x \X y) <=> (a \in x /\ b \in y)   BECAUSE TransitEquiv2;
+(a \in x /\ b \in y) <=> <<a,b>> \in (x \X y)   BECAUSE EquivSymmetry;
+cartesianProductCouples   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -1273,18 +1322,18 @@ disjUnionFirstInc == \A x : \A y : \A z : z \in x => <<z,{}>> \in disjointUnion(
 THEOREM disjUnionFirstInc
 PROOF
 VARIABLES a,b,i,j,x,y,z;
-cartesianProductInc   BECAUSE THEOREM;
-(z \in x /\ {} \in {{}}) => <<z,{}>> \in (x \X {{}})   BECAUSE \A(x <- x, y <- {{}}, a <- z, b <- {});
+cartesianProductCouples   BECAUSE THEOREM;
+(z \in x /\ {} \in {{}}) <=> <<z,{}>> \in (x \X {{}})   BECAUSE \A(x <- x, y <- {{}}, a <- z, b <- {});
 singletonExists   BECAUSE THEOREM;
 {} \in { {} } <=> {} = {}   BECAUSE \A(a <- {}, x <- {});
 {} = {}   BECAUSE E_SCHEME;
 {} \in { {} }   BECAUSE MODUS_PONENS;
 z \in x => (z \in x /\ {} \in {{}})   BECAUSE IntroAndLeft;
-z \in x => <<z,{}>> \in (x \X {{}})   BECAUSE TransitImplication;
+z \in x => <<z,{}>> \in (x \X {{}})   BECAUSE TIE;
 unionFirstInc   BECAUSE THEOREM;
 (x \X {{}}) \subseteq disjointUnion(x,y)   BECAUSE \A(x <- x \X {{}}, y <- y \X {ordinalOne});
 <<z,{}>> \in (x \X {{}}) => <<z,{}>> \in disjointUnion(x,y)   BECAUSE \A(z <- <<z,{}>>);
-z \in x => <<z,{}>> \in disjointUnion(x,y)   BECAUSE TransitImplication;
+z \in x => <<z,{}>> \in disjointUnion(x,y)   BECAUSE TI;
 disjUnionFirstInc   BECAUSE GENERALIZATION;
 QED
 
@@ -1292,18 +1341,18 @@ disjUnionSecondInc == \A x : \A y : \A z : z \in y => <<z,ordinalOne>> \in disjo
 THEOREM disjUnionSecondInc
 PROOF
 VARIABLES a,b,i,j,x,y,z;
-cartesianProductInc   BECAUSE THEOREM;
-(z \in y /\ ordinalOne \in {ordinalOne}) => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE \A(x <- y, y <- {ordinalOne}, a <- z, b <- ordinalOne);
+cartesianProductCouples   BECAUSE THEOREM;
+(z \in y /\ ordinalOne \in {ordinalOne}) <=> <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE \A(x <- y, y <- {ordinalOne}, a <- z, b <- ordinalOne);
 singletonExists   BECAUSE THEOREM;
 ordinalOne \in { ordinalOne } <=> ordinalOne = ordinalOne   BECAUSE \A(a <- ordinalOne, x <- ordinalOne);
 ordinalOne = ordinalOne   BECAUSE E_SCHEME;
 ordinalOne \in { ordinalOne }   BECAUSE MODUS_PONENS;
 z \in y => (z \in y /\ ordinalOne \in {ordinalOne})   BECAUSE IntroAndLeft;
-z \in y => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE TransitImplication;
+z \in y => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE TIE;
 unionSecondInc   BECAUSE THEOREM;
 (y \X {ordinalOne}) \subseteq disjointUnion(x,y)   BECAUSE \A(x <- x \X {{}}, y <- y \X {ordinalOne});
 <<z,ordinalOne>> \in (y \X {ordinalOne}) => <<z,ordinalOne>> \in disjointUnion(x,y)   BECAUSE \A(z <- <<z,ordinalOne>>);
-z \in y => <<z,ordinalOne>> \in disjointUnion(x,y)   BECAUSE TransitImplication;
+z \in y => <<z,ordinalOne>> \in disjointUnion(x,y)   BECAUSE TI;
 disjUnionSecondInc   BECAUSE GENERALIZATION;
 QED
 

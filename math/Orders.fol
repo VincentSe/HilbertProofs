@@ -3,7 +3,9 @@ EXTENDS ZFC
 (*
    The class of orders : graphs that are reflexive, anti-symmetric and transitive.
 *)
-IsOrder(o) == IsGraph(o) /\ IsReflexive(o)
+IsOrder(o) == IsGraph(o)
+   \* Reflexivity
+   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
    \* transitivity
    /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
    \* anti-symmetry
@@ -26,10 +28,39 @@ VARIABLES a,b,c,f,o,x,y;
 injectOrderExists   BECAUSE GENERALIZATION;
 QED
 
+doubleEquiv(a,b,c,d) == (a <=> b) => ((c <=> d) => ((a /\ c) <=> (b /\ d)))   PROPO_TAUTO doubleEquiv
+
+injectOrderCouples == \A o : \A f : \A x : \A y : <<x,y>> \in injectOrder(o,f) <=>
+   (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)
+THEOREM injectOrderCouples
+PROOF
+VARIABLES a,b,f,o,x,y;
+injectOrderExists   BECAUSE THEOREM;
+<<x,y>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<x,y>>)   BECAUSE \A(o <- o, f <- f, x <- <<x,y>>);
+cartesianProductCouples   BECAUSE THEOREM;
+(x \in Image(f) /\ y \in Image(f)) <=> <<x,y>> \in (Image(f) \X Image(f))
+   BECAUSE \A(x <- Image(f), y <- Image(f), a <- x, b <- y);
+fstExists   BECAUSE THEOREM;
+x = fst(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+sndExists   BECAUSE THEOREM;
+y = snd(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+(x = fst(<<x,y>>) /\ y = snd(<<x,y>>))
+   => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o)   BECAUSE E_SCHEME;
+x = fst(<<x,y>>) /\ y = snd(<<x,y>>)   BECAUSE IntroAndRight;
+<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o   BECAUSE MODUS_PONENS;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) <=> IsInInjectOrder(o,f,<<x,y>>)   BECAUSE doubleEquiv;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) <=> <<x,y>> \in injectOrder(o,f)   BECAUSE TransitEquiv2;
+<<x,y>> \in injectOrder(o,f) <=> (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE EquivSymmetry;
+injectOrderCouples   BECAUSE GENERALIZATION;
+QED
+
 injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsFunction(f)) => IsOrder(injectOrder(o,f))
+
+massageHypos(a,b,c,d) == ((c /\ d) /\ (a /\ b)) => (a /\ b /\ c /\ d)   PROPO_TAUTO massageHypos
+
 THEOREM injectOrderIsOrder
 PROOF
-VARIABLES a,b,d,f,g,i,j,o,x,y;
+VARIABLES a,b,d,f,g,i,j,o,x,y,z;
 \* Proof that injectOrder(o,f) is a graph
 injectOrderExists   BECAUSE THEOREM;
 x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE \A(o <- o, f <- f, x <- x);
@@ -40,171 +71,172 @@ x \in (Image(f) \X Image(f)) <=> (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \
    BECAUSE \A(i <- Image(f), j <- Image(f), x <- x);
 x \in (Image(f) \X Image(f)) => (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f))   BECAUSE EquivToImpl;
 (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => IsCouple(x)   BECAUSE DropAndRight2;
-x \in (Image(f) \X Image(f)) => IsCouple(x)   BECAUSE TransitImplication;
-IsInInjectOrder(o,f,x) => IsCouple(x)   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => IsCouple(x)   BECAUSE TransitImplication;
+x \in (Image(f) \X Image(f)) => IsCouple(x)   BECAUSE TI;
+IsInInjectOrder(o,f,x) => IsCouple(x)   BECAUSE TI;
+x \in injectOrder(o,f) => IsCouple(x)   BECAUSE TI;
 IsGraph(injectOrder(o,f))   BECAUSE GENERALIZATION;
+(IsOrder(o) /\ IsFunction(f)) => IsGraph(injectOrder(o,f))   BECAUSE PT1;
 
 \* Proof that injectOrder(o,f) is reflexive
-IsOrder(o) => (IsGraph(o) /\ IsReflexive(o))   BECAUSE DropAndRight2;
-(IsGraph(o) /\ IsReflexive(o)) => IsReflexive(o)   BECAUSE DropAndLeft;
-IsOrder(o) => IsReflexive(o)   BECAUSE TransitImplication;
-IsReflexive(o) => (<<pre(f,fst(x)), pre(f,snd(x))>> \in o
-                   => (<<fst(<<pre(f,fst(x)), pre(f,snd(x))>>), fst(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o
-		        /\ <<snd(<<pre(f,fst(x)), pre(f,snd(x))>>), snd(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o))
-   BECAUSE \A(x <- <<pre(f,fst(x)), pre(f,snd(x))>>);
-fstExists   BECAUSE THEOREM;
-pre(f,fst(x)) = fst(<<pre(f,fst(x)), pre(f,snd(x))>>)   BECAUSE \A(a <- pre(f,fst(x)), b <- pre(f,snd(x)));
-sndExists   BECAUSE THEOREM;
-pre(f,snd(x)) = snd(<<pre(f,fst(x)), pre(f,snd(x))>>)   BECAUSE \A(a <- pre(f,fst(x)), b <- pre(f,snd(x)));
-
-(x = a /\ y = b) => ((<<x, x>> \in o /\ <<y,y>> \in o) <=> (<<a, a>> \in o /\ <<b,b>> \in o))   BECAUSE E_SCHEME;
-\A x : \A y : \A a : \A b : (x = a /\ y = b) => ((<<x, x>> \in o /\ <<y,y>> \in o) <=> (<<a, a>> \in o /\ <<b,b>> \in o))   BECAUSE GENERALIZATION;
-(pre(f,fst(x)) = fst(<<pre(f,fst(x)), pre(f,snd(x))>>) /\ pre(f,snd(x)) = snd(<<pre(f,fst(x)), pre(f,snd(x))>>))
-   => ((<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
-	<=> (<<fst(<<pre(f,fst(x)), pre(f,snd(x))>>), fst(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o
-		        /\ <<snd(<<pre(f,fst(x)), pre(f,snd(x))>>), snd(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o))
-   BECAUSE \A(x <- pre(f,fst(x)), y <- pre(f,snd(x)),
-              a <- fst(<<pre(f,fst(x)), pre(f,snd(x))>>), b <- snd(<<pre(f,fst(x)), pre(f,snd(x))>>));
-pre(f,fst(x)) = fst(<<pre(f,fst(x)), pre(f,snd(x))>>) /\ pre(f,snd(x)) = snd(<<pre(f,fst(x)), pre(f,snd(x))>>)   BECAUSE IntroAndLeft;
-(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
-	<=> (<<fst(<<pre(f,fst(x)), pre(f,snd(x))>>), fst(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o
-		        /\ <<snd(<<pre(f,fst(x)), pre(f,snd(x))>>), snd(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o)
-   BECAUSE MODUS_PONENS;
-(<<fst(<<pre(f,fst(x)), pre(f,snd(x))>>), fst(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o
-		        /\ <<snd(<<pre(f,fst(x)), pre(f,snd(x))>>), snd(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o)
-   => (<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)   BECAUSE EquivToImplReverse;
-(IsReflexive(o) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)
-   => (<<fst(<<pre(f,fst(x)), pre(f,snd(x))>>), fst(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o
-	 /\ <<snd(<<pre(f,fst(x)), pre(f,snd(x))>>), snd(<<pre(f,fst(x)), pre(f,snd(x))>>)>> \in o)   BECAUSE HypoImplToAnd;
-(IsReflexive(o) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)
-   => (<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)   BECAUSE TransitImplication;
-IsInInjectOrder(o,f,x) => <<pre(f,fst(x)), pre(f,snd(x))>> \in o   BECAUSE DropAndLeft;
-x \in injectOrder(o,f) => <<pre(f,fst(x)), pre(f,snd(x))>> \in o   BECAUSE TransitImplication;
-IsReflexive(o) => IsReflexive(o)   BECAUSE ImplyOneself;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => (IsReflexive(o) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)   BECAUSE MergeImplicationsAnd;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => (<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)   BECAUSE TransitImplication;
+IsOrder(o) => (IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))   BECAUSE DropAndRight2;
+(IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))
+   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndLeft;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
+(\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   => (<<pre(f,x), pre(f,y)>> \in o => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o))
+   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
+IsOrder(o) => (<<pre(f,x), pre(f,y)>> \in o => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o))   BECAUSE TI;
+(IsOrder(o) /\ <<pre(f,x), pre(f,y)>> \in o) => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o)   BECAUSE HypoImplToAnd;
+injectOrderCouples   BECAUSE THEOREM;
+<<x,y>> \in injectOrder(o,f) <=> (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)
+   BECAUSE \A(o <- o, f <- f, x <- x, y <- y);
+<<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE EquivToImpl;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE DropAndLeft;
+<<x,y>> \in injectOrder(o,f) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE TI;
+IsOrder(o) => IsOrder(o)   BECAUSE ImplyOneself;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (IsOrder(o) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE MergeImplicationsAnd;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o)   BECAUSE TI;
 
    \* Lemma : \A d : (d \in Image(f) /\ <<pre(f,d), pre(f,d)>>) \in o => <<d,d>> \in injectOrder
+<<d,d>> \in injectOrder(o,f) <=> (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o)
+   BECAUSE \A(o <- o, f <- f, x <- d, y <- d);
 d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
-cartesianProductInc   BECAUSE THEOREM;
-(d \in Image(f) /\ d \in Image(f)) => <<d,d>> \in (Image(f) \X Image(f))
-   BECAUSE \A(x <- Image(f), y <- Image(f), a <- d, b <- d);
-d \in Image(f) => <<d,d>> \in (Image(f) \X Image(f))   BECAUSE TransitImplication;
-d = fst(<<d,d>>)   BECAUSE \A(a <- d, b <- d);
-d = snd(<<d,d>>)   BECAUSE \A(a <- d, b <- d);
-(x = a /\ y = b) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,a), pre(f,b)>> \in o)   BECAUSE E_SCHEME;
-\A x : \A y : \A a : \A b : (x = a /\ y = b) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,a), pre(f,b)>> \in o)
-   BECAUSE GENERALIZATION;
-(d = fst(<<d,d>>) /\ d = snd(<<d,d>>))
-   => (<<pre(f,d), pre(f,d)>> \in o <=> <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o)
-   BECAUSE \A(x <- d, y <- d, a <- fst(<<d,d>>), b <- snd(<<d,d>>));
-d = fst(<<d,d>>) /\ d = snd(<<d,d>>)   BECAUSE IntroAndRight;
-<<pre(f,d), pre(f,d)>> \in o <=> <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o
-   BECAUSE MODUS_PONENS;
-<<pre(f,d), pre(f,d)>> \in o => <<pre(f,fst(<<d,d>>)), pre(f,snd(<<d,d>>))>> \in o
-   BECAUSE EquivToImpl;
-(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => IsInInjectOrder(o,f,<<d,d>>) 
+<<pre(f,d), pre(f,d)>> \in o => <<pre(f,d), pre(f,d)>> \in o   BECAUSE ImplyOneself;
+(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o)
    BECAUSE MergeImplicationsAnd;
-<<d,d>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<d,d>>)   BECAUSE \A(o <- o, f <- f, x <- <<d,d>>);
-IsInInjectOrder(o,f,<<d,d>>) => <<d,d>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
-(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)    BECAUSE TransitImplication;
+(d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
+(d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE TI;
 \A d : (d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE GENERALIZATION;
    
-   \* <<fst(x), fst(x)>>
-(fst(x) \in Image(f) /\ <<pre(f,fst(x)), pre(f,fst(x))>> \in o) => <<fst(x),fst(x)>> \in injectOrder(o,f)
-   BECAUSE \A(d <- fst(x));
-(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => fst(x) \in Image(f)   BECAUSE DropAndBoth;
-x \in (Image(f) \X Image(f)) => fst(x) \in Image(f)   BECAUSE TransitImplication;
-IsInInjectOrder(o,f,x) => fst(x) \in Image(f)   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => fst(x) \in Image(f)   BECAUSE TransitImplication;
-(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
-   => <<pre(f,fst(x)), pre(f,fst(x))>> \in o   BECAUSE DropAndRight;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,fst(x)), pre(f,fst(x))>> \in o   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => x \in injectOrder(o,f)   BECAUSE DropAndLeft;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => fst(x) \in Image(f)   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => (fst(x) \in Image(f) /\ <<pre(f,fst(x)), pre(f,fst(x))>> \in o)
+   \* <<x, x>>
+(x \in Image(f) /\ <<pre(f,x), pre(f,x)>> \in o) => <<x,x>> \in injectOrder(o,f)
+   BECAUSE \A(d <- x);
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => x \in Image(f)   BECAUSE DropAndRight2;
+<<x,y>> \in injectOrder(o,f) => x \in Image(f)   BECAUSE TI;
+(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,x), pre(f,x)>> \in o   BECAUSE DropAndRight;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<pre(f,x), pre(f,x)>> \in o   BECAUSE TI;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => x \in Image(f)   BECAUSE TI;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (x \in Image(f) /\ <<pre(f,x), pre(f,x)>> \in o)
    BECAUSE CombineImplicationsEnd;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<fst(x),fst(x)>> \in injectOrder(o,f)
-   BECAUSE TransitImplication;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,x>> \in injectOrder(o,f)   BECAUSE TI;
 
-   \* <<snd(x), snd(x)>>
-(snd(x) \in Image(f) /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o) => <<snd(x),snd(x)>> \in injectOrder(o,f)
-   BECAUSE \A(d <- snd(x));
-(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => snd(x) \in Image(f)   BECAUSE DropAndLeft;
-x \in (Image(f) \X Image(f)) => snd(x) \in Image(f)   BECAUSE TransitImplication;
-IsInInjectOrder(o,f,x) => snd(x) \in Image(f)   BECAUSE TransitImplication;
-x \in injectOrder(o,f) => snd(x) \in Image(f)   BECAUSE TransitImplication;
-(<<pre(f,fst(x)), pre(f,fst(x))>> \in o /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
-   => <<pre(f,snd(x)), pre(f,snd(x))>> \in o   BECAUSE DropAndLeft;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<pre(f,snd(x)), pre(f,snd(x))>> \in o   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => x \in injectOrder(o,f)   BECAUSE DropAndLeft;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => snd(x) \in Image(f)   BECAUSE TransitImplication;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => (snd(x) \in Image(f) /\ <<pre(f,snd(x)), pre(f,snd(x))>> \in o)
+   \* <<y, y>>
+(y \in Image(f) /\ <<pre(f,y), pre(f,y)>> \in o) => <<y,y>> \in injectOrder(o,f)
+   BECAUSE \A(d <- y);
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => y \in Image(f)   BECAUSE DropAndBoth;
+<<x,y>> \in injectOrder(o,f) => y \in Image(f)   BECAUSE TI;
+(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,y), pre(f,y)>> \in o   BECAUSE DropAndLeft;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<pre(f,y), pre(f,y)>> \in o   BECAUSE TI;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => y \in Image(f)   BECAUSE TI;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (y \in Image(f) /\ <<pre(f,y), pre(f,y)>> \in o)
    BECAUSE CombineImplicationsEnd;
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => <<snd(x),snd(x)>> \in injectOrder(o,f)
-   BECAUSE TransitImplication;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<y,y>> \in injectOrder(o,f)   BECAUSE TI;
 
-(IsReflexive(o) /\ x \in injectOrder(o,f)) => (<<fst(x),fst(x)>> \in injectOrder(o,f) /\ <<snd(x),snd(x)>> \in injectOrder(o,f))
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f))
    BECAUSE CombineImplicationsEnd;
-IsReflexive(o) => (x \in injectOrder(o,f) => (<<fst(x),fst(x)>> \in injectOrder(o,f) /\ <<snd(x),snd(x)>> \in injectOrder(o,f)))
+IsOrder(o) => (<<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
    BECAUSE HypoAndToImpl;
-\A x : IsReflexive(o) => (x \in injectOrder(o,f) => (<<fst(x),fst(x)>> \in injectOrder(o,f) /\ <<snd(x),snd(x)>> \in injectOrder(o,f)))
+\A y : IsOrder(o) => (<<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
    BECAUSE GENERALIZATION;
-IsReflexive(o) => IsReflexive(injectOrder(o,f))   BECAUSE Q_SCHEME;
+IsOrder(o) => (\A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
+   BECAUSE Q_SCHEME;
+\A x : IsOrder(o) => (\A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
+   BECAUSE GENERALIZATION;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
+   BECAUSE Q_SCHEME;
+(IsOrder(o) /\ IsFunction(f)) => IsOrder(o)   BECAUSE DropAndRight;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))   BECAUSE TI;
+(IsOrder(o) /\ IsFunction(f)) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))   BECAUSE TI;
 
 \* Proof that injectOrder(o,f) is anti-symmetric
-<<x,y>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<x,y>>)   BECAUSE \A(o <- o, f <- f, x <- <<x,y>>);
-<<x,y>> \in injectOrder(o,f) => IsInInjectOrder(o,f,<<x,y>>)   BECAUSE EquivToImpl;
-IsInInjectOrder(o,f,<<x,y>>) => <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o   BECAUSE DropAndLeft;
-x = fst(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
-y = snd(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
-(x = fst(<<x,y>>) /\ y = snd(<<x,y>>)) => (<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o)   BECAUSE E_SCHEME;
-x = fst(<<x,y>>) /\ y = snd(<<x,y>>)   BECAUSE IntroAndRight;
-<<pre(f,x), pre(f,y)>> \in o <=> <<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o   BECAUSE MODUS_PONENS;
-<<pre(f,fst(<<x,y>>)), pre(f,snd(<<x,y>>))>> \in o => <<pre(f,x), pre(f,y)>> \in o    BECAUSE EquivToImplReverse;
-IsInInjectOrder(o,f,<<x,y>>) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE TransitImplication;
-<<y,x>> \in injectOrder(o,f) <=> IsInInjectOrder(o,f,<<y,x>>)   BECAUSE \A(o <- o, f <- f, x <- <<y,x>>);
-<<y,x>> \in injectOrder(o,f) => IsInInjectOrder(o,f,<<y,x>>)   BECAUSE EquivToImpl;
-IsInInjectOrder(o,f,<<y,x>>) => <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o   BECAUSE DropAndLeft;
-y = fst(<<y,x>>)   BECAUSE \A(a <- y, b <- x);
-x = snd(<<y,x>>)   BECAUSE \A(a <- y, b <- x);
-(y = fst(<<y,x>>) /\ x = snd(<<y,x>>)) => (<<pre(f,y), pre(f,x)>> \in o <=> <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o)   BECAUSE E_SCHEME;
-y = fst(<<y,x>>) /\ x = snd(<<y,x>>)   BECAUSE IntroAndRight;
-<<pre(f,y), pre(f,x)>> \in o <=> <<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o   BECAUSE MODUS_PONENS;
-<<pre(f,fst(<<y,x>>)), pre(f,snd(<<y,x>>))>> \in o => <<pre(f,y), pre(f,x)>> \in o    BECAUSE EquivToImplReverse;
-IsInInjectOrder(o,f,<<y,x>>) => <<pre(f,y), pre(f,x)>> \in o   BECAUSE TransitImplication;
-(IsInInjectOrder(o,f,<<x,y>>) /\ IsInInjectOrder(o,f,<<y,x>>))
+\A x : \A y: <<x,y>> \in injectOrder(o,f) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE GENERALIZATION;
+<<y,x>> \in injectOrder(o,f) => <<pre(f,y), pre(f,x)>> \in o   BECAUSE \A(x <- y, y <- x);
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f))
    => (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o)   BECAUSE MergeImplicationsAnd;
-
 IsOrder(o) => (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)   BECAUSE DropAndLeft;
 (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
-   => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
-IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))   BECAUSE TransitImplication;
+   => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))
+   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
+IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))   BECAUSE TI;
 (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE SwitchHypos;
-(IsInInjectOrder(o,f,<<x,y>>) /\ IsInInjectOrder(o,f,<<y,x>>)) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE TransitImplication;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => pre(f,x) = pre(f,y)   BECAUSE HypoImplToAnd;
 
-imageExists   BECAUSE THEOREM;
-y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
-<<pre(f,y),y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
-y \in Image(f) <=> <<pre(f,y),y>> \in f   BECAUSE TransitEquiv2;
-y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE EquivToImpl; \* y = f[pre(f,y)]
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE DropAndLeft;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- y);
-IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TransitImplication;
-<<pre(f,y),y>> \in f => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE SwitchHypos;
-y \in Image(f) => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE TransitImplication;
-\A y : y \in Image(f) => (IsFunction(f) => y = f[pre(f,y)])   BECAUSE GENERALIZATION;
-x \in Image(f) => (IsFunction(f) => x = f[pre(f,x)])   BECAUSE \A(y <- x);
-\A x : \A y : x = y => (f[x] = f[y])   BECAUSE E_SCHEME;
-pre(f,x) = pre(f,y) => (f[pre(f,x)] = f[pre(f,y)])   BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
-\* x = y  by funcitonnality of f
-\* TODO
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndRight2;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => (x \in Image(f) /\ y \in Image(f))   BECAUSE DropAndRight;
+<<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f))   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => (x \in Image(f) /\ y \in Image(f))   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o))
+   => (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))   BECAUSE CombineImplicationsEnd;
+IsFunction(f) => IsFunction(f)   BECAUSE ImplyOneself;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f))
+   => (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f))   BECAUSE MergeImplicationsAnd;
+funcUniqueImage   BECAUSE THEOREM;
+(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y   BECAUSE \A(f <- f, x <- x, y <- y);
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f)) => x = y   BECAUSE TI;
+(IsOrder(o) /\ IsFunction(f) /\ (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)))
+   => (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f))   BECAUSE massageHypos;
+(IsOrder(o) /\ IsFunction(f) /\ (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f))) => x = y   BECAUSE TI;
+(IsOrder(o) /\ IsFunction(f)) => ((<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => x = y)   BECAUSE HypoAndToImpl;
+\A y: (IsOrder(o) /\ IsFunction(f)) => ((<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => x = y)   BECAUSE GENERALIZATION;
+(IsOrder(o) /\ IsFunction(f)) => (\A y : (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => x = y)   BECAUSE Q_SCHEME;
+\A x : (IsOrder(o) /\ IsFunction(f)) => (\A y : (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => x = y)   BECAUSE GENERALIZATION;
+(IsOrder(o) /\ IsFunction(f)) => (\A x : \A y : (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => x = y)   BECAUSE Q_SCHEME;
+
+\* Proof that injectOrder(o,f) is transitive
+<<y,z>> \in injectOrder(o,f) => <<pre(f,y), pre(f,z)>> \in o   BECAUSE \A(x <- y, y <- z);
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f))
+   => (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o)   BECAUSE MergeImplicationsAnd;
+IsOrder(o) => (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)   BECAUSE DropAndBoth;
+(\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
+   => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE \A(x <- pre(f,x), y <- pre(f,y), z <- pre(f,z));
+IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE TI;
+(<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) => (IsOrder(o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE SwitchHypos;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f)) => (IsOrder(o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => <<pre(f,x), pre(f,z)>> \in o
+   BECAUSE HypoImplToAnd;
+\A x : \A y : <<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f))   BECAUSE GENERALIZATION;
+<<y,z>> \in injectOrder(o,f) => (y \in Image(f) /\ z \in Image(f))   BECAUSE \A(x <- y, y <- z);
+(y \in Image(f) /\ z \in Image(f)) => z \in Image(f)   BECAUSE DropAndLeft;
+<<y,z>> \in injectOrder(o,f) => z \in Image(f)   BECAUSE TI;
+(x \in Image(f) /\ y \in Image(f)) => x \in Image(f)   BECAUSE DropAndRight;
+<<x,y>> \in injectOrder(o,f) => x \in Image(f)   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f)) => (x \in Image(f) /\ z \in Image(f))   BECAUSE MergeImplicationsAnd;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f))   BECAUSE DropAndRight;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => (x \in Image(f) /\ z \in Image(f))   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o))
+   => (x \in Image(f) /\ z \in Image(f) /\ <<pre(f,x), pre(f,z)>> \in o)   BECAUSE CombineImplicationsEnd;
+<<x,z>> \in injectOrder(o,f) <=> (x \in Image(f) /\ z \in Image(f) /\ <<pre(f,x), pre(f,z)>> \in o)
+   BECAUSE \A(o <- o, f <- f, x <- x, y <- z);
+(x \in Image(f) /\ z \in Image(f) /\ <<pre(f,x), pre(f,z)>> \in o) => <<x,z>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => <<x,z>> \in injectOrder(o,f)   BECAUSE TI;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f)) => (IsOrder(o) => <<x,z>> \in injectOrder(o,f))   BECAUSE HypoAndToImpl;
+IsOrder(o) => (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f))   BECAUSE SwitchHypos;
+\A z : IsOrder(o) => (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f))   BECAUSE GENERALIZATION;
+IsOrder(o) => \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE Q_SCHEME;
+\A y : IsOrder(o) => \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE GENERALIZATION;
+IsOrder(o) => \A y : \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE Q_SCHEME;
+\A x : IsOrder(o) => \A y : \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE GENERALIZATION;
+IsOrder(o) => \A x : \A y : \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE Q_SCHEME;
+(IsOrder(o) /\ IsFunction(f)) => \A x : \A y : \A z : <<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) => <<x,z>> \in injectOrder(o,f)   BECAUSE TI;
+
+(IsOrder(o) /\ IsFunction(f)) => (IsGraph(injectOrder(o,f)) /\ (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f))))   BECAUSE CombineImplicationsEnd;
+(IsOrder(o) /\ IsFunction(f)) => (IsGraph(injectOrder(o,f)) /\ (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f))) /\ (\A x : \A y : \A z : (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f)) => <<x,z>> \in injectOrder(o,f)))   BECAUSE CombineImplicationsEnd;
+(IsOrder(o) /\ IsFunction(f)) => IsOrder(injectOrder(o,f))   BECAUSE CombineImplicationsEnd;
+injectOrderIsOrder   BECAUSE GENERALIZATION;
 QED
 
 disjointOrders == \A u : \A v : (IsOrder(u) /\ IsOrder(v) /\ (u \intersect v = {}))
    => IsOrder(u \union v)
 THEOREM disjointOrders
+PROOF
+\* Proof that disjointOrders is a graph
+unionInc   BECAUSE THEOREM;
+z \in (u \union v) <=> (z \in u \/ z \in v)   BECAUSE \A(x <- u, y <- v, z <- z);
+\* TODO
+QED
 
 (*
    The class of well-orders, orders where each nonempty subset has a minimum.
@@ -246,7 +278,7 @@ x = << <<m,{}>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a :
 << <<m,{}>>, <<n,ordinalOne>> >> = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
 \E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
 x = << <<m,{}>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
 (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
    => (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)   BECAUSE DropAndRight;
 (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => x = << <<m,{}>>, <<n,{}>> >> BECAUSE DropAndLeft;
@@ -256,8 +288,8 @@ x = << <<m,{}>>, <<n,{}>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : 
 << <<m,{}>>, <<n,{}>> >> = << <<m,{}>>, <<n,{}>> >>   BECAUSE E_SCHEME;
 \E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
 x = << <<m,{}>>, <<n,{}>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
+(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
 (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
    => (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)   BECAUSE DropAndRight;
 (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> BECAUSE DropAndLeft;
@@ -267,8 +299,8 @@ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=>
 << <<m,ordinalOne>>, <<n,ordinalOne>> >> = << <<m,ordinalOne>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
 \E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
 x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
+(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
 ((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
      \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u))
   => (\E a : \E b : x = <<a,b>>)   BECAUSE CombineImplicationsStart;
@@ -284,11 +316,11 @@ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BE
 \* wellOrderAdditionExists   BECAUSE THEOREM;
 \* x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v)   BECAUSE \A(u <- u, v <- v, x <- x);
 \* x \in wellOrderAddition(u,v) => IsInWellOrderAddition(x,u,v)   BECAUSE EquivToImpl;
-\* x \in wellOrderAddition(u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+\* x \in wellOrderAddition(u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE TI;
 (\E m : \E n : \E a : \E b : x = <<a,b>>) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
 (\E n : \E a : \E b : x = <<a,b>>) => (\E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
-\* x \in wellOrderAddition(u,v) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
-\* x \in wellOrderAddition(u,v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TransitImplication;
+\* x \in wellOrderAddition(u,v) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE TI;
+\* x \in wellOrderAddition(u,v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
 IsGraph(wellOrderAddition(u,v))   BECAUSE GENERALIZATION;
 
 \* Proof that wellOrderAddition is reflexive
@@ -346,9 +378,9 @@ a \in {} => a \notin a   BECAUSE Explosion;
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c)
    => (a \in {} /\ b \in {} /\ c \in {})   BECAUSE DropAndRight2;
 (a \in {} /\ b \in {} /\ c \in {}) => a \in {}   BECAUSE DropAndRight2;
-(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in {}   BECAUSE TransitImplication;
+(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in {}   BECAUSE TI;
 a \in {} => a \in c   BECAUSE Explosion;
-(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE TransitImplication;
+(a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE TI;
 \A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE GENERALIZATION;
 
 \* Proof of minimums
@@ -361,11 +393,11 @@ p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
 ~(p = {} \/ ~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE Explosion;
 ~(p = {} \/ ~(p \subseteq {})) <=> (p # {} /\ ~~(p \subseteq {}))   BECAUSE DistribNotOr;
 (p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE EquivToImplReverse;
-(p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
+(p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
 p \subseteq {} => ~~(p \subseteq {})   BECAUSE IntroNotNot;
 p # {} => p # {}   BECAUSE ImplyOneself;
 (p # {} /\ p \subseteq {}) => (p # {} /\ ~~(p \subseteq {}))   BECAUSE MergeImplicationsAnd;
-(p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TransitImplication;
+(p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
 \A p : (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE GENERALIZATION;
 
 \* Conclude with PT6

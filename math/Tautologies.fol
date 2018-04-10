@@ -59,8 +59,12 @@ PROPO_TAUTO ContradictionEquiv
 ContradictionAnd(a,h) == (h => (a /\ ~a)) => ~h;
 PROPO_TAUTO ContradictionAnd
 
-TransitImplication(a,b,c) == (a => b) => ((b => c) => (a => c))
-PROPO_TAUTO TransitImplication
+\* Transitivity of implication
+TI(a,b,c) == (a => b) => ((b => c) => (a => c))
+PROPO_TAUTO TI
+
+TIE(a,b,c) == (a => b) => ((b <=> c) => (a => c))
+PROPO_TAUTO TIE
 
 TransitEquiv(a,b,c) == (a <=> b) => ((b <=> c) => (a <=> c))
 PROPO_TAUTO TransitEquiv
@@ -133,6 +137,9 @@ PROPO_TAUTO Explosion
 MergeImplicationsAnd(a,b,c,d) == (a => b) => ((c => d) => ((a /\ c) => (b /\ d)))
 PROPO_TAUTO MergeImplicationsAnd
 
+MergeImplicationsAnd2(a,b,c,d) == ((a => b) /\ (c => d)) => ((a /\ c) => (b /\ d))
+PROPO_TAUTO MergeImplicationsAnd2
+
 MergeImplicationsOr(a,b,c,d) == (a => b) => ((c => d) => ((a \/ c) => (b \/ d)))
 PROPO_TAUTO MergeImplicationsOr
 
@@ -162,6 +169,9 @@ PROPO_TAUTO SwitchHypos
 
 AndSymmetry(a,b) == (a /\ b) => (b /\ a)
 PROPO_TAUTO AndSymmetry
+
+AndCycle(a,b,c) == (a /\ b /\ c) => (c /\ a /\ b)
+PROPO_TAUTO AndCycle
 
 OrSymmetry(a,b) == (a \/ b) => (b \/ a)
 PROPO_TAUTO OrSymmetry

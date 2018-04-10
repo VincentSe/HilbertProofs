@@ -474,6 +474,17 @@ void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
    and scheme   \A x : \A y : x = y => (s  =  s(x <- y))
    for all formulas s.
 
+   The scrict first-order logic equality axioms are when s
+   is a primitive symbol, not a formula. The formulas can be
+   built by instantiation of \A. For example, to prove that
+   (x = y) => (x + 2*x) = (y + 2*y)
+   the strict axioms would use
+   (x = y /\ a = b) => x + a = y + b     by the symbol +
+   (x = y /\ a = b) => x * a = y * b     by the symbol *
+   then
+   (2 = 2 /\ x = y) => 2 * x = 2 * y   BECAUSE \A(x <- 2, a <- x, y <- 2, b <- y);
+   x = y => 2 * x = 2 * y   BECAUSE 2 = 2;
+
    The substitution must be free, otherwise we would take as an axiom :
    x = y => ((\A y : x = y) <=> \A y : y = y)
    which implies that False <=> True.
