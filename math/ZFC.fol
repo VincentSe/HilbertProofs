@@ -340,6 +340,13 @@ VARIABLES a,b,u,v,x;
 intersectionExists   BECAUSE GENERALIZATION;
 QED
 
+AreDisjoint(x,y) == x \intersect y = {}
+noCommonElements == \A x : \A y : AreDisjoint(x,y) <=> \A z : ~(z \in x /\ z \in y)
+THEOREM noCommonElements
+PROOF
+intersectionExists   BECAUSE THEOREM;
+\* TODO
+QED
 
 SUBSET x == CHOOSE y : \A z : z \in y <=> z \subseteq x
 
@@ -348,29 +355,24 @@ AXIOM powersetExists
 
 \* Representation of number 1 as a set
 ordinalOne == SUBSET {}
-elemOfOne == \A x : x \in ordinalOne <=> x = {}
 
+\* The only element of ordinalOne is the empty set {},
+\* which is why ordinalOne represents the number 1.
+elemOfOne == \A x : x \in ordinalOne <=> x = {}
 THEOREM elemOfOne
 PROOF
-VARIABLES x,z;
+VARIABLES x,y,z;
 powersetExists   BECAUSE AXIOM;
 x \in ordinalOne <=> x \subseteq {}   BECAUSE \A(x <- {}, z <- x);
-
 includedInEmpty   BECAUSE THEOREM;
 x \subseteq {} => x = {}   BECAUSE \A(x <- x);
-x \in ordinalOne => x \subseteq {}   BECAUSE EquivToImpl;
-x \in ordinalOne => x = {}   BECAUSE TI;
-
-\* Proof that {} \in ordinalOne
-{} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
 inclusionInOneself   BECAUSE THEOREM;
 {} \subseteq {}   BECAUSE \A(x <- {});
-{} \in ordinalOne   BECAUSE MODUS_PONENS;
-
-x = {} => (x \in ordinalOne <=> {} \in ordinalOne)   BECAUSE E_SCHEME;
-x = {} => x \in ordinalOne   BECAUSE ImplyEquivTrue;
-
-x \in ordinalOne <=> x = {}   BECAUSE IntroEquiv;
+\A x : \A y : x = y => (x \subseteq {} <=> y \subseteq {})   BECAUSE E_SCHEME;
+x = {} => (x \subseteq {} <=> {} \subseteq {})   BECAUSE \A(x <- x, y <- {});
+x = {} => x \subseteq {}   BECAUSE ImplyEquivTrue;
+x \subseteq {} <=> x = {}   BECAUSE IntroEquiv;
+x \in ordinalOne <=> x = {}   BECAUSE TransitEquiv;
 elemOfOne   BECAUSE GENERALIZATION;
 QED
 
@@ -402,7 +404,8 @@ x # {} => \E z : z \in x   BECAUSE \A(x <- x);
 ((\A z : z \in x => (z \in x /\ z = {})) /\ (\E z : z \in x)) => \E z : z \in x /\ z = {}   BECAUSE HypoImplToAnd;
 (x \subseteq ordinalOne /\ x # {}) => \E z : z \in x /\ z = {}   BECAUSE TI;
 
-z = {} => (z \in x <=> {} \in x)   BECAUSE E_SCHEME;
+\A z : \A a : z = a => (z \in x <=> a \in x)   BECAUSE E_SCHEME;
+z = {} => (z \in x <=> {} \in x)   BECAUSE \A(z <- z, a <- {});
 (z \in x <=> {} \in x) => (z \in x => {} \in x)   BECAUSE EquivToImpl;
 z = {} => (z \in x => {} \in x)   BECAUSE TI;
 (z = {} /\ z \in x) => {} \in x   BECAUSE HypoImplToAnd;
@@ -437,12 +440,14 @@ x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE ImplyExcludedMiddle;
 inclusionInOneself   BECAUSE THEOREM;
 ordinalOne \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
 x \subseteq ordinalOne => x \in ordinalTwo   BECAUSE EquivToImplReverse;
-x = ordinalOne => (x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne)   BECAUSE E_SCHEME;
+\A x : \A z : x = z => (x \subseteq ordinalOne <=> z \subseteq ordinalOne)   BECAUSE E_SCHEME;
+x = ordinalOne => (x \subseteq ordinalOne <=> ordinalOne \subseteq ordinalOne)   BECAUSE \A(x <- x, z <- ordinalOne);
 x = ordinalOne => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
 x = ordinalOne => x \in ordinalTwo   BECAUSE TI;
 
 x \in ordinalOne <=> x = {}   BECAUSE \A(x <- x);
-x = {} => (x \subseteq ordinalOne <=> {} \subseteq ordinalOne)   BECAUSE E_SCHEME;
+\A x : \A z : x = z => (x \subseteq ordinalOne <=> z \subseteq ordinalOne)   BECAUSE E_SCHEME;
+x = {} => (x \subseteq ordinalOne <=> {} \subseteq ordinalOne)   BECAUSE \A(x <- x, z <- {});
 emptyIncludedInAny   BECAUSE THEOREM;
 {} \subseteq ordinalOne   BECAUSE \A(x <- ordinalOne);
 x = {} => x \subseteq ordinalOne   BECAUSE ImplyEquivTrue;
@@ -469,7 +474,8 @@ VARIABLES a,b,c,x,z;
 
 \* Proof that (x \in SUBSET a /\ x = a) <=> x = a
 (x \in SUBSET a /\ x = a) => x = a   BECAUSE DropAndLeft;
-x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE E_SCHEME;
+\A x : \A a : x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE E_SCHEME;
+x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE \A(x <- x, a <- a);
 inclusionInOneself   BECAUSE THEOREM;
 a \subseteq a   BECAUSE \A(x <- a);
 powersetExists   BECAUSE AXIOM;
@@ -584,9 +590,9 @@ F(c,d,x,y) => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
 ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
 {} = {}   BECAUSE E_SCHEME;
 y = c => ({} = {} /\ y = c)   BECAUSE IntroAndRight;
-({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE PT9;
+({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE IntroOrLeft;
 y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TI;
-x = {} => (x = {} \/ x = ordinalOne)   BECAUSE PT9;
+x = {} => (x = {} \/ x = ordinalOne)   BECAUSE IntroOrLeft;
 x = {} => x \in ordinalTwo   BECAUSE TI;
 \A x : x = {} => x \in ordinalTwo   BECAUSE GENERALIZATION;
 {} = {} => {} \in ordinalTwo   BECAUSE \A(x <- {});
@@ -688,14 +694,16 @@ pairInclusion == \A x : \A y : \A t : (x \in t /\ y \in t) => {x,y} \subseteq t
 THEOREM pairInclusion
 PROOF
 VARIABLES a,c,d,t,x,y,z;
-z = x => (z \in t <=> x \in t)   BECAUSE E_SCHEME;
+\A z : \A x : z = x => (z \in t <=> x \in t)   BECAUSE E_SCHEME;
+z = x => (z \in t <=> x \in t)   BECAUSE \A(z <- z, x <- x);
 (z \in t <=> x \in t) => (x \in t => z \in t)   BECAUSE EquivToImplReverse;
 z = x => (x \in t => z \in t)   BECAUSE TI;
 (z = x /\ x \in t) => z \in t   BECAUSE HypoImplToAnd;
 (x \in t /\ z = x) => (z = x /\ x \in t)   BECAUSE AndSymmetry;
 (x \in t /\ z = x) => z \in t   BECAUSE TI;
 x \in t => (z = x => z \in t)   BECAUSE HypoAndToImpl;
-z = y => (z \in t <=> y \in t)   BECAUSE E_SCHEME;
+\A z : \A y : z = y => (z \in t <=> y \in t)   BECAUSE E_SCHEME;
+z = y => (z \in t <=> y \in t)   BECAUSE \A(z <- z, y <- y);
 (z \in t <=> y \in t) => (y \in t => z \in t)   BECAUSE EquivToImplReverse;
 z = y => (y \in t => z \in t)   BECAUSE TI;
 (z = y /\ y \in t) => z \in t   BECAUSE HypoImplToAnd;
@@ -721,6 +729,53 @@ x \union y == UNION { x, y }
 
 unionInc == \A x : \A y : \A z : z \in (x \union y) <=> (z \in x \/ z \in y)
 THEOREM unionInc
+PROOF
+VARIABLES a,b,c,d,t,x,y,z;
+unionExists   BECAUSE AXIOM;
+z \in UNION {x,y} <=> \E t : t \in {x,y} /\ z \in t   BECAUSE \A(b <- {x,y}, z <- z);
+z \in UNION {x,y} => \E t : t \in {x,y} /\ z \in t   BECAUSE EquivToImpl;
+pairExists   BECAUSE THEOREM;
+t \in { x,y } <=> (t = x \/ t = y)   BECAUSE \A(c <- x, d <- y, y <- t);
+t \in { x,y } => (t = x \/ t = y)   BECAUSE EquivToImpl;
+z \in t => z \in t   BECAUSE ImplyOneself;
+(t \in { x,y } /\ z \in t) => ((t = x \/ t = y) /\ z \in t)   BECAUSE MergeImplicationsAnd;
+((t = x \/ t = y) /\ z \in t) => ((t = x /\ z \in t) \/ (t = y /\ z \in t))
+   BECAUSE DistribAndOrRight;
+(t \in { x,y } /\ z \in t) => ((t = x /\ z \in t) \/ (t = y /\ z \in t))
+   BECAUSE TI;
+\A t : \A x : t = x => (z \in t <=> z \in x)   BECAUSE E_SCHEME;
+t = x => (z \in t <=> z \in x)   BECAUSE \A(t <- t, x <- x);
+(t = x /\ z \in t) => z \in x   BECAUSE HypoEquivToAnd;
+\A t : \A y : t = y => (z \in t <=> z \in y)   BECAUSE E_SCHEME;
+t = y => (z \in t <=> z \in y)   BECAUSE \A(t <- t, y <- y);
+(t = y /\ z \in t) => z \in y   BECAUSE HypoEquivToAnd;
+((t = x /\ z \in t) \/ (t = y /\ z \in t)) => (z \in x \/ z \in y)   BECAUSE MergeImplicationsOr;
+(t \in { x,y } /\ z \in t) => (z \in x \/ z \in y)   BECAUSE TI;
+(\E t : t \in { x,y } /\ z \in t) => \E t : (z \in x \/ z \in y)   BECAUSE Q_SCHEME;
+z \in (x \union y) => \E t : (z \in x \/ z \in y)   BECAUSE TI;
+(\E t : (z \in x \/ z \in y)) => (z \in x \/ z \in y)   BECAUSE Q_SCHEME;
+z \in (x \union y) => (z \in x \/ z \in y)   BECAUSE TI;
+
+\* Conversely
+inInUnion   BECAUSE THEOREM;
+(z \in x /\ x \in {x,y}) => z \in UNION {x,y}   BECAUSE \A(a <- z, b <- x, c <- {x,y});
+x \in { x,y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
+x = x   BECAUSE E_SCHEME;
+x = x \/ x = y   BECAUSE IntroOrLeft;
+x \in {x,y}   BECAUSE MODUS_PONENS;
+z \in x => (z \in x /\ x \in {x,y})   BECAUSE IntroAndLeft;
+z \in x => z \in (x \union y)   BECAUSE TI;
+(z \in y /\ y \in {x,y}) => z \in UNION {x,y}   BECAUSE \A(a <- z, b <- y, c <- {x,y});
+y \in { x,y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
+y = y   BECAUSE E_SCHEME;
+y = x \/ y = y   BECAUSE IntroOrRight;
+y \in {x,y}   BECAUSE MODUS_PONENS;
+z \in y => (z \in y /\ y \in {x,y})   BECAUSE IntroAndLeft;
+z \in y => z \in (x \union y)   BECAUSE TI;
+(z \in x \/ z \in y) => z \in (x \union y)   BECAUSE CombineImplicationsStart;
+z \in (x \union y) <=> (z \in x \/ z \in y)   BECAUSE IntroEquiv;
+unionInc   BECAUSE GENERALIZATION;
+QED
 
 unionFirstInc == \A x : \A y : x \subseteq (x \union y)
 THEOREM unionFirstInc
@@ -729,7 +784,7 @@ VARIABLES a,b,c,d,x,y,z;
 pairExists   BECAUSE THEOREM;
 x \in { x, y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
 x = x   BECAUSE E_SCHEME;
-x = x \/ x = y   BECAUSE PT9;
+x = x \/ x = y   BECAUSE IntroOrLeft;
 x \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 (z \in x /\ x \in {x,y}) => z \in (x \union y)   BECAUSE \A(a <- z, b <- x, c <- {x,y});
@@ -792,7 +847,7 @@ y \in { { c } , {c,d} } <=> (y = {c} \/ y = {c,d})   BECAUSE \A(c <- {c}, d <- {
 \* Proof of <<a,b>> = <<c,d>> => a = c
 <<a,b>> = <<c,d>> => (({c} = {a} \/ {c} = {a,b}) <=> ({c} = {c} \/ {c} = {c,d}))   BECAUSE \A(y <- {c});
 {c} = {c}   BECAUSE E_SCHEME;
-{c} = {c} \/ {c} = {c,d}   BECAUSE PT9;
+{c} = {c} \/ {c} = {c,d}   BECAUSE IntroOrLeft;
 <<a,b>> = <<c,d>> => ({c} = {a} \/ {c} = {a,b})   BECAUSE ImplyEquivTrue;
 
 singletonExists   BECAUSE THEOREM;
@@ -811,7 +866,7 @@ c = a => a = c   BECAUSE E_SCHEME;
 
 a \in {a,b} <=> (a = a \/ a = b)   BECAUSE \A(c <- a, d <- b, y <- a);
 a = a   BECAUSE E_SCHEME;
-a = a \/ a = b   BECAUSE PT9;
+a = a \/ a = b   BECAUSE IntroOrLeft;
 a \in {a,b}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
 {c} = {a,b} => (a \in {c} <=> a \in {a,b})   BECAUSE \A(x <- {c}, y <- {a,b});
@@ -906,7 +961,7 @@ VARIABLES a,b,c,d,g,x,y;
 pairExists   BECAUSE THEOREM;
 {x} \in <<x,y>> <=> ({x} = {x} \/ {x} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x});
 {x} = {x}   BECAUSE E_SCHEME;
-{x} = {x} \/ {x} = {x,y}   BECAUSE PT9;
+{x} = {x} \/ {x} = {x,y}   BECAUSE IntroOrLeft;
 {x} \in <<x,y>>   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
 ({x} \in <<x,y>> /\ <<x,y>> \in g) => {x} \in UNION g   BECAUSE \A(a <- {x}, b <- <<x,y>>, c <- g);
@@ -1215,7 +1270,8 @@ singletonExists   BECAUSE THEOREM;
 z \in { u } <=> z = u   BECAUSE \A(a <-u, x <- z);
 z \in { u } => z = u   BECAUSE EquivToImpl;
 (u \in i /\ z \in {u}) => (u \in (i \union j) /\ z = u)   BECAUSE MergeImplicationsAnd;
-z = u => (z \in (i \union j) <=> u \in (i \union j))   BECAUSE E_SCHEME;
+\A z : \A u : z = u => (z \in (i \union j) <=> u \in (i \union j))   BECAUSE E_SCHEME;
+z = u => (z \in (i \union j) <=> u \in (i \union j))   BECAUSE \A(z <- z, u <- u);
 (z \in (i \union j) <=> u \in (i \union j)) => (u \in (i \union j) => z \in (i \union j))   BECAUSE EquivToImplReverse;
 z = u => (u \in (i \union j) => z \in (i \union j))   BECAUSE TI;
 (z = u /\ u \in (i \union j)) => z \in (i \union j)   BECAUSE HypoImplToAnd;
@@ -1261,8 +1317,10 @@ tupleComposition   BECAUSE THEOREM;
 IsCouple(x) => x = <<fst(x), snd(x)>>   BECAUSE \A(c <- x);
 (IsCouple(x) /\ (fst(x) \in i /\ snd(x) \in j))
    => (x = <<fst(x), snd(x)>> /\ <<fst(x),snd(x)>> \in SUBSET SUBSET (i \union j))   BECAUSE MergeImplicationsAnd;
-x = <<fst(x),snd(x)>> => (x \in SUBSET SUBSET (i \union j) <=> <<fst(x),snd(x)>> \in SUBSET SUBSET (i \union j))
+\A x : \A y : x = y => (x \in SUBSET SUBSET (i \union j) <=> y \in SUBSET SUBSET (i \union j))
    BECAUSE E_SCHEME;
+x = <<fst(x),snd(x)>> => (x \in SUBSET SUBSET (i \union j) <=> <<fst(x),snd(x)>> \in SUBSET SUBSET (i \union j))
+   BECAUSE \A(x <- x, y <- <<fst(x),snd(x)>>);
 (x = <<fst(x),snd(x)>> /\ <<fst(x),snd(x)>> \in SUBSET SUBSET (i \union j))
    => x \in SUBSET SUBSET (i \union j)   BECAUSE HypoEquivToAndReverse;
 (IsCouple(x) /\ (fst(x) \in i /\ snd(x) \in j))
@@ -1303,7 +1361,9 @@ tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))
    BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
 a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => ((a \in x /\ b \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y))   BECAUSE E_SCHEME;
+\A a : \A u : \A b : \A v : (a = u /\ b = v) => ((a \in x /\ b \in y) <=> (u \in x /\ v \in y))
+   BECAUSE E_SCHEME;
+(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => ((a \in x /\ b \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y))   BECAUSE \A(a <- a, u <- fst(<<a,b>>), b <- b, v <- snd(<<a,b>>));
 (a \in x /\ b \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE MODUS_PONENS;
 <<a,b>> \in (x \X y) <=> (a \in x /\ b \in y)   BECAUSE TransitEquiv2;
 (a \in x /\ b \in y) <=> <<a,b>> \in (x \X y)   BECAUSE EquivSymmetry;

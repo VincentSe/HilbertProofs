@@ -437,36 +437,56 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
   return success != 0;
 }
 
-// Parse one or several equalities separated by logical ands.
-// lands associate to the left, a /\ b /\ c equals (a /\ b) /\ c
-// so this function unfolds the f's first operand
-void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
+const formula* parse_equalities(const formula* f, /*out*/variable_substitution* subs)
 {
-  subs[0].variable = (char*)0; // means failure
-  if (f->builtInOp == equal)
+  // Parse the forall quantifiers
+  char* variables[8]; // use subs instead ?
+  unsigned char vCount = 0;
+  const formula* impl = f;
+  while (impl->builtInOp == forall)
     {
-      const formula* v = get_first_operand(f);
-      if (v->builtInOp == variable)
-	{
-	  subs[0].variable = v->name;
-	  subs[0].subst = get_second_operand(f);
-	  subs[1].variable = (char*)0;
-	}
-      return;
+      variables[vCount] = impl->name;
+      vCount++;
+      impl = get_first_operand(impl);
     }
+  if (vCount & 1)
+    return 0; // the number of variables must be even
 
-  if (f->builtInOp == land)
+  if (impl->builtInOp != limplies)
+    return 0;
+  const formula* equiv = get_second_operand(impl);
+  if (equiv->builtInOp != lequiv && equiv->builtInOp != equal)
+    return 0;
+  
+  const formula* equalities = get_first_operand(impl); // x = a /\ y = b
+
+  // Logical ands associate to the left, so start from the end
+  unsigned char i = 0;
+  while (i < vCount)
     {
-      const formula* eq = get_second_operand(f);
-      if (eq->builtInOp == equal)
-	parse_equalities(eq, subs);
-      if (subs[0].variable)
+      const formula* eq;
+      switch (equalities->builtInOp)
 	{
-	  parse_equalities(get_first_operand(f), subs+1);
-	  if (!subs[1].variable)
-	    subs[0].variable = 0; // means failure
-	}
+	case equal: eq = equalities; break;
+	case land: eq = get_second_operand(equalities); break;
+	default: eq = 0;
+	};
+      if (!eq || eq->builtInOp != equal)
+	return 0;
+      const formula* x = get_first_operand(eq);
+      const formula* y = get_second_operand(eq);
+      if (x->builtInOp != variable
+	  || y->builtInOp != variable
+	  || strcmp(variables[vCount-i-2], x->name) != 0 // x
+	  || strcmp(variables[vCount-i-1], y->name) != 0) // y
+	return 0;
+      subs[i/2].variable = x->name;
+      subs[i/2].subst = y;
+      i += 2;
+      equalities = get_first_operand(equalities);
     }
+  subs[i/2].variable = (char*)0;
+  return equiv;
 }
 
 /**
@@ -484,10 +504,32 @@ void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
    then
    (2 = 2 /\ x = y) => 2 * x = 2 * y   BECAUSE \A(x <- 2, a <- x, y <- 2, b <- y);
    x = y => 2 * x = 2 * y   BECAUSE 2 = 2;
+   (x = y /\ 2*x = 2*y) => x + 2*x = y + 2*y    BECAUSE \A(x <- x, a <- 2*x, y <- y, b <- 2*y);
+   (x = y /\ 2*x = 2*y) => x + 2*x = y + 2*y    BECAUSE TI;
 
-   The substitution must be free, otherwise we would take as an axiom :
-   x = y => ((\A y : x = y) <=> \A y : y = y)
+   To go from symbols s to all formulas, we must be careful
+   with quantifiers, otherwise we would take as an axiom :
+   x = y => ((\A y : x \subseteq y) <=> \A y : y \subseteq y)
    which implies that False <=> True.
+   
+   To prove x = y => (F <=> F(x <- y)) with a formula F, one can 
+   declare a local operator in a proof opF(x) == F and then invoke
+   x = y => (opF(x) <=> opF(y)) BECAUSE E_SCHEME.
+   The declaration of opF(x) checks that x is the only free variable
+   of F, and the subsequent uses of opF(y) check the substitution
+   F(x <- y) is correct.
+
+   Otherwise, from the valid E_SCHEME
+   (x = y /\ a = b) => ((x \subseteq a) <=> (y \subseteq b))
+   we can instantiate
+   (x = y) => ((x \subseteq y) <=> (y \subseteq y))
+      BECAUSE \A(x <- x, y <- y, a <- y, b <- y)
+   and generalize
+   \A y : (x = y) => ((x \subseteq y) <=> (y \subseteq y))
+   but then we cannot shift the \A y to the right-hand side,
+   because there is a free y in x = y. So this function checks
+   that no equal variables on the left side are bound on
+   the right side.
 
    Although x = x, this axiom scheme refuses
    x = y => (s(x) <=> s(x))
@@ -497,41 +539,33 @@ void parse_equalities(const formula* f, /*out*/variable_substitution* subs)
 */
 unsigned char equality_implies_equivalence_scheme(const formula* f)
 {
-  const formula* firstOp = get_first_operand(f);
-  const formula* implies = f;
-  const formula* eq;
-  if (f->builtInOp == forall)
-    {
-      // Remove forall quantifiers and check variables
-      if (firstOp->builtInOp != forall)
-	return 0;
-      implies = get_first_operand(firstOp);
-      eq = get_first_operand(implies);
-      const formula* x = get_first_operand(eq);
-      const formula* y = get_second_operand(eq);
-      if (x->builtInOp != variable
-	  || y->builtInOp != variable
-	  || strcmp(f->name, x->name) != 0 // x
-	  || strcmp(firstOp->name, y->name) != 0) // y
-	return 0;
-    }
-  else
-    eq = get_first_operand(implies);
-
   variable_substitution subs[8];
-  const formula* secondOp = get_second_operand(implies);
-  if (implies->builtInOp == limplies
-      && (secondOp->builtInOp == lequiv || secondOp->builtInOp == equal))
-    {
-      parse_equalities(eq, /*out*/subs);
-      if (!subs->variable)
-	return 0;
-      if (formula_equal(get_second_operand(secondOp),
-			get_first_operand(secondOp),
-			0, subs, 0))
-	return 1;
-    }
-  return 0;
+  const formula* equiv = parse_equalities(f, /*out*/subs);
+  if (!equiv ||
+      !formula_equal(get_second_operand(equiv),
+		     get_first_operand(equiv),
+		     0, subs, 0))
+    return 0;
+
+  unsigned char equalVarBound(const char* v, const struct string_list* boundVars)
+  {
+    // too slow : could scan the \A and \E instead
+    while (boundVars)
+      {
+	const variable_substitution* sub = subs;
+	while (sub->variable)
+	  {
+	    if (strcmp(boundVars->string_elem, sub->variable) == 0
+		|| strcmp(boundVars->string_elem, sub->subst->name) == 0)
+	      return 1;
+	    sub++;
+	  }
+	boundVars = boundVars->next;
+      }
+    return 0;
+  }
+  
+  return find_variable(equiv, 0, equalVarBound) == 0;
 }
 
 short equality_axiom(const formula* f)

@@ -150,6 +150,7 @@ const char* op_to_string(enum builtin_operator op)
     case different: return "#";
     case subseteq: return "\\subseteq";
     case binIntersect: return "\\intersect";
+    case binUnion: return "\\union";
     case unaryUnion: return "UNION";
     case powerset: return "SUBSET";
     case plus: return "+";
@@ -444,15 +445,13 @@ unsigned char formula_equal(const formula* f,
       // Different operators or f->builtInOp==variable
       if (g->builtInOp == variable)
 	{
-	  const unsigned char sameBoundVar = string_list_contains(boundVariables, g->name)
-	    && f->builtInOp == variable
-	    && strcmp(g->name, f->name) == 0;
-	  unsigned char eqVar = sameBoundVar || is_free_substitution(f,
-								     g->name,
-								     boundVariables,
-								     freeSubs,
-								     substituteMore);
-	  return eqVar;
+	  return string_list_contains(boundVariables, g->name)
+	    ? f->builtInOp == variable && strcmp(g->name, f->name) == 0 // same bound variable
+	    : is_free_substitution(f,
+				   g->name,
+				   boundVariables,
+				   freeSubs,
+				   substituteMore);
 	}
       else if (g->builtInOp == schemeVariable)
 	{

@@ -28,8 +28,11 @@ x \in chooseB(f,g) <=> (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)
 \* Stage x
 tupleComposition   BECAUSE THEOREM;
 IsCouple(x) => x = <<fst(x), snd(x)>>   BECAUSE \A(c <- x);
+\A x : \A y : x = y => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
+   <=> y \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE E_SCHEME;
 x = <<fst(x), snd(x)>> => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
-   <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE E_SCHEME;
+   <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))
+   BECAUSE \A(x <- x, y <- <<fst(x), snd(x)>>);
 IsCouple(x) => (x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
    <=> <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))   BECAUSE TI;
 (IsCouple(x) /\ <<fst(x), snd(x)>> \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g))))
@@ -48,8 +51,6 @@ IsCouple(x) => IsCouple(x)   BECAUSE ImplyOneself;
 (IsCouple(x) /\ (fst(x) \in (Domain(f) \X Domain(g)) /\ snd(x) \in (Image(f) \X Image(g))))
    => x \in ((Domain(f) \X Domain(g)) \X (Image(f) \X Image(g)))
    BECAUSE TI;
-
-x = <<fst(x), snd(x)>> => (IsParallelApply(f,g,x) <=> IsParallelApply(f,g, <<fst(x), snd(x)>>))   BECAUSE E_SCHEME;
 
 \* Stage fst(x)
 IsCouple(fst(x)) => fst(x) = <<fst(fst(x)), snd(fst(x))>>   BECAUSE \A(c <- fst(x));

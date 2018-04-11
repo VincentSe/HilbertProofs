@@ -167,6 +167,9 @@ short is_propositional_formula(const formula* f);
 unsigned char prove_propositional_tautology(const formula* op);
 const formula* get_first_operand(const formula* f);
 const formula* get_second_operand(const formula* f);
+const char* find_variable(const formula* f,
+			  const struct string_list* boundVars,
+			  unsigned char (*pred)(const char* v, const struct string_list* boundVars));
 
 /**
    Test both that freeSubs are valid for g and that f equals g(freeSubs).

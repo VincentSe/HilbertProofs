@@ -47,8 +47,8 @@ PROPO_TAUTO DropAndBoth
 DropAndLeft(a,b) == (a /\ b) => b
 PROPO_TAUTO DropAndLeft
 
-PT9(a,b) == a => (a \/ b)
-PROPO_TAUTO PT9
+IntroOrLeft(a,b) == a => (a \/ b)
+PROPO_TAUTO IntroOrLeft
 
 IntroOrRight(a,b) == b => (a \/ b)
 PROPO_TAUTO IntroOrRight
@@ -187,6 +187,9 @@ PROPO_TAUTO DistribAndOrLeft
 
 DistribAndOrRight(a,b,c) == ((b \/ c) /\ a) => ((b /\ a) \/ (c /\ a))
 PROPO_TAUTO DistribAndOrRight
+
+DistribAndImpl(a,b,c) == ((a => b) /\ c) => (a => (b /\ c))
+PROPO_TAUTO DistribAndImpl
 
 FactorOrAndRight(a,b,c) == ((a \/ c) /\ (b \/ c)) => ((a /\ b) \/ c)
 PROPO_TAUTO FactorOrAndRight
