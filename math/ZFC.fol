@@ -321,8 +321,35 @@ AreDisjoint(x,y) == x \intersect y = {}
 noCommonElements == \A x : \A y : AreDisjoint(x,y) <=> \A z : ~(z \in x /\ z \in y)
 THEOREM noCommonElements
 PROOF
+VARIABLES a,u,v,x,y,z;
 intersectionExists   BECAUSE THEOREM;
-\* TODO
+z \in (x \intersect y) <=> (z \in x /\ z \in y)   BECAUSE \A(u <- x, v <- y, x <- z);
+contraEquiv(a,b) == (a <=> b) => (~a <=> ~b)   PROPO_TAUTO;
+z \notin (x \intersect y) <=> ~(z \in x /\ z \in y)   BECAUSE contraEquiv;
+emptySetExists   BECAUSE THEOREM;
+z \notin {}   BECAUSE   \A(x <- z);
+\A x : \A y : x = y => (z \in x <=> z \in y)   BECAUSE E_SCHEME;
+AreDisjoint(x,y) => (z \in (x \intersect y) <=> z \in {})   BECAUSE \A(x <- x \intersect y, y <- {});
+implyEquivFalse(a,b,f) == ~f => ((a => (b <=> f)) => (a => ~b))   PROPO_TAUTO;
+AreDisjoint(x,y) => z \notin (x \intersect y)   BECAUSE implyEquivFalse;
+z \notin (x \intersect y) => ~(z \in x /\ z \in y)   BECAUSE EquivToImpl;
+AreDisjoint(x,y) => ~(z \in x /\ z \in y)   BECAUSE TI;
+\A z : AreDisjoint(x,y) => ~(z \in x /\ z \in y)   BECAUSE GENERALIZATION;
+AreDisjoint(x,y) => \A z : ~(z \in x /\ z \in y)   BECAUSE Q_SCHEME;
+
+emptySetUnique   BECAUSE THEOREM;
+(\A x : x \notin a) => a = {}   BECAUSE \A(a <- a);
+(\A z : z \notin a) => x \notin a   BECAUSE \A(z <- x);
+\A x : (\A z : z \notin a) => x \notin a   BECAUSE GENERALIZATION;
+(\A z : z \notin a) => \A x : x \notin a   BECAUSE Q_SCHEME;
+(\A z : z \notin a) => a = {}   BECAUSE TI;
+\A a : (\A z : z \notin a) => a = {}   BECAUSE GENERALIZATION;
+(\A z : z \notin (x \intersect y)) => (x \intersect y) = {}   BECAUSE \A(a <- x \intersect y);
+~(z \in x /\ z \in y) => z \notin (x \intersect y)   BECAUSE EquivToImplReverse;
+(\A z : ~(z \in x /\ z \in y)) => (\A z : z \notin (x \intersect y))   BECAUSE Q_SCHEME;
+(\A z : ~(z \in x /\ z \in y)) => AreDisjoint(x,y)   BECAUSE TI;
+AreDisjoint(x,y) <=> \A z : ~(z \in x /\ z \in y)   BECAUSE IntroEquiv;
+noCommonElements   BECAUSE GENERALIZATION;
 QED
 
 SUBSET x == CHOOSE y : \A z : z \in y <=> z \subseteq x
