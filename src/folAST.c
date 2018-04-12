@@ -319,7 +319,7 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
 		
     proof* p = *(proof**)nodep;
     if (strcmp(ast->file, p->formulaToProve->file) == 0) // don't check proofs coming from other ASTs
-      check_proof(p, ast->operators, ast->proofs, ast->axiomSchemes);
+      check_proof(p, ast->operators, ast->constants, ast->proofs, ast->axiomSchemes);
   }
 
   // semantic check of sorted asts
@@ -342,23 +342,24 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
   return 1;
 }
 
-short semantic_check_operator_definition(formula* op,
-					 const struct folAST* ast,
-					 const struct formula_list* proofLocalDecl)
+void set_scheme_variables(const struct formula_list* variables,
+			  /*out*/formula* f)
 {
-  // A valid declaration is for example :
-  // extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
+  unsigned char same_name_as_f(const formula* op)
+  {
+    return f->name && op->name && strcmp(op->name, f->name) == 0;
+  }
 
-  // By prior syntax check, op->name != 0 and op->builtInOp == lnone
-  short success = resolve_names(/*out*/op->definingFormula,
-				ast->constants,
-				ast->operators,
-				(struct string_list*)0,
-				op->operands,
-				proofLocalDecl);
-  return success;
+  if (f->builtInOp == variable
+      && formula_list_find_const(variables, same_name_as_f))
+    f->builtInOp = schemeVariable;
 
-  // TODO Check that op->freeVariables are not quantified in the right-hand side formula
+  struct formula_list* oper = f->operands;
+  while (oper)
+    {
+      set_scheme_variables(variables, oper->formula_elem);
+      oper = oper->next;
+    }
 }
 
 unsigned char semantic_check_tautology(formula* tauto,
@@ -386,75 +387,16 @@ unsigned char semantic_check_tautology(formula* tauto,
   return 1;
 }
 
-short semantic_check_reason(struct reason* r,
-			    proof* p,
-			    const struct folAST* ast)
-{
-  if (!r->formula)
-    return 1; // ok, nothing to check
-
-  if (r->rk == propoTautology)
-    return semantic_check_tautology(r->formula, ast->operators);
-
-  return resolve_names(/*out*/r->formula,
-		       ast->constants,
-		       ast->operators,
-		       p->variables,
-		       (struct formula_list*)0, // no operator variables
-		       p->operators);
-}
-
-short semantic_error_in_proof_statement(const struct JustifiedFormula* jf,
-					const struct folAST* ast,
-					proof* p)
-{
-  if (jf->reason)
-    {
-      if (!resolve_names(jf->formula, ast->constants,
-			 ast->operators,
-			 p->variables,
-			 0,
-			 p->operators)
-	  || !semantic_check_reason(jf->reason, p, ast))
-	return 1;
-    }
-  else
-    {
-      // A statement without reason in a proof is a local operator.
-      // Check it and register it in p->operators.
-      if (!semantic_check_operator_definition(jf->formula,
-					      ast,
-					      p->operators))
-	return 1;
-      p->operators = make_formula_list(jf->formula, p->operators);
-    }
-
-  return 0; // no error, means statement jf is correct
-}
-
-void set_scheme_variables(const struct formula_list* variables,
-			  /*out*/formula* f)
-{
-  unsigned char same_name_as_f(const formula* op)
-  {
-    return f->name && op->name && strcmp(op->name, f->name) == 0;
-  }
-
-  if (f->builtInOp == variable
-      && formula_list_find_const(variables, same_name_as_f))
-    f->builtInOp = schemeVariable;
-
-  struct formula_list* oper = f->operands;
-  while (oper)
-    {
-      set_scheme_variables(variables, oper->formula_elem);
-      oper = oper->next;
-    }
-}
-
+/**
+   A statement THEOREM F or PROPO_TAUTO F can be invoked multiple times
+   in other proofs, as F BECAUSE THEOREM or BECAUSE F. Formula F is usually
+   only the name of an operator, this function finds the corresponding
+   defining formula and sets it in p->formulaToProve->definingFormula.
+ */
 short semantic_check_proof(proof* p, struct folAST* ast)
 {
-  if (p->formulaToProve->file && strcmp(p->formulaToProve->file, ast->file) != 0)
+  if (p->formulaToProve->file
+      && strcmp(p->formulaToProve->file, ast->file) != 0)
     return 1; // proof coming from EXTENDS statement, was already checked in its own module
 
   if (p->goal == propoTautology)
@@ -485,11 +427,12 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       return 1;
     }
 
-
-  // Check p's formula to prove
-  if (!resolve_names(p->formulaToProve, ast->constants,
-		     ast->operators, p->variables,
-		     0, p->operators))
+  // Check p's formula to prove, which may not use p's
+  // local operators or variables.
+  if (!resolve_names(p->formulaToProve,
+		     ast->constants,
+		     ast->operators,
+		     0, 0, 0))
     {
       // finish the error message
       printf("in formula ");
@@ -498,34 +441,7 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       return 0;
     }
 
-  // Then check each statement of proof p
-  struct FormulaDList* t = p->cumulativeTruths;
-  while (t)
-    {
-      if (semantic_error_in_proof_statement(t->jf, ast, p))
-	break;
-      struct FormulaDList* const u = t->next;
-      if (!t->jf->reason)
-	{
-	  // Remove the list node, it is a proof's local operator
-	  // and was registered in p->operators.
-	  remove_list_node(t);
-	  if (p->cumulativeTruths == t)
-	    p->cumulativeTruths = u; // revalidate iterator to the beginning of the list
-	  free(t->jf);
-	  free(t);
-	}
-      t = u;
-    }
-  if (t)
-    {
-      // finish the error message
-      printf("in formula ");
-      print_formula(t->jf->formula);
-      printf("\n");
-    }
-
-  return !t;
+  return 1;
 }
 
 short semantic_check(struct folAST* ast)
@@ -544,7 +460,8 @@ short semantic_check(struct folAST* ast)
 
     const struct formula_list* proofLocalDecl = 0; // not inside a proof
     opDefsOk &= semantic_check_operator_definition(op,
-						   ast,
+						   ast->operators,
+						   ast->constants,
 						   proofLocalDecl);
   }
 

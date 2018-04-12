@@ -53,10 +53,10 @@ PROPO_TAUTO IntroOrLeft
 IntroOrRight(a,b) == b => (a \/ b)
 PROPO_TAUTO IntroOrRight
 
-ContradictionEquiv(a,h) == (h => (a <=> ~a)) => ~h;
+ContradictionEquiv(a,h) == (h => (a <=> ~a)) => ~h
 PROPO_TAUTO ContradictionEquiv
 
-ContradictionAnd(a,h) == (h => (a /\ ~a)) => ~h;
+ContradictionAnd(a,h) == (h => (a /\ ~a)) => ~h
 PROPO_TAUTO ContradictionAnd
 
 \* Transitivity of implication
@@ -181,6 +181,9 @@ PROPO_TAUTO EquivSymmetry
 
 DistribNotOr(a,b) == ~(a \/ b) <=> (~a /\ ~b)
 PROPO_TAUTO DistribNotOr
+
+DistribNotAnd(a,b) == ~(a /\ b) => (~a \/ ~b)
+PROPO_TAUTO DistribNotAnd
 
 DistribAndOrLeft(a,b,c) == (a /\ (b \/ c)) => ((a /\ b) \/ (a /\ c))
 PROPO_TAUTO DistribAndOrLeft

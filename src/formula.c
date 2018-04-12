@@ -641,7 +641,9 @@ unsigned char prove_propositional_tautology(const formula* op)
     {
       if (!eval_propositional_formula(op->definingFormula, variables, values))
 	{
-	  printf("Not a propositional tautology : ");
+	  printf("%s:%d: Not a propositional tautology : ",
+		 op->file,
+		 op->first_line);
 	  print_formula(op->definingFormula);
 	  printf("\n");
 	  return 0;

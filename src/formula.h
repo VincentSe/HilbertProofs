@@ -271,6 +271,13 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
 
    The substitutions are not cumulative : the propositional variables are replaced
    by first-order formulas, which are no longer propositional.
+
+   In the strict first-order logic axioms, only 14 propositional tautologies
+   are taken as axioms, the others being deduced from them by modus ponens.
+   But a first-order instance of any propositional tautology is true
+   in all models, because a tautology is true for any values of its
+   propositional variables. By Gödel's completeness theorem such
+   instances are provable, so we take them all as axioms.
 */
 short check_propositional_tautology_statement_one(const formula* f,
 						  const formula* propoTaut,

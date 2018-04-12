@@ -17,7 +17,16 @@ struct folAST // result of the bison parsing
    */
   formula_set operators;
 
-  proof_set proofs; // like operators, proofs can be referenced by other proofs, they must have a fast lookup
+  /**
+     Proofs are not ordered and almost independant from each other.
+     When F BECAUSE THEOREM is invoked inside a proof P, it only checks
+     that formula F
+        - has a proof
+	- is before P in the FOL file (to prevent cyclic proofs)
+     However F BECAUSE THEOREM does not check that F's proof is correct.
+   */
+  proof_set proofs;
+  
   struct proof_list* axiomSchemes; // those cannot be searched by name, all of them must be tried for substitution of a candidate axiom formula
   struct string_list* extends;
   struct formula_list* constants;

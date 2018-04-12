@@ -44,7 +44,6 @@ struct proofS
      given to the scheme.
    */
   struct string_list* variables;
-  struct formula_list* operators; // known only inside the proof
   struct FormulaDList* cumulativeTruths; // null for axioms
 };
 typedef struct proofS proof;
@@ -58,7 +57,14 @@ proof* make_proof(enum reason_kind proofGoal,
 		  struct FormulaDList* proof);
 void proof_free(proof* p);
 int compare_proofs(const void *l, const void *r);
-short check_proof(const proof* proof, void* operators, void* assumedProofs,
-				  const struct proof_list* axiomSchemes);
+short check_proof(const proof* proof,
+		  const formula_set operators,
+		  const struct formula_list* constants,
+		  void* assumedProofs,
+		  const struct proof_list* axiomSchemes);
 const struct FormulaDList* find_formula(const struct FormulaDList* formulas,
-										short (*pred)(const struct JustifiedFormula* jf));
+					short (*pred)(const struct JustifiedFormula* jf));
+short semantic_check_operator_definition(formula* op,
+					 const formula_set operators,
+					 const struct formula_list* constants,
+					 const struct formula_list* proofLocalDecl);

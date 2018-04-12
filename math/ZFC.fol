@@ -27,9 +27,8 @@ PROOF
 VARIABLES x;
 (\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
 ~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
-x = x => ~~(x = x)   BECAUSE IntroNotNot;
 x = x   BECAUSE E_SCHEME;
-~~(x = x)   BECAUSE MODUS_PONENS;
+~~(x = x)   BECAUSE IntroNotNot;
 ~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
 (\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
 aSetExists   BECAUSE MODUS_PONENS;
@@ -45,8 +44,6 @@ QED
 *)
 russellParadox == ~\E x : \A y : y \in x <=> ~(y \in y)
 
-contraposNeg(a,b) == (a <=> ~b) => (b => ~a)  PROPO_TAUTO contraposNeg
-
 THEOREM russellParadox
 PROOF
 VARIABLES x,y,a,h,b;
@@ -55,6 +52,7 @@ VARIABLES x,y,a,h,b;
 ~(\A y : y \in x <=> ~(y \in y))   BECAUSE ContradictionEquiv;
 \A x : ~(\A y : y \in x <=> ~(y \in y))   BECAUSE GENERALIZATION;
 (\E x : \A y : y \in x <=> ~(y \in y)) <=> ~(\A x : ~(\A y : y \in x <=> ~(y \in y)))  BECAUSE Q_SCHEME;
+contraposNeg(a,b) == (a <=> ~b) => (b => ~a)  PROPO_TAUTO;
 (\A x : ~(\A y : y \in x <=> ~(y \in y))) => ~(\E x : \A y : y \in x <=> ~(y \in y))  BECAUSE contraposNeg;
 russellParadox   BECAUSE MODUS_PONENS;
 QED
@@ -188,15 +186,13 @@ x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 emptySetExists   BECAUSE MODUS_PONENS;
 QED
 
-equivImpossible(a,b) == ~b => (~a => (a <=> b))
-PROPO_TAUTO equivImpossible
-
 emptySetUnique == \A a : (\A x : x \notin a) => a = {}
 THEOREM emptySetUnique
 PROOF
 VARIABLES a,b,x;
 emptySetExists BECAUSE THEOREM;
 x \notin {} BECAUSE \A(x <- x);
+equivImpossible(a,b) == ~b => (~a => (a <=> b)) PROPO_TAUTO;
 (x \notin a) => (x \in a <=> x \in {})  BECAUSE equivImpossible;
 (\A x : x \notin a) => (\A x : x \in a <=> x \in {})   BECAUSE Q_SCHEME;
 
@@ -249,10 +245,7 @@ x # {} => \E z : z \in x   BECAUSE \A(a <- x);
 notEmpty   BECAUSE GENERALIZATION;
 QED
 
-pullHypo(a,b,c) == (a <=> (b /\ c)) => (b => (a <=> c))
-PROPO_TAUTO pullHypo
-
-\* All sets together are too big to form a set. We say instead the class of sets.
+\* All sets together are too big to form a set. We speak of the class of sets instead.
 noSetOfSets == ~\E a : \A y : y \in a
 THEOREM noSetOfSets
 PROOF
@@ -260,42 +253,26 @@ VARIABLES a,b,x,y;
 \* If such a set existed, by separation we would create the forbidden set of the Russell's paradox
 \A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE \A(a <- a);
+chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ ~(x \in x));
+(\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))) <=> \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))
+   BECAUSE CHOOSE chooseB(a);
+\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))   BECAUSE MODUS_PONENS;
+y \in chooseB(a) <=> (y \in a /\ ~(y \in y))   BECAUSE \A(x <- y);
 
-\* Rename bound variable x -> y
-(\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE \A(x <- y);
-\A y : (\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE GENERALIZATION;
-(\A x : x \in b <=> (x \in a /\ ~(x \in x))) => (\A y : y \in b <=> (y \in a /\ ~(y \in y)))   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))) => \E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))   BECAUSE Q_SCHEME;
-\E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))   BECAUSE MODUS_PONENS;
+\* Force the hypothesis that a is the set of all sets (\A y : y \in a)
+y \in a => (y \in a /\ (y \in chooseB(a) <=> (y \in a /\ ~(y \in y))))   BECAUSE IntroAndLeft;
+equivTrue(a,b,t) == (t /\ (a <=> (t /\ b))) => (a <=> b)   PROPO_TAUTO;
+(y \in a /\ (y \in chooseB(a) <=> (y \in a /\ ~(y \in y)))) => (y \in chooseB(a) <=> ~(y \in y))   BECAUSE equivTrue;
+y \in a => (y \in chooseB(a) <=> ~(y \in y))   BECAUSE TI;
+(\A y : y \in a) => (\A y : y \in chooseB(a) <=> ~(y \in y))   BECAUSE Q_SCHEME;
+(\A y : y \in chooseB(a) <=> ~(y \in y)) => \E x : \A y : y \in x <=> ~(y \in y)   BECAUSE \E(x <- chooseB(a));
+(\A y : y \in a) => \E x : \A y : y \in x <=> ~(y \in y)   BECAUSE TI;
+(\E a : \A y : y \in a) => \E a : \E x : \A y : y \in x <=> ~(y \in y)   BECAUSE Q_SCHEME;
+(\E a : \E x : \A y : y \in x <=> ~(y \in y)) => \E x : \A y : y \in x <=> ~(y \in y)   BECAUSE Q_SCHEME;
+(\E a : \A y : y \in a) => \E x : \A y : y \in x <=> ~(y \in y)   BECAUSE TI;
 
-\* Force the hypothesis that a is the set of all sets
-(y \in b <=> (y \in a /\ ~(y \in y))) => ((y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE pullHypo;
-(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\A y : (y \in a) => (y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
-(\A y : (y \in a) => (y \in b <=> ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
-(\A y : y \in b <=> (y \in a /\ ~(y \in y))) => ((\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE TI;
-(\E b : \A y : y \in b <=> (y \in a /\ ~(y \in y))) => (\E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y)))   BECAUSE Q_SCHEME;
-\E b : (\A y : y \in a) => (\A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
-(\A y : y \in a) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
-(\E a : \A y : y \in a) => (\E a : \E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
-(\E a : \E b : \A y : y \in b <=> ~(y \in y)) => (\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
-(\E a : \A y : y \in a) => \E b : \A y : y \in b <=> ~(y \in y)   BECAUSE TI;
-
-~(\E b : \A y : y \in b <=> ~(y \in y)) => noSetOfSets   BECAUSE Contraposition;
-
-\* Rename bound variables of russelParadox to prove the previous hypothesis
+russellParadox => noSetOfSets   BECAUSE Contraposition;
 russellParadox   BECAUSE THEOREM;
-(\E x : \A y : y \in x <=> ~(y \in y)) <=> ~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE Q_SCHEME;
-~(\A x : ~\A y : y \in x <=> ~(y \in y)) => (\E x : \A y : y \in x <=> ~(y \in y))   BECAUSE EquivToImplReverse;
-russellParadox => ~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE Contraposition;
-~~(\A x : ~\A y : y \in x <=> ~(y \in y))   BECAUSE MODUS_PONENS;
-\A x : ~\A y : y \in x <=> ~(y \in y)   BECAUSE DropNotNot;
-~\A y : y \in b <=> ~(y \in y)   BECAUSE \A(x <- b);
-\A b : ~\A y : y \in b <=> ~(y \in y)   BECAUSE GENERALIZATION;
-(\E b : \A y : y \in b <=> ~(y \in y)) <=> ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE Q_SCHEME;
-(\E b : \A y : y \in b <=> ~(y \in y)) => ~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE EquivToImpl;
-~~(\A b : ~\A y : y \in b <=> ~(y \in y)) => ~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE Contraposition;
-~~(\A b : ~\A y : y \in b <=> ~(y \in y))   BECAUSE IntroNotNot;
-~(\E b : \A y : y \in b <=> ~(y \in y))   BECAUSE MODUS_PONENS;
 noSetOfSets  BECAUSE MODUS_PONENS;
 QED
 
@@ -1342,8 +1319,6 @@ QED
 *)
 cartesianProductCouples == \A x : \A y : \A a : \A b : (a \in x /\ b \in y) <=> <<a,b>> \in (x \X y)
 
-dropTrue(a,b,t) == t => ((t /\ a /\ b) <=> (a /\ b))   PROPO_TAUTO dropTrue
-
 THEOREM cartesianProductCouples
 PROOF
 VARIABLES a,b,c,d,i,j,u,v,x,y;
@@ -1352,6 +1327,7 @@ cartesianProductExists   BECAUSE THEOREM;
    BECAUSE \A(i <- x, j <- y, x <- <<a,b>>);
 <<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
+dropTrue(a,b,t) == t => ((t /\ a /\ b) <=> (a /\ b))   PROPO_TAUTO;
 (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE dropTrue;
 <<a,b>> \in (x \X y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE TransitEquiv;
 tupleComposition   BECAUSE THEOREM;

@@ -116,10 +116,6 @@ formula NAME_SEPARATOR formula {
   $$ = check_operator_definition($2, $4);
   if (!$$)
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
-| formula NAME_SEPARATOR formula SEMICOLON { // local operators in proofs
-  $$ = check_operator_definition($1, $3);
-  if (!$$)
-    yyerror(&@$, scanner, ast, "Bad operator definition"); }
 ;
 
 proofHeader:
@@ -221,19 +217,21 @@ NAME { // operator or variable as a leaf of this formula
 | funcApply
 ;
 
-// SHIFT REDUCE CONFLICTS
 funcApply: formula LEFT_BRACKET formula RIGHT_BRACKET {
   $$ = make_formula(funcApply, (char*)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
-		    @1.first_line);
-}
+		    @1.first_line); }
 ;
 
 justifiedFormula:
 formula BECAUSE reason SEMICOLON { $$ = make_jf($1, $3); }
-| operatorDefinition { // local formula definition inside a proof
+| operatorDefinition SEMICOLON { // local operator inside a proof
   $$ = make_jf($1, (struct reason*)0); }
+| operatorDefinition REASON_KIND SEMICOLON { // local propositional tautology inside a proof
+  if ($2 != propoTautology)
+    yyerror(&@$, scanner, ast, "Not a valid local propositional tautology.\n");
+  $$ = make_jf($1, make_reason($2, (formula*)0)); }
 ;
 
 justifiedFormulas:

@@ -55,6 +55,28 @@ struct reason* make_reason(enum reason_kind k,
   return reason;
 }
 
+void f_list_free(struct FormulaDList* l)
+{
+  if (!l) return;
+  justified_formula_free(l->jf);
+  f_list_free(l->next);
+  free(l);
+}
+
+void f_list_reverse_free(struct FormulaDList* l)
+{
+  if (!l) return;
+  while (l->next)
+    l = l->next; // find the end of the list
+  while (l)
+    {
+      justified_formula_free(l->jf);
+      struct FormulaDList* prev = l->previous;
+      free(l);
+      l = prev;
+    }
+}
+
 proof* make_proof(enum reason_kind proofGoal,
 		  formula* formulaToProve,
 		  struct string_list* variables,
@@ -65,7 +87,6 @@ proof* make_proof(enum reason_kind proofGoal,
   proof->formulaToProve = formulaToProve;
   proof->variables = variables;
   proof->cumulativeTruths = cumulativeTruths;
-  proof->operators = 0;
   return proof;
 }
 
@@ -77,25 +98,10 @@ void proof_free(proof* p)
   formula_free(p->formulaToProve);
   string_list_free(p->variables);
 
-  f_list_free(p->cumulativeTruths); // p->operators' definingFormulas still alive
-
-  struct formula_list* op = p->operators;
-  while (op)
-    {
-      formula_free(op->formula_elem->definingFormula);
-      op->formula_elem->definingFormula = (formula*)0;
-      op = op->next;
-    }
-  formula_list_free(p->operators);
+  // Reverse free so that the local operators are still alive
+  // when formulas that reference them are freed
+  f_list_reverse_free(p->cumulativeTruths);
   free(p);
-}
-
-void f_list_free(struct FormulaDList* l)
-{
-  if (!l) return;
-  justified_formula_free(l->jf);
-  f_list_free(l->next);
-  free(l);
 }
 
 void justified_formula_free(struct JustifiedFormula* jf)
@@ -296,20 +302,37 @@ short implicit_propositional_tautology(const struct FormulaDList* statement,
 
 short check_propositional_tautology_statement(const struct FormulaDList* statement,
 					      const proof_set assumedProofs,
-					      const formula_set operators)
+					      const formula_set operators,
+					      const struct formula_list* proofOperators)
 {
   formula* tauto = statement->jf->reason->formula;
+  unsigned char same_name_as_tauto(const formula* op)
+  {
+    return tauto->name && op->name && strcmp(op->name, tauto->name) == 0;
+  }
   proof searchP;
   searchP.formulaToProve = tauto;
   const proof* tautoProof = proof_set_find(&searchP, assumedProofs);
-
   if (tautoProof && tautoProof->goal == propoTautology)
+    tauto = tautoProof->formulaToProve;
+  else
     {
-      // tauto was proved as a propositional tautology
-      if (check_propositional_tautology_statement_one(statement->jf->formula, tauto->definingFormula, operators)
-	  || implicit_propositional_tautology(statement, tauto->definingFormula, operators))
-	return 1;
+      // Search a local tautology instead
+      const struct formula_list* l = formula_list_find_const(proofOperators, same_name_as_tauto);
+      if (!l)
+	{
+	  printf("%s:%d: unknown tautology %s\n",
+		 tauto->file,
+		 tauto->first_line,
+		 tauto->name);
+	  return 0;
+	}
+      tauto = l->formula_elem;
     }
+
+  if (check_propositional_tautology_statement_one(statement->jf->formula, tauto->definingFormula, operators)
+      || implicit_propositional_tautology(statement, tauto->definingFormula, operators))
+    return 1;
 
   printf("%s:%d: tautology %s does not match\n",
 	 statement->jf->formula->file,
@@ -486,16 +509,23 @@ const formula* parse_equalities(const formula* f, /*out*/variable_substitution* 
       equalities = get_first_operand(equalities);
     }
   subs[i/2].variable = (char*)0;
-  return equiv;
+  return equiv; // TODO check variables are distinct
 }
 
 /**
-   Axiom scheme \A x : \A y : x = y => (s <=> s(x <- y))
-   and scheme   \A x : \A y : x = y => (s  =  s(x <- y))
-   for all formulas s.
+   Axiom scheme \A x1 : \A y1 : ... : \A xK : \A yK :
+      (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))
+   for all formulas s, and scheme
+   \A x1 : \A y1 : ... : \A xK : \A yK :
+      (x1 = y1 /\ ... /\ xK = yK) => (t  =  t(x1 <- y1, ..., xK <- yK))
+   for all terms t. The substitutions concern the free
+   occurrences of variables xI only. The new variables yI
+   must remain free in formula s. In a term t, all variables
+   are free so it doesn't matter.
 
    The scrict first-order logic equality axioms are when s
-   is a primitive symbol, not a formula. The formulas can be
+   is a primitive relation symbol, not a formula, and t a
+   primitive operator symbol, not a term. The formulas can be
    built by instantiation of \A. For example, to prove that
    (x = y) => (x + 2*x) = (y + 2*y)
    the strict axioms would use
@@ -511,66 +541,31 @@ const formula* parse_equalities(const formula* f, /*out*/variable_substitution* 
    with quantifiers, otherwise we would take as an axiom :
    x = y => ((\A y : x \subseteq y) <=> \A y : y \subseteq y)
    which implies that False <=> True.
-   
-   To prove x = y => (F <=> F(x <- y)) with a formula F, one can 
-   declare a local operator in a proof opF(x) == F and then invoke
-   x = y => (opF(x) <=> opF(y)) BECAUSE E_SCHEME.
-   The declaration of opF(x) checks that x is the only free variable
-   of F, and the subsequent uses of opF(y) check the substitution
-   F(x <- y) is correct.
 
-   Otherwise, from the valid E_SCHEME
-   (x = y /\ a = b) => ((x \subseteq a) <=> (y \subseteq b))
-   we can instantiate
-   (x = y) => ((x \subseteq y) <=> (y \subseteq y))
-      BECAUSE \A(x <- x, y <- y, a <- y, b <- y)
-   and generalize
-   \A y : (x = y) => ((x \subseteq y) <=> (y \subseteq y))
-   but then we cannot shift the \A y to the right-hand side,
-   because there is a free y in x = y. So this function checks
-   that no equal variables on the left side are bound on
-   the right side.
+   But since we only rename free variables (the new variables
+   remain free), for any formula s the formula
+   \A x1 : \A y1 : ... : \A xK : \A yK :
+      (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))
+   is true in all models : formulas s and s(x1 <- y1, ..., xK <- yK) are
+   interpreted by the same function in each model. By Gödel's
+   completeness theorem it is provable.
 
-   Although x = x, this axiom scheme refuses
-   x = y => (s(x) <=> s(x))
-   because it checks that all free occurrences of x are replaced by y
-   in the last term. To substitute in only a part of formula s, apply
-   this scheme to that part of formula s.
+   Some free variables of formula s can be absent in the xI :
+   those stay free with the same name.
 */
-unsigned char equality_implies_equivalence_scheme(const formula* f)
+unsigned char rename_free_variables_scheme(const formula* f)
 {
   variable_substitution subs[8];
   const formula* equiv = parse_equalities(f, /*out*/subs);
-  if (!equiv ||
-      !formula_equal(get_second_operand(equiv),
-		     get_first_operand(equiv),
-		     0, subs, 0))
-    return 0;
-
-  unsigned char equalVarBound(const char* v, const struct string_list* boundVars)
-  {
-    // too slow : could scan the \A and \E instead
-    while (boundVars)
-      {
-	const variable_substitution* sub = subs;
-	while (sub->variable)
-	  {
-	    if (strcmp(boundVars->string_elem, sub->variable) == 0
-		|| strcmp(boundVars->string_elem, sub->subst->name) == 0)
-	      return 1;
-	    sub++;
-	  }
-	boundVars = boundVars->next;
-      }
-    return 0;
-  }
-  
-  return find_variable(equiv, 0, equalVarBound) == 0;
+  return equiv &&
+    formula_equal(get_second_operand(equiv),
+		  get_first_operand(equiv),
+		  0, subs, 0);
 }
 
 short equality_axiom(const formula* f)
 {
-  if (equality_implies_equivalence_scheme(f))
+  if (rename_free_variables_scheme(f))
     return 1;
   
   // axiom x = x, where x is a term
@@ -1030,6 +1025,7 @@ short check_theorem_invocation_statement(const formula* f, const proof_set assum
 
 short check_proof_statement(const struct FormulaDList* statement,
 			    const proof* p,
+			    const struct formula_list* proofLocalOps,
 			    const formula_set operators,
 			    const proof_set assumedProofs,
 			    const struct proof_list* axiomSchemes)
@@ -1042,12 +1038,22 @@ short check_proof_statement(const struct FormulaDList* statement,
       return 1;
     }
 
+  if (statement->jf->reason->rk == propoTautology
+      && !statement->jf->reason->formula)
+    {
+      // Declaration of local propositional tautology, like
+      // implyNotAnd(a,b,c) == (a => ~(b /\ c)) => ((a /\ b) => ~c)   PROPO_TAUTO;
+      const formula* tauto = statement->jf->formula;
+      return is_propositional_formula(tauto)
+	&& prove_propositional_tautology(tauto);
+    }
+  
   switch (statement->jf->reason->rk)
     {
       // In these two cases, the check is just formula_equal between statement->jf->formula
       // and an axiom or theorem formula taken from assumedProofs.
     case axiom:
-      return check_axiom_statement(statement->jf, assumedProofs, operators, p->operators);
+      return check_axiom_statement(statement->jf, assumedProofs, operators, proofLocalOps);
     case theorem:
       return check_theorem_invocation_statement(statement->jf->formula, assumedProofs);
 
@@ -1072,7 +1078,8 @@ short check_proof_statement(const struct FormulaDList* statement,
     case generalization:
       return check_generalization_statement(statement, operators);
     case propoTautology:
-      return check_propositional_tautology_statement(statement, assumedProofs, operators);
+      return check_propositional_tautology_statement(statement, assumedProofs,
+						     operators, proofLocalOps);
     case reasonChoose:
       return check_choose_statement(statement->jf->formula, statement->jf->reason->formula);
 
@@ -1086,11 +1093,97 @@ short check_proof_statement(const struct FormulaDList* statement,
   return 0;
 }
 
+short semantic_check_operator_definition(formula* op,
+					 const formula_set operators,
+					 const struct formula_list* constants,
+					 const struct formula_list* proofLocalDecl)
+{
+  // A valid declaration is for example :
+  // extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
+
+  // By prior syntax check, op->name != 0 and op->builtInOp == lnone
+  short success = resolve_names(/*out*/op->definingFormula,
+				constants,
+				operators,
+				(struct string_list*)0,
+				op->operands,
+				proofLocalDecl);
+  return success;
+
+  // TODO Check that op->freeVariables are not quantified in the right-hand side formula
+}
+
+short semantic_check_reason(struct reason* r,
+			    const proof_set assumedProofs,
+			    const proof* p,
+			    const struct formula_list* proofLocalOps,
+			    const formula_set operators,
+			    const struct formula_list* constants)
+{
+  if (!r->formula)
+    return 1; // ok, nothing to check
+
+  if (r->rk == propoTautology)
+    return 1; //semantic_check_tautology(r->formula, assumedProofs);
+
+  return resolve_names(/*out*/r->formula,
+		       constants,
+		       operators,
+		       p->variables,
+		       (struct formula_list*)0, // no operator variables
+		       proofLocalOps);
+}
+
+short semantic_check_proof_statement(const struct JustifiedFormula* jf,
+				     const formula_set operators,
+				     const struct formula_list* constants,
+				     const proof_set assumedProofs,
+				     const proof* p,
+				     struct formula_list** proofLocalOps)
+{
+  if (jf->reason)
+    {
+      if (jf->reason->rk == propoTautology && !jf->reason->formula)
+	{
+	  // local propositional tautology
+	  *proofLocalOps = make_formula_list(jf->formula, *proofLocalOps);
+	  return resolve_names(jf->formula->definingFormula,
+			       constants,
+			       operators,
+			       (struct string_list*)0,
+			       jf->formula->operands, 0);
+	}
+      return resolve_names(jf->formula,
+			   constants,
+			   operators,
+			   p->variables,
+			   0,
+			   *proofLocalOps)
+	&& semantic_check_reason(jf->reason, assumedProofs, p, *proofLocalOps, operators, constants);
+    }
+  else
+    {
+      // A statement without reason in a proof is a local operator.
+      // Check it and register it in p->operators.
+      if (!semantic_check_operator_definition(jf->formula,
+					      operators,
+					      constants,
+					      *proofLocalOps))
+	return 0;
+      *proofLocalOps = make_formula_list(jf->formula, *proofLocalOps);
+    }
+
+  return 1;
+}
+
 short check_proof(const proof* proof,
 		  const formula_set operators,
+		  const struct formula_list* constants,
 		  const proof_set assumedProofs,
 		  const struct proof_list* axiomSchemes)
 {
+  struct formula_list* localOperators = 0; // quicker index to the proof's local operators
+  
   switch (proof->goal)
     {
     case axiom:
@@ -1112,14 +1205,27 @@ short check_proof(const proof* proof,
 
       struct FormulaDList* statement = proof->cumulativeTruths;
       struct FormulaDList* lastStatement = 0;
-      while (statement && check_proof_statement(statement, proof,
-						operators, assumedProofs,
-						axiomSchemes))
+      while (statement
+	     && semantic_check_proof_statement(statement->jf, operators, constants,
+					       assumedProofs, proof, &localOperators)
+	     && check_proof_statement(statement, proof, localOperators,
+				      operators, assumedProofs,
+				      axiomSchemes))
 	{
 	  if (!statement->next)
 	    lastStatement = statement;
 	  statement = statement->next;
 	}
+
+      struct formula_list* op = localOperators;
+      while (op)
+      	{
+	  op->formula_elem = (formula*)0;
+      	  //formula_free(op->formula_elem->definingFormula);  TODO
+      	  //op->formula_elem->definingFormula = (formula*)0;
+      	  op = op->next;
+      	}
+      formula_list_free(localOperators);
 
       if (!statement)
 	{
