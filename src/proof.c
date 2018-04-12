@@ -63,20 +63,6 @@ void f_list_free(struct FormulaDList* l)
   free(l);
 }
 
-void f_list_reverse_free(struct FormulaDList* l)
-{
-  if (!l) return;
-  while (l->next)
-    l = l->next; // find the end of the list
-  while (l)
-    {
-      justified_formula_free(l->jf);
-      struct FormulaDList* prev = l->previous;
-      free(l);
-      l = prev;
-    }
-}
-
 proof* make_proof(enum reason_kind proofGoal,
 		  formula* formulaToProve,
 		  struct string_list* variables,
@@ -98,9 +84,28 @@ void proof_free(proof* p)
   formula_free(p->formulaToProve);
   string_list_free(p->variables);
 
-  // Reverse free so that the local operators are still alive
-  // when formulas that reference them are freed
-  f_list_reverse_free(p->cumulativeTruths);
+  if (p->cumulativeTruths)
+    {
+      // Reverse free so that the local operators are still alive
+      // when formulas that reference them are freed
+      struct FormulaDList* l = p->cumulativeTruths;
+      while (l->next)
+	l = l->next; // find the end of the list
+      while (l)
+	{
+	  if (!l->jf->reason ||
+	      (l->jf->reason->rk == propoTautology && !l->jf->reason->formula))
+	    {
+	      // local operator or propositional tautology
+	      formula_free(l->jf->formula->definingFormula);
+	      l->jf->formula->definingFormula = 0;
+	    }
+	  justified_formula_free(l->jf);
+	  struct FormulaDList* prev = l->previous;
+	  free(l);
+	  l = prev;
+	}
+    }
   free(p);
 }
 

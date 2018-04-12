@@ -164,7 +164,7 @@ void formula_free(formula* f)
 {
   if (!f)
     return;
-  //  printf("\n %p FORMULA_FREE ", f); print_formula(f);
+  //printf("\n %p FORMULA_FREE ", f); print_formula(f);
 
   if (f->definingFormula && f->definingFormula->first_line == 0)
     {
@@ -250,6 +250,7 @@ formula* make_formula(enum builtin_operator builtInOp,
       return not;
     }
 
+  //printf("\n %p MAKE_FORMULA ", f); print_formula(f);
   return f;
 }
 
