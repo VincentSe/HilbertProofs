@@ -186,6 +186,12 @@ x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 emptySetExists   BECAUSE MODUS_PONENS;
 QED
 
+(*
+   Another clue to the importance and solidity of the empty set :
+   it is unique. There are not different ways of being empty,
+   the empty set only has only one form, it is the same everywhere
+   we use it.
+*)
 emptySetUnique == \A a : (\A x : x \notin a) => a = {}
 THEOREM emptySetUnique
 PROOF
@@ -1239,6 +1245,29 @@ IsInjection(f) => (y \in multiApply(f,multiX) => y \in Image(f))   BECAUSE PT1;
 IsInjection(f) => (y \in multiApply(f,multiX) => (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoAndToImpl;
 IsInjection(f) => (y \in multiApply(f,multiX) <=> (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoIntroEquiv;
 multiInjection   BECAUSE GENERALIZATION;
+QED
+
+(*
+   We have not finished with the strange properties of the empty set :
+   it is a function, something dynamic that receives input and
+   produces output. Except it receives nothing and produces nothing.
+   It is even an injection.   
+*)
+emptyFunction == IsInjection({})
+THEOREM emptyFunction
+PROOF
+VARIABLES a,b,x;
+emptySetExists   BECAUSE THEOREM;
+x \notin {}   BECAUSE \A(x <- x);
+x \in {} => IsCouple(x)   BECAUSE Explosion;
+IsGraph({})   BECAUSE GENERALIZATION;
+<<a,b>> \notin {}   BECAUSE \A(x <- <<a,b>>);
+<<a,b>> \in {} => b = {}[a]   BECAUSE Explosion;
+\A a : \A b : <<a,b>> \in {} => b = {}[a]   BECAUSE GENERALIZATION;
+IsFunction({})   BECAUSE IntroAndRight;
+<<a,b>> \in {} => a = pre({},b)   BECAUSE Explosion;
+\A a : \A b : <<a,b>> \in {} => a = pre({},b)   BECAUSE GENERALIZATION;
+emptyFunction   BECAUSE IntroAndRight;
 QED
 
 (*
