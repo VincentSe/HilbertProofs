@@ -47,6 +47,50 @@ Each proof statement contains a formula and a reason, separated by the `BECAUSE`
 * The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~~(x = x)`, it finds the implication `x = x => ~~(x = x)` and its hypothesis `x = x`.
 * The fifth reason is `Q_SCHEME`. It regroups several axioms related to the quantifiers `\A` and `\E`. Here it states the definition of existence with respect to universal.
 
+## Hilbert's epsilon operator
+
+Mathematics have introduced notations that can easily lead to reasoning on non-existing things. The first and most important is the application of functions : `f[x]`. For example, the square root of 4 is 2, which we write `sqrt[4] = 2`.
+
+A common mistake in proofs is reasoning on `sqrt[x]`, where we showed that `x` is a number, but forgot to prove that `x` is non-negative. More advanced possibly non-existing notations include limits, differentials and integrals. If we calculate with any of those without first proving they exist, we can end up "proving" false formulas.
+
+And even if we are careful and prove that all symbols we manipulate exist, the functional notation (introduced by Euler in 1734) forces us to clarify formulas such as
+
+```
+sqrt[-7] = 42
+```
+
+where `sqrt` is a function only defined on non-negative real numbers. There are 4 possibilities :
+* Syntactically incorrect. We decide that `sqrt[-7] = 42` is akin to `x+2 =+ 1-`, a formula that makes no sense.
+* Provable. We must then produce a proof of `sqrt[-7] = 42`.
+* Contrary provable. We must then produce a proof of `sqrt[-7] # 42`.
+* Undecidable. We must then prove that both `sqrt[-7] = 42` and `sqrt[-7] # 42` have no proofs. This is the situation of the axiom of choice and the continuum hypothesis in the Zermelo-Fraenkel axioms.
+
+The syntax checker (flex and bison) cannot tell the difference between formulas `sqrt[-7] = 42` and `sqrt[7] = 42`. It doesn't know enough mathematics : it finds them equally good, or equally bad. Since as mathematicians we want `sqrt[7] = 42` as syntactically correct, we must also accept `sqrt[-7] = 42` as syntactically correct.
+
+To choose between the last 3 possibilities, we can consider the closely-related formula
+```
+<<-7, 42>> \in sqrt
+```
+which states that the couple `<<-7, 42>>` is in the graph of the square root function. This new formula is contrary-provable, because -7 is a negative number. Now is this a proof of `sqrt[-7] # 42` ? It could be if we told the proof checker how to eliminate notations, to go back to formulas that surely exist. Here the checker would need to assume, or prove, that
+```
+sqrt[-7] = 42 <=> <<-7, 42>> \in sqrt
+```
+
+This makes sense and solves the question for 42. However, does it tell whether `sqrt[-7] = sqrt[-7]` ? By the same elimination rule, the checker would go through `sqrt[-7] = sqrt[-7] <=> <<-7, sqrt[-7]>> \in sqrt` and conclude negatively, by the same reason that -7 is a negative number. But the equality axiom tells anything equals itself, so we should conclude positively too and contradict ourselves.
+
+Without a clear answer in all cases, we chose the fourth possibility in HilbertProofs : undecidable. `sqrt[-7]` is defined as a new primitive symbol with only one axiom :
+```
+<<-7, sqrt[-7]>> \in sqrt <=> \E y : <<-7, y>> \in sqrt
+```
+
+Since such a `y` does not exist, the only thing this axiom proves about `sqrt[-7]` is that `<<-7, sqrt[-7]>> \notin sqrt`. This tells us absolutely nothing about its equility to 42. The introduction of primitive symbols, subject to existence conditions, is the job of Hilbert's epsilon operator : en.wikipedia.org/wiki/Epsilon_calculus. HilbertProofs makes heavy use of it, calling it CHOOSE. Here is finally the definition of the application of functions :
+
+```
+f[x] == CHOOSE y : <<x, y>> \in f
+```
+
+The implicit axiom with the existence condition guarantees that nothing wrong can be proven about a CHOOSE object, even when its condition is not satisfied.
+
 ## Compile HilbertProofs
 
 Type `make build` to build.

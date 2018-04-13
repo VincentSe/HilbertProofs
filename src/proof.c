@@ -960,6 +960,34 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
    and some in which F is false. Take a model M of T where F is false.
    In the extended model M+, F is still false because model extensions
    preserve truth values. Hence T+ does not prove F.
+
+   Syntactically, T+ proves a formula G involving someNewOp(x,y,z) if
+   and only if T proves the formula
+      (\A t : G(someNewOp(x,y,z) <- t))
+   \/ ((\E t : P(t,x,y,z)) /\ \A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t))
+   where someNewOp(x,y,z) is removed, replaced by t. To see that,
+   assume that T+ proves G and let M a model of T. If M satisfies
+   \E t : P(t,x,y,z), we can extend to M+ by interpreting someNewOp(x,y,z)
+   with any such t. Any such M+ satisfies G because any model of T+ satisfies G.
+   So M+ satisfies \A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t),
+   which only uses interpretations of M.
+   If M does not satisfy \E t : P(t,x,y,z), we can extend to M+ by
+   interpreting someNewOp(x,y,z) with any value and G will be true.
+   This means that M satisfies \A t : G(someNewOp(x,y,z) <- t).
+
+   Conversely, assume T proves the disjunction above. Then in T+ we have,
+   (\A t : G(someNewOp(x,y,z) <- t)) => G   BECAUSE \A(t <- someNewOp(x,y,z));
+   (\E t : P(t,x,y,z)) => P(someNewOp(x,y,z),x,y,z)   BECAUSE CHOOSE someNewOp;
+   (\A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t))
+      => (P(someNewOp(x,y,z),x,y,z) => G)   BECAUSE \A(t <- someNewOp(x,y,z));
+   ((\E t : P(t,x,y,z)) /\ (\A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t)))
+      => (P(someNewOp(x,y,z),x,y,z) /\ (P(someNewOp(x,y,z),x,y,z) => G))
+      BECAUSE MergeImplicationsAnd;
+   (P(someNewOp(x,y,z),x,y,z) /\ (P(someNewOp(x,y,z),x,y,z) => G))
+      => G   BECAUSE MODUS_PONENS;
+   ((\E t : P(t,x,y,z)) /\ (\A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t)))
+      => G   BECAUSE TI;
+   G   BECAUSE CombineImplicationsStart + MODUS_PONENS;   
 */
 short check_choose_statement(const formula* f,
 			     const formula* chooseF)
