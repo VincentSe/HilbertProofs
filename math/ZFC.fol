@@ -1403,6 +1403,62 @@ cartesianProductCouples   BECAUSE GENERALIZATION;
 QED
 
 (*
+   The identity function on a domain d. It takes each element
+   of the domain and simply returns it.
+*)
+identity(d) == CHOOSE b : \A x : x \in b <=>
+   (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
+
+identityExists == \A d : \A x : x \in identity(d) <=>
+   (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
+THEOREM identityExists
+PROOF
+\* By separation in d \X d
+VARIABLES a,b,d,i,j,x,y;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
+   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
+   BECAUSE \A(a <- d \X d);
+cartesianProductExists   BECAUSE THEOREM;
+x \in (d \X d) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE \A(i <- d, j <- d, x <- x);
+(IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d) => x \in (d \X d)   BECAUSE EquivToImplReverse;
+\A x : \A y : x = y => (x \in d <=> y \in d)   BECAUSE E_SCHEME;
+fst(x) = snd(x) => (fst(x) \in d <=> snd(x) \in d)   BECAUSE \A(x <- fst(x), y <- snd(x));
+shakeHypos(a,b,c,d) == (a => (b <=> c)) => ((d /\ b /\ a) => (d /\ b /\ c))   PROPO_TAUTO;
+(IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
+   => (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE shakeHypos;
+(IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)) => x \in (d \X d)   BECAUSE TI;
+(x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
+   => (x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE SeparationTauto;
+(\A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
+   => (\A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
+   => (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE MODUS_PONENS;
+(\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
+   <=> (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE CHOOSE identity(d);
+\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE MODUS_PONENS;
+identityExists   BECAUSE GENERALIZATION;
+QED
+
+identityFunc == \A d : IsInjection(identity(d))
+THEOREM identityFunc
+
+(*
+   The constant function on a domain d, that returns c.
+*)
+const(d,c) == CHOOSE b : \A x : x \in b <=>
+   (IsCouple(x) /\ snd(x) = c /\ fst(x) \in d)
+
+constExists == \A d : \A c : \A x : x \in const(d,c) <=>
+   (IsCouple(x) /\ snd(x) = c /\ fst(x) \in d)
+THEOREM constExists
+
+constFunc == \A d : \A c : IsFunction(const(d,c))
+THEOREM constFunc
+
+
+(*
    Definition of the disjoint union : the union of 2 sets where the common
    elements are copied so that they are different in the union. The disjoint
    union of natural number is very close to their addition, this will be

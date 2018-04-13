@@ -53,7 +53,7 @@ Mathematics have introduced notations that can easily lead to reasoning on non-e
 
 A common mistake in proofs is reasoning on `sqrt[x]`, where we showed that `x` is a number, but forgot to prove that `x` is non-negative. More advanced possibly non-existing notations include divisions, limits, differentials and integrals. If we calculate with any of those without first proving they exist, we can end up "proving" false formulas.
 
-And even if we are careful and prove that all symbols we manipulate exist, the functional notation (introduced by Euler in 1734) forces us to clarify formulas such as
+And even if we are careful and prove that all the symbols we manipulate exist, the functional notation (introduced by Euler in 1734) forces us to clarify formulas such as
 
 ```
 sqrt[-7] = 42

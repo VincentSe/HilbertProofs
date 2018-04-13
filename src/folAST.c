@@ -190,7 +190,10 @@ short declare_operator(formula* op, struct folAST* ast)
   formula** tf = tsearch(op, &ast->operators, formula_compare_operators);
   if (tf && op != *tf)
     {
-      printf("Multiply defined operator : %s\n", op->name);
+      printf("%s:%d: Multiply defined operator : %s\n",
+	     op->file,
+	     op->first_line,
+	     op->name);
       formula_free(op);
       return 0;
     }
@@ -210,7 +213,10 @@ short merge_asts(/*out*/struct folAST* ast,
 				  formula_compare_operators);
     if (tf && op != *tf)
       {
-	printf("Multiply defined operator : %s", op->name);
+	printf("%s:%d: Multiply defined operator : %s\n",
+	       op->file,
+	       op->first_line,
+	       op->name);
 	return;
       }
   }

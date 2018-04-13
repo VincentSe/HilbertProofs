@@ -22,13 +22,17 @@
 (defun fol-theo-dfn (theo)
   (save-excursion
     (goto-char (point-min))
-    (search-forward (concat theo " == ") nil t)
-    (let ((start (point)))
-      (end-of-line)
-      (buffer-substring start (point)))))
+    (let ((beg (search-forward (concat theo " == ") nil t))
+	  (end (- (search-forward "THEOREM") 7)))       
+      (and beg
+	   end
+	   (buffer-substring beg end)))))
 
 (defun fol-invoke-theorem (theo)
   "Insert theo BECAUSE THEOREM; and the definition of theo"
   (interactive "sTheorem name: ")
-  (insert theo "   BECAUSE THEOREM;\n"
-	  (fol-theo-dfn theo) "   BECAUSE "))
+  (let ((d (fol-theo-dfn theo)))
+    (if d
+      (insert theo "   BECAUSE THEOREM;\n"
+	      d "   BECAUSE ")
+      (error (concat theo " not found")))))

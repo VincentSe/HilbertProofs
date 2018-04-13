@@ -523,66 +523,27 @@ woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wel
 THEOREM woAddIsWo
 PROOF
 VARIABLES a,b,g,m,n,u,v,x,y,z;
-\* Proof that wellOrderAddition(u,v) is a graph
-(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => x = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE DropAndLeft;
-\A x : \A y : x = y => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : y = <<a,b>>))   BECAUSE E_SCHEME;
-x = << <<m,{}>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>))   BECAUSE \A(x <- x, y <- << <<m,{}>>, <<n,ordinalOne>> >>);
-(<< <<m,{}>>, <<n,ordinalOne>> >> = << <<m,{}>>, <<n,ordinalOne>> >>
-   => \E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,{}>>, b <- <<n,ordinalOne>>);
-<< <<m,{}>>, <<n,ordinalOne>> >> = << <<m,{}>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
-\E a : \E b : << <<m,{}>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
-x = << <<m,{}>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
-   => (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>)   BECAUSE DropAndRight;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => x = << <<m,{}>>, <<n,{}>> >> BECAUSE DropAndLeft;
-x = << <<m,{}>>, <<n,{}>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>))
-   BECAUSE \A(x <- x, y <- << <<m,{}>>, <<n,{}>> >>);
-(<< <<m,{}>>, <<n,{}>> >> = << <<m,{}>>, <<n,{}>> >>
-   => \E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,{}>>, b <- <<n,{}>>);
-<< <<m,{}>>, <<n,{}>> >> = << <<m,{}>>, <<n,{}>> >>   BECAUSE E_SCHEME;
-\E a : \E b : << <<m,{}>>, <<n,{}>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
-x = << <<m,{}>>, <<n,{}>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-(m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v)
-   => (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>)   BECAUSE DropAndRight;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> BECAUSE DropAndLeft;
-x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => ((\E a : \E b : x = <<a,b>>) <=> (\E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>))
-   BECAUSE \A(x <- x, y <- << <<m,ordinalOne>>, <<n,ordinalOne>> >>);
-(<< <<m,ordinalOne>>, <<n,ordinalOne>> >> = << <<m,ordinalOne>>, <<n,ordinalOne>> >>
-   => \E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>)   BECAUSE \E(a <- <<m,ordinalOne>>, b <- <<n,ordinalOne>>);
-<< <<m,ordinalOne>>, <<n,ordinalOne>> >> = << <<m,ordinalOne>>, <<n,ordinalOne>> >>   BECAUSE E_SCHEME;
-\E a : \E b : << <<m,ordinalOne>>, <<n,ordinalOne>> >> = <<a,b>>   BECAUSE MODUS_PONENS;
-x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> => (\E a : \E b : x = <<a,b>>)   BECAUSE ImplyEquivTrue;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >>) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-(m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
-     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u))
-  => (\E a : \E b : x = <<a,b>>)   BECAUSE CombineImplicationsStart;
-((m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
-     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
-     \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
-  => (\E a : \E b : x = <<a,b>>)   BECAUSE CombineImplicationsStart;
-(\E n : (m \in Domain(u) /\ n \in Domain(v) /\ x = << <<m,{}>>, <<n,ordinalOne>> >>)
-     \/ (m \in Domain(u) /\ n \in Domain(u) /\ x = << <<m,{}>>, <<n,{}>> >> /\ <<m,n>> \in u)
-     \/ (m \in Domain(v) /\ n \in Domain(v) /\ x = << <<m,ordinalOne>>, <<n,ordinalOne>> >> /\ <<m,n>> \in v))
-  => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
-\* IsInWellOrderAddition(x,u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
-\* wellOrderAdditionExists   BECAUSE THEOREM;
-\* x \in wellOrderAddition(u,v) <=> IsInWellOrderAddition(x,u,v)   BECAUSE \A(u <- u, v <- v, x <- x);
-\* x \in wellOrderAddition(u,v) => IsInWellOrderAddition(x,u,v)   BECAUSE EquivToImpl;
-\* x \in wellOrderAddition(u,v) => (\E m : \E n : \E a : \E b : x = <<a,b>>)   BECAUSE TI;
-(\E m : \E n : \E a : \E b : x = <<a,b>>) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
-(\E n : \E a : \E b : x = <<a,b>>) => (\E a : \E b : x = <<a,b>>)   BECAUSE Q_SCHEME;
-\* x \in wellOrderAddition(u,v) => (\E n : \E a : \E b : x = <<a,b>>)   BECAUSE TI;
-\* x \in wellOrderAddition(u,v) => (\E a : \E b : x = <<a,b>>)   BECAUSE TI;
-IsGraph(wellOrderAddition(u,v))   BECAUSE GENERALIZATION;
+\* Give shorter names
+Ione(u) == injectOrder(u, pasteTags(Domain(u),{}));
+Itwo(v) == injectOrder(v, pasteTags(Domain(v),ordinalOne));
+DO(u,v) == Ione(u) \union Itwo(v);
 
-\* Proof that wellOrderAddition is reflexive
-   \* Proof that (IsOrder(u) /\ m \in Domain(u) /\ x = << <<m,{}>>, <<m,{}>> >>) => IsInWellOrderAddition(x,u,v)
-domainExists   BECAUSE THEOREM;
-m \in Domain(u) <=> IsDefinedOn(u,m)   BECAUSE \A(g <- u, x <- m);
+\* Proof that DO is an order
+disjointOrders   BECAUSE THEOREM;
+(IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u),Itwo(v)))
+   => IsOrder(Ione(u) \union Itwo(v))   BECAUSE \A(u <- Ione(u), v <- Itwo(v));
+
+\* Proof that wellOrderAddition(u,v) is a graph : union of 2 graphs
+
+\* Proof that wellOrderAddition is reflexive : union of an order and a graph
+\* which domain is in the order's domain
+
+\* Proof that wellOrderAddition is anti-symmetric
+
+\* Proof that wellOrderAddition is transitive
+
+\* Proof that wellOrderAddition has all minimums
+
 QED
 
 
