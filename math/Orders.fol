@@ -259,6 +259,8 @@ x \in (u \union v) => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v)) => (x \in (u \union v) => IsCouple(x))   BECAUSE SwitchHypos;
 \A x : (IsOrder(u) /\ IsOrder(v)) => (x \in (u \union v) => IsCouple(x))   BECAUSE GENERALIZATION;
 (IsOrder(u) /\ IsOrder(v)) => IsGraph(u \union v)   BECAUSE Q_SCHEME;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (IsOrder(u) /\ IsOrder(v))   BECAUSE DropAndRight;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsGraph(u \union v)   BECAUSE TI;
 
 \* Proof that u \union v is reflexive.
 <<x,y>> \in (u \union v) <=> (<<x,y>> \in u \/ <<x,y>> \in v)   BECAUSE \A(x <- u, y <- v, z <- <<x,y>>);
@@ -307,7 +309,7 @@ unionSecondInc   BECAUSE THEOREM;
 (IsOrder(u) /\ IsOrder(v)) => (\A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v)))   BECAUSE Q_SCHEME;
 \A x : (IsOrder(u) /\ IsOrder(v)) => (\A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v)))   BECAUSE GENERALIZATION;
 (IsOrder(u) /\ IsOrder(v)) => (\A x : \A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v)))   BECAUSE Q_SCHEME;
-
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (\A x : \A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v)))   BECAUSE TI;
 
 \* Proof that u \union v is anti-symmetric
 noCommonElements   BECAUSE THEOREM;
@@ -367,7 +369,41 @@ flipLast(a,b,c,d) == ((a /\ b /\ c) => d) => ((a /\ c) => (b => d))   PROPO_TAUT
 \A v : <<y,y>> \notin v => (IsOrder(v) => <<y,x>> \notin v)   BECAUSE GENERALIZATION;
 <<y,y>> \notin u => (IsOrder(u) => <<y,x>> \notin u)   BECAUSE \A(v <- u);
 (<<y,y>> \notin u /\ IsOrder(u)) => <<y,x>> \notin u   BECAUSE HypoImplToAnd;
-
+(<<y,y>> \notin u /\ IsOrder(u)) => (<<x,y>> \notin u /\ <<y,x>> \notin u)   BECAUSE CombineImplicationsEnd;
+(<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)))
+   => (<<x,y>> \notin u /\ <<y,x>> \notin u /\ ((<<x,y>> \in u \/ <<x,y>> \in v) /\ (<<y,x>> \in u \/ <<y,x>> \in v)))
+   BECAUSE MergeImplicationsAnd;
+killCasesRight(a,b,c,d) == (~a /\ ~b /\ ((a \/ c) /\ (b \/ d))) => (c /\ d)   PROPO_TAUTO;
+(<<x,y>> \notin u /\ <<y,x>> \notin u /\ ((<<x,y>> \in u \/ <<x,y>> \in v) /\ (<<y,x>> \in u \/ <<y,x>> \in v)))
+   => (<<x,y>> \in v /\ <<y,x>> \in v)   BECAUSE killCasesRight;
+(<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)))
+   => (<<x,y>> \in v /\ <<y,x>> \in v)   BECAUSE TI;
+\A u : IsOrder(u) => ((<<x,y>> \in u /\ <<y,x>> \in u) => x = y)   BECAUSE GENERALIZATION;
+IsOrder(v) => ((<<x,y>> \in v /\ <<y,x>> \in v) => x = y)   BECAUSE \A(u <- v);
+(<<x,y>> \in v /\ <<y,x>> \in v) => (IsOrder(v) => x = y)   BECAUSE SwitchHypos;
+(<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)))
+   => (IsOrder(v) => x = y)   BECAUSE TI;
+(<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) /\ IsOrder(v))
+   => x = y   BECAUSE HypoImplToAnd;
+(<<y,y>> \notin u /\ IsOrder(u) /\ IsOrder(v))
+   => ((<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE flipLast;
+((AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ IsOrder(u)) \/ (<<y,y>> \notin u /\ IsOrder(u) /\ IsOrder(v)))
+   => ((<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)
+   BECAUSE CombineImplicationsStart;
+exclMid(a,b,c,d) == (a /\ b /\ c) => ((c /\ d /\ b /\ a) \/ (~d /\ a /\ b))   PROPO_TAUTO;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => ((AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ IsOrder(u)) \/ (<<y,y>> \notin u /\ IsOrder(u) /\ IsOrder(v)))
+   BECAUSE exclMid;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => ((<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE TI;
+\A y : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => ((<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE GENERALIZATION;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A y : (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE Q_SCHEME;
+\A x : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A y : (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE GENERALIZATION;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A x : \A y : (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)) => x = y)   BECAUSE Q_SCHEME;
 
 \* Proof that u \union v is transitive.
 \* If <<y,y>> \in u, because u and v are disjoint, <<y,y>> \notin v and then by reflexivity of v,
@@ -417,7 +453,6 @@ IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
 (<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)))
    => (<<x,y>> \notin u /\ <<y,z>> \notin u /\ ((<<x,y>> \in u \/ <<x,y>> \in v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)))
    BECAUSE MergeImplicationsAnd;
-killCasesRight(a,b,c,d) == (~a /\ ~b /\ ((a \/ c) /\ (b \/ d))) => (c /\ d)   PROPO_TAUTO;
 (<<x,y>> \notin u /\ <<y,z>> \notin u /\ ((<<x,y>> \in u \/ <<x,y>> \in v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)))
    => (<<x,y>> \in v /\ <<y,z>> \in v)   BECAUSE killCasesRight;
 (<<y,y>> \notin u /\ IsOrder(u) /\ (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)))
@@ -435,13 +470,25 @@ killCasesRight(a,b,c,d) == (~a /\ ~b /\ ((a \/ c) /\ (b \/ d))) => (c /\ d)   PR
    => ((<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE flipLast;
 ((AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ IsOrder(u)) \/ (<<y,y>> \notin u /\ IsOrder(u) /\ IsOrder(v)))
    => ((<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE CombineImplicationsStart;
-exclMid(a,b,c,d) == (a /\ b /\ c) => ((c /\ d /\ b /\ a) \/ (~d /\ a /\ b))   PROPO_TAUTO;
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
-   => ((AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ IsOrder(u)) \/ (<<y,y>> \notin u /\ IsOrder(u) /\ IsOrder(v)))
-   BECAUSE exclMid;
 (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
    => ((<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE TI;
-\* TODO
+\A z : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => ((<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE GENERALIZATION;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE Q_SCHEME;
+\A y : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE GENERALIZATION;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A y : \A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE Q_SCHEME;
+\A x : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A y : \A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE GENERALIZATION;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
+   => (\A x : \A y : \A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v))   BECAUSE Q_SCHEME;
+
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (IsGraph(u \union v) /\ (\A x : \A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v))))   BECAUSE CombineImplicationsEnd;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (IsGraph(u \union v) /\ (\A x : \A y : <<x,y>> \in (u \union v) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v))) /\ (\A x : \A y : \A z : (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)) => <<x,z>> \in (u \union v)))   BECAUSE CombineImplicationsEnd;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsOrder(u \union v)   BECAUSE CombineImplicationsEnd;
+disjointOrders   BECAUSE GENERALIZATION;
 QED
 
 (*

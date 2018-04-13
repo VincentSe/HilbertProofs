@@ -7,7 +7,7 @@ HilbertProofs is made of three parts :
 
 ## Predicate calculus
 
-HilbertProofs writes proofs in the first-order logic framework, hence the FOL extension of the proof files. For more information, please read : en.wikipedia.org/wiki/First-order_logic.
+HilbertProofs writes proofs in the first-order logic framework, hence the FOL extension of the proof files. For more information, please read : [First-order logic](https://en.wikipedia.org/wiki/First-order_logic).
 
 Each proof is written in the Hilbert style, which means as a list of cumulative truths. Hilbert-style formal proofs with minimal axioms and inference rules are much (much !) longer than usual proofs written in English. In comparison to programming languages, Hilbert-style formal proofs would be an assembly language, whereas usual English would be a very high-level language like C++ or Java.
 
@@ -83,7 +83,7 @@ Without a clear answer in all cases, we chose the fourth possibility in HilbertP
 <<-7, sqrt[-7]>> \in sqrt <=> \E y : <<-7, y>> \in sqrt
 ```
 
-Since such a `y` does not exist, the only thing this axiom proves about `sqrt[-7]` is that `<<-7, sqrt[-7]>> \notin sqrt`. This tells us absolutely nothing about its equility to 42. The introduction of primitive symbols, subject to existence conditions, is the job of Hilbert's epsilon operator : en.wikipedia.org/wiki/Epsilon_calculus. HilbertProofs makes heavy use of it, calling it CHOOSE. Here is finally the definition of the application of functions :
+Since such a `y` does not exist, the only thing this axiom proves about `sqrt[-7]` is that `<<-7, sqrt[-7]>> \notin sqrt`. This tells us absolutely nothing about its equility to 42. The introduction of primitive symbols, subject to existence conditions, is the job of Hilbert's epsilon operator : [Epsilon calculus](https://en.wikipedia.org/wiki/Epsilon_calculus). HilbertProofs makes heavy use of it, calling it CHOOSE. Here is finally the definition of the application of functions :
 
 ```
 f[x] == CHOOSE y : <<x, y>> \in f
