@@ -297,7 +297,9 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
 	  extends[extCount].first = ast_idx(asts, ext->string_elem);
 	  if (extends[extCount].first == -1)
 	    {
-	      printf("module %s extends unknown module %s\n", asts[astIdx]->file, ext->string_elem);
+	      printf("%s:1: extends unknown module %s\n",
+		     asts[astIdx]->file,
+		     ext->string_elem);
 	      return 0;
 	    }
 	  extends[extCount].second = astIdx;

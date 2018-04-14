@@ -11,8 +11,7 @@
    The operators defined are the empty set, singleton of a set, pair of sets, couples,
    union of two sets, intersection of two sets, cartesian product and disjoint union.
 
-   The relations defined are graphs, functions and equivalence relations. The function
-   application operator is also defined.
+   The relations defined are graphs and equivalence relations.
 *)
 
 EXTENDS Tautologies
@@ -957,11 +956,12 @@ QED
 
 \* The class of oriented graphs, ie sets of couples.
 IsGraph(g) == \A x : x \in g => IsCouple(x)
-
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
+compose(g,h) == CHOOSE b : \A x : x \in b <=>
+   (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -1086,65 +1086,6 @@ y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 imageInc   BECAUSE GENERALIZATION;
 QED
 
-(*
-   The class of functions : graphs that have at most one output for each
-   input. A function as a set represents a computation, like addition
-   or multiplication, something that always produces the same output
-   when given the same input.
-*)
-f[x] == CHOOSE y : <<x,y>> \in f
-pre(f,y) == CHOOSE x : <<x,y>> \in f
-IsFunction(f) == IsGraph(f)  /\ \A a : \A b : <<a,b>> \in f => b = f[a]
-IsInjection(f) == IsFunction(f) /\ \A a : \A b : <<a,b>> \in f => a = pre(f,b)
-
-funcUniqueImage == \A f : \A x : \A y :
-   (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y
-THEOREM funcUniqueImage
-PROOF
-VARIABLES a,b,f,g,x,y;
-imageExists   BECAUSE THEOREM;
-y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
-<<pre(f,y),y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
-y \in Image(f) <=> <<pre(f,y),y>> \in f   BECAUSE TransitEquiv2;
-y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE EquivToImpl;
-\A y : y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE GENERALIZATION;
-x \in Image(f) => <<pre(f,x),x>> \in f   BECAUSE \A(y <- x);
-(x \in Image(f) /\ y \in Image(f)) => (<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE MergeImplicationsAnd;
-pre(f,x) = pre(f,y) => pre(f,x) = pre(f,y)   BECAUSE ImplyOneself;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
-   => (<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f /\ pre(f,x) = pre(f,y))   BECAUSE MergeImplicationsAnd;
-\A a : \A b : a = b => (<<a,x>> \in f <=> <<b,x>> \in f)   BECAUSE E_SCHEME;
-pre(f,x) = pre(f,y) => (<<pre(f,x),x>> \in f <=> <<pre(f,y),x>> \in f)   BECAUSE \A(a <- pre(f,x), b <- pre(f,y));
-(pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f) => <<pre(f,y),x>> \in f   BECAUSE HypoEquivToAnd;
-(<<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f /\ pre(f,x) = pre(f,y))
-   => (pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE AndCycle;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
-   => (pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE TI;
-<<pre(f,y),y>> \in f => <<pre(f,y),y>> \in f   BECAUSE ImplyOneself;
-(pre(f,x) = pre(f,y) /\ <<pre(f,x),x>> \in f /\ <<pre(f,y),y>> \in f) => (<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE MergeImplicationsAnd;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
-   => (<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE TI;
-
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE DropAndLeft;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- y);
-IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TI;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- x);
-IsFunction(f) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE TI;
-IsFunction(f) => ((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
-   BECAUSE CombineImplicationsEnd;
-((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
-   => ((<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE MergeImplicationsAnd2;
-IsFunction(f) => ((<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE TI;
-(<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f) => (IsFunction(f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE SwitchHypos;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
-   => (IsFunction(f) => (x = f[pre(f,y)] /\ y = f[pre(f,y)]))   BECAUSE TI;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f))
-   => (x = f[pre(f,y)] /\ y = f[pre(f,y)])   BECAUSE HypoImplToAnd;
-(x = f[pre(f,y)] /\ y = f[pre(f,y)]) => x = y   BECAUSE E_SCHEME;
-(x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y   BECAUSE TI;
-funcUniqueImage   BECAUSE GENERALIZATION;
-QED
-
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
 multiApplyExists == \A f : \A multiX : \A x : x \in multiApply(f,multiX)
@@ -1178,96 +1119,6 @@ imageInc   BECAUSE THEOREM;
 \E b : \A x : x \in b <=> (\E u : u \in multiX /\ <<u,x>> \in f)   BECAUSE MODUS_PONENS;
 \A x : x \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,x>> \in f   BECAUSE MODUS_PONENS;
 multiApplyExists   BECAUSE GENERALIZATION;
-QED
-
-multiInjection == \A f : \A multiX : \A y :
-   IsInjection(f) => (y \in multiApply(f, multiX) <=> (y \in Image(f) /\ pre(f,y) \in multiX))
-THEOREM multiInjection
-PROOF
-VARIABLES a,b,f,g,u,x,y,multiX;
-multiApplyExists   BECAUSE THEOREM;
-y \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,y>> \in f
-   BECAUSE \A(f <- f, multiX <- multiX, x <- y);
-
-\* Proof of (y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX) 
-<<pre(f,y), y>> \in f <=> \E x : <<x,y>> \in f   BECAUSE CHOOSE pre(f,y);
-imageExists   BECAUSE THEOREM;
-y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
-<<pre(f,y), y>> \in f <=> y \in Image(f)   BECAUSE TransitEquiv2;
-y \in Image(f) => <<pre(f,y), y>> \in f   BECAUSE EquivToImplReverse;
-pre(f,y) \in multiX => pre(f,y) \in multiX   BECAUSE ImplyOneself;
-(y \in Image(f) /\ pre(f,y) \in multiX) => (<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX)
-   BECAUSE MergeImplicationsAnd;
-(<<pre(f,y), y>> \in f /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE AndSymmetry;
-(y \in Image(f) /\ pre(f,y) \in multiX) => (pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f)   BECAUSE TI;
-(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => \E u : u \in multiX /\ <<u,y>> \in f   BECAUSE \E(u <- pre(f,y));
-(\E u : u \in multiX /\ <<u,y>> \in f) => y \in multiApply(f,multiX)   BECAUSE EquivToImplReverse;
-(pre(f,y) \in multiX /\ <<pre(f,y), y>> \in f) => y \in multiApply(f,multiX)   BECAUSE TI;
-(y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX)   BECAUSE TI;
-IsInjection(f) => ((y \in Image(f) /\ pre(f,y) \in multiX) => y \in multiApply(f,multiX))   BECAUSE PT1;
-
-\* Converse
-chooseU(f,y,multiX) == CHOOSE u : u \in multiX /\ <<u,y>> \in f;
-(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
-   <=> \E u : u \in multiX /\ <<u,y>> \in f   BECAUSE CHOOSE chooseU(f,y,multiX);
-y \in multiApply(f,multiX) <=> (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
-   BECAUSE TransitEquiv2;   
-y \in multiApply(f,multiX) => (chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)   BECAUSE EquivToImpl;
-(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE DropAndLeft;
-y \in multiApply(f,multiX) => <<chooseU(f,y,multiX),y>> \in f   BECAUSE TI;
-imageInc   BECAUSE THEOREM;
-<<chooseU(f,y,multiX),y>> \in f => y \in Image(f)   BECAUSE \A(g <- f, x <- chooseU(f,y,multiX), y <- y);
-y \in multiApply(f,multiX) => y \in Image(f)   BECAUSE TI;
-
-IsInjection(f) => \A a : \A b : <<a,b>> \in f => a = pre(f,b)   BECAUSE DropAndLeft;
-(\A a : \A b : <<a,b>> \in f => a = pre(f,b)) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))
-   BECAUSE \A(a <- chooseU(f,y,multiX), b <- y);
-IsInjection(f) => (<<chooseU(f,y,multiX),y>> \in f => chooseU(f,y,multiX) = pre(f,y))    BECAUSE TI;
-(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => chooseU(f,y,multiX) = pre(f,y)    BECAUSE HypoImplToAnd;
-\A x : \A y : x = y => (x \in multiX <=> y \in multiX)    BECAUSE E_SCHEME;
-(chooseU(f,y,multiX) = pre(f,y)) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE \A(x <- chooseU(f,y,multiX), y <- pre(f,y));
-(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f) => (chooseU(f,y,multiX) \in multiX <=> pre(f,y) \in multiX)    BECAUSE TI;
-(IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)
-   => pre(f,y) \in multiX   BECAUSE HypoEquivToAnd;
-(IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
-   => (IsInjection(f) /\ <<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AssocAndLeft;
-(IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))
-   => pre(f,y) \in multiX   BECAUSE TI;
-(chooseU(f,y,multiX) \in multiX /\ <<chooseU(f,y,multiX),y>> \in f)
-   => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE AndSymmetry;
-y \in multiApply(f,multiX) => (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX)   BECAUSE TI;
-IsInjection(f) => IsInjection(f)   BECAUSE ImplyOneself;
-(IsInjection(f) /\ y \in multiApply(f,multiX)) => (IsInjection(f) /\ (<<chooseU(f,y,multiX),y>> \in f /\ chooseU(f,y,multiX) \in multiX))   BECAUSE MergeImplicationsAnd;
-(IsInjection(f) /\ y \in multiApply(f,multiX)) => pre(f,y) \in multiX   BECAUSE TI;
-IsInjection(f) => (y \in multiApply(f,multiX) => y \in Image(f))   BECAUSE PT1;
-(IsInjection(f) /\ y \in multiApply(f,multiX)) => y \in Image(f)   BECAUSE HypoImplToAnd;
-(IsInjection(f) /\ y \in multiApply(f,multiX)) => (y \in Image(f) /\ pre(f,y) \in multiX)   BECAUSE CombineImplicationsEnd;
-IsInjection(f) => (y \in multiApply(f,multiX) => (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoAndToImpl;
-IsInjection(f) => (y \in multiApply(f,multiX) <=> (y \in Image(f) /\ pre(f,y) \in multiX))   BECAUSE HypoIntroEquiv;
-multiInjection   BECAUSE GENERALIZATION;
-QED
-
-(*
-   We have not finished with the strange properties of the empty set :
-   it is a function, something dynamic that receives input and
-   produces output. Except it receives nothing and produces nothing.
-   It is even an injection.   
-*)
-emptyFunction == IsInjection({})
-THEOREM emptyFunction
-PROOF
-VARIABLES a,b,x;
-emptySetExists   BECAUSE THEOREM;
-x \notin {}   BECAUSE \A(x <- x);
-x \in {} => IsCouple(x)   BECAUSE Explosion;
-IsGraph({})   BECAUSE GENERALIZATION;
-<<a,b>> \notin {}   BECAUSE \A(x <- <<a,b>>);
-<<a,b>> \in {} => b = {}[a]   BECAUSE Explosion;
-\A a : \A b : <<a,b>> \in {} => b = {}[a]   BECAUSE GENERALIZATION;
-IsFunction({})   BECAUSE IntroAndRight;
-<<a,b>> \in {} => a = pre({},b)   BECAUSE Explosion;
-\A a : \A b : <<a,b>> \in {} => a = pre({},b)   BECAUSE GENERALIZATION;
-emptyFunction   BECAUSE IntroAndRight;
 QED
 
 (*
@@ -1401,61 +1252,6 @@ a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 (a \in x /\ b \in y) <=> <<a,b>> \in (x \X y)   BECAUSE EquivSymmetry;
 cartesianProductCouples   BECAUSE GENERALIZATION;
 QED
-
-(*
-   The identity function on a domain d. It takes each element
-   of the domain and simply returns it.
-*)
-identity(d) == CHOOSE b : \A x : x \in b <=>
-   (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
-
-identityExists == \A d : \A x : x \in identity(d) <=>
-   (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
-THEOREM identityExists
-PROOF
-\* By separation in d \X d
-VARIABLES a,b,d,i,j,x,y;
-\A a : \E b : \A x : x \in b <=> (x \in a /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
-   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
-   BECAUSE \A(a <- d \X d);
-cartesianProductExists   BECAUSE THEOREM;
-x \in (d \X d) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE \A(i <- d, j <- d, x <- x);
-(IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d) => x \in (d \X d)   BECAUSE EquivToImplReverse;
-\A x : \A y : x = y => (x \in d <=> y \in d)   BECAUSE E_SCHEME;
-fst(x) = snd(x) => (fst(x) \in d <=> snd(x) \in d)   BECAUSE \A(x <- fst(x), y <- snd(x));
-shakeHypos(a,b,c,d) == (a => (b <=> c)) => ((d /\ b /\ a) => (d /\ b /\ c))   PROPO_TAUTO;
-(IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))
-   => (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE shakeHypos;
-(IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)) => x \in (d \X d)   BECAUSE TI;
-(x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
-   => (x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE SeparationTauto;
-(\A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
-   => (\A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
-   => (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE MODUS_PONENS;
-(\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
-   <=> (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE CHOOSE identity(d);
-\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE MODUS_PONENS;
-identityExists   BECAUSE GENERALIZATION;
-QED
-
-identityFunc == \A d : IsInjection(identity(d))
-THEOREM identityFunc
-
-(*
-   The constant function on a domain d, that returns c.
-*)
-const(d,c) == CHOOSE b : \A x : x \in b <=>
-   (IsCouple(x) /\ snd(x) = c /\ fst(x) \in d)
-
-constExists == \A d : \A c : \A x : x \in const(d,c) <=>
-   (IsCouple(x) /\ snd(x) = c /\ fst(x) \in d)
-THEOREM constExists
-
-constFunc == \A d : \A c : IsFunction(const(d,c))
-THEOREM constFunc
 
 
 (*

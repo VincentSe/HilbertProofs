@@ -27,9 +27,8 @@ PROOF
 VARIABLES x;
 (\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
 ~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
-x = x => ~~(x = x)   BECAUSE IntroNotNot;
 x = x   BECAUSE E_SCHEME;
-~~(x = x)   BECAUSE MODUS_PONENS;
+~~(x = x)   BECAUSE IntroNotNot;
 ~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
 (\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
 aSetExists   BECAUSE MODUS_PONENS;
@@ -44,7 +43,7 @@ Each proof statement contains a formula and a reason, separated by the `BECAUSE`
 * The first reason invoked is `\A(x <- x)`, which is the instantiation of the universal quantifier `\A`. If a formula is true for any set `x`, then it is true when `x` is replaced by any particular value. Here `x` is replaced by itself to drop merely drop the quantifier `\A x` (allowing the use of an equality axiom `E_SCHEME` three statements after).
 * The second reason is `Contraposition`. That is a propositional tautology defined in file `math/Tautologies.fol`, which `ZFC.fol` references by the statement `EXTENDS Tautologies` at the beginning. Any propositional tautology can be used as a reason, the checker will then try to match the propositional variables and implicitely use modus ponens with the previous statements. Here `Contraposition(a,b) == (a => b) => (~b => ~a)`, so propositional variable `a` is matched with formula `(\A x : ~(x = x))`, `b` is matched with `~(x = x)` and modus ponens is used with the first statement.
 * The third reason is `E_SCHEME`, which regroups several axioms concerning equality. `x = x` is one of those axioms.
-* The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~~(x = x)`, it finds the implication `x = x => ~~(x = x)` and its hypothesis `x = x`.
+* The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~(\A x : ~(x = x))`, it finds the implication `~~(x = x) => ~(\A x : ~(x = x))` and its hypothesis `~~(x = x)`.
 * The fifth reason is `Q_SCHEME`. It regroups several axioms related to the quantifiers `\A` and `\E`. Here it states the definition of existence with respect to universal.
 
 ## Hilbert's epsilon operator

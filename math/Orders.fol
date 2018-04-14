@@ -1,8 +1,9 @@
-EXTENDS ZFC
-
 (*
    The class of orders : graphs that are reflexive, anti-symmetric and transitive.
 *)
+
+EXTENDS Functions
+
 IsOrder(o) == IsGraph(o)
    \* Reflexivity
    /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
@@ -508,10 +509,7 @@ IsWellOrder(w) == IsOrder(w)
    /\ (\A part : (part # {} /\ (\A x : x \in part => IsDefinedOn(w,x)))
          => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in w)
 
-\* TODO rewrite it as funcProd(identity(dom), const(dom, tag))
-pasteTags(dom, tag) == CHOOSE f : IsInjection(f)
-   /\ Domain(f) = dom
-   /\ \A x : x \in dom => <<x, <<x,tag>> >> \in f
+pasteTags(dom, tag) == productFunc(identity(dom), const(dom, tag))
 
 \* Define a well-order on the disjoint union of two well-orders.
 \* This order simply pastes v after u.
