@@ -55,7 +55,7 @@ shakeHypos(a,b,c,d) == (a => (b <=> c)) => ((d /\ b /\ a) => (d /\ b /\ c))   PR
 identityExists   BECAUSE GENERALIZATION;
 QED
 
-identityVal == \A d : \A x : x \in d => x = identity(d)[x]
+identityVal == \A d : \A x : x \in d => (identity(d)[x] = x /\ pre(identity(d),x) = x)
 THEOREM identityVal
 PROOF
 VARIABLES a,b,d,x,y;
@@ -87,6 +87,7 @@ x \in d <=> fst(<<x,x>>) \in d   BECAUSE MODUS_PONENS;
 x \in d => fst(<<x,x>>) \in d   BECAUSE EquivToImpl;
 x \in d => <<x,x>> \in identity(d)   BECAUSE TI;
 
+\* Proof that x = identity(d)[x]
 <<x,x>> \in identity(d) => \E y : <<x,y>> \in identity(d)   BECAUSE \E(y <- x);
 x \in d => \E y : <<x,y>> \in identity(d)   BECAUSE TI;
 <<x,identity(d)[x]>> \in identity(d) <=> \E y : <<x,y>> \in identity(d)   BECAUSE CHOOSE identity(d)[x];
@@ -109,6 +110,36 @@ x = fst(<<x,identity(d)[x]>>) /\ identity(d)[x] = snd(<<x,identity(d)[x]>>)   BE
 x = identity(d)[x] <=> fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)   BECAUSE MODUS_PONENS;
 fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>) => x = identity(d)[x]   BECAUSE EquivToImplReverse;
 x \in d => x = identity(d)[x]   BECAUSE TI;
+x = identity(d)[x] => identity(d)[x] = x   BECAUSE E_SCHEME;
+x \in d => identity(d)[x] = x   BECAUSE TI;
+
+\* Proof that x = pre(identity(d),x)
+<<y,y>> \in identity(d) => \E x : <<x,y>> \in identity(d)   BECAUSE \E(x <- y);
+\A x : x \in d => <<x,x>> \in identity(d)   BECAUSE GENERALIZATION;
+y \in d => <<y,y>> \in identity(d)   BECAUSE \A(x <- y);
+y \in d => \E x : <<x,y>> \in identity(d)   BECAUSE TI;
+<<pre(identity(d),y), y>> \in identity(d) <=> \E x : <<x,y>> \in identity(d)   BECAUSE CHOOSE pre(identity(d),y);
+(\E x : <<x,y>> \in identity(d)) => <<pre(identity(d),y),y>> \in identity(d)   BECAUSE EquivToImplReverse;
+y \in d => <<pre(identity(d),y),y>> \in identity(d)   BECAUSE TI;
+<<pre(identity(d),y),y>> \in identity(d) <=> (IsCouple(<<pre(identity(d),y),y>>) /\ fst(<<pre(identity(d),y),y>>) \in d /\ fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>))
+   BECAUSE \A(d <- d, x <- <<pre(identity(d),y),y>>);
+<<pre(identity(d),y),y>> \in identity(d) => (IsCouple(<<pre(identity(d),y),y>>) /\ fst(<<pre(identity(d),y),y>>) \in d /\ fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>))
+   BECAUSE EquivToImpl;
+(IsCouple(<<pre(identity(d),y),y>>) /\ fst(<<pre(identity(d),y),y>>) \in d /\ fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>)) => fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>)   BECAUSE DropAndLeft;
+<<pre(identity(d),y),y>> \in identity(d) => fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>)   BECAUSE TI;
+y \in d => fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>)   BECAUSE TI;
+y = snd(<<pre(identity(d),y),y>>)   BECAUSE \A(a <- pre(identity(d),y), b <- y);
+pre(identity(d),y) = fst(<<pre(identity(d),y),y>>)   BECAUSE \A(a <- pre(identity(d),y), b <- y);
+(pre(identity(d),y) = fst(<<pre(identity(d),y),y>>) /\ y = snd(<<pre(identity(d),y),y>>))
+   => (pre(identity(d),y) = y <=> fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>))
+   BECAUSE \A(x <- pre(identity(d),y), y <- fst(<<pre(identity(d),y),y>>), a <- y, b <- snd(<<pre(identity(d),y),y>>));
+pre(identity(d),y) = fst(<<pre(identity(d),y),y>>) /\ y = snd(<<pre(identity(d),y),y>>)   BECAUSE IntroAndLeft;
+pre(identity(d),y) = y <=> fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>)   BECAUSE MODUS_PONENS;
+fst(<<pre(identity(d),y),y>>) = snd(<<pre(identity(d),y),y>>) => pre(identity(d),y) = y   BECAUSE EquivToImplReverse;
+y \in d => pre(identity(d),y) = y   BECAUSE TI;
+\A y : y \in d => pre(identity(d),y) = y   BECAUSE GENERALIZATION;
+x \in d => pre(identity(d),x) = x   BECAUSE \A(y <- x);
+x \in d => (identity(d)[x] = x /\ pre(identity(d),x) = x)   BECAUSE CombineImplicationsEnd;
 identityVal   BECAUSE GENERALIZATION;
 QED
 
@@ -141,7 +172,11 @@ a = b <=> fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 fst(<<a,b>>) = snd(<<a,b>>) => a = b   BECAUSE EquivToImplReverse;
 <<a,b>> \in identity(d) => a = b   BECAUSE TI;
 identityVal   BECAUSE THEOREM;
-a \in d => a = identity(d)[a]   BECAUSE \A(d <- d, x <- a);
+a \in d => (identity(d)[a] = a /\ pre(identity(d),a) = a)   BECAUSE \A(d <- d, x <- a);
+(identity(d)[a] = a /\ pre(identity(d),a) = a) => identity(d)[a] = a   BECAUSE DropAndRight;
+a \in d => identity(d)[a] = a   BECAUSE TI;
+identity(d)[a] = a => a = identity(d)[a]   BECAUSE E_SCHEME;
+a \in d => a = identity(d)[a]   BECAUSE TI;
 (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) \in d   BECAUSE DropAndBoth;
 \A a : \A b : a = b => (a \in d <=> b \in d)   BECAUSE E_SCHEME;
 a = fst(<<a,b>>) => (a \in d <=> fst(<<a,b>>) \in d)   BECAUSE \A(a <- a, b <- fst(<<a,b>>));
@@ -155,6 +190,20 @@ fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
 <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
 \A a : \A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
 IsFunction(identity(d))   BECAUSE IntroAndRight;
+
+(identity(d)[a] = a /\ pre(identity(d),a) = a) => pre(identity(d),a) = a   BECAUSE DropAndLeft;
+a \in d => pre(identity(d),a) = a   BECAUSE TI;
+\A a : \A b : a = b => pre(identity(d),a) = pre(identity(d),b)   BECAUSE E_SCHEME;
+a = b => pre(identity(d),a) = pre(identity(d),b)   BECAUSE \A(a <- a, b <- b);
+<<a,b>> \in identity(d) => pre(identity(d),a) = pre(identity(d),b)   BECAUSE TI;
+<<a,b>> \in identity(d) => pre(identity(d),a) = a   BECAUSE TI;
+<<a,b>> \in identity(d) => (pre(identity(d),a) = pre(identity(d),b) /\ pre(identity(d),a) = a)   BECAUSE CombineImplicationsEnd;
+(pre(identity(d),a) = pre(identity(d),b) /\ pre(identity(d),a) = a) => pre(identity(d),b) = a   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) => pre(identity(d),b) = a   BECAUSE TI;
+pre(identity(d),b) = a => a = pre(identity(d),b)   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) => a = pre(identity(d),b)   BECAUSE TI;
+\A a : \A b : <<a,b>> \in identity(d) => a = pre(identity(d),b)   BECAUSE GENERALIZATION;
+IsInjection(identity(d))   BECAUSE IntroAndRight;
 identityInject   BECAUSE GENERALIZATION;
 QED
 
@@ -585,7 +634,8 @@ productFunc(f,g) == compose(parallelFunc(f,g), clone(Domain(f) \intersect Domain
 productFuncIsFunc == \A f : \A g : (IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))
 THEOREM productFuncIsFunc
 
-productInject == \A f : \A g : (IsInjection(f) /\ IsFunction(g)) => IsInjection(productFunc(f,g))
+productInject == \A f : \A g : (IsInjection(f) /\ IsFunction(g)) =>
+   (IsInjection(productFunc(f,g)) /\ \A x : x \in Image(productFunc(f,g)) => pre(productFunc(f,g),x) = pre(f,fst(x)))
 THEOREM productInject
 PROOF
 productInject   BECAUSE GENERALIZATION;
