@@ -112,7 +112,7 @@ x \in d => x = identity(d)[x]   BECAUSE TI;
 identityVal   BECAUSE GENERALIZATION;
 QED
 
-identityFunc == \A d : IsInjection(identity(d))
+identityFunc == \A d : IsFunction(identity(d))
 THEOREM identityFunc
 PROOF
 VARIABLES a,b,d,x,y;
@@ -123,7 +123,38 @@ x \in identity(d) => (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE 
 x \in identity(d) => IsCouple(x)   BECAUSE TI;
 IsGraph(identity(d))   BECAUSE GENERALIZATION;
 
-\* \A a : \A b : <<a,b>> \in identity(d) => b = identity(b)[a]
+<<a,b>> \in identity(d) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>))
+   BECAUSE \A(d <- d, x <- <<a,b>>);
+<<a,b>> \in identity(d) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>))
+   BECAUSE EquivToImpl;
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE DropAndLeft;
+<<a,b>> \in identity(d) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE TI;
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+\A a : \A x : \A b : \A y : (a = x /\ b = y) => (a = b <=> x = y)   BECAUSE E_SCHEME;
+(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => (a = b <=> fst(<<a,b>>) = snd(<<a,b>>))
+   BECAUSE \A(a <- a, x <- fst(<<a,b>>), b <- b, y <- snd(<<a,b>>));
+a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE IntroAndRight;
+a = b <=> fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
+fst(<<a,b>>) = snd(<<a,b>>) => a = b   BECAUSE EquivToImplReverse;
+<<a,b>> \in identity(d) => a = b   BECAUSE TI;
+identityVal   BECAUSE THEOREM;
+a \in d => a = identity(d)[a]   BECAUSE \A(d <- d, x <- a);
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) \in d   BECAUSE DropAndBoth;
+\A a : \A b : a = b => (a \in d <=> b \in d)   BECAUSE E_SCHEME;
+a = fst(<<a,b>>) => (a \in d <=> fst(<<a,b>>) \in d)   BECAUSE \A(a <- a, b <- fst(<<a,b>>));
+(a \in d <=> fst(<<a,b>>) \in d)   BECAUSE MODUS_PONENS;
+fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => a \in d   BECAUSE TI;
+<<a,b>> \in identity(d) => a \in d   BECAUSE TI;
+<<a,b>> \in identity(d) => a = identity(d)[a]   BECAUSE TI;
+<<a,b>> \in identity(d) => (a = b /\ a = identity(d)[a])   BECAUSE CombineImplicationsEnd;
+(a = b /\ a = identity(d)[a]) => b = identity(d)[a]   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
+\A a : \A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
+IsFunction(identity(d))   BECAUSE IntroAndRight;
 identityFunc   BECAUSE GENERALIZATION;
 QED
 
@@ -168,8 +199,103 @@ constExists   BECAUSE GENERALIZATION;
 QED
 
 
+constVal == \A d : \A c : \A x : x \in d => const(d,c)[x] = c
+THEOREM constVal
+PROOF
+VARIABLES a,b,c,d,x,y;
+\* Proof that \A x : x \in d => <<x,c>> \in const(d,c)
+constExists   BECAUSE THEOREM;
+<<x,c>> \in const(d,c) <=> (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c)
+   BECAUSE \A(d <- d, c <- c, x <- <<x,c>>);
+(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c) => <<x,c>> \in const(d,c)
+   BECAUSE EquivToImplReverse;
+fstExists   BECAUSE THEOREM;
+x = fst(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
+sndExists   BECAUSE THEOREM;
+c = snd(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
+c = snd(<<x,c>>) => snd(<<x,c>>) = c   BECAUSE E_SCHEME;
+snd(<<x,c>>) = c   BECAUSE MODUS_PONENS;
+(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d)
+   => (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c)   BECAUSE IntroAndLeft;
+(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d) => <<x,c>> \in const(d,c)   BECAUSE TI;
+<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
+\A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
+IsCouple(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
+fst(<<x,c>>) \in d => (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d)   BECAUSE IntroAndRight;
+fst(<<x,c>>) \in d => <<x,c>> \in const(d,c)   BECAUSE TI;
+\A x : \A y : x = y => (x \in d <=> y \in d)   BECAUSE E_SCHEME;
+x = fst(<<x,c>>) => (x \in d <=> fst(<<x,c>>) \in d)   BECAUSE \A(x <- x, y <- fst(<<x,c>>));
+x \in d <=> fst(<<x,c>>) \in d   BECAUSE MODUS_PONENS;
+x \in d => fst(<<x,c>>) \in d   BECAUSE EquivToImpl;
+x \in d => <<x,c>> \in const(d,c)   BECAUSE TI;
+
+<<x,c>> \in const(d,c) => \E y : <<x,y>> \in const(d,c)   BECAUSE \E(y <- c);
+x \in d => \E y : <<x,y>> \in const(d,c)   BECAUSE TI;
+<<x,const(d,c)[x]>> \in const(d,c) <=> \E y : <<x,y>> \in const(d,c)   BECAUSE CHOOSE const(d,c)[x];
+(\E y : <<x,y>> \in const(d,c)) => <<x,const(d,c)[x]>> \in const(d,c)   BECAUSE EquivToImplReverse;
+x \in d => <<x,const(d,c)[x]>> \in const(d,c)   BECAUSE TI;
+<<x,const(d,c)[x]>> \in const(d,c) <=> (IsCouple(<<x,const(d,c)[x]>>) /\ fst(<<x,const(d,c)[x]>>) \in d /\ snd(<<x,const(d,c)[x]>>) = c)
+   BECAUSE \A(d <- d, c <- c, x <- <<x,const(d,c)[x]>>);
+<<x,const(d,c)[x]>> \in const(d,c) => (IsCouple(<<x,const(d,c)[x]>>) /\ fst(<<x,const(d,c)[x]>>) \in d /\ snd(<<x,const(d,c)[x]>>) = c)
+   BECAUSE EquivToImpl;
+(IsCouple(<<x,const(d,c)[x]>>) /\ fst(<<x,const(d,c)[x]>>) \in d /\ snd(<<x,const(d,c)[x]>>) = c) => snd(<<x,const(d,c)[x]>>) = c   BECAUSE DropAndLeft;
+<<x,const(d,c)[x]>> \in const(d,c) => snd(<<x,const(d,c)[x]>>) = c   BECAUSE TI;
+x \in d => snd(<<x,const(d,c)[x]>>) = c   BECAUSE TI;
+const(d,c)[x] = snd(<<x,const(d,c)[x]>>)   BECAUSE \A(a <- x, b <- const(d,c)[x]);
+const(d,c)[x] = snd(<<x,const(d,c)[x]>>) => snd(<<x,const(d,c)[x]>>) = const(d,c)[x]   BECAUSE E_SCHEME;
+snd(<<x,const(d,c)[x]>>) = const(d,c)[x]   BECAUSE MODUS_PONENS;
+snd(<<x,const(d,c)[x]>>) = c => (snd(<<x,const(d,c)[x]>>) = const(d,c)[x] /\ snd(<<x,const(d,c)[x]>>) = c)  BECAUSE IntroAndRight;
+(snd(<<x,const(d,c)[x]>>) = const(d,c)[x] /\ snd(<<x,const(d,c)[x]>>) = c) => const(d,c)[x] = c   BECAUSE E_SCHEME;
+snd(<<x,const(d,c)[x]>>) = c => const(d,c)[x] = c  BECAUSE TI;
+x \in d => const(d,c)[x] = c   BECAUSE TI;
+constVal   BECAUSE GENERALIZATION;
+QED
+
 constFunc == \A d : \A c : IsFunction(const(d,c))
 THEOREM constFunc
+PROOF
+VARIABLES a,b,c,d,x,y;
+constExists   BECAUSE THEOREM;
+x \in const(d,c) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) = c)   BECAUSE \A(d <- d, c <- c, x <- x);
+x \in const(d,c) => (IsCouple(x) /\ fst(x) \in d /\ snd(x) = c)   BECAUSE EquivToImpl;
+(IsCouple(x) /\ fst(x) \in d /\ snd(x) = c) => IsCouple(x)   BECAUSE DropAndRight2;
+x \in const(d,c) => IsCouple(x)   BECAUSE TI;
+IsGraph(const(d,c))   BECAUSE GENERALIZATION;
+
+<<a,b>> \in const(d,c) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c)
+   BECAUSE \A(d <- d, c <- c, x <- <<a,b>>);
+<<a,b>> \in const(d,c) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c)
+   BECAUSE EquivToImpl;
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => snd(<<a,b>>) = c   BECAUSE DropAndLeft;
+<<a,b>> \in const(d,c) => snd(<<a,b>>) = c   BECAUSE TI;
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+b = snd(<<a,b>>) => snd(<<a,b>>) = b   BECAUSE E_SCHEME;
+snd(<<a,b>>) = b   BECAUSE MODUS_PONENS;
+(snd(<<a,b>>) = b /\ snd(<<a,b>>) = c) => b = c   BECAUSE E_SCHEME;
+snd(<<a,b>>) = c => (snd(<<a,b>>) = b /\ snd(<<a,b>>) = c)   BECAUSE IntroAndRight;
+snd(<<a,b>>) = c => b = c   BECAUSE TI;
+<<a,b>> \in const(d,c) => b = c   BECAUSE TI;
+constVal   BECAUSE THEOREM;
+a \in d => const(d,c)[a] = c   BECAUSE \A(d <- d, c <- c, x <- a);
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => fst(<<a,b>>) \in d   BECAUSE DropAndBoth;
+\A a : \A b : a = b => (a \in d <=> b \in d)   BECAUSE E_SCHEME;
+a = fst(<<a,b>>) => (a \in d <=> fst(<<a,b>>) \in d)   BECAUSE \A(a <- a, b <- fst(<<a,b>>));
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+(a \in d <=> fst(<<a,b>>) \in d)   BECAUSE MODUS_PONENS;
+fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => a \in d   BECAUSE TI;
+<<a,b>> \in const(d,c) => a \in d   BECAUSE TI;
+<<a,b>> \in const(d,c) => const(d,c)[a] = c   BECAUSE TI;
+<<a,b>> \in const(d,c) => (b = c /\ const(d,c)[a] = c)   BECAUSE CombineImplicationsEnd;
+(b = c /\ const(d,c)[a] = c) => b = const(d,c)[a]   BECAUSE E_SCHEME;
+<<a,b>> \in const(d,c) => b = const(d,c)[a]   BECAUSE TI;
+\A a : \A b : <<a,b>> \in const(d,c) => b = const(d,c)[a]   BECAUSE GENERALIZATION;
+IsFunction(const(d,c))   BECAUSE IntroAndRight;
+constFunc   BECAUSE GENERALIZATION;
+QED
 
 (*
    We have not finished with the strange properties of the empty set :
