@@ -1052,7 +1052,7 @@ short check_theorem_invocation_statement(const formula* f, const proof_set assum
       return 1;
     }
 
-  printf("%s:%d: Unknown theorem\n", f->file, f->first_line);
+  printf("%s:%d: unknown theorem %s\n", f->file, f->first_line, f->name);
   return 0;
 }
 

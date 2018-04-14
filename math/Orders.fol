@@ -12,6 +12,10 @@ IsOrder(o) == IsGraph(o)
    \* anti-symmetry
    /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
 
+\* Because f[x] is a CHOOSE, this only allows functions which domains
+\* contain Domain(u)
+IsIncreasing(f, u, v) == \A x : \A y : <<x,y>> \in u => <<f[x], f[y]>> \in v
+
 \* An injection f transports an order o
 IsInInjectOrder(o,f,x) == x \in (Image(f) \X Image(f)) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o
 injectOrder(o,f) == CHOOSE b : \A x : x \in b <=> IsInInjectOrder(o,f,x)
@@ -59,9 +63,6 @@ injectOrderCouples   BECAUSE GENERALIZATION;
 QED
 
 injectOrderIsOrder == \A o : \A f : (IsOrder(o) /\ IsFunction(f)) => IsOrder(injectOrder(o,f))
-
-massageHypos(a,b,c,d) == ((c /\ d) /\ (a /\ b)) => (a /\ b /\ c /\ d)   PROPO_TAUTO massageHypos
-
 THEOREM injectOrderIsOrder
 PROOF
 VARIABLES a,b,d,f,g,i,j,o,x,y,z;
@@ -180,6 +181,7 @@ IsFunction(f) => IsFunction(f)   BECAUSE ImplyOneself;
 funcUniqueImage   BECAUSE THEOREM;
 (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y   BECAUSE \A(f <- f, x <- x, y <- y);
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f)) => x = y   BECAUSE TI;
+massageHypos(a,b,c,d) == ((c /\ d) /\ (a /\ b)) => (a /\ b /\ c /\ d)   PROPO_TAUTO;
 (IsOrder(o) /\ IsFunction(f) /\ (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)))
    => (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f))   BECAUSE massageHypos;
 (IsOrder(o) /\ IsFunction(f) /\ (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f))) => x = y   BECAUSE TI;
@@ -492,6 +494,7 @@ IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
 disjointOrders   BECAUSE GENERALIZATION;
 QED
 
+
 (*
    The class of well-orders, orders where each nonempty subset has a minimum.
    They allow to count :
@@ -520,16 +523,48 @@ wellOrderAddition(u,v) == injectOrder(u, pasteTags(Domain(u),{}))
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
 PROOF
-VARIABLES a,b,g,m,n,u,v,x,y,z;
+VARIABLES a,b,c,d,f,g,o,u,v,x,y,z;
 \* Give shorter names
 Ione(u) == injectOrder(u, pasteTags(Domain(u),{}));
 Itwo(v) == injectOrder(v, pasteTags(Domain(v),ordinalOne));
 DO(u,v) == Ione(u) \union Itwo(v);
 
 \* Proof that DO is an order
+productInject   BECAUSE THEOREM;
+(IsInjection(identity(Domain(u))) /\ IsFunction(const(Domain(u),x)))
+   => IsInjection(productFunc(identity(Domain(u)),const(Domain(u),x)))
+   BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),x));
+identityInject   BECAUSE THEOREM;
+IsInjection(identity(Domain(u)))   BECAUSE \A(d <- Domain(u));
+constFunc   BECAUSE THEOREM;
+IsFunction(const(Domain(u),x))   BECAUSE \A(d <- Domain(u), c <- x);
+IsInjection(identity(Domain(u))) /\ IsFunction(const(Domain(u),x))   BECAUSE IntroAndRight;
+IsInjection(pasteTags(Domain(u),x))   BECAUSE MODUS_PONENS;
+IsInjection(pasteTags(Domain(u),x)) => IsFunction(pasteTags(Domain(u),x))   BECAUSE DropAndRight;
+IsFunction(pasteTags(Domain(u),x))   BECAUSE DropAndRight;
+injectOrderIsOrder   BECAUSE THEOREM;
+(IsOrder(u) /\ IsFunction(pasteTags(Domain(u),x)))
+   => IsOrder(injectOrder(u,pasteTags(Domain(u),x)))   BECAUSE \A(o <- u, f <- pasteTags(Domain(u),x));
+IsOrder(u) => (IsOrder(u) /\ IsFunction(pasteTags(Domain(u),x)))   BECAUSE IntroAndLeft;
+IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),x)))   BECAUSE TI;
+\A u : \A x : IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),x)))   BECAUSE GENERALIZATION;
+IsOrder(u) => IsOrder(Ione(u))   BECAUSE \A(u <- u, x <- {});
+IsOrder(v) => IsOrder(Itwo(v))   BECAUSE \A(u <- v, x <- ordinalOne);
+
 disjointOrders   BECAUSE THEOREM;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u),Itwo(v)))
    => IsOrder(Ione(u) \union Itwo(v))   BECAUSE \A(u <- Ione(u), v <- Itwo(v));
+noCommonElements   BECAUSE THEOREM;
+AreDisjoint(Ione(u),Itwo(v)) <=> \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE \A(x <- Ione(u), y <- Itwo(v));
+AreDisjoint(Ione(u),Itwo(v)) <=> \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE \A(x <- Ione(u), y <- Itwo(v));
+(\A z : ~(z \in Ione(u) /\ z \in Itwo(v))) => AreDisjoint(Ione(u),Itwo(v))   BECAUSE EquivToImplReverse;
+injectOrderExists   BECAUSE THEOREM;
+z \in Ione(u) <=> IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE \A(o <- u, f <- pasteTags(Domain(u),{}), x <- z);
+z \in Ione(u) => IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE EquivToImpl;
+IsInInjectOrder(u,pasteTags(Domain(u),{}),z)
+   => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE DropAndRight;
+z \in Ione(u) => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE TI;
+\* TODO : show that snd(z) \in Image(pasteTags(Domain(u),{})) and then snd(snd(z)) = {}
 
 \* Proof that wellOrderAddition(u,v) is a graph : union of 2 graphs
 

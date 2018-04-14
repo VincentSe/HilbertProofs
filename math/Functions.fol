@@ -112,8 +112,8 @@ x \in d => x = identity(d)[x]   BECAUSE TI;
 identityVal   BECAUSE GENERALIZATION;
 QED
 
-identityFunc == \A d : IsFunction(identity(d))
-THEOREM identityFunc
+identityInject == \A d : IsInjection(identity(d))
+THEOREM identityInject
 PROOF
 VARIABLES a,b,d,x,y;
 identityExists   BECAUSE THEOREM;
@@ -155,7 +155,7 @@ fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
 <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
 \A a : \A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
 IsFunction(identity(d))   BECAUSE IntroAndRight;
-identityFunc   BECAUSE GENERALIZATION;
+identityInject   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -441,22 +441,6 @@ QED
    Functions between cartesian products.
 *)
 
-\* Cartesian product of two functions
-IsProductApply(f,g,x) == IsCouple(x) /\ IsCouple(snd(x))
-   /\ <<fst(x), fst(snd(x)) >> \in f /\ <<fst(x), snd(snd(x)) >> \in g
-productFunc(f,g) == CHOOSE h : \A x : x \in h <=> \* x = << a, <<f[a], g[a]>> >>
-  IsParallelApply(f,g,x)
-
-productFuncExists == \A f : \A g : (\A x : x \in productFunc(f,g) <=> IsProductApply(f,g,x))
-THEOREM productFuncExists
-
-productFuncIsFunc == \A f : \A g : (IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))
-THEOREM productFuncIsFunc
-
-productInject == \A f : \A g : (IsInjection(f) /\ IsFunction(g)) => IsInjection(productFunc(f,g))
-THEOREM productInject
-
-
 \* Two functions called in parallel
 IsParallelApply(f,g,x) == IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
    /\ <<fst(fst(x)), fst(snd(x)) >> \in f /\ <<snd(fst(x)), snd(snd(x)) >> \in g
@@ -587,4 +571,22 @@ x \in chooseB(f,g) <=> IsParallelApply(f,g,x)   BECAUSE SeparationTauto;
    BECAUSE CHOOSE parallelFunc(f,g);
 \A x : x \in parallelFunc(f,g) <=> IsParallelApply(f,g,x)   BECAUSE MODUS_PONENS;
 parallelFuncExists   BECAUSE GENERALIZATION;
+QED
+
+
+
+\* The function x |-> <<x,x>> on domain d
+clone(d) == CHOOSE b : \A x : x \in b <=>
+   (IsCouple(x) /\ fst(x) \in d /\  IsCouple(snd(x)) /\ fst(x) = fst(snd(x)) /\ fst(x) = snd(snd(x)))
+
+\* Cartesian product of two functions
+productFunc(f,g) == compose(parallelFunc(f,g), clone(Domain(f) \intersect Domain(g)))
+
+productFuncIsFunc == \A f : \A g : (IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))
+THEOREM productFuncIsFunc
+
+productInject == \A f : \A g : (IsInjection(f) /\ IsFunction(g)) => IsInjection(productFunc(f,g))
+THEOREM productInject
+PROOF
+productInject   BECAUSE GENERALIZATION;
 QED

@@ -1086,6 +1086,9 @@ y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 imageInc   BECAUSE GENERALIZATION;
 QED
 
+assocCompose == \A f : \A g : \A h : compose(f, compose(g,h)) = compose(compose(f,g), h)
+THEOREM assocCompose
+
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
 multiApplyExists == \A f : \A multiX : \A x : x \in multiApply(f,multiX)
