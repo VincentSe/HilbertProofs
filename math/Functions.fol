@@ -709,7 +709,53 @@ IsParallelApply(f,g,<< <<x,x>>,y>>) => <<snd(fst(<< <<x,x>>,y>>)), snd(snd(<< <<
 <<x,y>> \in productFunc(f,g) => <<fst(fst(<< <<x,x>>,y>>)), fst(snd(<< <<x,x>>,y>>)) >> \in f   BECAUSE TI;
 <<x,y>> \in productFunc(f,g) => <<snd(fst(<< <<x,x>>,y>>)), snd(snd(<< <<x,x>>,y>>)) >> \in g   BECAUSE TI;
 
-\* TODO
+\A a : \A b : \A x : \A y : (a = b /\ x = y)
+   => (<<fst(a),fst(x)>> \in f <=> <<fst(b),fst(y)>> \in f)   BECAUSE E_SCHEME;
+(<<x,x>> = fst(<< <<x,x>>,y>>) /\ y = snd(<< <<x,x>>,y>>))
+   => (<<fst(<<x,x>>),fst(y)>> \in f <=> <<fst(fst(<< <<x,x>>,y>>)),fst(snd(<< <<x,x>>,y>>))>> \in f)
+   BECAUSE \A(a <- <<x,x>>, b <- fst(<< <<x,x>>,y>>), x <- y, y <- snd(<< <<x,x>>,y>>));
+y = snd(<< <<x,x>>,y>>)   BECAUSE \A(a <- <<x,x>>, b <- y);
+<<x,x>> = fst(<< <<x,x>>,y>>)   BECAUSE \A(a <- <<x,x>>, b <- y);
+<<x,x>> = fst(<< <<x,x>>,y>>) /\ y = snd(<< <<x,x>>,y>>)   BECAUSE IntroAndRight;
+<<fst(<<x,x>>),fst(y)>> \in f <=> <<fst(fst(<< <<x,x>>,y>>)),fst(snd(<< <<x,x>>,y>>))>> \in f   BECAUSE MODUS_PONENS;
+<<fst(fst(<< <<x,x>>,y>>)),fst(snd(<< <<x,x>>,y>>))>> \in f  => <<fst(<<x,x>>),fst(y)>> \in f   BECAUSE EquivToImplReverse;
+<<x,y>> \in productFunc(f,g) => <<fst(<<x,x>>),fst(y)>> \in f   BECAUSE TI;
+\A a : \A b : a = b => (<<a,fst(y)>> \in f <=> <<b,fst(y)>> \in f)   BECAUSE E_SCHEME;
+x = fst(<<x,x>>) => (<<x,fst(y)>> \in f <=> <<fst(<<x,x>>),fst(y)>> \in f)   BECAUSE \A(a <- x, b <- fst(<<x,x>>));
+x = fst(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+<<x,fst(y)>> \in f <=> <<fst(<<x,x>>),fst(y)>> \in f   BECAUSE MODUS_PONENS;
+<<fst(<<x,x>>),fst(y)>> \in f => <<x,fst(y)>> \in f   BECAUSE EquivToImplReverse;
+<<x,y>> \in productFunc(f,g) => <<x,fst(y)>> \in f   BECAUSE TI;
+
+\A a : \A b : \A x : \A y : (a = b /\ x = y)
+   => (<<snd(a),snd(x)>> \in g <=> <<snd(b),snd(y)>> \in g)   BECAUSE E_SCHEME;
+(<<x,x>> = fst(<< <<x,x>>,y>>) /\ y = snd(<< <<x,x>>,y>>))
+   => (<<snd(<<x,x>>),snd(y)>> \in g <=> <<snd(fst(<< <<x,x>>,y>>)),snd(snd(<< <<x,x>>,y>>))>> \in g)
+   BECAUSE \A(a <- <<x,x>>, b <- fst(<< <<x,x>>,y>>), x <- y, y <- snd(<< <<x,x>>,y>>));
+y = snd(<< <<x,x>>,y>>)   BECAUSE \A(a <- <<x,x>>, b <- y);
+<<x,x>> = fst(<< <<x,x>>,y>>)   BECAUSE \A(a <- <<x,x>>, b <- y);
+<<x,x>> = fst(<< <<x,x>>,y>>) /\ y = snd(<< <<x,x>>,y>>)   BECAUSE IntroAndRight;
+<<snd(<<x,x>>),snd(y)>> \in g <=> <<snd(fst(<< <<x,x>>,y>>)),snd(snd(<< <<x,x>>,y>>))>> \in g   BECAUSE MODUS_PONENS;
+<<snd(fst(<< <<x,x>>,y>>)),snd(snd(<< <<x,x>>,y>>))>> \in g  => <<snd(<<x,x>>),snd(y)>> \in g   BECAUSE EquivToImplReverse;
+<<x,y>> \in productFunc(f,g) => <<snd(<<x,x>>),snd(y)>> \in g   BECAUSE TI;
+\A a : \A b : a = b => (<<a,snd(y)>> \in g <=> <<b,snd(y)>> \in g)   BECAUSE E_SCHEME;
+x = snd(<<x,x>>) => (<<x,snd(y)>> \in g <=> <<snd(<<x,x>>),snd(y)>> \in g)   BECAUSE \A(a <- x, b <- snd(<<x,x>>));
+x = snd(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+<<x,snd(y)>> \in g <=> <<snd(<<x,x>>),snd(y)>> \in g   BECAUSE MODUS_PONENS;
+<<snd(<<x,x>>),snd(y)>> \in g => <<x,snd(y)>> \in g   BECAUSE EquivToImplReverse;
+<<x,y>> \in productFunc(f,g) => <<x,snd(y)>> \in g   BECAUSE TI;
+
+IsParallelApply(f,g,<< <<x,x>>,y>>) => (IsCouple(<< <<x,x>>,y>>) /\ IsCouple(fst(<< <<x,x>>,y>>)) /\ IsCouple(snd(<< <<x,x>>,y>>)))   BECAUSE DropAndRight2;
+(IsCouple(<< <<x,x>>,y>>) /\ IsCouple(fst(<< <<x,x>>,y>>)) /\ IsCouple(snd(<< <<x,x>>,y>>))) => IsCouple(snd(<< <<x,x>>,y>>))   BECAUSE DropAndLeft;
+IsParallelApply(f,g,<< <<x,x>>,y>>) => IsCouple(snd(<< <<x,x>>,y>>))   BECAUSE TI;
+<<x,y>> \in productFunc(f,g) => IsCouple(snd(<< <<x,x>>,y>>))   BECAUSE TI;
+\A a : \A b : a = b => (IsCouple(a) <=> IsCouple(b))   BECAUSE E_SCHEME;
+y = snd(<< <<x,x>>,y>>) => (IsCouple(y) <=> IsCouple(snd(<< <<x,x>>,y>>)))   BECAUSE \A(a <- y, b <- snd(<< <<x,x>>,y>>));
+IsCouple(y) <=> IsCouple(snd(<< <<x,x>>,y>>))   BECAUSE MODUS_PONENS;
+IsCouple(snd(<< <<x,x>>,y>>)) => IsCouple(y)   BECAUSE EquivToImplReverse;
+<<x,y>> \in productFunc(f,g) => IsCouple(y)   BECAUSE TI;
+<<x,y>> \in productFunc(f,g) => (IsCouple(y) /\ <<x,fst(y)>> \in f)   BECAUSE CombineImplicationsEnd;
+<<x,y>> \in productFunc(f,g) => (IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g)   BECAUSE CombineImplicationsEnd;
 productFuncVal   BECAUSE GENERALIZATION;
 QED
 
