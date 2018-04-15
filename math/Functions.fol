@@ -678,8 +678,37 @@ x = fst(<<x,y>>) => (<<x,chooseT(f,g,x,y)>> \in clone(Domain(f) \intersect Domai
 cloneVal   BECAUSE THEOREM;
 <<x,chooseT(f,g,x,y)>> \in clone(Domain(f) \intersect Domain(g)) => chooseT(f,g,x,y) = <<x,x>>   BECAUSE \A(d <- Domain(f) \intersect Domain(g), x <- x, y <- chooseT(f,g,x,y));
 <<x,y>> \in productFunc(f,g) => chooseT(f,g,x,y) = <<x,x>>   BECAUSE TI;
+
+\* Now the y part
 (<<fst(<<x,y>>),chooseT(f,g,x,y)>> \in clone(Domain(f) \intersect Domain(g)) /\ <<chooseT(f,g,x,y),snd(<<x,y>>)>> \in parallelFunc(f,g)) => <<chooseT(f,g,x,y),snd(<<x,y>>)>> \in parallelFunc(f,g)   BECAUSE DropAndLeft;
 <<x,y>> \in productFunc(f,g) => <<chooseT(f,g,x,y),snd(<<x,y>>)>> \in parallelFunc(f,g)   BECAUSE TI;
+\* Replace snd(<<x,y>>) by y and chooseT by <<x,x>>
+\A a : \A b : \A x : \A y : (a = b /\ x = y)
+   => (<<a,x>> \in parallelFunc(f,g) <=> <<b,y>> \in parallelFunc(f,g))   BECAUSE E_SCHEME;
+(<<x,x>> = chooseT(f,g,x,y) /\ y = snd(<<x,y>>))
+   => (<< <<x,x>>,y>> \in parallelFunc(f,g) <=> <<chooseT(f,g,x,y),snd(<<x,y>>)>> \in parallelFunc(f,g))
+   BECAUSE \A(a <- <<x,x>>, b <- chooseT(f,g,x,y), x <- y, y <- snd(<<x,y>>));
+sndExists   BECAUSE THEOREM;
+y = snd(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+chooseT(f,g,x,y) = <<x,x>> => <<x,x>> = chooseT(f,g,x,y)   BECAUSE E_SCHEME;
+<<x,y>> \in productFunc(f,g) => <<x,x>> = chooseT(f,g,x,y)   BECAUSE TI;
+<<x,y>> \in productFunc(f,g) => y = snd(<<x,y>>)   BECAUSE PT1;
+<<x,y>> \in productFunc(f,g) => (<<x,x>> = chooseT(f,g,x,y) /\ y = snd(<<x,y>>))   BECAUSE CombineImplicationsEnd;
+<<x,y>> \in productFunc(f,g) => (<< <<x,x>>,y>> \in parallelFunc(f,g) <=> <<chooseT(f,g,x,y),snd(<<x,y>>)>> \in parallelFunc(f,g))   BECAUSE TI;
+dropRedundantEquiv(a,b,c) == (a => b) => ((a => (c <=> b)) => (a => c))   PROPO_TAUTO;
+<<x,y>> \in productFunc(f,g) => << <<x,x>>,y>> \in parallelFunc(f,g)   BECAUSE dropRedundantEquiv;
+
+\* Finish by resolving tuples
+parallelFuncExists   BECAUSE THEOREM;
+<< <<x,x>>,y>> \in parallelFunc(f,g) <=> IsParallelApply(f,g,<< <<x,x>>,y>>)   BECAUSE \A(f <- f, g <- g, x <- << <<x,x>>,y>>);
+<< <<x,x>>,y>> \in parallelFunc(f,g) => IsParallelApply(f,g,<< <<x,x>>,y>>)   BECAUSE EquivToImpl;
+<<x,y>> \in productFunc(f,g) => IsParallelApply(f,g,<< <<x,x>>,y>>)   BECAUSE TI;
+selectMiddle(a,b,c) == (a /\ b /\ c) => b   PROPO_TAUTO;
+IsParallelApply(f,g,<< <<x,x>>,y>>) => <<fst(fst(<< <<x,x>>,y>>)), fst(snd(<< <<x,x>>,y>>)) >> \in f   BECAUSE selectMiddle;
+IsParallelApply(f,g,<< <<x,x>>,y>>) => <<snd(fst(<< <<x,x>>,y>>)), snd(snd(<< <<x,x>>,y>>)) >> \in g   BECAUSE DropAndLeft;
+<<x,y>> \in productFunc(f,g) => <<fst(fst(<< <<x,x>>,y>>)), fst(snd(<< <<x,x>>,y>>)) >> \in f   BECAUSE TI;
+<<x,y>> \in productFunc(f,g) => <<snd(fst(<< <<x,x>>,y>>)), snd(snd(<< <<x,x>>,y>>)) >> \in g   BECAUSE TI;
+
 \* TODO
 productFuncVal   BECAUSE GENERALIZATION;
 QED
