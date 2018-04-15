@@ -960,8 +960,6 @@ IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
-compose(g,h) == CHOOSE b : \A x : x \in b <=>
-   (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -1256,6 +1254,16 @@ a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 cartesianProductCouples   BECAUSE GENERALIZATION;
 QED
 
+compose(g,h) == CHOOSE b : \A x : x \in b <=>
+   (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
+
+composeExists == \A g : \A h : \A x : x \in compose(g,h) <=>
+   (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
+THEOREM composeExists
+PROOF
+\* By separation in Domain(h) \X Image(g)
+composeExists   BECAUSE GENERALIZATION;
+QED
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common

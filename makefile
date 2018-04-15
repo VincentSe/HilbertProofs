@@ -17,16 +17,3 @@ prove:
 
 clean:
 	rm bin/* src/*~ src/lex.*.c src/*.tab.c src/*.tab.h
-
-dropbox:
-	cp $(SRC) src/fol.l src/fol.y src/list.h src/proof.h src/formula.h src/graph.h src/folAST.h ~/Dropbox/Proofs/src
-	cp makefile ~/Dropbox/Proofs
-	cp README.md ~/Dropbox/Proofs
-	cp math/* ~/Dropbox/Proofs/math
-	cp tests/* ~/Dropbox/Proofs/math
-
-fromDropbox:
-	cp ~/Dropbox/Proofs/makefile .
-	cp ~/Dropbox/Proofs/README.md .
-	cp ~/Dropbox/Proofs/src/* src/
-	cp ~/Dropbox/Proofs/math/* math/
