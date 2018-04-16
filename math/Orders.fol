@@ -98,7 +98,7 @@ injectOrderCouples   BECAUSE THEOREM;
 <<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE EquivToImpl;
 (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE DropAndLeft;
 <<x,y>> \in injectOrder(o,f) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE TI;
-IsOrder(o) => IsOrder(o)   BECAUSE ImplyOneself;
+IsOrder(o) => IsOrder(o)   BECAUSE ImplySelf;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (IsOrder(o) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE MergeImplicationsAnd;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o)   BECAUSE TI;
 
@@ -106,7 +106,7 @@ IsOrder(o) => IsOrder(o)   BECAUSE ImplyOneself;
 <<d,d>> \in injectOrder(o,f) <=> (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o)
    BECAUSE \A(o <- o, f <- f, x <- d, y <- d);
 d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
-<<pre(f,d), pre(f,d)>> \in o => <<pre(f,d), pre(f,d)>> \in o   BECAUSE ImplyOneself;
+<<pre(f,d), pre(f,d)>> \in o => <<pre(f,d), pre(f,d)>> \in o   BECAUSE ImplySelf;
 (d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o)
    BECAUSE MergeImplicationsAnd;
 (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
@@ -175,7 +175,7 @@ IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) =>
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => (x \in Image(f) /\ y \in Image(f))   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o))
    => (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))   BECAUSE CombineImplicationsEnd;
-IsFunction(f) => IsFunction(f)   BECAUSE ImplyOneself;
+IsFunction(f) => IsFunction(f)   BECAUSE ImplySelf;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o) /\ IsFunction(f))
    => (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f))   BECAUSE MergeImplicationsAnd;
 funcUniqueImage   BECAUSE THEOREM;
@@ -523,7 +523,7 @@ wellOrderAddition(u,v) == injectOrder(u, pasteTags(Domain(u),{}))
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
 PROOF
-VARIABLES a,b,c,d,f,g,o,u,v,x,y,z;
+VARIABLES a,b,c,d,f,i,j,g,o,u,v,x,y,z;
 \* Give shorter names
 Ione(u) == injectOrder(u, pasteTags(Domain(u),{}));
 Itwo(v) == injectOrder(v, pasteTags(Domain(v),ordinalOne));
@@ -536,10 +536,11 @@ productFuncIsFunc   BECAUSE THEOREM;
    BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),y));
 identityInject   BECAUSE THEOREM;
 IsInjection(identity(Domain(u)))   BECAUSE \A(d <- Domain(u));
+IsFunction(identity(Domain(u)))   BECAUSE DropAndRight;
 constFunc   BECAUSE THEOREM;
 IsFunction(const(Domain(u),y))   BECAUSE \A(d <- Domain(u), c <- y);
-IsInjection(identity(Domain(u))) /\ IsFunction(const(Domain(u),y))   BECAUSE IntroAndRight;
-IsFunction(pasteTags(Domain(u),y))   BECAUSE TI;
+IsFunction(identity(Domain(u))) /\ IsFunction(const(Domain(u),y))   BECAUSE IntroAndRight;
+IsFunction(pasteTags(Domain(u),y))   BECAUSE MODUS_PONENS;
 injectOrderIsOrder   BECAUSE THEOREM;
 (IsOrder(u) /\ IsFunction(pasteTags(Domain(u),y)))
    => IsOrder(injectOrder(u,pasteTags(Domain(u),y)))   BECAUSE \A(o <- u, f <- pasteTags(Domain(u),y));
@@ -548,12 +549,11 @@ IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),y)))   BECAUSE TI;
 \A u : \A y : IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),y)))   BECAUSE GENERALIZATION;
 IsOrder(u) => IsOrder(Ione(u))   BECAUSE \A(u <- u, y <- {});
 IsOrder(v) => IsOrder(Itwo(v))   BECAUSE \A(u <- v, y <- ordinalOne);
-
+	   \* Proof that Ione(u) and Itwo(v) are disjoint
 disjointOrders   BECAUSE THEOREM;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u),Itwo(v)))
    => IsOrder(Ione(u) \union Itwo(v))   BECAUSE \A(u <- Ione(u), v <- Itwo(v));
 noCommonElements   BECAUSE THEOREM;
-AreDisjoint(Ione(u),Itwo(v)) <=> \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE \A(x <- Ione(u), y <- Itwo(v));
 AreDisjoint(Ione(u),Itwo(v)) <=> \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE \A(x <- Ione(u), y <- Itwo(v));
 (\A z : ~(z \in Ione(u) /\ z \in Itwo(v))) => AreDisjoint(Ione(u),Itwo(v))   BECAUSE EquivToImplReverse;
 injectOrderExists   BECAUSE THEOREM;
@@ -562,7 +562,38 @@ z \in Ione(u) => IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE EquivToI
 IsInInjectOrder(u,pasteTags(Domain(u),{}),z)
    => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE DropAndRight;
 z \in Ione(u) => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE TI;
-\* TODO : show that snd(z) \in Image(pasteTags(Domain(u),{})) and then snd(snd(z)) = {}
+cartesianProductExists   BECAUSE THEOREM;
+z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{}))) <=> (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE \A(i <- Image(pasteTags(Domain(u),{})), j <- Image(pasteTags(Domain(u),{})), x <- z);
+z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{}))) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE EquivToImpl;
+IsInInjectOrder(u,pasteTags(Domain(u),{}),z) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE TI;
+z \in Ione(u) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE TI;
+(IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{}))) => snd(z) \in Image(pasteTags(Domain(u),{}))   BECAUSE DropAndLeft;
+z \in Ione(u) => snd(z) \in Image(pasteTags(Domain(u),{}))   BECAUSE TI;
+productFuncVal   BECAUSE THEOREM;
+<<x,snd(z)>> \in pasteTags(Domain(u),{}) => (IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),{}))
+   BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),{}), x <- x, y <- snd(z));
+(IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),{})) => <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE DropAndLeft;
+<<x,snd(z)>> \in pasteTags(Domain(u),{}) => <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
+imageExists   BECAUSE THEOREM;
+snd(z) \in Image(pasteTags(Domain(u),{})) <=> Reaches(pasteTags(Domain(u),{}),snd(z))   BECAUSE \A(g <- pasteTags(Domain(u),{}), y <- snd(z));
+snd(z) \in Image(pasteTags(Domain(u),{})) => \E x : <<x,snd(z)>> \in pasteTags(Domain(u),{})   BECAUSE EquivToImpl;
+(\E x : <<x,snd(z)>> \in pasteTags(Domain(u),{})) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE Q_SCHEME;
+snd(z) \in Image(pasteTags(Domain(u),{})) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
+z \in Ione(u) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
+
+\* TODO : show that snd(snd(z)) = {} and then that z \in Ione(v) => snd(snd(z)) = ordinalOne, maybe generalize the tag : IsInInjectOrder(u,pasteTags(Domain(u),t),z)
+
+(z \in Ione(u) /\ z \in Itwo(v)) => (snd(snd(z)) = {} /\ snd(snd(z)) = ordinalOne)   BECAUSE MergeImplicationsAnd;
+(snd(snd(z)) = {} /\ snd(snd(z)) = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
+(z \in Ione(u) /\ z \in Itwo(v)) => {} = ordinalOne   BECAUSE TI;
+{} # ordinalOne => ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE Contraposition;
+~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE MODUS_PONENS;
+\A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE GENERALIZATION;
+AreDisjoint(Ione(u),Itwo(v))   BECAUSE MODUS_PONENS;
+(IsOrder(u) /\ IsOrder(v)) => (IsOrder(Ione(u)) /\ IsOrder(Ione(v)))   BECAUSE MergeImplicationsAnd;
+(IsOrder(Ione(u)) /\ IsOrder(Ione(v))) => (IsOrder(Ione(u)) /\ IsOrder(Ione(v)) /\ AreDisjoint(Ione(u), Itwo(v)))   BECAUSE IntroAndRight;
+(IsOrder(Ione(u)) /\ IsOrder(Ione(v))) => IsOrder(Ione(u) \union Itwo(v))   BECAUSE TI;
+(IsOrder(u) /\ IsOrder(v)) => IsOrder(DO(u,v))   BECAUSE TI;
 
 \* Proof that wellOrderAddition(u,v) is a graph : union of 2 graphs
 
@@ -643,7 +674,7 @@ p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
 (p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE EquivToImplReverse;
 (p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
 p \subseteq {} => ~~(p \subseteq {})   BECAUSE IntroNotNot;
-p # {} => p # {}   BECAUSE ImplyOneself;
+p # {} => p # {}   BECAUSE ImplySelf;
 (p # {} /\ p \subseteq {}) => (p # {} /\ ~~(p \subseteq {}))   BECAUSE MergeImplicationsAnd;
 (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
 \A p : (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE GENERALIZATION;
@@ -672,7 +703,7 @@ THEOREM naturalNumbersExist
 
 (*
    The addition function on natural numbers. It could be declared as an operator
-   natAddition(x,y) = CHOOSE z : ...
+   natAddition(x,y) == CHOOSE z : ...
    however it would be recursive (or use well-orders). Keep it a simple function here.
 *)
 natAddition == CHOOSE f : IsFunction(f)

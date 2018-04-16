@@ -96,8 +96,8 @@ PROPO_TAUTO AssocAnd
 AssocAndLeft(a,b,c) == (a /\ (b /\ c)) => ((a /\ b) /\ c)
 PROPO_TAUTO AssocAndLeft
 
-ImplyOneself(a) == a => a
-PROPO_TAUTO ImplyOneself
+ImplySelf(a) == a => a
+PROPO_TAUTO ImplySelf
 
 EquivTrue(a,t) == t => ((a <=> t) => a)
 PROPO_TAUTO EquivTrue

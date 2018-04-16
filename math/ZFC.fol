@@ -102,7 +102,7 @@ inclusionInOneself == \A x : x \subseteq x
 THEOREM inclusionInOneself
 PROOF
 VARIABLES z, x;
-z \in x => z \in x   BECAUSE ImplyOneself;
+z \in x => z \in x   BECAUSE ImplySelf;
 \A z : z \in x => z \in x   BECAUSE GENERALIZATION;
 inclusionInOneself   BECAUSE GENERALIZATION;
 QED
@@ -400,7 +400,7 @@ elemOfOne   BECAUSE THEOREM;
 z \in ordinalOne <=> z = {}   BECAUSE \A(x <- z);
 z \in ordinalOne => z = {}   BECAUSE EquivToImpl;
 (z \in x => z \in ordinalOne) => (z \in x => z = {})   BECAUSE AddHypothesis;
-z \in x => z \in x   BECAUSE ImplyOneself;
+z \in x => z \in x   BECAUSE ImplySelf;
 (z \in x => z = {}) => (z \in x => (z \in x /\ z = {}))   BECAUSE CombineImplicationsEnd;
 (z \in x => z \in ordinalOne) => (z \in x => (z \in x /\ z = {}))   BECAUSE TI;
 x \subseteq ordinalOne => (\A z : z \in x => (z \in x /\ z = {}))   BECAUSE Q_SCHEME;
@@ -491,7 +491,7 @@ powersetExists   BECAUSE AXIOM;
 a \in SUBSET a <=> a \subseteq a   BECAUSE \A(x <- a, z <- a);
 a \in SUBSET a   BECAUSE MODUS_PONENS;
 x = a => x \in SUBSET a   BECAUSE ImplyEquivTrue;
-x = a => x = a   BECAUSE ImplyOneself;
+x = a => x = a   BECAUSE ImplySelf;
 x = a => (x \in SUBSET a /\ x = a)   BECAUSE CombineImplicationsEnd;
 x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
 
@@ -683,7 +683,7 @@ c \in { a,b } <=> (c = a \/ c = b)   BECAUSE \A(c <- a, d <- b, y <- c);
 c \in { a,b } => (c = a \/ c = b)   BECAUSE EquivToImpl;
 {a,b} = {a,c} => (c = a \/ c = b)   BECAUSE TI;
 c = b => b = c   BECAUSE E_SCHEME;
-c = a => c = a   BECAUSE ImplyOneself;
+c = a => c = a   BECAUSE ImplySelf;
 (c = a \/ c = b) => (c = a \/ b = c)  BECAUSE MergeImplicationsOr;
 {a,b} = {a,c} => (c = a \/ b = c)  BECAUSE TI;
 
@@ -691,7 +691,7 @@ c = a => c = a   BECAUSE ImplyOneself;
 ((b = a \/ b = c) /\ (c = a \/ b = c)) => ((b = a /\ c = a) \/ b = c)  BECAUSE FactorOrAndRight;
 {a,b} = {a,c} => ((b = a /\ c = a) \/ b = c)  BECAUSE TI;
 (b = a /\ c = a) => b = c   BECAUSE E_SCHEME;
-b = c => b = c   BECAUSE ImplyOneself;
+b = c => b = c   BECAUSE ImplySelf;
 ((b = a /\ c = a) \/ b = c) => (b = c \/ b = c)   BECAUSE MergeImplicationsOr;
 {a,b} = {a,c} => (b = c \/ b = c)  BECAUSE TI;
 (b = c \/ b = c) => b = c   BECAUSE OrSelf;
@@ -746,7 +746,7 @@ z \in UNION {x,y} => \E t : t \in {x,y} /\ z \in t   BECAUSE EquivToImpl;
 pairExists   BECAUSE THEOREM;
 t \in { x,y } <=> (t = x \/ t = y)   BECAUSE \A(c <- x, d <- y, y <- t);
 t \in { x,y } => (t = x \/ t = y)   BECAUSE EquivToImpl;
-z \in t => z \in t   BECAUSE ImplyOneself;
+z \in t => z \in t   BECAUSE ImplySelf;
 (t \in { x,y } /\ z \in t) => ((t = x \/ t = y) /\ z \in t)   BECAUSE MergeImplicationsAnd;
 ((t = x \/ t = y) /\ z \in t) => ((t = x /\ z \in t) \/ (t = y /\ z \in t))
    BECAUSE DistribAndOrRight;
@@ -1086,6 +1086,7 @@ QED
 
 assocCompose == \A f : \A g : \A h : compose(f, compose(g,h)) = compose(compose(f,g), h)
 THEOREM assocCompose
+\* TODO
 
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
@@ -1262,6 +1263,37 @@ composeExists == \A g : \A h : \A x : x \in compose(g,h) <=>
 THEOREM composeExists
 PROOF
 \* By separation in Domain(h) \X Image(g)
+VARIABLES a,b,c,g,h,t,x,y;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))   BECAUSE \A(a <- Domain(h) \X Image(g));
+domainInc   BECAUSE THEOREM;
+<<fst(x),t>> \in h => fst(x) \in Domain(h)   BECAUSE \A(g <- h, x <- fst(x), y <- t);
+imageInc   BECAUSE THEOREM;
+<<t,snd(x)>> \in g => snd(x) \in Image(g)   BECAUSE \A(g <- g, x <- t, y <- snd(x));
+(<<fst(x),t>> \in h /\ <<t,snd(x)>> \in g) => (fst(x) \in Domain(h) /\ snd(x) \in Image(g))
+   BECAUSE MergeImplicationsAnd;
+(\E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g) => (\E t : fst(x) \in Domain(h) /\ snd(x) \in Image(g))   BECAUSE Q_SCHEME;
+(\E t : fst(x) \in Domain(h) /\ snd(x) \in Image(g)) => (fst(x) \in Domain(h) /\ snd(x) \in Image(g))   BECAUSE Q_SCHEME;
+(\E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g) => (fst(x) \in Domain(h) /\ snd(x) \in Image(g))   BECAUSE TI;
+cartesianProductCouples   BECAUSE THEOREM;
+(fst(x) \in Domain(h) /\ snd(x) \in Image(g)) <=> <<fst(x),snd(x)>> \in (Domain(h) \X Image(g))
+   BECAUSE \A(x <- Domain(h), y <- Image(g), a <- fst(x), b <- snd(x)); 
+(fst(x) \in Domain(h) /\ snd(x) \in Image(g)) => <<fst(x),snd(x)>> \in (Domain(h) \X Image(g))   BECAUSE EquivToImpl;
+(\E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g) => <<fst(x),snd(x)>> \in (Domain(h) \X Image(g))   BECAUSE TI;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(x) => x = <<fst(x), snd(x)>>   BECAUSE \A(c <- x);
+(IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
+   => (x = <<fst(x), snd(x)>> /\ <<fst(x),snd(x)>> \in (Domain(h) \X Image(g)))   BECAUSE MergeImplicationsAnd;
+\A x : \A y : x = y => (x \in (Domain(h) \X Image(g)) <=> y \in (Domain(h) \X Image(g)))   BECAUSE E_SCHEME;
+x = <<fst(x), snd(x)>> => (x \in (Domain(h) \X Image(g)) <=> <<fst(x), snd(x)>> \in (Domain(h) \X Image(g)))   BECAUSE \A(x <- x, y <- <<fst(x), snd(x)>>);
+(x = <<fst(x), snd(x)>> /\ <<fst(x), snd(x)>> \in (Domain(h) \X Image(g))) => x \in (Domain(h) \X Image(g))   BECAUSE HypoEquivToAndReverse;
+(IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g) => x \in (Domain(h) \X Image(g))   BECAUSE TI;
+(x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))) => (x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) BECAUSE SeparationTauto;
+(\A x : x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))) => (\A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))) => (\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)   BECAUSE MODUS_PONENS;
+(\A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) <=> (\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))   BECAUSE CHOOSE compose(g,h);
+\A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)   BECAUSE MODUS_PONENS;
 composeExists   BECAUSE GENERALIZATION;
 QED
 
