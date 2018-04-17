@@ -48,7 +48,7 @@
 
 %precedence <sVal> NAME
 %precedence LEFT_PARENTHESIS
-%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW LOCAL
+%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW LOCAL CHOOSE
 
 %type  <formulaVal> formula
 %type  <formulaVal> setDef
@@ -114,6 +114,15 @@ formula NAME_SEPARATOR formula {
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
 | LOCAL formula NAME_SEPARATOR formula {
   $$ = check_operator_definition($2, $4);
+  if (!$$)
+    yyerror(&@$, scanner, ast, "Bad operator definition"); }
+| formula NAME_SEPARATOR CHOOSE NAME COLON formula {
+  formula* chooseF = make_formula(choose,
+				  $4,
+				  make_formula_list($6, 0),
+				  ast->file,
+				  @1.first_line);
+  $$ = check_operator_definition($1, chooseF);
   if (!$$)
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
 ;
@@ -256,11 +265,8 @@ NAME { $$ = make_reason(propoTautology,
 				$3,
 				ast->file,
 				@1.first_line)); }
-| QUANTIFIER formula {
-  if ($1 != choose)
-    yyerror(&@$, scanner, ast, "A quantifier in a reason should be CHOOSE.\n");
-  $$ = make_reason(reasonChoose, $2);
-  }
+| CHOOSE formula {
+  $$ = make_reason(reasonChoose, $2); }
 ;
 
 setDef:

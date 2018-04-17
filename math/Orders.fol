@@ -28,7 +28,7 @@ VARIABLES a,b,c,f,o,x,y;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in (Image(f) \X Image(f)) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)
    BECAUSE \A(a <- Image(f) \X Image(f));
-(\A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)) <=> \E b : \A x : x \in b <=> IsInInjectOrder(o,f,x)   BECAUSE CHOOSE injectOrder(o,f);
+(\E b : \A x : x \in b <=> IsInInjectOrder(o,f,x)) => (\A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x))   BECAUSE CHOOSE injectOrder(o,f);
 \A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE MODUS_PONENS;
 injectOrderExists   BECAUSE GENERALIZATION;
 QED
@@ -112,7 +112,7 @@ d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
 (d \in Image(f) /\ d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE EquivToImplReverse;
 (d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE TI;
 \A d : (d \in Image(f) /\ <<pre(f,d), pre(f,d)>> \in o) => <<d,d>> \in injectOrder(o,f)   BECAUSE GENERALIZATION;
-   
+
    \* <<x, x>>
 (x \in Image(f) /\ <<pre(f,x), pre(f,x)>> \in o) => <<x,x>> \in injectOrder(o,f)
    BECAUSE \A(d <- x);
@@ -503,14 +503,140 @@ QED
       - in the elements of the well-order that are neither zero nor one,
         take the minimum and call it two
       - iterate
-   
+
    For this reason, some well-orders (the finite ones) define the natural numbers.
    The well-orders are stable under disjoint unions, which they call addition.
    They are also stable under cartesian products, which they call multiplication.
 *)
 IsWellOrder(w) == IsOrder(w)
-   /\ (\A part : (part # {} /\ (\A x : x \in part => IsDefinedOn(w,x)))
+   /\ (\A part : (part # {} /\ part \subseteq Domain(w))
          => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in w)
+
+injectWOIsWO == \A o : \A f : (IsWellOrder(o) /\ IsFunction(f)) => IsWellOrder(injectOrder(o,f))
+THEOREM injectWOIsWO
+
+disjointWOAddition == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v))
+   => IsWellOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
+THEOREM disjointWOAddition
+PROOF
+VARIABLES a,b,g,i,j,u,v,x,y,z,part;
+\* Proof that u \union v \union (Domain(u) \X Domain(v)) is a graph : union of 3 graphs
+unionInc   BECAUSE THEOREM;
+x \in (u \union v \union (Domain(u) \X Domain(v)))
+   <=> (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))
+   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- x);
+cartesianProductExists   BECAUSE THEOREM;
+x \in (u \union v \union (Domain(u) \X Domain(v)))
+   => (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))   BECAUSE EquivToImpl;
+x \in (Domain(u) \X Domain(v)) <=> (IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v))
+   BECAUSE \A(i <- Domain(u), j <- Domain(v), x <- x);
+x \in (Domain(u) \X Domain(v)) => (IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v))   BECAUSE EquivToImpl;
+(IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v)) => IsCouple(x)   BECAUSE DropAndRight2;
+x \in (Domain(u) \X Domain(v)) => IsCouple(x)   BECAUSE TI;
+IsOrder(u \union v) => IsGraph(u \union v)   BECAUSE DropAndRight3;
+(\A x : x \in (u \union v) => IsCouple(x)) => (x \in (u \union v) => IsCouple(x))   BECAUSE \A(x <- x);
+IsOrder(u \union v) => (x \in (u \union v) => IsCouple(x))   BECAUSE TI;
+mergeWithHypo(a,b,c,d) == (a => b) => ((c => (d => b)) => ((d \/ a) => (c => b)))   PROPO_TAUTO;
+(x \in (u \union v) \/ x \in (Domain(u) \X Domain(v))) => (IsOrder(u \union v) => IsCouple(x))   BECAUSE mergeWithHypo;
+x \in (u \union v \union (Domain(u) \X Domain(v))) => (IsOrder(u \union v) => IsCouple(x))   BECAUSE TI;
+IsOrder(u \union v) => (x \in (u \union v \union (Domain(u) \X Domain(v))) => IsCouple(x))   BECAUSE SwitchHypos;
+\A x : IsOrder(u \union v) => (x \in (u \union v \union (Domain(u) \X Domain(v))) => IsCouple(x))   BECAUSE GENERALIZATION;
+IsOrder(u \union v) => IsGraph(u \union v \union (Domain(u) \X Domain(v)))   BECAUSE Q_SCHEME;
+disjointOrders   BECAUSE THEOREM;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsGraph(u \union v \union (Domain(u) \X Domain(v)))   BECAUSE TI;
+
+\* Proof that wellOrderAddition is reflexive : union of an order and a graph
+\* which domain is in the order's domain
+
+\* Proof that wellOrderAddition is anti-symmetric
+
+\* Proof that wellOrderAddition is transitive
+
+\* Proof that wellOrderAddition has all minimums.
+nep(part,u,v) == part # {} /\ (part \subseteq Domain(u \union v \union (Domain(u) \X Domain(v))));
+intersectionExists   BECAUSE THEOREM;
+z \in (part \intersect Domain(u)) <=> (z \in part /\ z \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- z);
+z \in (part \intersect Domain(u)) => (z \in part /\ z \in Domain(u))   BECAUSE EquivToImpl;
+(z \in part /\ z \in Domain(u)) => z \in Domain(u)   BECAUSE DropAndLeft;
+z \in (part \intersect Domain(u)) => z \in Domain(u)   BECAUSE TI;
+(part \intersect Domain(u)) \subseteq Domain(u)   BECAUSE GENERALIZATION;
+\* So because u is a well-order, if part \intersect Domain(u) is non-empty it has a minimum,
+\* which is also the minimum of part. Otherwise (part \intersect Domain(u)) is empty and
+\* part \subseteq Domain(v), which is also a well-order
+IsWellOrder(u) => (\A part : (part # {} /\ part \subseteq Domain(u))
+         => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in u)   BECAUSE DropAndLeft;
+(\A part : (part # {} /\ part \subseteq Domain(u)) => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in u)
+   => (((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)) => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)
+   BECAUSE \A(part <- (part \intersect Domain(u)));
+IsWellOrder(u) => (((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)) => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)   BECAUSE TI;
+(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)))
+   => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u
+   BECAUSE HypoImplToAnd;
+((part \intersect Domain(u)) # {}) => ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u))   BECAUSE IntroAndLeft;
+IsWellOrder(u) => IsWellOrder(u)   BECAUSE ImplySelf;
+(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
+   => (IsWellOrder(u) /\ ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)))   BECAUSE MergeImplicationsAnd;
+(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
+   => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u
+   BECAUSE TI; \* Then prove this min is also the minimum of part, ie <<min, b>> \in (u \union (Domain(u) \X Domain(v)),x)
+minU(u,part) == CHOOSE min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u;
+(\E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)
+   => (minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE CHOOSE minU(u,part);
+(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => (minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE TI;
+(minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)
+   => \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u   BECAUSE DropAndLeft;
+(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
+   => \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u   BECAUSE TI;
+
+domainExists   BECAUSE THEOREM;
+b \in Domain(u \union v \union (Domain(u) \X Domain(v)))
+   <=> IsDefinedOn(u \union v \union (Domain(u) \X Domain(v)),b)   BECAUSE \A(g <- u \union v \union (Domain(u) \X Domain(v)), x <- b);
+b \in Domain(u \union v \union (Domain(u) \X Domain(v)))
+   => \E y : <<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))   BECAUSE EquivToImpl;
+<<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))
+   <=> (<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))
+   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<b,y>>);
+<<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))
+   => (<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))   BECAUSE EquivToImpl;
+cartesianProductCouples   BECAUSE THEOREM;
+(b \in Domain(u) /\ y \in Domain(v)) <=> <<b,y>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- b, b <- y);
+<<b,y>> \in (Domain(u) \X Domain(v)) => (b \in Domain(u) /\ y \in Domain(v))   BECAUSE EquivToImplReverse;
+(b \in Domain(u) /\ y \in Domain(v)) => b \in Domain(u)   BECAUSE DropAndRight;
+<<b,y>> \in (Domain(u) \X Domain(v)) => b \in Domain(u)   BECAUSE TI;
+<<b,y>> \in (u \union v) <=> (<<b,y>> \in u \/ <<b,y>> \in v)   BECAUSE \A(x <- u, y <- v, z <- <<b,y>>);
+<<b,y>> \in (u \union v) => (<<b,y>> \in u \/ <<b,y>> \in v)   BECAUSE EquivToImpl;
+domainInc   BECAUSE THEOREM;
+<<b,y>> \in u => b \in Domain(u)   BECAUSE \A(g <- u, x <- b, y <- y);
+<<b,y>> \in v => b \in Domain(v)   BECAUSE \A(g <- v, x <- b, y <- y);
+(<<b,y>> \in u \/ <<b,y>> \in v) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE MergeImplicationsOr;
+<<b,y>> \in (u \union v) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+(<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))
+   => ((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u))   BECAUSE MergeImplicationsOr;
+<<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))
+   => ((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u))   BECAUSE TI;
+dropRedOr(a,b) == ((a \/ b) \/ a) => (a \/ b)   PROPO_TAUTO;
+((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE dropRedOr;
+<<b,y>> \in (u \union v \union (Domain(u) \X Domain(v))) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+(\E y : <<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))) => (\E y : b \in Domain(u) \/ b \in Domain(v))   BECAUSE Q_SCHEME;
+(\E y : b \in Domain(u) \/ b \in Domain(v)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE Q_SCHEME;
+(\E y : <<b,y>> \in (u \union v \union (Domain(u) \X Domain(v)))) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+b \in Domain(u \union v \union (Domain(u) \X Domain(v))) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+
+nep(part,u,v) => (part \subseteq Domain(u \union v \union (Domain(u) \X Domain(v))))   BECAUSE DropAndLeft;
+(part \subseteq Domain(u \union v \union (Domain(u) \X Domain(v)))) => (b \in part => b \in Domain(u \union v \union (Domain(u) \X Domain(v))))   BECAUSE \A(z <- b);
+nep(part,u,v) => (b \in part => b \in Domain(u \union v \union (Domain(u) \X Domain(v))))   BECAUSE TI;
+(nep(part,u,v) /\ b \in part) => b \in Domain(u \union v \union (Domain(u) \X Domain(v)))   BECAUSE HypoImplToAnd;
+(nep(part,u,v) /\ b \in part) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+pushHypo(a,b,c,d) == ((a /\ b) => (c \/ d)) => ((a /\ b) => ((b /\ c) \/ d))   PROPO_TAUTO;
+(nep(part,u,v) /\ b \in part) => ((b \in part /\ b \in Domain(u)) \/ b \in Domain(v))   BECAUSE pushHypo;
+b \in (part \intersect Domain(u)) <=> (b \in part /\ b \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- b);
+(b \in part /\ b \in Domain(u)) => b \in (part \intersect Domain(u))   BECAUSE EquivToImplReverse;
+b \in Domain(v) => b \in Domain(v)   BECAUSE ImplySelf;
+((b \in part /\ b \in Domain(u)) \/ b \in Domain(v)) => (b \in (part \intersect Domain(u)) \/ b \in Domain(v))   BECAUSE MergeImplicationsOr;
+(nep(part,u,v) /\ b \in part) => (b \in (part \intersect Domain(u)) \/ b \in Domain(v))   BECAUSE TI;
+
+QED
 
 pasteTags(dom, tag) == productFunc(identity(dom), const(dom, tag))
 
@@ -523,7 +649,7 @@ wellOrderAddition(u,v) == injectOrder(u, pasteTags(Domain(u),{}))
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
 PROOF
-VARIABLES a,b,c,d,f,i,j,g,o,u,v,x,y,z;
+VARIABLES a,b,c,d,f,i,j,g,o,u,v,x,y,z,tag;
 \* Give shorter names
 Ione(u) == injectOrder(u, pasteTags(Domain(u),{}));
 Itwo(v) == injectOrder(v, pasteTags(Domain(v),ordinalOne));
@@ -549,7 +675,7 @@ IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),y)))   BECAUSE TI;
 \A u : \A y : IsOrder(u) => IsOrder(injectOrder(u,pasteTags(Domain(u),y)))   BECAUSE GENERALIZATION;
 IsOrder(u) => IsOrder(Ione(u))   BECAUSE \A(u <- u, y <- {});
 IsOrder(v) => IsOrder(Itwo(v))   BECAUSE \A(u <- v, y <- ordinalOne);
-	   \* Proof that Ione(u) and Itwo(v) are disjoint
+	   \* Proof that AreDisjoint(Ione(u),Itwo(v))
 disjointOrders   BECAUSE THEOREM;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u),Itwo(v)))
    => IsOrder(Ione(u) \union Itwo(v))   BECAUSE \A(u <- Ione(u), v <- Itwo(v));
@@ -558,53 +684,67 @@ AreDisjoint(Ione(u),Itwo(v)) <=> \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECA
 (\A z : ~(z \in Ione(u) /\ z \in Itwo(v))) => AreDisjoint(Ione(u),Itwo(v))   BECAUSE EquivToImplReverse;
 injectOrderExists   BECAUSE THEOREM;
 z \in Ione(u) <=> IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE \A(o <- u, f <- pasteTags(Domain(u),{}), x <- z);
-z \in Ione(u) => IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE EquivToImpl;
-IsInInjectOrder(u,pasteTags(Domain(u),{}),z)
-   => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE DropAndRight;
-z \in Ione(u) => z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{})))   BECAUSE TI;
+z \in Itwo(v) <=> IsInInjectOrder(v,pasteTags(Domain(v),ordinalOne),z)   BECAUSE \A(o <- v, f <- pasteTags(Domain(v),ordinalOne), x <- z);
+IsInInjectOrder(u,pasteTags(Domain(u),tag),z)
+   => z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag)))   BECAUSE DropAndRight;
 cartesianProductExists   BECAUSE THEOREM;
-z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{}))) <=> (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE \A(i <- Image(pasteTags(Domain(u),{})), j <- Image(pasteTags(Domain(u),{})), x <- z);
-z \in (Image(pasteTags(Domain(u),{})) \X Image(pasteTags(Domain(u),{}))) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE EquivToImpl;
-IsInInjectOrder(u,pasteTags(Domain(u),{}),z) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE TI;
-z \in Ione(u) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{})))   BECAUSE TI;
-(IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),{})) /\ snd(z) \in Image(pasteTags(Domain(u),{}))) => snd(z) \in Image(pasteTags(Domain(u),{}))   BECAUSE DropAndLeft;
-z \in Ione(u) => snd(z) \in Image(pasteTags(Domain(u),{}))   BECAUSE TI;
+z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag))) <=> (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))
+   BECAUSE \A(i <- Image(pasteTags(Domain(u),tag)), j <- Image(pasteTags(Domain(u),tag)), x <- z);
+z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag))) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))   BECAUSE EquivToImpl;
+IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))   BECAUSE TI;
+(IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag))) => snd(z) \in Image(pasteTags(Domain(u),tag))   BECAUSE DropAndLeft;
+IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => snd(z) \in Image(pasteTags(Domain(u),tag))   BECAUSE TI;
 productFuncVal   BECAUSE THEOREM;
-<<x,snd(z)>> \in pasteTags(Domain(u),{}) => (IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),{}))
-   BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),{}), x <- x, y <- snd(z));
-(IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),{})) => <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE DropAndLeft;
-<<x,snd(z)>> \in pasteTags(Domain(u),{}) => <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
+<<x,snd(z)>> \in pasteTags(Domain(u),tag) => (IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),tag))
+   BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),tag), x <- x, y <- snd(z));
+(IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),tag)) => <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE DropAndLeft;
+<<x,snd(z)>> \in pasteTags(Domain(u),tag) => <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE TI;
 imageExists   BECAUSE THEOREM;
-snd(z) \in Image(pasteTags(Domain(u),{})) <=> Reaches(pasteTags(Domain(u),{}),snd(z))   BECAUSE \A(g <- pasteTags(Domain(u),{}), y <- snd(z));
-snd(z) \in Image(pasteTags(Domain(u),{})) => \E x : <<x,snd(z)>> \in pasteTags(Domain(u),{})   BECAUSE EquivToImpl;
-(\E x : <<x,snd(z)>> \in pasteTags(Domain(u),{})) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE Q_SCHEME;
-snd(z) \in Image(pasteTags(Domain(u),{})) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
-z \in Ione(u) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),{})   BECAUSE TI;
+snd(z) \in Image(pasteTags(Domain(u),tag)) <=> Reaches(pasteTags(Domain(u),tag),snd(z))   BECAUSE \A(g <- pasteTags(Domain(u),tag), y <- snd(z));
+snd(z) \in Image(pasteTags(Domain(u),tag)) => \E x : <<x,snd(z)>> \in pasteTags(Domain(u),tag)   BECAUSE EquivToImpl;
+(\E x : <<x,snd(z)>> \in pasteTags(Domain(u),tag)) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE Q_SCHEME;
+snd(z) \in Image(pasteTags(Domain(u),tag)) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE TI;
+IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => \E x : <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE TI;
+constExists   BECAUSE THEOREM;
+<<x,snd(snd(z))>> \in const(Domain(u),tag) <=> (IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)   BECAUSE \A(d <- Domain(u), c <- tag, x <- <<x,snd(snd(z))>>);
+<<x,snd(snd(z))>> \in const(Domain(u),tag) => (IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)   BECAUSE EquivToImpl;
+(IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)
+   => snd(<<x,snd(snd(z))>>) = tag   BECAUSE DropAndLeft;
+<<x,snd(snd(z))>> \in const(Domain(u),tag) => snd(<<x,snd(snd(z))>>) = tag   BECAUSE TI;
+sndExists   BECAUSE THEOREM;
+snd(snd(z)) = snd(<<x,snd(snd(z))>>)   BECAUSE \A(a <- x, b <- snd(snd(z)));
+snd(<<x,snd(snd(z))>>) = tag => tag = snd(<<x,snd(snd(z))>>)   BECAUSE E_SCHEME;
+(tag = snd(<<x,snd(snd(z))>>) /\ snd(snd(z)) = snd(<<x,snd(snd(z))>>)) => tag = snd(snd(z))  BECAUSE E_SCHEME;
+tag = snd(<<x,snd(snd(z))>>) => (tag = snd(<<x,snd(snd(z))>>) /\ snd(snd(z)) = snd(<<x,snd(snd(z))>>))   BECAUSE IntroAndLeft;
+tag = snd(<<x,snd(snd(z))>>) => tag = snd(snd(z))  BECAUSE TI;
+snd(<<x,snd(snd(z))>>) = tag => tag = snd(snd(z))  BECAUSE TI;
+<<x,snd(snd(z))>> \in const(Domain(u),tag) => tag = snd(snd(z))  BECAUSE TI;
+(\E x : <<x,snd(snd(z))>> \in const(Domain(u),tag)) => \E x : tag = snd(snd(z))  BECAUSE Q_SCHEME;
+(\E x : tag = snd(snd(z))) => tag = snd(snd(z))   BECAUSE Q_SCHEME;
+(\E x : <<x,snd(snd(z))>> \in const(Domain(u),tag)) => tag = snd(snd(z))   BECAUSE TI;
+IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => tag = snd(snd(z))   BECAUSE TI;
+\A u : \A tag : IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => tag = snd(snd(z))   BECAUSE GENERALIZATION;
+IsInInjectOrder(u,pasteTags(Domain(u),{}),z) => {} = snd(snd(z))   BECAUSE \A(u <- u, tag <- {});
+IsInInjectOrder(v,pasteTags(Domain(v),ordinalOne),z) => ordinalOne = snd(snd(z))   BECAUSE \A(u <- v, tag <- ordinalOne);
+z \in Ione(u) => IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE EquivToImpl;
+z \in Ione(u) => {} = snd(snd(z))   BECAUSE TI;
+z \in Itwo(v) => IsInInjectOrder(v,pasteTags(Domain(v),ordinalOne),z)   BECAUSE EquivToImpl;
+z \in Itwo(v) => ordinalOne = snd(snd(z))   BECAUSE TI;
 
-\* TODO : show that snd(snd(z)) = {} and then that z \in Ione(v) => snd(snd(z)) = ordinalOne, maybe generalize the tag : IsInInjectOrder(u,pasteTags(Domain(u),t),z)
-
-(z \in Ione(u) /\ z \in Itwo(v)) => (snd(snd(z)) = {} /\ snd(snd(z)) = ordinalOne)   BECAUSE MergeImplicationsAnd;
-(snd(snd(z)) = {} /\ snd(snd(z)) = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
+(z \in Ione(u) /\ z \in Itwo(v)) => ({} = snd(snd(z)) /\ ordinalOne = snd(snd(z)))   BECAUSE MergeImplicationsAnd;
+({} = snd(snd(z)) /\ ordinalOne = snd(snd(z))) => {} = ordinalOne   BECAUSE E_SCHEME;
 (z \in Ione(u) /\ z \in Itwo(v)) => {} = ordinalOne   BECAUSE TI;
-{} # ordinalOne => ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE Contraposition;
+{} = ordinalOne => ordinalOne = {}   BECAUSE E_SCHEME;
+(z \in Ione(u) /\ z \in Itwo(v)) => ordinalOne = {}   BECAUSE TI;
+ordinalOne # {} => ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE Contraposition;
+oneIsNotZero   BECAUSE THEOREM;
 ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE MODUS_PONENS;
 \A z : ~(z \in Ione(u) /\ z \in Itwo(v))   BECAUSE GENERALIZATION;
 AreDisjoint(Ione(u),Itwo(v))   BECAUSE MODUS_PONENS;
-(IsOrder(u) /\ IsOrder(v)) => (IsOrder(Ione(u)) /\ IsOrder(Ione(v)))   BECAUSE MergeImplicationsAnd;
-(IsOrder(Ione(u)) /\ IsOrder(Ione(v))) => (IsOrder(Ione(u)) /\ IsOrder(Ione(v)) /\ AreDisjoint(Ione(u), Itwo(v)))   BECAUSE IntroAndRight;
-(IsOrder(Ione(u)) /\ IsOrder(Ione(v))) => IsOrder(Ione(u) \union Itwo(v))   BECAUSE TI;
+(IsOrder(u) /\ IsOrder(v)) => (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)))   BECAUSE MergeImplicationsAnd;
+(IsOrder(Ione(u)) /\ IsOrder(Itwo(v))) => (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u), Itwo(v)))   BECAUSE IntroAndLeft;
+(IsOrder(Ione(u)) /\ IsOrder(Itwo(v))) => IsOrder(Ione(u) \union Itwo(v))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v)) => IsOrder(DO(u,v))   BECAUSE TI;
-
-\* Proof that wellOrderAddition(u,v) is a graph : union of 2 graphs
-
-\* Proof that wellOrderAddition is reflexive : union of an order and a graph
-\* which domain is in the order's domain
-
-\* Proof that wellOrderAddition is anti-symmetric
-
-\* Proof that wellOrderAddition is transitive
-
-\* Proof that wellOrderAddition has all minimums
 
 QED
 

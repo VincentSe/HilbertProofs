@@ -46,49 +46,49 @@ Each proof statement contains a formula and a reason, separated by the `BECAUSE`
 * The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~(\A x : ~(x = x))`, it finds the implication `~~(x = x) => ~(\A x : ~(x = x))` and its hypothesis `~~(x = x)`.
 * The fifth reason is `Q_SCHEME`. It regroups several axioms related to the quantifiers `\A` and `\E`. Here it states the definition of existence with respect to universal.
 
-## Hilbert's epsilon operator
+## Conservative extensions, aka definitions
 
-Mathematics have introduced notations that can easily lead to reasoning on non-existing things. The first and most important is the application of functions : `f[x]`. For example, the square root of 4 is 2, which we write `sqrt[4] = 2`.
-
-A common mistake in proofs is reasoning on `sqrt[x]`, where we showed that `x` is a number, but forgot to prove that `x` is non-negative. More advanced possibly non-existing notations include divisions, limits, differentials and integrals. If we calculate with any of those without first proving they exist, we can end up "proving" false formulas.
-
-And even if we are careful and prove that all the symbols we manipulate exist, the functional notation (introduced by Euler in 1734) forces us to clarify formulas such as
-
+The ZFC theory, which builds all mathematics, can be expressed with only one primitive symbol : the binary relation of membership `\in`. However if we only use this symbol, simple formulas like `a \subseteq (b \union c)`, which states that a set `a` is included in the union of sets `b` and `c`, explode as
 ```
-sqrt[-7] = 42
+\E u : (\A x : x \in u <=> (x \in b \/ x \in c)) /\ (\A z : z \in a => z \in u)
 ```
 
-where `sqrt` is a function only defined on non-negative real numbers. There are 4 possibilities :
-* Syntactically incorrect. We decide that `sqrt[-7] = 42` is akin to `x+2 =+ 1-`, a formula that makes no sense.
-* Provable. We must then produce a proof of `sqrt[-7] = 42`.
-* Contrary provable. We must then produce a proof of `sqrt[-7] # 42`.
-* Undecidable. We must then prove that both `sqrt[-7] = 42` and `sqrt[-7] # 42` have no proofs. This is the situation of the axiom of choice and the continuum hypothesis in the Zermelo-Fraenkel axioms.
-
-The syntax checker (flex and bison) cannot tell the difference between formulas `sqrt[-7] = 42` and `sqrt[7] = 42`. It doesn't know enough mathematics : it finds them equally good, or equally bad. Since mathematicians want `sqrt[7] = 42` as syntactically correct, we must also accept `sqrt[-7] = 42` as syntactically correct.
-
-To choose between the last 3 possibilities, we can consider the closely-related formula
+While this is easy for a computer to parse and check, it is unreadable for a human. It forces us to copy and paste the definition of subset, union, intersection, powerset and all other operations of set theory every time we use them. Fortunately, predicate calculus is quite flexible and lets us introduce new primitive symbols, along with axioms to use them. Recall that predicate calculus was first used by Euclid to formalize geometry : he introduced symbols like "point" and "line" instead of a membership relation `\in`. So, to define the subset relation in HilbertProofs we can write
 ```
-<<-7, 42>> \in sqrt
-```
-which states that the couple `<<-7, 42>>` is in the graph of the square root function. This new formula is contrary-provable, because -7 is a negative number. Now is this a proof of `sqrt[-7] # 42` ? It could be if we told the proof checker how to eliminate notations, to go back to formulas that surely exist. Here the checker would need to assume, or prove, that
-```
-sqrt[-7] = 42 <=> <<-7, 42>> \in sqrt
+CONSTANT _ \subseteq _
+AXIOM \A x : \A y : x \subseteq y <=> \A z : z \in x => z \in y
 ```
 
-This makes sense and solves the question for 42. However, does it tell whether `sqrt[-7] = sqrt[-7]` ? By the same elimination rule, the checker would go through `sqrt[-7] = sqrt[-7] <=> <<-7, sqrt[-7]>> \in sqrt` and conclude negatively, by the same reason that -7 is a negative number. But the equality axiom tells anything equals itself, so we should conclude positively too and contradict ourselves.
+However, each time we add an axiom we must think : does it break the theory ? Does it introduce contradictions ? Does it prove or disprove previously undecidable formulas ? There are cases like the one above where we are sure that the new axiom does not affect the formulas of the previous theory : [conservative extensions](https://en.wikipedia.org/wiki/Conservative_extension). Roughly speaking, when the new axiom concerns only the new primitive symbol (`\subseteq` above), then it does not affect formulas that do not use the new symbol. Precisely speaking, each [model](https://en.wikipedia.org/wiki/Model_theory) of the previous theory can be extended to a model of the new theory, so by [Gödel's completeness theorem](https://en.wikipedia.org/wiki/G%C3%B6del%27s_completeness_theorem) there are no more contradictions.
 
-Without a clear answer in all cases, we chose the fourth possibility in HilbertProofs : undecidable. `sqrt[-7]` is defined as a new primitive symbol with only one axiom :
+HilbertProofs has 3 syntactic constructs to guarantee that an axiom is a conservative extension via a new primitive symbol. The subset relation is defined by the first of these constructs :
 ```
-<<-7, sqrt[-7]>> \in sqrt <=> \E y : <<-7, y>> \in sqrt
+x \subseteq y == \A z : z \in x => z \in y
 ```
 
-Since such a `y` does not exist, the only thing this axiom proves about `sqrt[-7]` is that `<<-7, sqrt[-7]>> \notin sqrt`. This tells us absolutely nothing about its equility to 42. The introduction of primitive symbols, subject to existence conditions, is the job of [Hilbert's epsilon operator](https://en.wikipedia.org/wiki/Epsilon_calculus). HilbertProofs makes heavy use of it, calling it CHOOSE. Here is finally the definition of the application of functions :
+The proof checker implicitly unfolds this statement as the `CONSTANT/AXIOM` above, but when you write it as `==` you are sure the axiom is conservative. The second conservative construct lets us define symbols of operators from previously defined operators, like
+```
+x \union y == UNION { x, y }
+```
+which the checker unfolds to
+```
+CONSTANT _ \union _
+AXIOM \A x : \A y : x \union y = UNION { x, y }
+```
 
+The last conservative construct lets us define the symbol of an operator by a property we want it to have, when possible. For example the operator that applies a function `f` to an argument `x` :
 ```
 f[x] == CHOOSE y : <<x, y>> \in f
 ```
 
-The implicit axiom with the existence condition guarantees that nothing wrong can be proven about a CHOOSE object, even when its condition is not satisfied.
+`<<x,y>>` is the [couple](https://en.wikipedia.org/wiki/Tuple) which first element is `x` and second element `y`. So the image of `x` by function `f` is an element `y` coupled to `x` in the graph of `f`. But what if such a `y` does not exist, as in `sqrt[-7]`, the non-existent square root of -7 ? `== CHOOSE` is unfolded like this :
+
+```
+CONSTANT _ [ _ ]
+AXIOM \A f : \A x : (\E y : <<x,y>> \in f) => <<x,f[x]>> \in f
+```
+
+This axiom lets us say nothing about `f[x]` until we have proven `(\E y : <<x,y>> \in f)`, which means that `f[x]` exists. The `== CHOOSE` construct can be used in HilbertProofs to define, among others, the application of a function `f[x]`, the division of numbers `a/b`, the differential of a function `f'` and the integral of a function. It protects our proofs from applying functions where they're not defined, dividing by zero, differentiating a function that is not differentiable, or integrating a function that is not integrable.
 
 ## Compile HilbertProofs
 

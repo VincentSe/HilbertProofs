@@ -936,10 +936,15 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
    Let T be a theory. When defining on top of T,
    someNewOp(x,y,z) == CHOOSE t : P(t,x,y,z)
    it inroduces a new ternary operator someNewOp and an axiom for it,
-   \A x : \A y : \A z : P(someNewOp(x,y,z),x,y,z) <=> \E t : P(t,x,y,z)
+   \A x : \A y : \A z : (\E t : P(t,x,y,z)) => P(someNewOp(x,y,z),x,y,z)
 
    For example, the empty set :
    {} == CHOOSE t : \A x : x \notin t
+
+   By a general rule of the existential quantifier,
+   P(someNewOp(x,y,z),x,y,z) => (\E t : P(t,x,y,z))   BECAUSE \E(t <- someNewOp(x,y,z));
+   so the previous axiom actually proves the equivalence :
+   (\E t : P(t,x,y,z)) <=> P(someNewOp(x,y,z),x,y,z)
 
    Let T+ be the extension of T by someNewOp and its axiom. Any model M of T
    can be extended into a model M+ of T+ by
@@ -1001,10 +1006,10 @@ short check_choose_statement(const formula* f,
       return 0;
     }
 
-  const formula* firstF = get_first_operand(f);
-  const formula* existsF = get_second_operand(f);
+  const formula* firstF = get_second_operand(f);
+  const formula* existsF = get_first_operand(f);
   if (!firstF || !existsF
-      || f->builtInOp != lequiv
+      || f->builtInOp != limplies
       || existsF->builtInOp != exists
       || !formula_equal(get_first_operand(chooseF), get_first_operand(existsF), 0, 0, 0))
     {

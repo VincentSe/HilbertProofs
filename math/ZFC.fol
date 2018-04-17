@@ -166,7 +166,7 @@ VARIABLES x, a, b;
 
 \* Take one such set b and show no set x can be in it
 chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
-(\A x : x \in chooseB(a) <=> (x \in a /\ x # x)) <=> \E b : \A x : x \in b <=> (x \in a /\ x # x)
+(\E b : \A x : x \in b <=> (x \in a /\ x # x)) => (\A x : x \in chooseB(a) <=> (x \in a /\ x # x)) 
    BECAUSE CHOOSE chooseB(a);
 \A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE MODUS_PONENS;
 x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
@@ -180,7 +180,7 @@ x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 \A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
 
 \* Conclude chooseB(a) is the empty set
-(\A x : x \notin {}) <=> \E b : \A x : x \notin b   BECAUSE CHOOSE {};
+(\E b : \A x : x \notin b) => (\A x : x \notin {})   BECAUSE CHOOSE {};
 \E b : \A x : x \notin b   BECAUSE \E(b <- chooseB(a));
 emptySetExists   BECAUSE MODUS_PONENS;
 QED
@@ -259,7 +259,7 @@ VARIABLES a,b,x,y;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE \A(a <- a);
 chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ ~(x \in x));
-(\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))) <=> \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))
+(\E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))) => (\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x)))
    BECAUSE CHOOSE chooseB(a);
 \A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))   BECAUSE MODUS_PONENS;
 y \in chooseB(a) <=> (y \in a /\ ~(y \in y))   BECAUSE \A(x <- y);
@@ -309,7 +309,7 @@ THEOREM intersectionExists
 PROOF
 VARIABLES a,b,u,v,x;
 \* By separation in u
-(\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)) <=> \E b : (\A x : x \in b <=> (x \in u /\ x \in v))
+(\E b : (\A x : x \in b <=> (x \in u /\ x \in v))) => (\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v))
    BECAUSE CHOOSE u \intersect v;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
@@ -383,6 +383,27 @@ x = {} => x \subseteq {}   BECAUSE ImplyEquivTrue;
 x \subseteq {} <=> x = {}   BECAUSE IntroEquiv;
 x \in ordinalOne <=> x = {}   BECAUSE TransitEquiv;
 elemOfOne   BECAUSE GENERALIZATION;
+QED
+
+oneIsNotZero == ordinalOne # {}
+THEOREM oneIsNotZero
+PROOF
+VARIABLES i,j,x,z;
+powersetExists   BECAUSE AXIOM;
+{} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
+inclusionInOneself   BECAUSE THEOREM;
+{} \subseteq {}   BECAUSE \A(x <- {});
+{} \in ordinalOne   BECAUSE MODUS_PONENS;
+emptySetExists   BECAUSE THEOREM;
+\A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
+ordinalOne = {} => ((\A x : x \notin ordinalOne) <=> emptySetExists)   BECAUSE \A(i <- ordinalOne, j <- {});
+ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE ImplyEquivTrue;
+(\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
+ordinalOne = {} => {} \notin ordinalOne   BECAUSE TI;
+~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
+{} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE IntroNotNot;
+{} \in ordinalOne => ordinalOne # {}   BECAUSE TI;
+ordinalOne # {}   BECAUSE MODUS_PONENS;
 QED
 
 ordinalTwo == SUBSET ordinalOne
@@ -475,7 +496,7 @@ THEOREM singletonExists
 PROOF
 VARIABLES a,b,c,x,z;
 \* Proof by separation in the powerset of a
-(\A x : x \in { a } <=> x = a) <=> \E b : \A x : x \in b <=> x = a   BECAUSE CHOOSE { a };
+(\E b : \A x : x \in b <=> x = a) => (\A x : x \in { a } <=> x = a)   BECAUSE CHOOSE { a };
 \A a : \E b : \A x : x \in b <=> (x \in a /\ x = c)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE \A(a <- SUBSET a);
 \A c : \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE GENERALIZATION;
@@ -510,7 +531,7 @@ THEOREM pairExists
 PROOF
 VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
-(\A y : y \in { c, d } <=> (y = c \/ y = d)) <=> \E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
+(\E b : \A y : y \in b <=> (y = c \/ y = d)) => (\A y : y \in { c, d } <=> (y = c \/ y = d))   BECAUSE CHOOSE {c, d};
 F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
       	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
@@ -535,23 +556,7 @@ F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c))) => ((y = z) \/ (ordinalOne = {}))   BECAUSE MergeImplicationsOr;
 (F(c,d,x,y) /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TI;
 
-\* Proof that ordinalOne # {}
-powersetExists   BECAUSE AXIOM;
-{} \in ordinalOne <=> {} \subseteq {}   BECAUSE \A(x <- {}, z <- {});
-inclusionInOneself   BECAUSE THEOREM;
-{} \subseteq {}   BECAUSE \A(x <- {});
-{} \in ordinalOne   BECAUSE MODUS_PONENS;
-emptySetExists   BECAUSE THEOREM;
-\A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
-ordinalOne = {} => ((\A x : x \notin ordinalOne) <=> emptySetExists)   BECAUSE \A(i <- ordinalOne, j <- {});
-ordinalOne = {} => (\A x : x \notin ordinalOne)   BECAUSE ImplyEquivTrue;
-(\A x : x \notin ordinalOne) => {} \notin ordinalOne   BECAUSE \A(x <- {});
-ordinalOne = {} => {} \notin ordinalOne   BECAUSE TI;
-~({} \notin ordinalOne) => ordinalOne # {}   BECAUSE Contraposition;
-{} \in ordinalOne => ~({} \notin ordinalOne)   BECAUSE IntroNotNot;
-{} \in ordinalOne => ordinalOne # {}   BECAUSE TI;
-ordinalOne # {}   BECAUSE MODUS_PONENS;
-
+oneIsNotZero   BECAUSE THEOREM;
 (y = z \/ ordinalOne = {}) => y = z   BECAUSE OrFalseStart;
 (F(c,d,x,y) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
 
@@ -913,10 +918,8 @@ tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
 THEOREM tupleComposition
 PROOF
 VARIABLES c,x,y;
-(\E y : c = <<fst(c),y>>) <=> \E x : \E y : c = <<x,y>>   BECAUSE CHOOSE fst(c);
-IsCouple(c) => (\E y : c = <<fst(c),y>>)   BECAUSE EquivToImplReverse;
-c = <<fst(c),snd(c)>> <=> \E y : c = <<fst(c),y>>   BECAUSE CHOOSE snd(c);
-(\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE EquivToImplReverse;
+(\E x : \E y : c = <<x,y>>) => (\E y : c = <<fst(c),y>>)   BECAUSE CHOOSE fst(c);
+(\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE CHOOSE snd(c);
 IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TI;
 tupleComposition   BECAUSE GENERALIZATION;
 QED
@@ -1009,8 +1012,8 @@ THEOREM domainExists
 PROOF
 VARIABLES a,b,g,x,y;
 \* By separation in UNION UNION g
-(\A x : x \in Domain(g) <=> IsDefinedOn(g,x))
-   <=> \E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE CHOOSE Domain(g);
+(\E b : \A x : x \in b <=> IsDefinedOn(g,x))
+   => (\A x : x \in Domain(g) <=> IsDefinedOn(g,x))   BECAUSE CHOOSE Domain(g);
 \A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
 (x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
@@ -1038,8 +1041,8 @@ VARIABLES a,b,g,x,y;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE \A(a <- UNION UNION g);
 
 chooseB(g) == CHOOSE b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x));
-(\A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x)))
-   <=> \E b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE CHOOSE chooseB(g);
+(\E b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x)))
+   => (\A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x)))   BECAUSE CHOOSE chooseB(g);
 \A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE MODUS_PONENS;
 y \in chooseB(g) <=> (y \in UNION UNION g /\ Reaches(g,y))   BECAUSE \A(x <- y);
 
@@ -1054,8 +1057,8 @@ Reaches(g,y) => y \in UNION UNION g   BECAUSE TI;
 y \in chooseB(g) <=> Reaches(g,y)   BECAUSE SeparationTauto;
 \A y : y \in chooseB(g) <=> Reaches(g,y)   BECAUSE GENERALIZATION;
 \E b : \A y : y \in b <=> Reaches(g,y)   BECAUSE \E(b <- chooseB(g));
-(\A y : y \in Image(g) <=> Reaches(g,y))
-   <=> (\E b : \A y : y \in b <=> Reaches(g,y))   BECAUSE CHOOSE Image(g);
+(\E b : \A y : y \in b <=> Reaches(g,y))
+   => (\A y : y \in Image(g) <=> Reaches(g,y))   BECAUSE CHOOSE Image(g);
 \A y : y \in Image(g) <=> Reaches(g,y)   BECAUSE MODUS_PONENS;
 imageExists   BECAUSE GENERALIZATION;
 QED
@@ -1096,8 +1099,8 @@ THEOREM multiApplyExists
 PROOF
 VARIABLES a,b,c,f,g,u,x,y,multiX;
 \* By separation in Image(f)
-(\A x : x \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,x>> \in f)
-   <=> (\E b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f)
+(\E b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f)
+   => (\A x : x \in multiApply(f,multiX) <=> \E u : u \in multiX /\ <<u,x>> \in f)
    BECAUSE CHOOSE multiApply(f,multiX);
 \A a : \E b : \A x : x \in b <=> ( x \in a /\ (\E u : u \in multiX /\ <<u,x>> \in f) )   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> ( x \in Image(f) /\ (\E u : u \in multiX /\ <<u,x>> \in f) )   BECAUSE \A(a <- Image(f));
@@ -1135,13 +1138,14 @@ THEOREM cartesianProductExists
 PROOF
 VARIABLES a,b,c,d,i,j,t,u,v,x,y,z;
 \* By separation in SUBSET SUBSET (i \union j)
-(\A x : x \in (i \X j) <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))
-   <=> (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))   BECAUSE CHOOSE i \X j;
+(\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))
+   => (\A x : x \in (i \X j) <=> (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))   BECAUSE CHOOSE i \X j;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))   BECAUSE \A(a <- SUBSET SUBSET (i \union j));
 chooseB(i,j) == CHOOSE b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j));
-(\A x : x \in chooseB(i,j) <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)))
-   <=> \E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))   BECAUSE CHOOSE chooseB(i,j);
+(\E b : \A x : x \in b <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)))
+   => (\A x : x \in chooseB(i,j) <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j)))
+    BECAUSE CHOOSE chooseB(i,j);
 \A x : x \in chooseB(i,j) <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))
    BECAUSE MODUS_PONENS;
 x \in chooseB(i,j) <=> (x \in SUBSET SUBSET (i \union j) /\ (IsCouple(x) /\ fst(x) \in i /\ snd(x) \in j))
@@ -1292,7 +1296,7 @@ x = <<fst(x), snd(x)>> => (x \in (Domain(h) \X Image(g)) <=> <<fst(x), snd(x)>> 
 (\A x : x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))) => (\A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in (Domain(h) \X Image(g)) /\ (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))) => (\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) BECAUSE Q_SCHEME;
 \E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)   BECAUSE MODUS_PONENS;
-(\A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) <=> (\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))   BECAUSE CHOOSE compose(g,h);
+(\E b : \A x : x \in b <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)) => (\A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g))   BECAUSE CHOOSE compose(g,h);
 \A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)   BECAUSE MODUS_PONENS;
 composeExists   BECAUSE GENERALIZATION;
 QED

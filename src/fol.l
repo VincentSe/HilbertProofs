@@ -37,7 +37,6 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 
 "\\A"     { folget_lval(yyscanner)->lopVal = forall; return QUANTIFIER; }
 "\\E"     { folget_lval(yyscanner)->lopVal = exists; return QUANTIFIER; }
-"CHOOSE"  { folget_lval(yyscanner)->lopVal = choose; return QUANTIFIER; }
 
 
 "AXIOM"          { folget_lval(yyscanner)->rkVal = axiom; return REASON_KIND; }
@@ -55,6 +54,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 \\\*[^\n]*$ { /* discard line comments */ }
 \r { /* discard carriage returns */ }
 
+"CHOOSE"  { return CHOOSE; }
 "LOCAL" { return LOCAL; }
 "PROOF" { return PROOF; }
 "QED" { return QED; }
