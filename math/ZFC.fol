@@ -9,7 +9,8 @@
    schemes of separation and replacement are also defined.
 
    The operators defined are the empty set, singleton of a set, pair of sets, couples,
-   union of two sets, intersection of two sets, cartesian product and disjoint union.
+   union of two sets, intersection of two sets, difference of two sets,
+   cartesian product and disjoint union.
 
    The relations defined are graphs and equivalence relations.
 *)
@@ -320,6 +321,50 @@ VARIABLES a,b,u,v,x;
 \E b : \A x : x \in b <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
 \A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
 intersectionExists   BECAUSE GENERALIZATION;
+QED
+
+\* The complement of a set into another set
+u \ v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \notin v)
+
+setDifferenceExists == \A u : \A v : \A x : x \in (u \ v) <=> (x \in u /\ x \notin v)
+THEOREM setDifferenceExists
+PROOF
+\* By separation in u
+VARIABLES a,u,v;
+\A a : \E b : \A x : x \in b <=> (x \in a /\ x \notin v)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> (x \in u /\ x \notin v)   BECAUSE \A(a <- u);
+(\E b : \A x : x \in b <=> (x \in u /\ x \notin v)) => \A x : x \in (u \ v) <=> (x \in u /\ x \notin v)
+   BECAUSE CHOOSE u \ v;
+\A x : x \in (u \ v) <=> (x \in u /\ x \notin v)   BECAUSE MODUS_PONENS;
+setDifferenceExists   BECAUSE GENERALIZATION;
+QED
+
+setDifferenceInc == \A u : \A v : \A a : (a \subseteq u /\ a \intersect v = {}) => a \subseteq (u \ v)
+THEOREM setDifferenceInc
+PROOF
+VARIABLES a,b,u,v,x,z;
+setDifferenceExists   BECAUSE THEOREM;
+z \in (u \ v) <=> (z \in u /\ z \notin v)   BECAUSE \A(u <- u, v <- v, x <- z);
+a \subseteq u => (z \in a => z \in u)   BECAUSE \A(z <- z);
+\A a : \A b : a = b => ((z \notin a) <=> (z \notin b))   BECAUSE E_SCHEME;
+(a \intersect v) = {} => ((z \notin (a \intersect v)) <=> (z \notin {}))
+   BECAUSE \A(a <- a \intersect v, b <- {});
+emptySetExists   BECAUSE THEOREM;
+z \notin {}   BECAUSE \A(x <- z);
+(a \intersect v) = {} => (z \notin (a \intersect v))   BECAUSE ImplyEquivTrue;
+intersectionExists   BECAUSE THEOREM;
+z \in (a \intersect v) <=> (z \in a /\ z \in v)   BECAUSE \A(u <- a, v <- v, x <- z);
+(z \in a /\ z \in v) => z \in (a \intersect v)   BECAUSE EquivToImplReverse;
+z \notin (a \intersect v) => ~(z \in a /\ z \in v)   BECAUSE Contraposition;
+~(z \in a /\ z \in v) => (z \notin a \/ z \notin v)   BECAUSE DistribNotAnd;
+z \notin (a \intersect v) => (z \notin a \/ z \notin v)   BECAUSE TI;
+a \intersect v = {} => (z \notin a \/ z \notin v)   BECAUSE TI;
+(z \in a => z \notin v) <=> (z \notin a \/ z \notin v)   BECAUSE BooleanImplication;
+(z \notin a \/ z \notin v) => (z \in a => z \notin v)   BECAUSE EquivToImplReverse;
+a \intersect v = {} => (z \in a => z \notin v)   BECAUSE TI;
+(a \intersect v = {} /\ z \in a) => z \notin v   BECAUSE HypoImplToAnd;
+
+\* TODO (a \subseteq u /\ a \intersect v = {} /\ z \in a) => z \in (u \ v)
 QED
 
 AreDisjoint(x,y) == x \intersect y = {}

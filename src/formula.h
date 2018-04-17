@@ -35,7 +35,7 @@ enum builtin_operator
     funcApply,
     binIntersect, binUnion, unaryUnion, powerset,
 
-    plus, cartesianProduct,
+    plus, setDifference, cartesianProduct,
 
     // This type is set by the semantic checker, after the bison parsing.
     // A variable is either declared by

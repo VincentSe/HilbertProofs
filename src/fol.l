@@ -33,6 +33,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 "\\union"     { folget_lval(yyscanner)->lopVal = binUnion; return INFIX_OP; }
 "\\X"         { folget_lval(yyscanner)->lopVal = cartesianProduct; return INFIX_OP; }
 "+"           { folget_lval(yyscanner)->lopVal = plus; return INFIX_OP; }
+"\\"          { folget_lval(yyscanner)->lopVal = setDifference; return INFIX_OP; }
 
 
 "\\A"     { folget_lval(yyscanner)->lopVal = forall; return QUANTIFIER; }
