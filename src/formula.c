@@ -498,7 +498,8 @@ unsigned char formula_equal(const formula* f,
 	}
 
       // Try defining formulas last, after we know the true ops don't work
-      if (is_custom_operator(f) && f->definingFormula)
+      if (is_custom_operator(f) && f->definingFormula
+	  && f->definingFormula->builtInOp != choose) // CHOOSE is not an operator in itself
 	{
 	  // Assume f <=> f->definingFormula (which was tested in
 	  // resolve_operator_or_variable).
@@ -509,7 +510,8 @@ unsigned char formula_equal(const formula* f,
 			       substituteMore);
 	}
 
-      if (is_custom_operator(g) && g->definingFormula && !freeSubs)
+      if (is_custom_operator(g) && g->definingFormula && !freeSubs
+	  && g->definingFormula->builtInOp != choose) // CHOOSE is not an operator in itself
 	{
 	  // Assume g <=> g->definingFormula (which was tested in
 	  // resolve_operator_or_variable).
@@ -697,6 +699,7 @@ formula* equivalent_defining_formula(const formula* f,
 				     const formula* opDef,
 				     const formula_set operatorDefinitions)
 {
+  // TODO : choose defining formulas with susbstituted operands are only for BECAUSE CHOOSE reasons, not for main formulas
   if (!f || !free_define(f->operands, opDef))
     return (formula*)0;
 

@@ -339,34 +339,6 @@ VARIABLES a,u,v;
 setDifferenceExists   BECAUSE GENERALIZATION;
 QED
 
-setDifferenceInc == \A u : \A v : \A a : (a \subseteq u /\ a \intersect v = {}) => a \subseteq (u \ v)
-THEOREM setDifferenceInc
-PROOF
-VARIABLES a,b,u,v,x,z;
-setDifferenceExists   BECAUSE THEOREM;
-z \in (u \ v) <=> (z \in u /\ z \notin v)   BECAUSE \A(u <- u, v <- v, x <- z);
-a \subseteq u => (z \in a => z \in u)   BECAUSE \A(z <- z);
-\A a : \A b : a = b => ((z \notin a) <=> (z \notin b))   BECAUSE E_SCHEME;
-(a \intersect v) = {} => ((z \notin (a \intersect v)) <=> (z \notin {}))
-   BECAUSE \A(a <- a \intersect v, b <- {});
-emptySetExists   BECAUSE THEOREM;
-z \notin {}   BECAUSE \A(x <- z);
-(a \intersect v) = {} => (z \notin (a \intersect v))   BECAUSE ImplyEquivTrue;
-intersectionExists   BECAUSE THEOREM;
-z \in (a \intersect v) <=> (z \in a /\ z \in v)   BECAUSE \A(u <- a, v <- v, x <- z);
-(z \in a /\ z \in v) => z \in (a \intersect v)   BECAUSE EquivToImplReverse;
-z \notin (a \intersect v) => ~(z \in a /\ z \in v)   BECAUSE Contraposition;
-~(z \in a /\ z \in v) => (z \notin a \/ z \notin v)   BECAUSE DistribNotAnd;
-z \notin (a \intersect v) => (z \notin a \/ z \notin v)   BECAUSE TI;
-a \intersect v = {} => (z \notin a \/ z \notin v)   BECAUSE TI;
-(z \in a => z \notin v) <=> (z \notin a \/ z \notin v)   BECAUSE BooleanImplication;
-(z \notin a \/ z \notin v) => (z \in a => z \notin v)   BECAUSE EquivToImplReverse;
-a \intersect v = {} => (z \in a => z \notin v)   BECAUSE TI;
-(a \intersect v = {} /\ z \in a) => z \notin v   BECAUSE HypoImplToAnd;
-
-\* TODO (a \subseteq u /\ a \intersect v = {} /\ z \in a) => z \in (u \ v)
-QED
-
 AreDisjoint(x,y) == x \intersect y = {}
 noCommonElements == \A x : \A y : AreDisjoint(x,y) <=> \A z : ~(z \in x /\ z \in y)
 THEOREM noCommonElements
@@ -878,6 +850,48 @@ pairSymmetry   BECAUSE THEOREM;
 {x, y} = {y, x} => (UNION {x,y} = UNION {y,x})   BECAUSE \A(x <- {x,y}, y <- {y,x});
 (x \union y) = (y \union x)   BECAUSE MODUS_PONENS;
 unionSymmetry   BECAUSE GENERALIZATION;
+QED
+
+emptyUnion == \A a : {} \union a = a
+THEOREM emptyUnion
+PROOF
+emptyUnion   BECAUSE GENERALIZATION;
+QED
+
+distribIntersectUnion == \A a : \A b : \A c :
+   (a \intersect (b \union c)) = ((a \intersect b) \union (a \intersect c))
+THEOREM distribIntersectUnion
+PROOF
+VARIABLES a,b,c,u,v,x,y,z;
+intersectionExists   BECAUSE THEOREM;
+x \in (a \intersect (b \union c)) <=> (x \in a /\ x \in (b \union c))   BECAUSE \A(u <- a, v <- b \union c, x <- x);
+x \in (a \intersect b) <=> (x \in a /\ x \in b)   BECAUSE \A(u <- a, v <- b, x <- x);
+x \in (a \intersect c) <=> (x \in a /\ x \in c)   BECAUSE \A(u <- a, v <- c, x <- x);
+unionInc   BECAUSE THEOREM;
+x \in (b \union c) <=> (x \in b \/ x \in c)   BECAUSE \A(x <- b, y <- c, z <- x);
+x \in ((a \intersect b) \union (a \intersect c)) <=> (x \in (a \intersect b) \/ x \in (a \intersect c))
+   BECAUSE \A(x <- (a \intersect b), y <- (a \intersect c), z <- x);
+injectAnd(a,b,h) == (a <=> b) => ((h /\ a) <=> (h /\ b))   PROPO_TAUTO;
+(x \in a /\ x \in (b \union c)) <=> (x \in a /\ (x \in b \/ x \in c))   BECAUSE injectAnd;
+x \in (a \intersect (b \union c)) <=> (x \in a /\ (x \in b \/ x \in c))   BECAUSE TransitEquiv;
+distribEquiv(a,b,c) == (a /\ (b \/ c)) <=> ((a /\ b) \/ (a /\ c))   PROPO_TAUTO;
+(x \in a /\ (x \in b \/ x \in c)) <=> ((x \in a /\ x \in b) \/ (x \in a /\ x \in c))   BECAUSE distribEquiv;
+x \in (a \intersect (b \union c)) <=> ((x \in a /\ x \in b) \/ (x \in a /\ x \in c))   BECAUSE TransitEquiv;
+injectOrLeft(a,b,h) == (a <=> b) => ((h \/ a) <=> (h \/ b))   PROPO_TAUTO;
+(x \in (a \intersect b) \/ x \in (a \intersect c)) <=> (x \in (a \intersect b) \/ (x \in a /\ x \in c))   BECAUSE injectOrLeft;
+x \in ((a \intersect b) \union (a \intersect c)) <=> (x \in (a \intersect b) \/ (x \in a /\ x \in c))   BECAUSE TransitEquiv;
+injectOrRight(a,b,h) == (a <=> b) => ((a \/ h) <=> (b \/ h))   PROPO_TAUTO;
+(x \in (a \intersect b) \/ (x \in a /\ x \in c)) <=> ((x \in a /\ x \in b) \/ (x \in a /\ x \in c))   BECAUSE injectOrRight;
+x \in ((a \intersect b) \union (a \intersect c)) <=> ((x \in a /\ x \in b) \/ (x \in a /\ x \in c))   BECAUSE TransitEquiv;
+x \in ((a \intersect b) \union (a \intersect c)) <=> x \in (a \intersect (b \union c))   BECAUSE TransitEquiv2;
+x \in (a \intersect (b \union c)) <=> x \in ((a \intersect b) \union (a \intersect c))   BECAUSE EquivSymmetry;
+\A x : x \in (a \intersect (b \union c)) <=> x \in ((a \intersect b) \union (a \intersect c))   BECAUSE GENERALIZATION;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in (a \intersect (b \union c)) <=> x \in ((a \intersect b) \union (a \intersect c)))
+   => (a \intersect (b \union c)) = ((a \intersect b) \union (a \intersect c))
+   BECAUSE \A(a <- (a \intersect (b \union c)), b <- ((a \intersect b) \union (a \intersect c)));
+(a \intersect (b \union c)) = ((a \intersect b) \union (a \intersect c))   BECAUSE MODUS_PONENS;
+distribIntersectUnion   BECAUSE GENERALIZATION;
 QED
 
 (* Tuples *)

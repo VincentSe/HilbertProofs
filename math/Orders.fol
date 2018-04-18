@@ -16,6 +16,8 @@ IsOrder(o) == IsGraph(o)
 \* contain Domain(u)
 IsIncreasing(f, u, v) == \A x : \A y : <<x,y>> \in u => <<f[x], f[y]>> \in v
 
+IsMinimum(m, part, order) == m \in part /\ \A x : x \in part => <<m,x>> \in order
+
 \* An injection f transports an order o
 IsInInjectOrder(o,f,x) == x \in (Image(f) \X Image(f)) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o
 injectOrder(o,f) == CHOOSE b : \A x : x \in b <=> IsInInjectOrder(o,f,x)
@@ -494,6 +496,122 @@ IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
 disjointOrders   BECAUSE GENERALIZATION;
 QED
 
+EmptyOrHasMinimum(part, order) == part = {} \/ \E m : IsMinimum(m, part, order)
+
+minOfTwoParts == \A o : \A a : \A b :
+      (EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o)
+        /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => EmptyOrHasMinimum(a \union b, o)
+THEOREM minOfTwoParts
+PROOF
+VARIABLES a,b,m,o,x,y,z;
+\* If a is not empty, then it has a minimum
+ma(a,o) == CHOOSE m : IsMinimum(m, a, o);
+killCase(a,b) == ((a \/ b) /\ ~a) => b   PROPO_TAUTO;
+(EmptyOrHasMinimum(a,o) /\ a # {}) => \E m : IsMinimum(m, a, o)   BECAUSE killCase;
+(\E m : IsMinimum(m, a, o)) => IsMinimum(ma(a,o), a, o)   BECAUSE CHOOSE ma(a,o);
+(EmptyOrHasMinimum(a,o) /\ a # {}) => IsMinimum(ma(a,o), a, o)   BECAUSE TI;
+
+   \* ma(a,o) is below b
+(\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)
+   => ((ma(a,o) \in a /\ x \in b) => <<ma(a,o), x>> \in o)   BECAUSE \A(x <- ma(a,o), y <- x);
+pullHypo(a,b,c,d) == (a => ((b /\ c) => d)) => ((a /\ b) => (c => d))   PROPO_TAUTO;
+((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ ma(a,o) \in a)
+   => (x \in b => <<ma(a,o), x>> \in o)   BECAUSE pullHypo;
+IsMinimum(ma(a,o), a, o) => ma(a,o) \in a   BECAUSE DropAndRight;
+(EmptyOrHasMinimum(a,o) /\ a # {}) => ma(a,o) \in a   BECAUSE TI;
+(\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) => (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)   BECAUSE ImplySelf;
+((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ (EmptyOrHasMinimum(a,o) /\ a # {}))
+   => ((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ ma(a,o) \in a)   BECAUSE MergeImplicationsAnd;
+((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ (EmptyOrHasMinimum(a,o) /\ a # {}))
+   => (x \in b => <<ma(a,o), x>> \in o)   BECAUSE TI;
+
+   \* ma(a,o) is the minimum of (a \union b)
+IsMinimum(ma(a,o), a, o) => \A x : x \in a => <<ma(a,o),x>> \in o   BECAUSE DropAndLeft;
+(\A x : x \in a => <<ma(a,o),x>> \in o) => (x \in a => <<ma(a,o),x>> \in o)   BECAUSE \A(x <- x);
+IsMinimum(ma(a,o), a, o) => (x \in a => <<ma(a,o),x>> \in o)   BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)) => EmptyOrHasMinimum(a,o)   BECAUSE DropAndRight;
+a # {} => a # {}   BECAUSE ImplySelf;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => (EmptyOrHasMinimum(a,o) /\ a # {})   BECAUSE MergeImplicationsAnd;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => IsMinimum(ma(a,o), a, o)   BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => (x \in a => <<ma(a,o),x>> \in o)   BECAUSE TI;
+shuffleHypos(a,b,c) == (b /\ a /\ c) => (a /\ (b /\ c))   PROPO_TAUTO;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ (EmptyOrHasMinimum(a,o) /\ a # {}))    BECAUSE shuffleHypos;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => (x \in b => <<ma(a,o), x>> \in o)   BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ((x \in a => <<ma(a,o),x>> \in o) /\ (x \in b => <<ma(a,o), x>> \in o))   BECAUSE CombineImplicationsEnd;
+((x \in a => <<ma(a,o),x>> \in o) /\ (x \in b => <<ma(a,o), x>> \in o))
+   => ((x \in a \/ x \in b) => <<ma(a,o),x>> \in o)   BECAUSE FactorAndImpl;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ((x \in a \/ x \in b) => <<ma(a,o),x>> \in o)   BECAUSE TI;
+unionInc   BECAUSE THEOREM;
+x \in (a \union b) <=> (x \in a \/ x \in b)   BECAUSE \A(x <- a, y <- b, z <- x);
+x \in (a \union b) => (x \in a \/ x \in b)   BECAUSE EquivToImpl;
+((x \in a \/ x \in b) => <<ma(a,o),x>> \in o) => ((x \in (a \union b)) => <<ma(a,o),x>> \in o)   BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ((x \in (a \union b)) => <<ma(a,o),x>> \in o)   BECAUSE TI;
+\A x : (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ((x \in (a \union b)) => <<ma(a,o),x>> \in o)   BECAUSE GENERALIZATION;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => (\A x : (x \in (a \union b)) => <<ma(a,o),x>> \in o)   BECAUSE Q_SCHEME;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ma(a,o) \in a   BECAUSE TI;
+unionFirstInc   BECAUSE THEOREM;
+ma(a,o) \in a => ma(a,o) \in (a \union b)   BECAUSE \A(x <- a, y <- b, z <- ma(a,o)); 
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => ma(a,o) \in (a \union b)   BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => IsMinimum(ma(a,o), a \union b, o) BECAUSE CombineImplicationsEnd;
+IsMinimum(ma(a,o), a \union b, o) => \E m : IsMinimum(m, a \union b, o)   BECAUSE \E(m <- ma(a,o));
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => \E m : IsMinimum(m, a \union b, o) BECAUSE TI;
+(\E m : IsMinimum(m, a \union b, o)) => EmptyOrHasMinimum(a \union b, o)   BECAUSE IntroOrRight;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
+   => EmptyOrHasMinimum(a \union b, o) BECAUSE TI;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => (a # {} => EmptyOrHasMinimum(a \union b, o)) BECAUSE HypoAndToImpl;
+addHypo(a,b,c) == (a /\ b /\ c) => (a /\ c)   PROPO_TAUTO;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))   BECAUSE addHypo;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => (a # {} => EmptyOrHasMinimum(a \union b, o)) BECAUSE TI;
+
+\* If a is empty
+emptyUnion   BECAUSE THEOREM;
+{} \union b = b   BECAUSE \A(a <- b);
+\A x : \A y : x = y => (x \union b = b <=> y \union b = b)   BECAUSE E_SCHEME;
+a = {} => (a \union b = b <=> {} \union b = b)   BECAUSE \A(x <- a, y <- {});
+a = {} => a \union b = b   BECAUSE ImplyEquivTrue;
+\A x : \A y : x = y => (EmptyOrHasMinimum(x,o) <=> EmptyOrHasMinimum(y,o))   BECAUSE E_SCHEME;
+a \union b = b => (EmptyOrHasMinimum(a \union b,o) <=> EmptyOrHasMinimum(b,o))   BECAUSE \A(x <- a \union b, y <- b);
+a = {} => (EmptyOrHasMinimum(a \union b,o) <=> EmptyOrHasMinimum(b,o))   BECAUSE TI;
+(a = {} /\ EmptyOrHasMinimum(b,o)) => EmptyOrHasMinimum(a \union b, o)   BECAUSE HypoEquivToAndReverse;
+(EmptyOrHasMinimum(b,o) /\ a = {}) => (a = {} /\ EmptyOrHasMinimum(b,o))   BECAUSE AndSymmetry;
+(EmptyOrHasMinimum(b,o) /\ a = {}) => EmptyOrHasMinimum(a \union b, o)   BECAUSE TI;
+EmptyOrHasMinimum(b,o) => (a = {} => EmptyOrHasMinimum(a \union b, o))   BECAUSE HypoAndToImpl;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => EmptyOrHasMinimum(b,o)   BECAUSE DropAndBoth;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => (a = {} => EmptyOrHasMinimum(a \union b, o))   BECAUSE TI;
+
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => ((a = {} => EmptyOrHasMinimum(a \union b, o)) /\ (a # {} => EmptyOrHasMinimum(a \union b, o)))   BECAUSE CombineImplicationsEnd;
+((a = {} => EmptyOrHasMinimum(a \union b, o)) /\ (a # {} => EmptyOrHasMinimum(a \union b, o)))
+   => ((a = {} \/ a # {}) => EmptyOrHasMinimum(a \union b, o))   BECAUSE FactorAndImpl;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => ((a = {} \/ a # {}) => EmptyOrHasMinimum(a \union b, o))   BECAUSE TI;
+a = {} \/ a # {}   BECAUSE ExcludedMiddle;
+(a = {} \/ a # {}) => ((EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => EmptyOrHasMinimum(a \union b, o))   BECAUSE SwitchHypos;
+(EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
+   => EmptyOrHasMinimum(a \union b, o)   BECAUSE MODUS_PONENS;
+minOfTwoParts   BECAUSE GENERALIZATION;
+QED
 
 (*
    The class of well-orders, orders where each nonempty subset has a minimum.
@@ -509,8 +627,7 @@ QED
    They are also stable under cartesian products, which they call multiplication.
 *)
 IsWellOrder(w) == IsOrder(w)
-   /\ (\A part : (part # {} /\ part \subseteq Domain(w))
-         => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in w)
+   /\ (\A part : part \subseteq Domain(w) => EmptyOrHasMinimum(part, w))
 
 injectWOIsWO == \A o : \A f : (IsWellOrder(o) /\ IsFunction(f)) => IsWellOrder(injectOrder(o,f))
 THEOREM injectWOIsWO
@@ -519,7 +636,7 @@ disjointWOAddition == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisj
    => IsWellOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
 THEOREM disjointWOAddition
 PROOF
-VARIABLES a,b,g,i,j,u,v,x,y,z,part;
+VARIABLES a,b,c,g,i,j,o,u,v,x,y,z,part;
 \* Proof that u \union v \union (Domain(u) \X Domain(v)) is a graph : union of 3 graphs
 woAdd(u,v) == u \union v \union (Domain(u) \X Domain(v)); \* Shorter name
 unionInc   BECAUSE THEOREM;
@@ -554,131 +671,58 @@ disjointOrders   BECAUSE THEOREM;
 
 \* Proof that wellOrderAddition is transitive
 
-\* Proof that wellOrderAddition has all minimums.
-nep(part,u,v) == part # {} /\ (part \subseteq Domain(woAdd(u,v)));
-intersectionExists   BECAUSE THEOREM;
-z \in (part \intersect Domain(u)) <=> (z \in part /\ z \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- z);
-z \in (part \intersect Domain(u)) => (z \in part /\ z \in Domain(u))   BECAUSE EquivToImpl;
-(z \in part /\ z \in Domain(u)) => z \in Domain(u)   BECAUSE DropAndLeft;
-z \in (part \intersect Domain(u)) => z \in Domain(u)   BECAUSE TI;
-(part \intersect Domain(u)) \subseteq Domain(u)   BECAUSE GENERALIZATION;
-\* So because u is a well-order, if part \intersect Domain(u) is non-empty it has a minimum,
-\* which is also the minimum of part. Otherwise (part \intersect Domain(u)) is empty and
-\* part \subseteq Domain(v), which is also a well-order
-   \* Case where part touches u
-IsWellOrder(u) => (\A part : (part # {} /\ part \subseteq Domain(u))
-         => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in u)   BECAUSE DropAndLeft;
-(\A part : (part # {} /\ part \subseteq Domain(u)) => \E min : min \in part /\ \A b : b \in part => <<min,b>> \in u)
-   => (((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)) => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)
-   BECAUSE \A(part <- (part \intersect Domain(u)));
-IsWellOrder(u) => (((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)) => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)   BECAUSE TI;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)))
-   => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u
-   BECAUSE HypoImplToAnd;
-((part \intersect Domain(u)) # {}) => ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u))   BECAUSE IntroAndLeft;
-IsWellOrder(u) => IsWellOrder(u)   BECAUSE ImplySelf;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
-   => (IsWellOrder(u) /\ ((part \intersect Domain(u)) # {} /\ (part \intersect Domain(u)) \subseteq Domain(u)))   BECAUSE MergeImplicationsAnd;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
-   => \E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u
-   BECAUSE TI; \* Then prove this min is also the minimum of part, ie <<min, b>> \in (u \union (Domain(u) \X Domain(v)),x)
-minU(u,part) == CHOOSE min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u;
-(\E min : min \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<min,b>> \in u)
-   => (minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE CHOOSE minU(u,part);
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => (minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE TI;
-(minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)
-   => \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u   BECAUSE DropAndLeft;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
-   => \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u   BECAUSE TI;
-(\A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)
-   => (b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE \A(b <- b);
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
-   => (b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u)   BECAUSE TI;
-(minU(u,part) \in (part \intersect Domain(u)) /\ \A b : b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in u) => minU(u,part) \in (part \intersect Domain(u))   BECAUSE DropAndRight;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => minU(u,part) \in (part \intersect Domain(u))   BECAUSE TI;
-minU(u,part) \in (part \intersect Domain(u)) <=> (minU(u,part) \in part /\ minU(u,part) \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- minU(u,part));
-minU(u,part) \in (part \intersect Domain(u)) => (minU(u,part) \in part /\ minU(u,part) \in Domain(u))   BECAUSE EquivToImpl;
-(minU(u,part) \in part /\ minU(u,part) \in Domain(u)) => minU(u,part) \in Domain(u)   BECAUSE DropAndLeft;
-minU(u,part) \in (part \intersect Domain(u)) => minU(u,part) \in Domain(u)   BECAUSE TI;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => minU(u,part) \in Domain(u)   BECAUSE TI;
-
+\* Proof that wellOrderAddition has all minimums
+\* Prove part \subseteq Domain(woAdd(u,v)) => part = (part \intersect Domain(u)) \union (part \intersect Domain(v))
+\* and call theorem minOfTwoParts with those two parts
 domainExists   BECAUSE THEOREM;
-b \in Domain(woAdd(u,v))
-   <=> IsDefinedOn(woAdd(u,v),b)   BECAUSE \A(g <- woAdd(u,v), x <- b);
-b \in Domain(woAdd(u,v))
-   => \E y : <<b,y>> \in woAdd(u,v)   BECAUSE EquivToImpl;
-<<b,y>> \in woAdd(u,v)
-   <=> (<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))
-   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<b,y>>);
-<<b,y>> \in woAdd(u,v)
-   => (<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))   BECAUSE EquivToImpl;
+z \in Domain(woAdd(u,v))
+   <=> IsDefinedOn(woAdd(u,v),z)   BECAUSE \A(g <- woAdd(u,v), x <- z);
+z \in Domain(woAdd(u,v))
+   => \E y : <<z,y>> \in woAdd(u,v)   BECAUSE EquivToImpl;
+<<z,y>> \in woAdd(u,v)
+   <=> (<<z,y>> \in (u \union v) \/ <<z,y>> \in (Domain(u) \X Domain(v)))
+   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<z,y>>);
+<<z,y>> \in woAdd(u,v)
+   => (<<z,y>> \in (u \union v) \/ <<z,y>> \in (Domain(u) \X Domain(v)))   BECAUSE EquivToImpl;
 cartesianProductCouples   BECAUSE THEOREM;
-(b \in Domain(u) /\ y \in Domain(v)) <=> <<b,y>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- b, b <- y);
-<<b,y>> \in (Domain(u) \X Domain(v)) => (b \in Domain(u) /\ y \in Domain(v))   BECAUSE EquivToImplReverse;
-(b \in Domain(u) /\ y \in Domain(v)) => b \in Domain(u)   BECAUSE DropAndRight;
-<<b,y>> \in (Domain(u) \X Domain(v)) => b \in Domain(u)   BECAUSE TI;
-<<b,y>> \in (u \union v) <=> (<<b,y>> \in u \/ <<b,y>> \in v)   BECAUSE \A(x <- u, y <- v, z <- <<b,y>>);
-<<b,y>> \in (u \union v) => (<<b,y>> \in u \/ <<b,y>> \in v)   BECAUSE EquivToImpl;
+(z \in Domain(u) /\ y \in Domain(v)) <=> <<z,y>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- z, b <- y);
+<<z,y>> \in (Domain(u) \X Domain(v)) => (z \in Domain(u) /\ y \in Domain(v))   BECAUSE EquivToImplReverse;
+(z \in Domain(u) /\ y \in Domain(v)) => z \in Domain(u)   BECAUSE DropAndRight;
+<<z,y>> \in (Domain(u) \X Domain(v)) => z \in Domain(u)   BECAUSE TI;
+<<z,y>> \in (u \union v) <=> (<<z,y>> \in u \/ <<z,y>> \in v)   BECAUSE \A(x <- u, y <- v, z <- <<z,y>>);
+<<z,y>> \in (u \union v) => (<<z,y>> \in u \/ <<z,y>> \in v)   BECAUSE EquivToImpl;
 domainInc   BECAUSE THEOREM;
-<<b,y>> \in u => b \in Domain(u)   BECAUSE \A(g <- u, x <- b, y <- y);
-<<b,y>> \in v => b \in Domain(v)   BECAUSE \A(g <- v, x <- b, y <- y);
-(<<b,y>> \in u \/ <<b,y>> \in v) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE MergeImplicationsOr;
-<<b,y>> \in (u \union v) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
-(<<b,y>> \in (u \union v) \/ <<b,y>> \in (Domain(u) \X Domain(v)))
-   => ((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u))   BECAUSE MergeImplicationsOr;
-<<b,y>> \in woAdd(u,v)
-   => ((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u))   BECAUSE TI;
-dropRedOr(a,b) == ((a \/ b) \/ a) => (a \/ b)   PROPO_TAUTO;
-((b \in Domain(u) \/ b \in Domain(v)) \/ b \in Domain(u)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE dropRedOr;
-<<b,y>> \in woAdd(u,v) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
-(\E y : <<b,y>> \in woAdd(u,v)) => (\E y : b \in Domain(u) \/ b \in Domain(v))   BECAUSE Q_SCHEME;
-(\E y : b \in Domain(u) \/ b \in Domain(v)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE Q_SCHEME;
-(\E y : <<b,y>> \in woAdd(u,v)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
-b \in Domain(woAdd(u,v)) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
+<<z,y>> \in u => z \in Domain(u)   BECAUSE \A(g <- u, x <- z, y <- y);
+<<z,y>> \in v => z \in Domain(v)   BECAUSE \A(g <- v, x <- z, y <- y);
+(<<z,y>> \in u \/ <<z,y>> \in v) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE MergeImplicationsOr;
+<<z,y>> \in (u \union v) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE TI;
+(<<z,y>> \in (u \union v) \/ <<z,y>> \in (Domain(u) \X Domain(v)))
+   => ((z \in Domain(u) \/ z \in Domain(v)) \/ z \in Domain(u))   BECAUSE MergeImplicationsOr;
+<<z,y>> \in woAdd(u,v)
+   => ((z \in Domain(u) \/ z \in Domain(v)) \/ z \in Domain(u))   BECAUSE TI;
+dropRedOr(a,z) == ((a \/ z) \/ a) => (a \/ z)   PROPO_TAUTO;
+((z \in Domain(u) \/ z \in Domain(v)) \/ z \in Domain(u)) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE dropRedOr;
+<<z,y>> \in woAdd(u,v) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE TI;
+(\E y : <<z,y>> \in woAdd(u,v)) => (\E y : z \in Domain(u) \/ z \in Domain(v))   BECAUSE Q_SCHEME;
+(\E y : z \in Domain(u) \/ z \in Domain(v)) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE Q_SCHEME;
+(\E y : <<z,y>> \in woAdd(u,v)) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE TI;
+z \in Domain(woAdd(u,v)) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE TI;
 
-nep(part,u,v) => (part \subseteq Domain(woAdd(u,v)))   BECAUSE DropAndLeft;
-(part \subseteq Domain(woAdd(u,v))) => (b \in part => b \in Domain(woAdd(u,v)))   BECAUSE \A(z <- b);
-nep(part,u,v) => (b \in part => b \in Domain(woAdd(u,v)))   BECAUSE TI;
-(nep(part,u,v) /\ b \in part) => b \in Domain(woAdd(u,v))   BECAUSE HypoImplToAnd;
-(nep(part,u,v) /\ b \in part) => (b \in Domain(u) \/ b \in Domain(v))   BECAUSE TI;
-pushHypo(a,b,c,d) == ((a /\ b) => (c \/ d)) => ((a /\ b) => ((b /\ c) \/ d))   PROPO_TAUTO;
-(nep(part,u,v) /\ b \in part) => ((b \in part /\ b \in Domain(u)) \/ b \in Domain(v))   BECAUSE pushHypo;
-b \in (part \intersect Domain(u)) <=> (b \in part /\ b \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- b);
-(b \in part /\ b \in Domain(u)) => b \in (part \intersect Domain(u))   BECAUSE EquivToImplReverse;
-b \in Domain(v) => b \in Domain(v)   BECAUSE ImplySelf;
-((b \in part /\ b \in Domain(u)) \/ b \in Domain(v)) => (b \in (part \intersect Domain(u)) \/ b \in Domain(v))   BECAUSE MergeImplicationsOr;
-(nep(part,u,v) /\ b \in part) => (b \in (part \intersect Domain(u)) \/ b \in Domain(v))   BECAUSE TI;
+part \subseteq Domain(woAdd(u,v)) => (z \in part => z \in Domain(woAdd(u,v)))   BECAUSE \A(z <- z);
+(part \subseteq Domain(woAdd(u,v)) /\ z \in part) => z \in Domain(woAdd(u,v))   BECAUSE HypoImplToAnd;
+(part \subseteq Domain(woAdd(u,v)) /\ z \in part) => (z \in Domain(u) \/ z \in Domain(v))   BECAUSE TI;
 
-	       	  \* The cross case where minU is in u and b in v
-(minU(u,part) \in Domain(u) /\ b \in Domain(v)) <=> <<minU(u,part),b>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- minU(u,part), b <- b);
-(minU(u,part) \in Domain(u) /\ b \in Domain(v)) => <<minU(u,part),b>> \in (Domain(u) \X Domain(v))   BECAUSE EquivToImpl;
-unionSecondInc   BECAUSE THEOREM;
-<<minU(u,part),b>> \in (Domain(u) \X Domain(v)) => <<minU(u,part),b>> \in woAdd(u,v)
-   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<minU(u,part),b>>);
-(minU(u,part) \in Domain(u) /\ b \in Domain(v)) => <<minU(u,part),b>> \in woAdd(u,v)   BECAUSE TI;
-minU(u,part) \in Domain(u) => (b \in Domain(v) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => (b \in Domain(v) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE TI;
-b \in Domain(v) => (IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE SwitchHypos;
-      		   \* The case case minU and b are both in u
-unionFirstInc   BECAUSE THEOREM;
-<<minU(u,part),b>> \in (u \union v) => <<minU(u,part),b>> \in woAdd(u,v)
-   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<minU(u,part),b>>);
-<<minU(u,part),b>> \in u => <<minU(u,part),b>> \in (u \union v)
-   BECAUSE \A(x <- u, y <- v, z <- <<minU(u,part),b>>);
-<<minU(u,part),b>> \in u => <<minU(u,part),b>> \in woAdd(u,v)   BECAUSE TI;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}) /\ b \in (part \intersect Domain(u)))
-   => <<minU(u,part),b>> \in u   BECAUSE HypoImplToAnd;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}) /\ b \in (part \intersect Domain(u)))
-   => <<minU(u,part),b>> \in woAdd(u,v)   BECAUSE TI;
-(IsWellOrder(u) /\ ((part \intersect Domain(u)) # {}))
-   => (b \in (part \intersect Domain(u)) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
-b \in (part \intersect Domain(u)) => ((IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE SwitchHypos;
-      	    	       \* Combine 2 cases
-(b \in (part \intersect Domain(u)) \/ b \in Domain(v)) => ((IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE CombineImplicationsStart;
-(nep(part,u,v) /\ b \in part) => ((IsWellOrder(u) /\ ((part \intersect Domain(u)) # {})) => <<minU(u,part),b>> \in woAdd(u,v))   BECAUSE TI;
+distribIntersectUnion   BECAUSE THEOREM;
+(part \intersect (Domain(u) \union Domain(v))) = ((part \intersect Domain(u)) \union (part \intersect Domain(v)))
+   BECAUSE \A(a <- part, b <- Domain(u), c <- Domain(v));
 
-\* Case where part does not touch u
-\* TODO theorem in ZFC : (part \subseteq a /\ (part \intersect b) = {}) => part \subseteq (a \ b)
+\* TODO reverse inclusion and domination of first part by second part
+
+minOfTwoParts   BECAUSE THEOREM;
+(EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v)) /\ EmptyOrHasMinimum(part \intersect Domain(v), woAdd(u,v))
+    /\ (\A x : \A y : (x \in (part \intersect Domain(u)) /\ y \in (part \intersect Domain(v))) => <<x,y>> \in woAdd(u,v)))
+   => EmptyOrHasMinimum((part \intersect Domain(u)) \union (part \intersect Domain(v)), woAdd(u,v))
+   BECAUSE \A(o <- woAdd(u,v), a <- part \intersect Domain(u), b <- part \intersect Domain(v));
 QED
 
 pasteTags(dom, tag) == productFunc(identity(dom), const(dom, tag))

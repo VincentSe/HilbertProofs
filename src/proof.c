@@ -247,6 +247,9 @@ short check_mp_cascade(const struct FormulaDList* statement,
 
   short recurse(const struct JustifiedFormula* f)
   {
+    if (!f->reason)
+      return 0; // skip local operator definitions
+    
     const formula* firstHypothesis = get_first_operand(propoFormula); // in the chain of implications
     unsigned char success = formula_equal(f->formula,
 					  firstHypothesis,
@@ -445,9 +448,10 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
     struct FormulaDList* hyp = statement->previous;
     while (hyp)
       {
-	if (formula_equal(hypo,
-			  hyp->jf->formula,
-			  0, 0, 0))
+	if (hyp->jf->reason // skip local operator definitions
+	    && formula_equal(hypo,
+			     hyp->jf->formula,
+			     0, 0, 0))
 	  return 1;
 	hyp = hyp->previous;
       }
@@ -995,33 +999,37 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
    G   BECAUSE CombineImplicationsStart + MODUS_PONENS;   
 */
 short check_choose_statement(const formula* f,
-			     const formula* chooseF)
+			     const formula* chooseReason)
 {
-  // axiom scheme : P(CHOOSE x : P) <=> \E x : P
+  // axiom scheme : (\E x : P) => P(CHOOSE x : P)
+  // For example the empty set :
+  // (\E b : \A x : x \notin b) => (\A x : x \notin {})
 
-  chooseF = get_quantified_formula(chooseF, choose);
+  const formula* chooseF = get_quantified_formula(chooseReason, choose);
   if (!chooseF)
     {
       printf("%s:%d: bad choose reason\n", f->file, f->first_line);
       return 0;
     }
 
+  // Compare the reason chooseF and the existential formula
   const formula* firstF = get_second_operand(f);
   const formula* existsF = get_first_operand(f);
   if (!firstF || !existsF
       || f->builtInOp != limplies
       || existsF->builtInOp != exists
+      || strcmp(existsF->name, chooseF->name) != 0 // different quantified variables
       || !formula_equal(get_first_operand(chooseF), get_first_operand(existsF), 0, 0, 0))
     {
       printf("%s:%d: bad choose reason\n", f->file, f->first_line);
       return 0;
     }
 
+  // Verify the substitution in the deduced formula
   const formula* firstSecondF = get_first_operand(existsF);
-
   variable_substitution before[2];
   before[0].variable = existsF->name;
-  before[0].subst = chooseF;
+  before[0].subst = chooseReason; // cut its defining formula locally ?
   before[1].variable = (char*)0;
   if (formula_equal(firstF,
 		    firstSecondF,
