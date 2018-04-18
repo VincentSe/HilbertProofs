@@ -496,7 +496,7 @@ IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
 disjointOrders   BECAUSE GENERALIZATION;
 QED
 
-EmptyOrHasMinimum(part, order) == part = {} \/ \E m : IsMinimum(m, part, order)
+EmptyOrHasMinimum(part, order) == (part = {}) \/ \E m : IsMinimum(m, part, order)
 
 minOfTwoParts == \A o : \A a : \A b :
       (EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o)
@@ -636,7 +636,7 @@ disjointWOAddition == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisj
    => IsWellOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
 THEOREM disjointWOAddition
 PROOF
-VARIABLES a,b,c,g,i,j,o,u,v,x,y,z,part;
+VARIABLES a,b,c,g,i,j,m,o,u,v,x,y,z,part;
 \* Proof that u \union v \union (Domain(u) \X Domain(v)) is a graph : union of 3 graphs
 woAdd(u,v) == u \union v \union (Domain(u) \X Domain(v)); \* Shorter name
 unionInc   BECAUSE THEOREM;
@@ -716,7 +716,71 @@ distribIntersectUnion   BECAUSE THEOREM;
 (part \intersect (Domain(u) \union Domain(v))) = ((part \intersect Domain(u)) \union (part \intersect Domain(v)))
    BECAUSE \A(a <- part, b <- Domain(u), c <- Domain(v));
 
-\* TODO reverse inclusion and domination of first part by second part
+\* TODO reverse inclusion
+IsWellOrder(u) => (\A part : part \subseteq Domain(u) => EmptyOrHasMinimum(part, u))   BECAUSE DropAndLeft;
+(\A part : part \subseteq Domain(u) => EmptyOrHasMinimum(part, u))
+   => ((part \intersect Domain(u)) \subseteq Domain(u) => EmptyOrHasMinimum(part \intersect Domain(u), u))   BECAUSE \A(part <- part \intersect Domain(u));
+IsWellOrder(u)
+   => ((part \intersect Domain(u)) \subseteq Domain(u) => EmptyOrHasMinimum(part \intersect Domain(u), u))   BECAUSE TI;
+(part \intersect Domain(u)) \subseteq Domain(u)
+   => (IsWellOrder(u) => EmptyOrHasMinimum(part \intersect Domain(u), u))   BECAUSE SwitchHypos;
+intersectionExists   BECAUSE THEOREM;
+z \in (part \intersect Domain(u)) <=> (z \in part /\ z \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- z);
+z \in (part \intersect Domain(u)) => (z \in part /\ z \in Domain(u))   BECAUSE EquivToImpl;
+(z \in part /\ z \in Domain(u)) => z \in Domain(u)   BECAUSE DropAndLeft;
+z \in (part \intersect Domain(u)) => z \in Domain(u)   BECAUSE TI;
+(part \intersect Domain(u)) \subseteq Domain(u)   BECAUSE GENERALIZATION;
+IsWellOrder(u) => EmptyOrHasMinimum(part \intersect Domain(u), u)   BECAUSE MODUS_PONENS;
+\A u : IsWellOrder(u) => EmptyOrHasMinimum(part \intersect Domain(u), u)   BECAUSE GENERALIZATION;
+IsWellOrder(v) => EmptyOrHasMinimum(part \intersect Domain(v), v)   BECAUSE \A(u <- v);
+
+\* Proof of EmptyOrHasMinimum(part \intersect Domain(u), u) => EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v))
+IsMinimum(m, part \intersect Domain(u), u)
+   => \A x : x \in (part \intersect Domain(u)) => <<m,x>> \in u   BECAUSE DropAndLeft;
+(\A x : x \in (part \intersect Domain(u)) => <<m,x>> \in u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in u)   BECAUSE \A(x <- x);
+IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in u)   BECAUSE TI;
+(IsMinimum(m, part \intersect Domain(u), u) /\ x \in (part \intersect Domain(u))) => <<m,x>> \in u   BECAUSE HypoImplToAnd;
+(x \in (u \union v) \/ x \in (Domain(u) \X Domain(v))) => x \in woAdd(u,v)   BECAUSE EquivToImplReverse;
+x \in (u \union v) => (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))   BECAUSE IntroOrLeft;
+x \in (u \union v) => x \in woAdd(u,v) BECAUSE TI;
+x \in (u \union v) <=> (x \in u \/ x \in v)   BECAUSE \A(x <- u, y <- v, z <- x);
+(x \in u \/ x \in v) => x \in (u \union v)   BECAUSE EquivToImplReverse;
+x \in u => (x \in u \/ x \in v)   BECAUSE IntroOrLeft;
+x \in u => x \in (u \union v)   BECAUSE TI;
+x \in u => x \in woAdd(u,v)   BECAUSE TI;
+\A x : x \in u => x \in woAdd(u,v)   BECAUSE GENERALIZATION;
+<<m,x>> \in u => <<m,x>> \in woAdd(u,v)   BECAUSE \A(x <- <<m,x>>);
+(IsMinimum(m, part \intersect Domain(u), u) /\ x \in (part \intersect Domain(u))) => <<m,x>> \in woAdd(u,v)   BECAUSE TI;
+IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
+\A x : IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+IsMinimum(m, part \intersect Domain(u), u) => (\A x : x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
+IsMinimum(m, part \intersect Domain(u), u) => m \in (part \intersect Domain(u))   BECAUSE DropAndRight;
+IsMinimum(m, part \intersect Domain(u), u) => IsMinimum(m, part \intersect Domain(u), woAdd(u,v))
+   BECAUSE CombineImplicationsEnd;
+(\E m : IsMinimum(m, part \intersect Domain(u), u)) => \E m : IsMinimum(m, part \intersect Domain(u), woAdd(u,v))
+   BECAUSE Q_SCHEME;
+(part \intersect Domain(u) = {}) => (part \intersect Domain(u) = {})   BECAUSE ImplySelf;
+EmptyOrHasMinimum(part \intersect Domain(u), u) => EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v))   BECAUSE MergeImplicationsOr;
+
+\* Domination of first part by second part
+\A u : \A z : z \in (part \intersect Domain(u)) => z \in Domain(u)   BECAUSE GENERALIZATION;
+x \in (part \intersect Domain(u)) => x \in Domain(u)   BECAUSE \A(u <- u, z <- x);
+y \in (part \intersect Domain(v)) => y \in Domain(v)   BECAUSE \A(u <- v, z <- y);
+(x \in (part \intersect Domain(u)) /\ y \in (part \intersect Domain(v)))
+   => (x \in Domain(u) /\ y \in Domain(v))   BECAUSE MergeImplicationsAnd;
+(x \in Domain(u) /\ y \in Domain(v)) <=> <<x,y>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- x, b <- y);
+(x \in Domain(u) /\ y \in Domain(v)) => <<x,y>> \in (Domain(u) \X Domain(v))   BECAUSE EquivToImpl;
+(x \in (part \intersect Domain(u)) /\ y \in (part \intersect Domain(v)))
+   => <<x,y>> \in (Domain(u) \X Domain(v))   BECAUSE TI;
+<<x,y>> \in woAdd(u,v) <=> (<<x,y>> \in (u \union v) \/ <<x,y>> \in (Domain(u) \X Domain(v)))
+   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<x,y>>);
+(<<x,y>> \in (u \union v) \/ <<x,y>> \in (Domain(u) \X Domain(v))) => <<x,y>> \in woAdd(u,v)
+   BECAUSE EquivToImplReverse;
+<<x,y>> \in (Domain(u) \X Domain(v)) => (<<x,y>> \in (u \union v) \/ <<x,y>> \in (Domain(u) \X Domain(v)))
+   BECAUSE IntroOrRight;
+<<x,y>> \in (Domain(u) \X Domain(v)) => <<x,y>> \in woAdd(u,v)   BECAUSE TI;
+(x \in (part \intersect Domain(u)) /\ y \in (part \intersect Domain(v))) => <<x,y>> \in woAdd(u,v)   BECAUSE TI;
+\A x : \A y : (x \in (part \intersect Domain(u)) /\ y \in (part \intersect Domain(v))) => <<x,y>> \in woAdd(u,v)   BECAUSE GENERALIZATION;
 
 minOfTwoParts   BECAUSE THEOREM;
 (EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v)) /\ EmptyOrHasMinimum(part \intersect Domain(v), woAdd(u,v))

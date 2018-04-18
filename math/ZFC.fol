@@ -855,6 +855,17 @@ QED
 emptyUnion == \A a : {} \union a = a
 THEOREM emptyUnion
 PROOF
+VARIABLES a,b,x,y,z;
+unionInc   BECAUSE THEOREM;
+x \in ({} \union a) <=> (x \in {} \/ x \in a)   BECAUSE \A(x <- {}, y <- a, z <- x);
+emptySetExists   BECAUSE THEOREM;
+x \notin {}   BECAUSE \A(x <- x);
+equivFalseOr(a,b,f) == ~f => ((a <=> (f \/ b)) => (a <=> b))   PROPO_TAUTO;
+x \in ({} \union a) <=> x \in a   BECAUSE equivFalseOr;
+\A x : x \in ({} \union a) <=> x \in a   BECAUSE GENERALIZATION;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in ({} \union a) <=> x \in a) => ({} \union a) = a   BECAUSE \A(a <- {} \union a, b <- a);
+({} \union a) = a   BECAUSE MODUS_PONENS;
 emptyUnion   BECAUSE GENERALIZATION;
 QED
 

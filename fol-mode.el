@@ -23,10 +23,11 @@
   (save-excursion
     (goto-char (point-min))
     (let ((beg (search-forward (concat theo " == ") nil t))
-	  (end (- (search-forward "THEOREM") 7)))       
+	  (end (or (search-forward (concat "THEOREM " theo) nil t)
+		   (search-forward (concat "AXIOM " theo) nil t))))
       (and beg
 	   end
-	   (buffer-substring beg end)))))
+	   (buffer-substring beg (progn (backward-word 2) (point)))))))
 
 (defun fol-invoke-theorem (theo)
   "Insert theo BECAUSE THEOREM; and the definition of theo"
