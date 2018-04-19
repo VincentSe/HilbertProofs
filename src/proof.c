@@ -4,19 +4,6 @@
 #include "string.h"
 #include <search.h>
 
-const struct FormulaDList* find_formula(const struct FormulaDList* formulas,
-					short (*pred)(const struct JustifiedFormula* jf))
-{
-  const struct FormulaDList* x = formulas;
-  while (x)
-    {
-      if (pred(x->jf))
-	return x;
-      x = x->next;
-    }
-  return 0;
-}
-
 void remove_list_node(struct FormulaDList* l)
 {
   // Remove l from its list and make it a singleton list
@@ -146,19 +133,6 @@ const char* reason_kind_to_string(enum reason_kind rk)
     case reasonChoose: return "choose";
     };
   printf("Unknown reason kind %d\n", rk);
-  return 0;
-}
-
-const struct FormulaDList* find_previous_formula(const struct FormulaDList* start,
-						 short (*pred)(const struct JustifiedFormula* jf))
-{
-  struct FormulaDList* x = start->previous;
-  while (x)
-    {
-      if (pred(x->jf))
-	return x;
-      x = x->previous;
-    }
   return 0;
 }
 
@@ -343,10 +317,6 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
 					      const struct formula_list* proofOperators)
 {
   formula* tauto = statement->jf->reason->formula;
-  unsigned char same_name_as_tauto(const formula* op)
-  {
-    return tauto->name && op->name && strcmp(op->name, tauto->name) == 0;
-  }
   proof searchP;
   searchP.formulaToProve = tauto;
   const proof* tautoProof = proof_set_find(&searchP, assumedProofs);
@@ -355,7 +325,7 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
   else
     {
       // Search a local tautology instead
-      const struct formula_list* l = formula_list_find_const(proofOperators, same_name_as_tauto);
+      formula* l = (formula*)find_formula_same_name(proofOperators, tauto);
       if (!l)
 	{
 	  printf("%s:%d: unknown tautology %s\n",
@@ -364,7 +334,7 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
 		 tauto->name);
 	  return 0;
 	}
-      tauto = l->formula_elem;
+      tauto = l;
     }
 
   if (check_propositional_tautology_statement_one(statement->jf->formula, tauto->definingFormula, operators)
@@ -704,6 +674,29 @@ unsigned char match_parallel_quantifiers(const formula* f,
   return 1;
 }
 
+unsigned char find_impl(const struct FormulaDList* statement,
+			const formula* p,
+			const formula* q)
+{
+  for (const struct FormulaDList* x = statement->previous; x; x = x->previous)
+    {
+      const struct JustifiedFormula* f = x->jf;
+      // When using a previously proven formula, the initial \A is optional, drop it
+      const formula* hypo = f->formula->builtInOp == forall ? get_first_operand(f->formula) : f->formula;
+      unsigned char success = (hypo->builtInOp == statement->jf->formula->builtInOp)
+	&& formula_equal(p,
+			 get_first_operand(hypo),
+			 0,0,0)
+	&& formula_equal(q,
+			 get_second_operand(hypo),
+			 0,0,0);
+      if (success)
+	return 1;
+    }
+  return 0;
+}
+
+
 /**
    axiom scheme : (\A x : p => q)  =>  ( (\E x : p) => (\E x : q) )
    and scheme     (\A x : p => q)  =>  ( (\A x : p) => (\A x : q) )
@@ -743,24 +736,36 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
       && is_forall(get_first_operand(statement->jf->formula), x, p, q))
     return 1;
 
-  short is_impl(const struct JustifiedFormula* f)
-  {
-    // When using a previously proven formula, the initial \A is optional, drop it
-    const formula* hypo = f->formula->builtInOp == forall ? get_first_operand(f->formula) : f->formula;
-    return (hypo->builtInOp == statement->jf->formula->builtInOp)
-      && formula_equal(p,
-		       get_first_operand(hypo),
-		       0,0,0)
-      && formula_equal(q,
-		       get_second_operand(hypo),
-		       0,0,0);
-  }
-
   // Try implicit modus ponens
   return match_parallel_quantifiers(statement->jf->formula,
 				    /*out*/&x, /*out*/&p, /*out*/&q)
-    && find_previous_formula(statement, is_impl);
+    && find_impl(statement, p, q);
 }
+
+unsigned char find_forall(const struct FormulaDList* statement,
+			  const formula* quant,
+			  const formula* firstF)
+{
+  for (const struct FormulaDList* x = statement->previous; x; x = x->previous)
+    {
+      const struct JustifiedFormula* jf = x->jf;
+      const formula* firstJF = get_first_operand(jf->formula); // p => q
+      unsigned char success = jf->formula->builtInOp == quant->builtInOp
+	&& firstJF->builtInOp == limplies
+	&& strcmp(jf->formula->name, quant->name) == 0 // same quantified variable
+	&& formula_equal(firstF,
+			 get_first_operand(firstJF), // p
+			 0,0,0)
+	&& formula_equal(get_first_operand(quant),
+			 get_second_operand(firstJF), // q
+			 0,0,0)
+	&& is_bound_variable(firstF, quant->name);
+      if (success)
+	return 1;
+    }
+  return 0;
+}
+
 
 short quantifier_axiom_schemes(const struct FormulaDList* statement)
 {
@@ -820,24 +825,8 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
   const formula* quant = get_quantified_formula(secondF, forall);
   if (!quant)
     quant = get_quantified_formula(secondF, exists);
-  short is_forall(const struct JustifiedFormula* jf)
-  {
-    const formula* firstJF = get_first_operand(jf->formula); // p => q
-    return jf->formula->builtInOp == quant->builtInOp
-      && firstJF->builtInOp == limplies
-      && strcmp(jf->formula->name, quant->name) == 0 // same quantified variable
-      && formula_equal(firstF,
-		       get_first_operand(firstJF), // p
-		       0,0,0)
-      && formula_equal(get_first_operand(quant),
-		       get_second_operand(firstJF), // q
-		       0,0,0)
-      && is_bound_variable(firstF, quant->name);
-  }
 
-  if (f->builtInOp == limplies
-      && quant
-      && find_previous_formula(statement, is_forall))
+  if (f->builtInOp == limplies && quant && find_forall(statement, quant, firstF))
     {
       return 1;
     }
@@ -908,6 +897,26 @@ short check_axiom_statement(const struct JustifiedFormula* jf,
   return 1;
 }
 
+unsigned char find_not_substituted(const struct formula_list* statement,
+				   unsigned int substCount,
+				   variable_substitution* substitutions)
+{
+  for (; statement; statement = statement->next)
+    {
+      const formula* op = statement->formula_elem;
+      unsigned char isSubst = 0;
+      for (int i=0; i<substCount; i++)
+	if (strcmp(op->name, substitutions[i].variable) == 0)
+	  {
+	    isSubst = 1;
+	    break;
+	  }
+      if (!isSubst)
+	return 1;
+    }
+  return 0;
+}
+
 unsigned char check_scheme_instance_one(const struct FormulaDList* statement,
 					const proof* scheme)
 {
@@ -924,16 +933,10 @@ unsigned char check_scheme_instance_one(const struct FormulaDList* statement,
   unsigned int substCount = 0;
   while (substitutions[substCount].variable)
     substCount++;
-  unsigned char is_not_substituted(const formula* op)
-  {
-    for (int i=0; i<substCount; i++)
-      if (strcmp(op->name, substitutions[i].variable) == 0)
-	return 0;
-    return 1;
-  }
   if (substCount != formula_list_size(scheme->formulaToProve->operands)
-      || formula_list_find_const(scheme->formulaToProve->operands,
-				 is_not_substituted))
+      || find_not_substituted(scheme->formulaToProve->operands,
+			      substCount,
+			      substitutions))
     return 0;
 
   // Check all forbidden variables are bound
@@ -953,12 +956,9 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
   // Search for a declared AXIOM_SCHEME in a fol file
   // and get its substituted formula.
   // Those only have one formula argument.
-  unsigned char check_scheme_closure(const proof* p)
-  {
-    return check_scheme_instance_one(statement, p);
-  }
-  if (proof_list_find_const(axiomSchemes, check_scheme_closure))
-    return 1;
+  for (const struct proof_list* schemes = axiomSchemes; schemes; schemes = schemes->next)
+    if (check_scheme_instance_one(statement, schemes->proof_elem))
+      return 1;
 
   printf("%s:%d: ",
 	 statement->jf->formula->file,

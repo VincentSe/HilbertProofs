@@ -777,6 +777,26 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
   return c;
 }
 
+const formula* find_formula_same_name(const struct formula_list* l,
+				      const formula* op)
+{
+  for (; l; l = l->next)
+    if (l->formula_elem->name
+	&& op->name
+	&& strcmp(op->name, l->formula_elem->name) == 0)
+      return l->formula_elem;
+  return 0;
+}
+
+const formula* find_formula_same_op(const struct formula_list* l,
+				    const formula* op)
+{
+  // Primitive symbols can either be builtIns, like \in, or named.
+  for (; l; l = l->next)
+    if (formula_compare_operators(l->formula_elem, op) == 0)
+      return l->formula_elem;
+  return 0;
+}
 
 /**
    A name in a formula of a FOL file can either be a variable or a custom
@@ -792,21 +812,11 @@ short resolve_operator_or_variable(formula* f,
   if (!f || (f->builtInOp == lnone && !f->name))
     return 1; // nothing to resolve
 
-  unsigned char same_name_as_f(const formula* op)
-  {
-    // Cannot use formula_compare_operators for variables,
-    // because opVariables are typed as variables, but f not yet.
-    return f->name && op->name && strcmp(op->name, f->name) == 0;
-  }
-  unsigned char same_op_as_f(const formula* op)
-  {
-    // Primitive symbols can either be builtIns, like \in, or named.
-    return formula_compare_operators(f, op) == 0;
-  }
-
   // Try variables
+  // Cannot use formula_compare_operators for variables,
+  // because opVariables are typed as variables, but f not yet.
   if (string_list_contains(variables, f->name)
-      || formula_list_find_const(opVariables, same_name_as_f))
+      || find_formula_same_name(opVariables, f))
     {
       // TODO search in operators too and report an error
       // if f->name is multiply defined
@@ -815,12 +825,12 @@ short resolve_operator_or_variable(formula* f,
     }
 
   // Try operators
-  formula* resolvedF = formula_set_find(f, operatorDefinitions);
+  const formula* resolvedF = formula_set_find(f, operatorDefinitions);
   if (!resolvedF)
     {
-      const struct formula_list* l = formula_list_find_const(proofLocalDecl, same_op_as_f);
+      const formula* l = find_formula_same_op(proofLocalDecl, f);
       if (l)
-	resolvedF = l->formula_elem;
+	resolvedF = l;
     }
   if (resolvedF)
     {
@@ -840,7 +850,7 @@ short resolve_operator_or_variable(formula* f,
     }
 
   // Try primitive symbols (which have no defining formulas)
-  if (formula_list_find_const(primitives, same_op_as_f))
+  if (find_formula_same_op(primitives, f))
     return 1;
 
   printf("%s:%d: Unknown name %s\n",

@@ -364,13 +364,8 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
 void set_scheme_variables(const struct formula_list* variables,
 			  /*out*/formula* f)
 {
-  unsigned char same_name_as_f(const formula* op)
-  {
-    return f->name && op->name && strcmp(op->name, f->name) == 0;
-  }
-
   if (f->builtInOp == variable
-      && formula_list_find_const(variables, same_name_as_f))
+      && find_formula_same_name(variables, f))
     f->builtInOp = schemeVariable;
 
   struct formula_list* oper = f->operands;

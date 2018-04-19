@@ -150,6 +150,8 @@ declare_list_type(formula)
 declare_set_type(formula)
 struct formula_list* formula_list_map(const struct formula_list* l,
 				      formula* (*func)(const formula* x));
+const formula* find_formula_same_name(const struct formula_list* l,
+				      const formula* op);
 
 typedef struct
 {
