@@ -10,6 +10,8 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 %option noyywrap
 %option reentrant bison-bridge
 %option bison-locations
+%option never-interactive
+%option nounistd
 
 %x FOL_COMMENT
 
@@ -17,18 +19,18 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 
 [ \t]+        { /* ignore */ }
 "~"           { folget_lval(yyscanner)->lopVal = lnot; return LNOT; }
-"\\/"         { folget_lval(yyscanner)->lopVal = lor; return LOGICAL_BIN_OP; }
-"/\\"         { folget_lval(yyscanner)->lopVal = land; return LOGICAL_BIN_OP; }
+"\\/"         { folget_lval(yyscanner)->lopVal = lor; return LOGICAL_ANDOR_OP; }
+"/\\"         { folget_lval(yyscanner)->lopVal = land; return LOGICAL_ANDOR_OP; }
 "=>"          { folget_lval(yyscanner)->lopVal = limplies; return LOGICAL_BIN_OP; }
 "<=>"         { folget_lval(yyscanner)->lopVal = lequiv; return LOGICAL_BIN_OP; }
 
 "UNION"       { folget_lval(yyscanner)->lopVal = unaryUnion; return PREFIX_OP; }
 "SUBSET"      { folget_lval(yyscanner)->lopVal = powerset; return PREFIX_OP; }
-"\\in"        { folget_lval(yyscanner)->lopVal = in; return INFIX_OP; }
-"\\notin"     { folget_lval(yyscanner)->lopVal = notin; return INFIX_OP; }
-"="           { folget_lval(yyscanner)->lopVal = equal; return INFIX_OP; }
-"#"           { folget_lval(yyscanner)->lopVal = different; return INFIX_OP; }
-"\\subseteq"  { folget_lval(yyscanner)->lopVal = subseteq; return INFIX_OP; }
+"\\in"        { folget_lval(yyscanner)->lopVal = in; return INFIX_REL; }
+"\\notin"     { folget_lval(yyscanner)->lopVal = notin; return INFIX_REL; }
+"="           { folget_lval(yyscanner)->lopVal = equal; return INFIX_REL; }
+"#"           { folget_lval(yyscanner)->lopVal = different; return INFIX_REL; }
+"\\subseteq"  { folget_lval(yyscanner)->lopVal = subseteq; return INFIX_REL; }
 "\\intersect" { folget_lval(yyscanner)->lopVal = binIntersect; return INFIX_OP; }
 "\\union"     { folget_lval(yyscanner)->lopVal = binUnion; return INFIX_OP; }
 "\\X"         { folget_lval(yyscanner)->lopVal = cartesianProduct; return INFIX_OP; }

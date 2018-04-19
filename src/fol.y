@@ -37,9 +37,16 @@
 %token LEFT_BRACE RIGHT_BRACE LEFT_TUPLE RIGHT_TUPLE
 %token <rkVal> REASON_KIND
 
+// Logical connectors
 %precedence <lopVal> QUANTIFIER
 %left       <lopVal> LOGICAL_BIN_OP
+%left       <lopVal> LOGICAL_ANDOR_OP // land, lor bind tighter than limplies, lequiv
 %precedence <lopVal> LNOT
+
+// Relation symbols bind less than operation symbols. Here this hardcodes that = and \subseteq,
+// bind less than \intersect, \union, ... If you define in a FOL file \intersect to be a relation
+// instead of an operation, you will have to write parentheses explicitely.
+%left       <lopVal> INFIX_REL
 %left       <lopVal> INFIX_OP
 %precedence <lopVal> PREFIX_OP
 
@@ -87,6 +94,12 @@ constants: constant { $$ = make_formula_list($1, 0); }
 // Constants (primitive symbols) declare their arity but not their being relations or operators
 constant:
 CONSTANT UNDERSCORE INFIX_OP UNDERSCORE {
+  $$ = make_formula($3,
+		    (char*)0,
+		    (struct formula_list*)0,
+		    ast->file,
+		    @1.first_line); }
+| CONSTANT UNDERSCORE INFIX_REL UNDERSCORE {
   $$ = make_formula($3,
 		    (char*)0,
 		    (struct formula_list*)0,
@@ -209,7 +222,20 @@ NAME { // operator or variable as a leaf of this formula
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
 		    @1.first_line); }
+| formula INFIX_REL formula {
+  $$ = make_formula($2,
+		    (char *)0,
+		    make_formula_list($1, make_formula_list($3, 0)),
+		    ast->file,
+		    @1.first_line); }
 | formula LOGICAL_BIN_OP formula {
+  // logical bin ops cannot be redefined, leave them without name
+  $$ = make_formula($2,
+		    (char*)0,
+		    make_formula_list($1, make_formula_list($3, 0)),
+		    ast->file,
+		    @1.first_line); }
+| formula LOGICAL_ANDOR_OP formula {
   // logical bin ops cannot be redefined, leave them without name
   $$ = make_formula($2,
 		    (char*)0,
@@ -276,12 +302,14 @@ LEFT_BRACE commaSeparatedFormulas RIGHT_BRACE {
 		    $2,
 		    ast->file,
 		    @1.first_line); }
-| LEFT_BRACE formula INFIX_OP formula COLON formula RIGHT_BRACE {
-  $$ = make_formula(setSeparation,
-		    strdup(op_to_string(setSeparation)),
-		    make_formula_list($2, make_formula_list($4, make_formula_list($6, 0))),
-		    ast->file,
-		    @1.first_line); }
+// { x \in a : some formula } is not implemented at the moment.
+// The separation axiom is used explicitely instead.
+/* | LEFT_BRACE formula INFIX_OP formula COLON formula RIGHT_BRACE { */
+/*   $$ = make_formula(setSeparation, */
+/* 		    strdup(op_to_string(setSeparation)), */
+/* 		    make_formula_list($2, make_formula_list($4, make_formula_list($6, 0))), */
+/* 		    ast->file, */
+/* 		    @1.first_line); } */
 | LEFT_BRACE RIGHT_BRACE { // empty set
   $$ = make_formula(setEnumerate,
 		    (char*)0,

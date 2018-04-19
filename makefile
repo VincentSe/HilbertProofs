@@ -15,5 +15,8 @@ build: bin/proveMath
 prove:
 	bin/proveMath
 
+test:
+	bin/proveMath math/Tautologies.fol math/test.fol
+
 clean:
 	rm bin/* src/*~ src/lex.*.c src/*.tab.c src/*.tab.h

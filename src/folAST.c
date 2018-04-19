@@ -282,6 +282,18 @@ unsigned int ast_idx(struct folAST ** asts, const char* name)
   return -1;
 }
 
+void default_sort(/*out*/struct folAST** asts,
+		  /*out*/unsigned int* astSort)
+{
+  // The ASTs can be deleted in any order, put identity
+  unsigned int i=0;
+  while (asts[i])
+    {
+      astSort[i] = i;
+      i++;
+    }
+}
+
 unsigned char resolve_extends(/*out*/struct folAST** asts,
 			      /*out*/unsigned int* astSort)
 {
@@ -300,6 +312,7 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
 	      printf("%s:1: extends unknown module %s\n",
 		     asts[astIdx]->file,
 		     ext->string_elem);
+	      default_sort(asts, /*out*/astSort);
 	      return 0;
 	    }
 	  extends[extCount].second = astIdx;
@@ -312,9 +325,7 @@ unsigned char resolve_extends(/*out*/struct folAST** asts,
   if (!topological_sort(extends, extCount, astIdx, /*out*/astSort))
     {
       printf("Cycle in module extensions\n");
-      // The ASTs can be deleted in any order, put identity
-      for (i = 0; i < astIdx; i++)
-	astSort[i] = i;
+      default_sort(asts, /*out*/astSort);
       return 0;
     }
 

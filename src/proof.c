@@ -224,6 +224,47 @@ short check_mp_cascade(const struct FormulaDList* statement,
 		       const formula* propoFormula,
 		       variable_substitution* propositionalVariables,
 		       const formula* goalPropoFormula,
+		       const void* namedFormulas);
+
+unsigned char find_mp_cascade(const struct FormulaDList* statement,
+			      const formula* propoFormula,
+			      variable_substitution* propositionalVariables,
+			      const formula* goalPropoFormula,
+			      const void* namedFormulas,
+			      int substitutionCount)
+{
+  const struct FormulaDList* f = statement->previous;
+  while (f)
+    {
+      if (!f->jf->reason)
+	{
+	  f = f->previous;
+	  continue; // skip local operator definitions
+	}
+    
+      const formula* firstHypothesis = get_first_operand(propoFormula); // in the chain of implications
+      unsigned char success = formula_equal(f->jf->formula,
+					    firstHypothesis,
+					    (struct string_list*)0,
+					    propositionalVariables,
+					    1) // modus ponens
+	&& check_mp_cascade(statement,
+			    get_second_operand(propoFormula), // proven by modus ponens
+			    propositionalVariables,
+			    goalPropoFormula,
+			    namedFormulas);
+      propositionalVariables[substitutionCount].variable = (char*)0;
+      if (success)
+	return 1;
+      f = f->previous;
+    }
+  return 0;
+}
+
+short check_mp_cascade(const struct FormulaDList* statement,
+		       const formula* propoFormula,
+		       variable_substitution* propositionalVariables,
+		       const formula* goalPropoFormula,
 		       const void* namedFormulas)
 {
   // Assume : statement->jf->formula is an instance of goalPropoFormula.
@@ -245,26 +286,8 @@ short check_mp_cascade(const struct FormulaDList* statement,
       substitutionCount++;
     }
 
-  short recurse(const struct JustifiedFormula* f)
-  {
-    if (!f->reason)
-      return 0; // skip local operator definitions
-    
-    const formula* firstHypothesis = get_first_operand(propoFormula); // in the chain of implications
-    unsigned char success = formula_equal(f->formula,
-					  firstHypothesis,
-					  (struct string_list*)0,
-					  propositionalVariables,
-					  1) // modus ponens
-      && check_mp_cascade(statement,
-			  get_second_operand(propoFormula), // proven by modus ponens
-			  propositionalVariables,
-			  goalPropoFormula,
-			  namedFormulas);
-    propositionalVariables[substitutionCount].variable = (char*)0;
-    return success;
-  }
-  return find_previous_formula(statement, recurse) != 0;
+  return find_mp_cascade(statement, propoFormula, propositionalVariables,
+			 goalPropoFormula, namedFormulas, substitutionCount);
 }
 
 short implicit_propositional_tautology(const struct FormulaDList* statement,

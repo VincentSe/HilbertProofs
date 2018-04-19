@@ -108,6 +108,21 @@ z \in x => z \in x   BECAUSE ImplySelf;
 inclusionInOneself   BECAUSE GENERALIZATION;
 QED
 
+transitInclusion == \A a : \A b : \A c : ((a \subseteq b) /\ (b \subseteq c)) => (a \subseteq c)
+THEOREM transitInclusion
+PROOF
+VARIABLES a,b,c,z,x;
+a \subseteq b => (z \in a => z \in b)   BECAUSE \A(z <- z);
+b \subseteq c => (z \in b => z \in c)   BECAUSE \A(z <- z);
+((a \subseteq b) /\ (b \subseteq c)) => ((z \in a => z \in b) /\ (z \in b => z \in c))   BECAUSE MergeImplicationsAnd;
+tautoto(a,b,c) == ((a => b) /\ (b => c)) => (a => c)   PROPO_TAUTO;
+((z \in a => z \in b) /\ (z \in b => z \in c)) => (z \in a => z \in c)   BECAUSE tautoto;
+((a \subseteq b) /\ (b \subseteq c)) => (z \in a => z \in c)   BECAUSE TI;
+\A z : ((a \subseteq b) /\ (b \subseteq c)) => (z \in a => z \in c)   BECAUSE GENERALIZATION;
+((a \subseteq b) /\ (b \subseteq c)) => a \subseteq c   BECAUSE Q_SCHEME;
+transitInclusion   BECAUSE GENERALIZATION;
+QED
+
 (*
    The axiom scheme of separation. Although it can be deduced from the
    axiom scheme of replacement, we declare it for easier use
@@ -322,6 +337,27 @@ VARIABLES a,b,u,v,x;
 \A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
 intersectionExists   BECAUSE GENERALIZATION;
 QED
+
+intersectSuper == \A a : \A b : a \subseteq b => a \intersect b = a
+THEOREM intersectSuper
+PROOF
+VARIABLES a,b,u,v,x,z;
+intersectionExists   BECAUSE THEOREM;
+x \in (a \intersect b) <=> (x \in a /\ x \in b)   BECAUSE \A(u <- a, v <- b, x <- x);
+a \subseteq b => (x \in a => x \in b)   BECAUSE \A(z <- x);
+tautoto(a,b) == (a => b) => ((a /\ b) <=> a)   PROPO_TAUTO;
+(x \in a => x \in b) => ((x \in a /\ x \in b) <=> x \in a)   BECAUSE tautoto;
+a \subseteq b => ((x \in a /\ x \in b) <=> x \in a)   BECAUSE TI;
+((x \in a /\ x \in b) <=> x \in a) => (x \in (a \intersect b) <=> x \in a)   BECAUSE TransitEquiv;
+a \subseteq b => (x \in (a \intersect b) <=> x \in a)   BECAUSE TI;
+\A x : a \subseteq b => (x \in (a \intersect b) <=> x \in a)   BECAUSE GENERALIZATION;
+a \subseteq b => (\A x : x \in (a \intersect b) <=> x \in a)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in (a \intersect b) <=> x \in a) => a \intersect b = a   BECAUSE \A(a <- a \intersect b, b <- a);
+a \subseteq b => (a \intersect b) = a   BECAUSE TI;
+intersectSuper   BECAUSE GENERALIZATION;
+QED
+
 
 \* The complement of a set into another set
 u \ v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \notin v)

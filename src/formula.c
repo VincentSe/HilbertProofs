@@ -155,6 +155,7 @@ const char* op_to_string(enum builtin_operator op)
     case powerset: return "SUBSET";
     case plus: return "+";
     case cartesianProduct: return "\\X";
+    case funcApply: return "funcApply";
     };
   printf("Unknown operator %d\n", op);
   return 0;
