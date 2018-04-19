@@ -187,6 +187,19 @@ const formula* get_forall(const formula* f)
   return all ? get_first_operand(all) : 0;
 }
 
+unsigned char find_equal(const struct FormulaDList* start,
+			 const formula* f)
+{
+  struct FormulaDList* x = start->previous;
+  while (x)
+    {
+      if (formula_equal(f, x->jf->formula, 0, (variable_substitution*)0, 0))
+	return 1;
+      x = x->previous;
+    }
+  return 0;
+}
+
 /**
    A formula G is deduced by generalization of a formula F when there exists
    a variable x such as G is \A x : F.
@@ -202,16 +215,9 @@ short check_generalization_statement(const struct FormulaDList* statement,
 				     const void* operators)
 {
   const formula* f = statement->jf->formula;
-  // Search the quantified formula
-  short equal_f(const struct JustifiedFormula* jf)
-  {
-    return formula_equal(f, jf->formula, 0,
-			 (variable_substitution*)0, 0);
-  }
-
   while (f = get_forall(f)) // Cut the forall quantifiers at the beginning of statement->jf->formula
     {
-      if (find_previous_formula(statement, equal_f))
+      if (find_equal(statement, f))
 	return 1; // implicit modus ponens
     }
   printf("%s:%d: Bad generalization\n",
@@ -372,6 +378,35 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
   return 0;
 }
 
+unsigned char find_implicit_modus_ponens(enum reason_kind rk,
+					 const struct FormulaDList* statement,
+					 const formula_set operators)
+{
+  struct FormulaDList* x = statement->previous;
+  while (x)
+    {
+      const struct JustifiedFormula* forallFormula = x->jf;
+      // Make formula (forallFormula => statement) and check whether
+      // it is a valid forall instance.
+      formula f;
+      f.builtInOp = limplies;
+      struct formula_list firstOperand;
+      f.operands = &firstOperand;
+      firstOperand.formula_elem = forallFormula->formula;
+      struct formula_list secondOperand;
+      firstOperand.next = &secondOperand;
+      secondOperand.formula_elem = statement->jf->formula;
+      secondOperand.next = 0;
+      if (check_quantifier_instance_statement_one(rk,
+						  &f,
+						  statement->jf->reason->formula->operands,
+						  operators))
+	return 1;
+      x = x->previous;
+    }
+  return 0;
+}
+
 short check_quantifier_instance_statement(enum reason_kind rk,
 					  const struct FormulaDList* statement,
 					  const formula_set operators)
@@ -397,27 +432,7 @@ short check_quantifier_instance_statement(enum reason_kind rk,
   // (\A x : F) => F(x <- t)   BECAUSE \A(t);
   // statement   BECAUSE MODUS_PONENS;
 
-  short implicitModusPonens(const struct JustifiedFormula* forallFormula)
-  {
-    // Make formula (forallFormula => statement) and check whether
-    // it is a valid forall instance.
-    formula f;
-    f.builtInOp = limplies;
-    struct formula_list firstOperand;
-    f.operands = &firstOperand;
-    firstOperand.formula_elem = forallFormula->formula;
-    struct formula_list secondOperand;
-    firstOperand.next = &secondOperand;
-    secondOperand.formula_elem = statement->jf->formula;
-    secondOperand.next = 0;
-    return check_quantifier_instance_statement_one(rk,
-						   &f,
-						   statement->jf->reason->formula->operands,
-						   operators);
-  }
-
-  const struct FormulaDList* implicitMP = find_previous_formula(statement, implicitModusPonens);
-  if (!implicitMP)
+  if (!find_implicit_modus_ponens(rk, statement, operators))
     {
       printf("%s:%d: Bad %s instance ",
 	     statement->jf->formula->file,
@@ -460,36 +475,30 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
   // this implication. They can appear in any order, so the algorithmic
   // complexity is a double loop on the previous statements.
 
-  short is_mp(const struct JustifiedFormula* impl)
-  {
-    // Check that impl is an implication or equivalence concluding statement->jf->formula
-    const formula* hypo = imply_statement(statement->jf->formula, impl->formula);
-    if (!hypo)
-      return 0;
-
-    // Find the hypothesis of this implication
-    struct FormulaDList* hyp = statement->previous;
-    while (hyp)
-      {
-	if (hyp->jf->reason // skip local operator definitions
-	    && formula_equal(hypo,
-			     hyp->jf->formula,
-			     0, 0, 0))
-	  return 1;
-	hyp = hyp->previous;
-      }
-    return 0;
-  }
-
-  const struct FormulaDList* success = find_previous_formula(statement, is_mp);
-  if (!success)
+  for (const struct FormulaDList* x = statement->previous; x; x = x->previous)
     {
-      printf("%s:%d: Bad modus ponens : ",
-	     statement->jf->formula->file,
-	     statement->jf->formula->first_line);
-      print_formula(statement->jf->formula);
+      const struct JustifiedFormula* impl = x->jf;
+      // Check that impl is an implication or equivalence concluding statement->jf->formula
+      const formula* hypo = imply_statement(statement->jf->formula, impl->formula);
+      if (!hypo)
+	  continue;
+      
+      // Find the hypothesis of this implication
+      for (struct FormulaDList* hyp = statement->previous; hyp; hyp = hyp->previous)
+	{
+	  if (hyp->jf->reason // skip local operator definitions
+	      && formula_equal(hypo,
+			       hyp->jf->formula,
+			       0, 0, 0))
+	    return 1;
+	}
     }
-  return success != 0;
+
+  printf("%s:%d: Bad modus ponens : ",
+	 statement->jf->formula->file,
+	 statement->jf->formula->first_line);
+  print_formula(statement->jf->formula);
+  return 0;
 }
 
 const formula* parse_equalities(const formula* f, /*out*/variable_substitution* subs)
