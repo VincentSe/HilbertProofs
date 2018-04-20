@@ -148,8 +148,6 @@ formula* make_formula(enum builtin_operator builtInOp,
 void formula_free(formula* f);
 declare_list_type(formula)
 declare_set_type(formula)
-struct formula_list* formula_list_map(const struct formula_list* l,
-				      formula* (*func)(const formula* x));
 const formula* find_formula_same_name(const struct formula_list* l,
 				      const formula* op);
 
@@ -160,6 +158,8 @@ typedef struct
 } variable_substitution;
 
 declare_list_type(variable_substitution)
+struct formula_list* clone_operands(const struct formula_list* operands,
+				    variable_substitution* freeSubs);
 
 
 int formula_compare_operators(const void *l, const void *r);
@@ -171,7 +171,10 @@ const formula* get_first_operand(const formula* f);
 const formula* get_second_operand(const formula* f);
 const char* find_variable(const formula* f,
 			  const struct string_list* boundVars,
-			  unsigned char (*pred)(const char* v, const struct string_list* boundVars));
+			  unsigned char (*pred)(const char* v,
+						const struct string_list* boundVars,
+						const void* args),
+			  const void* args);
 
 /**
    Test both that freeSubs are valid for g and that f equals g(freeSubs).

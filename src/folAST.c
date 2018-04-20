@@ -436,7 +436,7 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       {
 	return formula_clone(f, 0);
       }
-      p->formulaToProve->operands = formula_list_map(resolvedF->operands, clone_closure);
+      p->formulaToProve->operands = clone_operands(resolvedF->operands, 0);
       ast->axiomSchemes = make_proof_list(p, ast->axiomSchemes);
       return 1;
     }

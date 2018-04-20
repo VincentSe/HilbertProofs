@@ -29,7 +29,6 @@ struct FormulaDList
 };
 struct FormulaDList* push_justified_formula(struct JustifiedFormula* f, struct FormulaDList* next);
 void f_list_free(struct FormulaDList* l);
-void remove_list_node(struct FormulaDList* l);
 
 struct proofS
 {

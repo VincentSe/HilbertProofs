@@ -6,17 +6,44 @@ EXTENDS Functions
 
 IsOrder(o) == IsGraph(o)
    \* Reflexivity
-   /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   /\ (\A x : \A y : (<<x,y>> \in o) => (<<x,x>> \in o /\ <<y,y>> \in o))
    \* transitivity
-   /\ (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
+   /\ (\A x : \A y : \A z : ((<<x,y>> \in o) /\ (<<y,z>> \in o)) => (<<x,z>> \in o))
    \* anti-symmetry
-   /\ (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
+   /\ (\A x : \A y : ((<<x,y>> \in o) /\ (<<y,x>> \in o)) => x = y)
 
 \* Because f[x] is a CHOOSE, this only allows functions which domains
 \* contain Domain(u)
-IsIncreasing(f, u, v) == \A x : \A y : <<x,y>> \in u => <<f[x], f[y]>> \in v
+IsIncreasing(f, u, v) == \A x : \A y : (<<x,y>> \in u) => (<<f[x], f[y]>> \in v)
 
-IsMinimum(m, part, order) == m \in part /\ \A x : x \in part => <<m,x>> \in order
+IsMinimum(m, part, order) == (m \in part) /\ \A x : (x \in part) => <<m,x>> \in order
+
+\* Usually reflexivity is rather stated in terms of the domain :
+orderDomainReflexive == \A o : \A x : IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o
+THEOREM orderDomainReflexive
+PROOF
+VARIABLES g,o,x,y;
+domainExists   BECAUSE THEOREM;
+x \in Domain(o) <=> IsDefinedOn(o,x)   BECAUSE \A(g <- o, x <- x);
+x \in Domain(o) => \E y : <<x,y>> \in o   BECAUSE EquivToImpl;
+IsOrder(o) => IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndRight2;
+IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndLeft;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
+(\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
+   => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE \A(x <- x, y <- y);
+IsOrder(o) => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
+<<x,y>> \in o => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE SwitchHypos;
+IsDefinedOn(o,x) => (\E y : IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE Q_SCHEME;
+(\E y : IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE Q_SCHEME;
+IsDefinedOn(o,x) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
+x \in Domain(o) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
+IsOrder(o) => (x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE SwitchHypos;
+IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o   BECAUSE HypoImplToAnd;
+<<x,x>> \in o /\ <<y,y>> \in o => <<x,x>> \in o   BECAUSE DropAndRight;
+IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o   BECAUSE TI;
+orderDomainReflexive   BECAUSE GENERALIZATION;
+QED
 
 \* An injection f transports an order o
 IsInInjectOrder(o,f,x) == x \in (Image(f) \X Image(f)) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o
@@ -502,12 +529,11 @@ disjointOrderAddition == \A u : \A v : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(
    => IsOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
 THEOREM disjointOrderAddition
 PROOF
-VARIABLES a,b,c,g,i,j,p,u,v,x,y,z,part;
+VARIABLES a,b,c,g,i,j,o,p,u,v,x,y,z,part;
 \* Proof that u \union v \union (Domain(u) \X Domain(v)) is a graph : union of 3 graphs
 woAdd(u,v) == u \union v \union (Domain(u) \X Domain(v)); \* Shorter name
 unionInc   BECAUSE THEOREM;
-x \in woAdd(u,v)
-   <=> (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))
+x \in woAdd(u,v) <=> (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))
    BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- x);
 cartesianProductExists   BECAUSE THEOREM;
 x \in woAdd(u,v)
@@ -527,21 +553,71 @@ IsOrder(u \union v) => (x \in woAdd(u,v) => IsCouple(x))   BECAUSE SwitchHypos;
 \A x : IsOrder(u \union v) => (x \in woAdd(u,v) => IsCouple(x))   BECAUSE GENERALIZATION;
 IsOrder(u \union v) => IsGraph(woAdd(u,v))   BECAUSE Q_SCHEME;
 disjointOrders   BECAUSE THEOREM;
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsGraph(woAdd(u,v))   BECAUSE TI;
+IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
+IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsGraph(woAdd(u,v))   BECAUSE TI;
 
 \* Proof that orderAddition is reflexive : <<x,y>> \in woAdd(u,v) => (x \in Domain(u) \/ x \in Domain(v))
-<<x,y>> \in woAdd(u,v) <=> (<<x,y>> \in (u \union v) \/ <<x,y>> \in (Domain(u) \X Domain(v)))
-   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<x,y>>);
-<<x,y>> \in woAdd(u,v) => <<x,y>> \in (u \union v) \/ <<x,y>> \in (Domain(u) \X Domain(v))
+<<x,y>> \in woAdd(u,v) <=> (<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
+   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<x,y>>);
+<<x,y>> \in woAdd(u,v) => <<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v)
    BECAUSE EquivToImpl;
-<<x,y>> \in u \union v <=> <<x,y>> \in u \/ <<x,y>> \in v   BECAUSE \A(x <- u, y <- v, z <- <<x,y>>);
 domainExists   BECAUSE THEOREM;
-x \in Domain(u) <=> IsDefinedOn(u,x)   BECAUSE \A(g <- u, x <- x);
-(\E y : <<x,y>> \in u) => x \in Domain(u)   BECAUSE EquivToImplReverse;
+x \in Domain(u \union v) <=> IsDefinedOn(u \union v, x)   BECAUSE \A(g <- u \union v, x <- x);
+(\E y : <<x,y>> \in u \union v) => x \in Domain(u \union v)   BECAUSE EquivToImplReverse;
+<<x,y>> \in u \union v => (\E y : <<x,y>> \in u \union v)   BECAUSE \E(y <- y);
+<<x,y>> \in u \union v => x \in Domain(u \union v)   BECAUSE TI;
+cartesianProductCouples   BECAUSE THEOREM;
+x \in Domain(u) /\ y \in Domain(v) <=> <<x,y>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- x, b <- y);
+<<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u) /\ y \in Domain(v)   BECAUSE EquivToImplReverse;
+x \in Domain(u) /\ y \in Domain(v) => x \in Domain(u)   BECAUSE DropAndRight;
+<<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u)   BECAUSE TI;
+x \in Domain(u) <=> IsDefinedOn(u, x)   BECAUSE \A(g <- u, x <- x);
+x \in Domain(u) => \E y : <<x,y>> \in u   BECAUSE EquivToImpl;
+unionFirstInc   BECAUSE THEOREM;
+<<x,y>> \in u => <<x,y>> \in u \union v   BECAUSE \A(x <- u, y <- v, z <- <<x,y>>);
+(\E y : <<x,y>> \in u) => \E y : <<x,y>> \in u \union v   BECAUSE Q_SCHEME;
+x \in Domain(u) => \E y : <<x,y>> \in u \union v   BECAUSE TI;
+x \in Domain(u) => x \in Domain(u \union v)   BECAUSE TI;
+<<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u \union v)   BECAUSE TI;
+<<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u \union v)   BECAUSE CombineImplicationsStart;
+<<x,y>> \in woAdd(u,v) => x \in Domain(u \union v)   BECAUSE TI;
+IsOrder(u \union v) => IsOrder(u \union v)   BECAUSE ImplySelf;
+IsOrder(u \union v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v) /\ x \in Domain(u \union v)   BECAUSE MergeImplicationsAnd;
+orderDomainReflexive   BECAUSE THEOREM;
+IsOrder(u \union v) /\ x \in Domain(u \union v) => <<x,x>> \in u \union v   BECAUSE \A(o <- u \union v, x <- x);
+IsOrder(u \union v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in u \union v   BECAUSE TI;
+disjointOrders   BECAUSE THEOREM;
+IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
+
+\* Proof that orderAddition is anti-symmetric : if both <<x,y>> and <<y,x>> are in the addition,
+\* then they're in u \union v and not in the product glue
+
+\* Proof that orderAddition is transitive : if <<x,y>> and <<y,z>> are in the addition,
+\*    - <<x,y>> and <<y,z>> are is u \union v then <<x,z>> too be it's an order
+\*    - else either <<x,y>> or <<y,z>> are in the product glue
+<<y,z>> \in woAdd(u,v) <=> (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v))
+   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<y,z>>);
+<<y,z>> \in woAdd(u,v) => (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v))   BECAUSE EquivToImpl;
+<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
+((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))
+   => (((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in (u \union v))
+        \/ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in Domain(u) \X Domain(v)))
+   BECAUSE DistribAndOrLeft;
+<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)
+   => (((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in (u \union v))
+        \/ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in Domain(u) \X Domain(v)))
+   BECAUSE TI;
+\* Kill the double-glue case
+x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE DropAndLeft;
+<<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(v)   BECAUSE TI;
+\A x : \A y : <<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u)   BECAUSE GENERALIZATION;
+<<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u)   BECAUSE \A(x <- y, y <- z);
+<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v)
+   => y \in Domain(u) /\ y \in Domain(v)   BECAUSE MergeImplicationsAnd; \* Impossible, u and v are disjoint
+
 QED
 
-EmptyOrHasMinimum(part, order) == (part = {}) \/ \E m : IsMinimum(m, part, order)
+EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))
 
 minOfTwoParts == \A o : \A a : \A b :
       (EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o)

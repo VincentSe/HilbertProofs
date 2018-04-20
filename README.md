@@ -92,9 +92,9 @@ This axiom lets us say nothing about `f[x]` until we have proven `(\E y : <<x,y>
 
 ## Compile HilbertProofs
 
-Type `make build` to build.
+The build system of HilbertProofs is a simple makefile ; on Linux or MacOS, type `make build` to build.
 
-On Windows, you can install MSYS then install flex and bison by typing `pacman -S flex bison` in an MSYS shell.
+On Windows, you can install the build tools [MSYS](https://www.msys2.org/), then use them to get flex and bison by typing `pacman -S flex bison` in an MSYS shell. After that, it is `make build` too in an MSYS shell.
 
 ## Use HilbertProofs
 

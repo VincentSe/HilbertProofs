@@ -284,11 +284,14 @@ short is_custom_operator(const formula* op)
 */
 const char* find_variable(const formula* f,
 			  const struct string_list* boundVars,
-			  unsigned char (*pred)(const char* v, const struct string_list* boundVars))
+			  unsigned char (*pred)(const char* v,
+						const struct string_list* boundVars,
+						const void* args),
+			  const void* args)
 {
   if (f->builtInOp == variable)
     {
-      return pred(f->name, boundVars) ? f->name : (const char*)0;
+      return pred(f->name, boundVars, args) ? f->name : (const char*)0;
     }
 
   if (f->builtInOp == forall
@@ -300,16 +303,26 @@ const char* find_variable(const formula* f,
       bindOneMore.next = (struct string_list*)boundVars;
       return find_variable(get_first_operand(f),
 			   &bindOneMore,
-			   pred);
+			   pred,
+			   args);
     }
 
   for (const struct formula_list* operand = f->operands; operand; operand=operand->next)
     {
-      const char* v = find_variable(operand->formula_elem, boundVars, pred);
+      const char* v = find_variable(operand->formula_elem, boundVars, pred, args);
       if (v)
 	return v;
     }
   return 0;
+}
+
+unsigned char capture(const char* v,
+		      const struct string_list* innerBoundVars,
+		      const void* args)
+{
+  const struct string_list* boundVarsForCapture = args;
+  return !string_list_contains(innerBoundVars, v)
+    && string_list_contains(boundVarsForCapture, v);
 }
 
 /**
@@ -318,12 +331,16 @@ const char* find_variable(const formula* f,
 unsigned char variable_capture(const formula* f,
 			       const struct string_list* boundVars)
 {
-  unsigned char capture(const char* v, const struct string_list* innerBoundVars)
-  {
-    return !string_list_contains(innerBoundVars, v)
-      && string_list_contains(boundVars, v);
-  }
-  return find_variable(f, 0, capture) != 0;
+  return find_variable(f, 0, capture, boundVars) != 0;
+}
+
+unsigned char free_occurrence(const char* w,
+			      const struct string_list* boundVars,
+			      const void* args)
+{
+  const char* vForFreeOccur = args;
+  return strcmp(vForFreeOccur,w) == 0
+    && !string_list_contains(boundVars, w);
 }
 
 /**
@@ -332,13 +349,7 @@ unsigned char variable_capture(const formula* f,
 */
 short is_bound_variable(const formula* f, const char* v)
 {
-  unsigned char free_occurrence(const char* w, const struct string_list* boundVars)
-  {
-    return strcmp(v,w) == 0
-      && !string_list_contains(boundVars, w);
-  }
-
-  return !find_variable(f, 0, free_occurrence);
+  return !find_variable(f, 0, free_occurrence, v);
 }
 
 variable_substitution* variable_substitution_find(const char* var,
@@ -657,6 +668,32 @@ unsigned char prove_propositional_tautology(const formula* op)
   return 1;
 }
 
+struct cfd_args
+{
+  const struct formula_list* operands;
+  const formula* def;
+};
+
+unsigned char capture_free_define(const char* v,
+				  const struct string_list* boundVars,
+				  const void* args)
+{
+  // Search a substitution for variable v
+  const struct cfd_args* cfd = args;
+  const struct formula_list* subst = cfd->operands;
+  const struct formula_list* defOper = cfd->def->operands;
+  while (subst)
+    {
+      if (strcmp(v, defOper->formula_elem->name))
+	break;
+      subst = subst->next;
+      defOper = defOper->next;
+    }
+
+  return subst ? variable_capture(subst->formula_elem, boundVars) : 0;
+}
+
+
 /**
    Test if operands can be freely substituted in def->definingFormula.
    If it can, the forall instance axiom will yield the equivalence
@@ -673,23 +710,10 @@ unsigned char free_define(const struct formula_list* operands,
   if (!operands)
     return 1;
 
-  unsigned char capture(const char* v, const struct string_list* boundVars)
-  {
-    // Search a substitution for variable v
-    const struct formula_list* subst = operands;
-    const struct formula_list* defOper = def->operands;
-    while (subst)
-      {
-	if (strcmp(v, defOper->formula_elem->name))
-	  break;
-	subst = subst->next;
-	defOper = defOper->next;
-      }
-
-    return subst ? variable_capture(subst->formula_elem, boundVars) : 0;
-  }
-
-  return !find_variable(def->definingFormula, 0, capture);
+  struct cfd_args cfd;
+  cfd.operands = operands;
+  cfd.def = def;
+  return !find_variable(def->definingFormula, 0, capture_free_define, &cfd);
 }
 
 /**
@@ -739,18 +763,18 @@ formula* equivalent_defining_formula(const formula* f,
   return def;
 }
 
-struct formula_list* formula_list_map(const struct formula_list* l,
-				      formula* (*func)(const formula* x))
+struct formula_list* clone_operands(const struct formula_list* operands,
+				    variable_substitution* freeSubs)
 {
-  if (l)
+  if (operands)
     {
-      formula* g = func(l->formula_elem);
-      return make_formula_list(g, formula_list_map(l->next, func));
+      formula* g = formula_clone(operands->formula_elem, freeSubs);
+      return make_formula_list(g, clone_operands(operands->next, freeSubs));
     }
   else
     return (struct formula_list*)0;
 }
-
+  
 formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 {
   if (!f)
@@ -766,12 +790,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 			    (const char*) 0,
 			    0);
 
-  formula* clone_closure(const formula* x)
-  {
-    return formula_clone(x, freeSubs);
-  }
-
-  c->operands = formula_list_map(f->operands, clone_closure);
+  c->operands = clone_operands(f->operands, freeSubs);
   // c->definingFormula = formula_clone(f->definingFormula, freeSubs) ???
   // risk that freeSubs capture variables in f->definingFormula
   return c;
@@ -860,6 +879,24 @@ short resolve_operator_or_variable(formula* f,
   return 0;
 }
 
+unsigned char resolve_operands(struct formula_list* operands,
+			       const struct formula_list* primitives,
+			       const formula_set operatorDefinitions,
+			       const struct string_list* variables,
+			       const struct formula_list* opVariables,
+			       const struct formula_list* proofLocalDecl)
+{
+  for ( ; operands; operands = operands->next)
+    {
+      formula* oper = operands->formula_elem;
+      if (!resolve_names(oper, primitives,
+			 operatorDefinitions, variables,
+			 opVariables, proofLocalDecl))
+	return 0;
+    }
+  return 1;
+}
+
 /**
    Mark all variables inside f with builtInOp variable.
    Link all operators inside f to their defining formulas.
@@ -890,13 +927,8 @@ unsigned char resolve_names(/*out*/formula* f,
   else
     {
       // resolve operands first, because they can go in f->definingFormula
-      unsigned char resolve_error(formula* oper)
-      {
-	return !resolve_names(oper, primitives,
-			      operatorDefinitions, variables,
-			      opVariables, proofLocalDecl);
-      }
-      if (formula_list_find(f->operands, resolve_error))
+      if (!resolve_operands(f->operands, primitives, operatorDefinitions,
+			    variables, opVariables, proofLocalDecl))
 	return 0;
     }
 

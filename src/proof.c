@@ -4,17 +4,6 @@
 #include "string.h"
 #include <search.h>
 
-void remove_list_node(struct FormulaDList* l)
-{
-  // Remove l from its list and make it a singleton list
-  if (l->next)
-    l->next->previous = l->previous;
-  if (l->previous)
-    l->previous->next = l->next;
-  l->previous = 0;
-  l->next = 0;
-}
-
 struct FormulaDList* push_justified_formula(struct JustifiedFormula* jf,
 					    struct FormulaDList* next)
 {
@@ -164,12 +153,10 @@ const formula* get_forall(const formula* f)
 unsigned char find_equal(const struct FormulaDList* start,
 			 const formula* f)
 {
-  struct FormulaDList* x = start->previous;
-  while (x)
+  for (struct FormulaDList* x = start->previous; x; x = x->previous)
     {
       if (formula_equal(f, x->jf->formula, 0, (variable_substitution*)0, 0))
 	return 1;
-      x = x->previous;
     }
   return 0;
 }
@@ -213,14 +200,10 @@ unsigned char find_mp_cascade(const struct FormulaDList* statement,
 			      const void* namedFormulas,
 			      int substitutionCount)
 {
-  const struct FormulaDList* f = statement->previous;
-  while (f)
+  for (const struct FormulaDList* f = statement->previous; f; f = f->previous)
     {
       if (!f->jf->reason)
-	{
-	  f = f->previous;
-	  continue; // skip local operator definitions
-	}
+	continue; // skip local operator definitions
     
       const formula* firstHypothesis = get_first_operand(propoFormula); // in the chain of implications
       unsigned char success = formula_equal(f->jf->formula,
@@ -236,7 +219,6 @@ unsigned char find_mp_cascade(const struct FormulaDList* statement,
       propositionalVariables[substitutionCount].variable = (char*)0;
       if (success)
 	return 1;
-      f = f->previous;
     }
   return 0;
 }
@@ -352,8 +334,7 @@ unsigned char find_implicit_modus_ponens(enum reason_kind rk,
 					 const struct FormulaDList* statement,
 					 const formula_set operators)
 {
-  struct FormulaDList* x = statement->previous;
-  while (x)
+  for (struct FormulaDList* x = statement->previous; x; x = x->previous)
     {
       const struct JustifiedFormula* forallFormula = x->jf;
       // Make formula (forallFormula => statement) and check whether
@@ -372,7 +353,6 @@ unsigned char find_implicit_modus_ponens(enum reason_kind rk,
 						  statement->jf->reason->formula->operands,
 						  operators))
 	return 1;
-      x = x->previous;
     }
   return 0;
 }
