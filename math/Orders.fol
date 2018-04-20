@@ -598,23 +598,52 @@ IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsOrder(u \union v)   BECAUSE \A
 <<y,z>> \in woAdd(u,v) <=> (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v))
    BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<y,z>>);
 <<y,z>> \in woAdd(u,v) => (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v))   BECAUSE EquivToImpl;
-<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
-((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))
-   => (((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in (u \union v))
-        \/ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in Domain(u) \X Domain(v)))
-   BECAUSE DistribAndOrLeft;
 <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)
-   => (((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in (u \union v))
-        \/ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ <<y,z>> \in Domain(u) \X Domain(v)))
-   BECAUSE TI;
+   => ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
+        /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
 \* Kill the double-glue case
 x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE DropAndLeft;
 <<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(v)   BECAUSE TI;
+IsOrder(v) /\ y \in Domain(v) => <<y,y>> \in v   BECAUSE \A(o <- v, x <- y);
+IsOrder(v) => IsOrder(v)   BECAUSE ImplySelf;
+IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v) => IsOrder(v) /\ y \in Domain(v)
+   BECAUSE MergeImplicationsAnd;
+IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v) => <<y,y>> \in v   BECAUSE TI;
 \A x : \A y : <<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u)   BECAUSE GENERALIZATION;
 <<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u)   BECAUSE \A(x <- y, y <- z);
-<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v)
-   => y \in Domain(u) /\ y \in Domain(v)   BECAUSE MergeImplicationsAnd; \* Impossible, u and v are disjoint
+IsOrder(u) /\ y \in Domain(u) => <<y,y>> \in u   BECAUSE \A(o <- u, x <- y);
+IsOrder(u) => IsOrder(u)   BECAUSE ImplySelf;
+IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v) => IsOrder(u) /\ y \in Domain(u)
+   BECAUSE MergeImplicationsAnd;
+IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v) => <<y,y>> \in u   BECAUSE TI;
+(IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ (IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v))
+   => <<y,y>> \in u /\ <<y,y>> \in v  BECAUSE MergeImplicationsAnd; \* Impossible, u and v are disjoint
+noCommonElements   BECAUSE THEOREM;
+AreDisjoint(u,v) <=> \A z : ~(z \in u /\ z \in v)   BECAUSE \A(x <- u, y <- v);
+AreDisjoint(u,v) => \A z : ~(z \in u /\ z \in v)   BECAUSE EquivToImpl;
+(\A z : ~(z \in u /\ z \in v)) => ~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE \A(z <- <<y,y>>);
+AreDisjoint(u,v) => ~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE TI;
+~(<<y,y>> \in u /\ <<y,y>> \in v)
+   => ~((IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ (IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v)))   BECAUSE Contraposition;
+AreDisjoint(u,v)
+   => ~((IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ (IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v)))   BECAUSE TI;
+pullHypos(a,b,c,d,e) == (a => ~((b /\ c) /\ (d /\ e))) => ((b /\ d /\ a) => ~(c /\ e))   PROPO_TAUTO;
+IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)
+   => ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v))   BECAUSE pullHypos;
 
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+   => ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v))
+      /\ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
+        /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
+killCase(a,b,c,d) == (~(a /\ b) /\ ((c \/ b) /\ (d \/ a))) => (c /\ d) \/ (b /\ d) \/ (c /\ a)   PROPO_TAUTO;
+~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v)) /\ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))
+   => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))   BECAUSE killCase;
+
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+   => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \* Solved because u \union v is an order
+        \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+   BECAUSE TI;
 QED
 
 EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))

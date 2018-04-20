@@ -19,4 +19,4 @@ test:
 	bin/proveMath math/Tautologies.fol math/test.fol
 
 clean:
-	rm bin/* src/*~ src/lex.*.c src/*.tab.c src/*.tab.h
+	rm --force bin/* src/*~ src/lex.*.c src/*.tab.c src/*.tab.h

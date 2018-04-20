@@ -2,8 +2,8 @@
 #define _LIST_H
 
 #define declare_list_type(t) struct t##_list { t* t##_elem; struct t##_list* next; }; \
-  struct t##_list* make_##t##_list(t* p, struct t##_list* l);	\
-  void t##_list_free(struct t##_list* l);				\
+  struct t##_list* make_##t##_list(t* p, struct t##_list* l); \
+  void t##_list_free(struct t##_list* l); \
   int t##_list_size(const struct t##_list* l);
 
 #define impl_list_type(t) struct t##_list* make_##t##_list(t* p, struct t##_list* l) { struct t##_list* pl = malloc(sizeof(struct t##_list)); pl->t##_elem = p; pl->next = l; return pl; } \
