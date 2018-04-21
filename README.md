@@ -108,7 +108,13 @@ AXIOM \A n : (\E p : (n = 1 /\ p = 1) \/ (n # 1 /\ p = n * Factorial(n-1)))
 
 `Factorial` has several occurrences in this axiom, and that is perfectly fine. The recursion of the previous definition was only an illusion caused by the `==` syntactic construct.
 
-However, `==` does a little more that introducing a `CONSTANT/AXIOM` pair. With this syntax, the proof chercker knows the introduced symbol is equivalent to another formula. When checking a statement, if the symbol fails the statement's `BECAUSE` clause, the checker will try to replace it by its equivalent formula and check the statement again. If a symbol like `Factorial` appears on both sides of an `==`, this can send the checker into an infinite loop. For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly.
+However, it is much harder to prove that this axiom is a conservative extension. As explained above, the proof that a new symbol and its axiom are conservative is by model extension. So for `newOp(n) == CHOOSE x : P`, we extend a model M of the previous theory by taking for `newOp(n)`,
+* when M satisfies `\E x : P`, any such `x`
+* otherwise, any value
+
+But this reasoning only holds when formula `P` doesn't involve `newOp`. If `P` does involve `newOp` as `Factorial` does, then it is not a formula in the language of the previous theory : knowing whether M satisfies `\E x : P` doesn't make any sense.
+
+For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly. And you have to prove yourself that your axiom is conservative.
 
 Or find another way to define your symbol. Here `Factorial` could be defined as a function, a 0-ary symbol :
 ```
