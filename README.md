@@ -90,6 +90,32 @@ AXIOM \A f : \A x : (\E y : <<x,y>> \in f) => <<x,f[x]>> \in f
 
 This axiom lets us say nothing about `f[x]` until we have proven `(\E y : <<x,y>> \in f)`, which means that `f[x]` exists. The `== CHOOSE` construct can be used in HilbertProofs to define, among others, the application of a function `f[x]`, the division of numbers `a/b`, the differential of a function `f'` and the integral of a function. It protects our proofs from applying functions where they're not defined, dividing by zero, differentiating a function that is not differentiable, or integrating a function that is not integrable.
 
+## Recursive definitions
+
+Recall that the factorial of a natural number n is the product of all numbers up to n, so this could be its definition
+```
+Factorial(n) == CHOOSE p : (n = 1 /\ p = 1) \/ (n # 1 /\ p = n * Factorial(n-1))
+```
+This looks like a recursive definition, because `Factorial` is on both sides of the `==`. But remember that it is only syntactic sugar to write a `CONSTANT/AXIOM` pair, as well as ensuring it is a conservative extension of the theory. In predicate calculus, the definition of a symbol is only its name and arity, so here
+```
+CONSTANT Factorial( _ )
+```
+Then the symbol may appear in one or more axioms, so that the theory can prove formulas involving the symbol. Here,
+```
+AXIOM \A n : (\E p : (n = 1 /\ p = 1) \/ (n # 1 /\ p = n * Factorial(n-1)))
+   => ((n = 1 /\ Factorial(n) = 1) \/ (n # 1 /\ Factorial(n) = n * Factorial(n-1)))
+```
+
+`Factorial` has several occurrences in this axiom, and that is perfectly fine. The recursion of the previous definition was only an illusion caused by the `==` syntactic construct.
+
+However, `==` does a little more that introducing a `CONSTANT/AXIOM` pair. With this syntax, the proof chercker knows the introduced symbol is equivalent to another formula. When checking a statement, if the symbol fails the statement's `BECAUSE` clause, the checker will try to replace it by its equivalent formula and check the statement again. If a symbol like `Factorial` appears on both sides of an `==`, this can send the checker into an infinite loop. For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly.
+
+Or find another way to define your symbol. Here `Factorial` could be defined as a function, a 0-ary symbol :
+```
+Factorial == CHOOSE f : IsFunction(f) /\ Domain(f) = Nat /\ f[1] = 1
+   /\ (\A n : n \in Nat /\ n > 0 => f[n] = n * f[n-1])
+```
+
 ## Compile HilbertProofs
 
 The build system of HilbertProofs is a simple makefile ; on Linux or MacOS, type `make build` to build.

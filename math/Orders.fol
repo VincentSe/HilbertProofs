@@ -1125,6 +1125,32 @@ WellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
 *)
 IsOrdinal(o) == TransitiveSet(o) /\ WellOrderedByIn(o)
 
+(*
+   This is the link between a well-order and an ordinal :
+   when there is an increasing bijection between them.
+*)
+IsOrdinalOfWellOrder(o, w) == IsOrdinal(o) /\ IsWellOrder(w)
+ /\ (\E f : IsInjection(f) /\ Domain(f) = Domain(w) /\ Image(f) = o
+      /\ \A x : \A y : <<x,y>> \in w => f[x] \subseteq f[y])
+
+uniqueOrdinalOfWellOrder == \A w : \A o : \A p :
+   IsOrdinalOfWellOrder(o, w) /\ IsOrdinalOfWellOrder(p, w) => o = p
+THEOREM uniqueOrdinalOfWellOrder
+
+(*
+   With this unicity of a well-order's ordinal, we can now prove
+   its existence. By the replacement axiom scheme, each element x
+   of a well-order w is sent to the unique ordinal of the initial
+   segment [min(w), x[.
+
+   This forms a set of ordinals, which will be shown to be an ordinal.
+   The final step is to prove that this ordinal is isomorphic to w.
+*)
+OrdinalOfWellOrder(w) == CHOOSE o : IsOrdinalOfWellOrder(o, w)
+ordinalOfWellOrderExists == \A w : IsWellOrder(w)
+   => IsOrdinalOfWellOrder(OrdinalOfWellOrder(w), w)
+THEOREM ordinalOfWellOrderExists
+
 \* The empty set is the smallest ordinal, called "zero" as an ordinal
 ordinalZero == IsOrdinal( {} )
 THEOREM ordinalZero
@@ -1188,40 +1214,3 @@ IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x
 Nat == CHOOSE o : IsLimitOrdinal(o) /\ \A x : x \in o => ~IsLimitOrdinal(x)
 naturalNumbersExist == IsLimitOrdinal(Nat) /\ \A x : x \in Nat => ~IsLimitOrdinal(x)
 THEOREM naturalNumbersExist
-
-(*
-   The addition function on natural numbers. It could be declared as an operator
-   natAddition(x,y) == CHOOSE z : ...
-   however it would be recursive (or use well-orders). Keep it a simple function here.
-*)
-natAddition == CHOOSE f : IsFunction(f)
-   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in f) \* f : Nat \X Nat -> Nat
-   /\ (\A x : x \in Nat => << <<x,{}>>, x >> \in f) \* f(x,0) = x
-   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
-         => \E u : << <<x,y>>, u >> \in f /\ << <<x,successor(y)>>, successor(u) >> \in f) \* f(x,y+1) = f(x,y)+1
-
-natAdditionExists == IsFunction(natAddition)
-   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in natAddition)
-   /\ (\A x : x \in Nat => << <<x,{}>>, x >> \in natAddition)
-   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
-         => \E u : << <<x,y>>, u >> \in natAddition /\ << <<x,successor(y)>>, successor(u) >> \in natAddition)
-
-THEOREM natAdditionExists
-
-(*
-   The multiplication function on natural numbers.
-*)
-natMultiplication == CHOOSE f : IsFunction(f)
-   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in f) \* f : Nat \X Nat -> Nat
-   /\ (\A x : x \in Nat => << <<x,{}>>, {} >> \in f) \* f(x,0) = 0
-   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
-         => \E u : \E v : << <<x,y>>, u >> \in f /\ << <<x,successor(y)>>, v>> \in f
-	                  /\ << <<u,x>>, v >> \in natAddition) \* u=f(x,y) and v=f(x,y+1) and v=u+x, ie f(x,y+1) = f(x,y)+x
-
-natMultiplicationExists == IsFunction(natMultiplication)
-   /\ (\A x : x \in Nat \X Nat => \E y : y \in Nat /\ <<x,y>> \in natMultiplication)
-   /\ (\A x : x \in Nat => << <<x,{}>>, {} >> \in natMultiplication)
-   /\ (\A x : \A y : (x \in Nat /\ y \in Nat)
-         => \E u : \E v : << <<x,y>>, u >> \in natMultiplication /\ << <<x,successor(y)>>, v>> \in natMultiplication /\ << <<u,x>>, v >> \in natAddition)
-
-THEOREM natMultiplicationExists
