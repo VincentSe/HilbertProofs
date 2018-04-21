@@ -13,7 +13,7 @@ Each proof is written in the Hilbert style, which means as a list of cumulative 
 
 While a minimal set of axioms is practical to prove theoretical properties of mathematics (like Gödel's theorems), more axioms and inference rules make the proofs shorter and easier to write. We introduced such redundant inference rules, saying each time how they could be eliminated to go back to the minimal rules (like a macro expansion in the C programming language).
 
-Propositional tautologies are checked by Boolean affectations of propositional variables, rather than arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
+Propositional tautologies are checked by Boolean affectations of propositional variables, rather than by arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
 
 ## A proof example
 
@@ -40,7 +40,7 @@ The first line `aSetExists == \E x : x = x` simply gives the name `aSetExists` t
 Next comes the proof, which is a sequence a statements separated by semicolons `;`. Each statement is proven by the statements before it, so the proof is an accumulation of truths. The last statement is the formula we wanted to prove, here `aSetExists`. `QED` stands for "quod erat demonstrandum", or in English "what was to be demonstrated". It marks the end of the proof.
 
 Each proof statement contains a formula and a reason, separated by the `BECAUSE` keyword. It asserts that its formula is proven by the reason and the previous statements.
-* The first reason invoked is `\A(x <- x)`, which is the instantiation of the universal quantifier `\A`. If a formula is true for any set `x`, then it is true when `x` is replaced by any particular value. Here `x` is replaced by itself to drop merely drop the quantifier `\A x` (allowing the use of an equality axiom `E_SCHEME` three statements after).
+* The first reason invoked is `\A(x <- x)`, which is the instantiation of the universal quantifier `\A`. If a formula is true for any set `x`, then it is true when `x` is replaced by any particular value. Here `x` is replaced by itself to merely drop the quantifier `\A x` (allowing the use of an equality axiom `E_SCHEME` three statements after).
 * The second reason is `Contraposition`. That is a propositional tautology defined in file `math/Tautologies.fol`, which `ZFC.fol` references by the statement `EXTENDS Tautologies` at the beginning. Any propositional tautology can be used as a reason, the checker will then try to match the propositional variables and implicitely use modus ponens with the previous statements. Here `Contraposition(a,b) == (a => b) => (~b => ~a)`, so propositional variable `a` is matched with formula `(\A x : ~(x = x))`, `b` is matched with `~(x = x)` and modus ponens is used with the first statement.
 * The third reason is `E_SCHEME`, which regroups several axioms concerning equality. `x = x` is one of those axioms.
 * The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~(\A x : ~(x = x))`, it finds the implication `~~(x = x) => ~(\A x : ~(x = x))` and its hypothesis `~~(x = x)`.
@@ -61,7 +61,7 @@ AXIOM \A x : \A y : x \subseteq y <=> \A z : z \in x => z \in y
 
 However, each time we add an axiom we must think : does it break the theory ? Does it introduce contradictions ? Does it prove or disprove previously undecidable formulas ? There are cases like the one above where we are sure that the new axiom does not affect the formulas of the previous theory : [conservative extensions](https://en.wikipedia.org/wiki/Conservative_extension). Roughly speaking, when the new axiom concerns only the new primitive symbol (`\subseteq` above), then it does not affect formulas that do not use the new symbol. Precisely speaking, each [model](https://en.wikipedia.org/wiki/Model_theory) of the previous theory can be extended to a model of the new theory, so by [Gödel's completeness theorem](https://en.wikipedia.org/wiki/G%C3%B6del%27s_completeness_theorem) there are no more contradictions.
 
-HilbertProofs has 3 syntactic constructs to guarantee that an axiom is a conservative extension via a new primitive symbol. The subset relation is defined by the first of these constructs :
+HilbertProofs has 3 syntactic constructs which guarantee that an axiom is a conservative extension, via a new primitive symbol. The subset relation is defined by the first of these constructs :
 ```
 x \subseteq y == \A z : z \in x => z \in y
 ```
@@ -70,7 +70,7 @@ The proof checker implicitly unfolds this statement as the `CONSTANT/AXIOM` abov
 ```
 x \union y == UNION { x, y }
 ```
-which the checker unfolds to
+where [UNION](https://en.wikipedia.org/wiki/Union_(set_theory)#Arbitrary_unions) is the general union of a set, and `{ x, y }` is the [unordered pair](https://en.wikipedia.org/wiki/Unordered_pair) of `x` and `y`. The checker unfolds this construct to
 ```
 CONSTANT _ \union _
 AXIOM \A x : \A y : x \union y = UNION { x, y }
