@@ -1193,10 +1193,6 @@ y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 imageInc   BECAUSE GENERALIZATION;
 QED
 
-assocCompose == \A f : \A g : \A h : compose(f, compose(g,h)) = compose(compose(f,g), h)
-THEOREM assocCompose
-\* TODO
-
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
 multiApplyExists == \A f : \A multiX : \A x : x \in multiApply(f,multiX)
@@ -1406,6 +1402,11 @@ x = <<fst(x), snd(x)>> => (x \in (Domain(h) \X Image(g)) <=> <<fst(x), snd(x)>> 
 \A x : x \in compose(g,h) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)   BECAUSE MODUS_PONENS;
 composeExists   BECAUSE GENERALIZATION;
 QED
+
+assocCompose == \A f : \A g : \A h : compose(f, compose(g,h)) = compose(compose(f,g), h)
+THEOREM assocCompose
+\* TODO
+
 
 (*
    Definition of the disjoint union : the union of 2 sets where the common

@@ -853,11 +853,21 @@ short resolve_operator_or_variable(formula* f,
     }
   if (resolvedF)
     {
+      if (strcmp(f->file, resolvedF->file) == 0
+	  && f->first_line <= resolvedF->first_line)
+	{
+	  printf("%s:%d: calling operator %s, which is defined later\n",
+		 f->file,
+		 f->first_line,
+		 f->name ? f->name : op_to_string(f->builtInOp));
+	  return 0;
+	}
+      
       int fOperCount = formula_list_size(f->operands);
       int resFOperCount = formula_list_size(resolvedF->operands);
       if (fOperCount != resFOperCount)
 	{
-	  printf("%s:%d: bad number of operands for %s ",
+	  printf("%s:%d: bad number of operands for %s\n",
 		 f->file,
 		 f->first_line,
 		 f->name ? f->name : op_to_string(f->builtInOp));

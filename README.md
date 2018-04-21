@@ -110,7 +110,7 @@ AXIOM \A n : (\E p : (n = 1 /\ p = 1) \/ (n # 1 /\ p = n * Factorial(n-1)))
 
 However, it is much harder to prove that this axiom is a conservative extension. As explained above, the proof that a new symbol and its axiom are conservative is by model extension. So for `newOp(n) == CHOOSE x : P`, we extend a model M of the previous theory by taking for `newOp(n)`,
 * when M satisfies `\E x : P`, any such `x`
-* otherwise, any value
+* otherwise, any element of the domain of M
 
 But this reasoning only holds when formula `P` doesn't involve `newOp`. If `P` does involve `newOp` as `Factorial` does, then it is not a formula in the language of the previous theory : knowing whether M satisfies `\E x : P` doesn't make any sense.
 
