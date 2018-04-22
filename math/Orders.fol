@@ -635,6 +635,12 @@ h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v) /\ y \in Domain(u \union
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<y,y>> \in u \union v   BECAUSE TI;
 <<y,y>> \in (u \union v) => <<y,y>> \in woAdd(u,v)   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<y,y>>);
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<y,y>> \in woAdd(u,v)   BECAUSE TI;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v)   BECAUSE CombineImplicationsEnd;
+h(u,v) => (<<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
+\A y : h(u,v) => (<<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+h(u,v) => (\A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
+\A x : h(u,v) => (\A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+h(u,v) => (\A x : \A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
 
 
 \* Proof that orderAddition is transitive : if <<x,y>> and <<y,z>> are in the addition,
@@ -860,14 +866,94 @@ h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => <<x,z>> \in woAd
 
 \* Proof that orderAddition is anti-symmetric
 \A z : h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
-   => h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \* Solved because u \union v is an order
+   => ((<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \* Solved because u \union v is an order
         \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
         \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE GENERALIZATION;
 h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v))
-   => h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,x>> \in u \union v) \* Solved because u \union v is an order
+   => ((<<x,y>> \in u \union v /\ <<y,x>> \in u \union v) \* Solved because u \union v is an order
         \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v)
         \/ (<<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v)))   BECAUSE \A(z <- x);
-\* Prove the last 2 cases are impossible
+\* Prove the second case is impossible : ~(<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v)
+\* The third case is the same as the second, by generalizing then swapping x and y
+<<y,x>> \in u \union v <=> <<y,x>> \in u \/ <<y,x>> \in v   BECAUSE \A(x <- u, y <- v, z <- <<y,x>>);
+<<y,x>> \in u \union v => <<y,x>> \in u \/ <<y,x>> \in v   BECAUSE EquivToImpl;
+<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v
+   => x \in Domain(u) /\ y \in Domain(v) /\ (<<y,x>> \in u \/ <<y,x>> \in v)   BECAUSE MergeImplicationsAnd;
+multiDistrib(a,b,c,d) == a /\ b /\ (c \/ d) => (b /\ c) \/ (a /\ d)   PROPO_TAUTO;
+x \in Domain(u) /\ y \in Domain(v) /\ (<<y,x>> \in u \/ <<y,x>> \in v)
+   => (y \in Domain(v) /\ <<y,x>> \in u) \/ (x \in Domain(u) /\ <<y,x>> \in v)   BECAUSE multiDistrib;
+<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v
+   => (y \in Domain(v) /\ <<y,x>> \in u) \/ (x \in Domain(u) /\ <<y,x>> \in v)   BECAUSE TI;
+
+\A u : \A x : \A y : IsOrder(u) /\ <<x,y>> \in u => <<x,x>> \in u   BECAUSE GENERALIZATION;
+IsOrder(u) /\ <<y,x>> \in u => <<y,y>> \in u   BECAUSE \A(u <- u, x <- y, y <- x);
+IsOrder(u) => (<<y,x>> \in u => <<y,y>> \in u)   BECAUSE HypoAndToImpl;
+<<y,x>> \in u => (IsOrder(u) => <<y,y>> \in u)   BECAUSE SwitchHypos;
+IsOrder(v) /\ y \in Domain(v) => <<y,y>> \in v   BECAUSE \A(o <- v, x <- y);
+IsOrder(v) => (y \in Domain(v) => <<y,y>> \in v)   BECAUSE HypoAndToImpl;
+y \in Domain(v) => (IsOrder(v) => <<y,y>> \in v)   BECAUSE SwitchHypos;
+y \in Domain(v) /\ <<y,x>> \in u => (IsOrder(v) => <<y,y>> \in v) /\ (IsOrder(u) => <<y,y>> \in u)
+   BECAUSE MergeImplicationsAnd;
+factorTwoHypos(a,b,c,d) == ((a => b) /\ (c => d)) => ((a /\ c) => (b /\ d))   PROPO_TAUTO;
+(IsOrder(v) => <<y,y>> \in v) /\ (IsOrder(u) => <<y,y>> \in u)
+   => (IsOrder(v) /\ IsOrder(u) => <<y,y>> \in v /\ <<y,y>> \in u)   BECAUSE factorTwoHypos;
+y \in Domain(v) /\ <<y,x>> \in u => (IsOrder(v) /\ IsOrder(u) => <<y,y>> \in v /\ <<y,y>> \in u)
+   BECAUSE TI;
+y \in Domain(v) /\ <<y,x>> \in u /\ (IsOrder(v) /\ IsOrder(u)) => <<y,y>> \in v /\ <<y,y>> \in u
+   BECAUSE HypoImplToAnd;
+<<y,y>> \in v /\ <<y,y>> \in u => <<y,y>> \in u /\ <<y,y>> \in v   BECAUSE AndSymmetry;
+y \in Domain(v) /\ <<y,x>> \in u /\ (IsOrder(v) /\ IsOrder(u)) => <<y,y>> \in u /\ <<y,y>> \in v
+   BECAUSE TI;
+~~(<<y,y>> \in u /\ <<y,y>> \in v) => ~AreDisjoint(u,v)   BECAUSE Contraposition;
+(<<y,y>> \in u /\ <<y,y>> \in v) => ~~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE IntroNotNot;
+(<<y,y>> \in u /\ <<y,y>> \in v) => ~AreDisjoint(u,v)   BECAUSE TI;
+y \in Domain(v) /\ <<y,x>> \in u /\ (IsOrder(v) /\ IsOrder(u)) => ~AreDisjoint(u,v)   BECAUSE TI;
+pullH(a,b,c,d) == (a /\ (b /\ c) => ~d) => (a => ~(c /\ b /\ d))   PROPO_TAUTO;
+(y \in Domain(v) /\ <<y,x>> \in u) => ~h(u,v)   BECAUSE pullH;
+
+<<x,x>> \in u /\ <<y,y>> \in u => <<y,y>> \in u   BECAUSE DropAndLeft;
+IsOrder(u) /\ <<x,y>> \in u => <<y,y>> \in u   BECAUSE TI;
+\A u : \A x : \A y : IsOrder(u) /\ <<x,y>> \in u => <<y,y>> \in u   BECAUSE GENERALIZATION;
+IsOrder(v) /\ <<y,x>> \in v => <<x,x>> \in v   BECAUSE \A(u <- v, x <- y, y <- x);
+IsOrder(v) => (<<y,x>> \in v => <<x,x>> \in v)   BECAUSE HypoAndToImpl;
+<<y,x>> \in v => (IsOrder(v) => <<x,x>> \in v)   BECAUSE SwitchHypos;
+IsOrder(u) /\ x \in Domain(u) => <<x,x>> \in u   BECAUSE \A(o <- u, x <- x);
+IsOrder(u) => (x \in Domain(u) => <<x,x>> \in u)   BECAUSE HypoAndToImpl;
+x \in Domain(u) => (IsOrder(u) => <<x,x>> \in u)   BECAUSE SwitchHypos;
+x \in Domain(u) /\ <<y,x>> \in v => (IsOrder(u) => <<x,x>> \in u) /\ (IsOrder(v) => <<x,x>> \in v)
+   BECAUSE MergeImplicationsAnd;
+(IsOrder(u) => <<x,x>> \in u) /\ (IsOrder(v) => <<x,x>> \in v)
+   => (IsOrder(u) /\ IsOrder(v) => <<x,x>> \in u /\ <<x,x>> \in v)   BECAUSE factorTwoHypos;
+x \in Domain(u) /\ <<y,x>> \in v => (IsOrder(u) /\ IsOrder(v) => <<x,x>> \in u /\ <<x,x>> \in v)
+   BECAUSE TI;
+x \in Domain(u) /\ <<y,x>> \in v /\ (IsOrder(u) /\ IsOrder(v)) => <<x,x>> \in u /\ <<x,x>> \in v
+   BECAUSE HypoImplToAnd;
+\A y : (<<y,y>> \in u /\ <<y,y>> \in v) => ~AreDisjoint(u,v)   BECAUSE GENERALIZATION;
+(<<x,x>> \in u /\ <<x,x>> \in v) => ~AreDisjoint(u,v)   BECAUSE \A(y <- x);
+x \in Domain(u) /\ <<y,x>> \in v /\ (IsOrder(u) /\ IsOrder(v)) => ~AreDisjoint(u,v)   BECAUSE TI;
+pullHbis(a,b,c,d) == (a /\ (b /\ c) => ~d) => (a => ~(b /\ c /\ d))   PROPO_TAUTO;
+(x \in Domain(u) /\ <<y,x>> \in v) => ~h(u,v)   BECAUSE pullHbis;
+
+(y \in Domain(v) /\ <<y,x>> \in u) \/ (x \in Domain(u) /\ <<y,x>> \in v) => ~h(u,v)   BECAUSE CombineImplicationsStart;
+<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v => ~h(u,v)   BECAUSE TI;
+\A x : \A y : <<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v => ~h(u,v)   BECAUSE GENERALIZATION;
+<<y,x>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in u \union v => ~h(u,v)   BECAUSE \A(x <- y, y <- x);
+<<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v) => <<y,x>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in u \union v   BECAUSE AndSymmetry;
+<<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v) => ~h(u,v)   BECAUSE TI;
+
+IsOrder(u \union v) => (\A x : \A y : ((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE DropAndLeft;
+(\A x : \A y : ((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)
+   => (((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE \A(x <- x, y <- y);
+IsOrder(u \union v) => (((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE TI;
+((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => (IsOrder(u \union v) => x = y)   BECAUSE SwitchHypos;
+((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v)
+   => (IsOrder(u \union v) => x = y) \/ ~h(u,v)   BECAUSE MergeImplicationsOr;
+((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v))
+   \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v)
+   \/ (<<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v))
+   => (IsOrder(u \union v) => x = y) \/ ~h(u,v) \/ ~h(u,v)  BECAUSE MergeImplicationsOr;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v))
+   => (IsOrder(u \union v) => x = y) \/ ~h(u,v) \/ ~h(u,v)  BECAUSE TI;
 
 disjointOrderAddition   BECAUSE GENERALIZATION;
 QED
