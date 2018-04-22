@@ -863,6 +863,13 @@ h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => ((h(u,v) /\ (<<x
         \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v))
 	\/ (h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))))   BECAUSE TI;
 h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+h(u,v) => (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
+\A z : h(u,v) => (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+h(u,v) => (\A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
+\A y : h(u,v) => (\A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+h(u,v) => (\A y : \A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
+\A x : h(u,v) => (\A y : \A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
+h(u,v) => (\A x : \A y : \A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
 
 \* Proof that orderAddition is anti-symmetric
 \A z : h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
@@ -954,7 +961,18 @@ IsOrder(u \union v) => (((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) =
    => (IsOrder(u \union v) => x = y) \/ ~h(u,v) \/ ~h(u,v)  BECAUSE MergeImplicationsOr;
 h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v))
    => (IsOrder(u \union v) => x = y) \/ ~h(u,v) \/ ~h(u,v)  BECAUSE TI;
+dropRedundantCases(a,b,c,d) == (a => c) => ((a /\ b => (c => d) \/ ~a \/ ~a) => (a /\ b => d))   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v)) => x = y   BECAUSE dropRedundantCases;
+h(u,v) => (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v) => x = y)   BECAUSE HypoAndToImpl;
+\A y : h(u,v) => (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v) => x = y)   BECAUSE GENERALIZATION;
+h(u,v) => (\A y : <<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v) => x = y)   BECAUSE Q_SCHEME;
+\A x : h(u,v) => (\A y : <<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v) => x = y)   BECAUSE GENERALIZATION;
+h(u,v) => (\A x : \A y : <<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v) => x = y)   BECAUSE Q_SCHEME;
 
+h(u,v) => IsGraph(woAdd(u,v)) /\ (\A x : \A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE CombineImplicationsEnd;
+h(u,v) => IsGraph(woAdd(u,v)) /\ (\A x : \A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v))   BECAUSE CombineImplicationsEnd;
+h(u,v) => IsGraph(woAdd(u,v)) /\ (\A x : \A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y,y>> \in woAdd(u,v)) /\ (\A x : \A y : \A z : <<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v) => <<x,z>> \in woAdd(u,v))   BECAUSE CombineImplicationsEnd;
+h(u,v) => IsOrder(woAdd(u,v))   BECAUSE CombineImplicationsEnd;
 disjointOrderAddition   BECAUSE GENERALIZATION;
 QED
 
