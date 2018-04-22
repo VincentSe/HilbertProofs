@@ -1,0 +1,1 @@
+Find useless lines in proofs : try deleting each line and reproving

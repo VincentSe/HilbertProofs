@@ -112,7 +112,7 @@ However, it is much harder to prove that this axiom is a conservative extension.
 * when M satisfies `\E x : P`, any such `x`
 * otherwise, any element of the domain of M
 
-But this reasoning only holds when formula `P` doesn't involve `newOp`. If `P` does involve `newOp` as `Factorial` does, then it is not a formula in the language of the previous theory : knowing whether M satisfies `\E x : P` doesn't make any sense.
+But this reasoning only holds when formula `P` doesn't involve `newOp`. If `P` involves `newOp` as `Factorial` does, then it is not a formula in the language of the previous theory : knowing whether M satisfies `\E x : P` makes no sense.
 
 For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly. And you have to prove yourself that your axiom is conservative.
 

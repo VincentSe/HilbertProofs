@@ -532,6 +532,7 @@ PROOF
 VARIABLES a,b,c,g,i,j,o,p,u,v,x,y,z,part;
 \* Proof that u \union v \union (Domain(u) \X Domain(v)) is a graph : union of 3 graphs
 woAdd(u,v) == u \union v \union (Domain(u) \X Domain(v)); \* Shorter name
+h(u,v) == IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v); \* The hypothesis
 unionInc   BECAUSE THEOREM;
 x \in woAdd(u,v) <=> (x \in (u \union v) \/ x \in (Domain(u) \X Domain(v)))
    BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- x);
@@ -554,7 +555,7 @@ IsOrder(u \union v) => (x \in woAdd(u,v) => IsCouple(x))   BECAUSE SwitchHypos;
 IsOrder(u \union v) => IsGraph(woAdd(u,v))   BECAUSE Q_SCHEME;
 disjointOrders   BECAUSE THEOREM;
 IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
-IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsGraph(woAdd(u,v))   BECAUSE TI;
+h(u,v) => IsGraph(woAdd(u,v))   BECAUSE TI;
 
 \* Proof that orderAddition is reflexive : <<x,y>> \in woAdd(u,v) => (x \in Domain(u) \/ x \in Domain(v))
 <<x,y>> \in woAdd(u,v) <=> (<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
@@ -628,10 +629,8 @@ AreDisjoint(u,v) => ~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE TI;
 AreDisjoint(u,v)
    => ~((IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ (IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v)))   BECAUSE TI;
 pullHypos(a,b,c,d,e) == (a => ~((b /\ c) /\ (d /\ e))) => ((b /\ d /\ a) => ~(c /\ e))   PROPO_TAUTO;
-IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)
-   => ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v))   BECAUSE pullHypos;
-
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+h(u,v) => ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v))   BECAUSE pullHypos;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
    => ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v))
       /\ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
         /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
@@ -639,11 +638,181 @@ killCase(a,b,c,d) == (~(a /\ b) /\ ((c \/ b) /\ (d \/ a))) => (c /\ d) \/ (b /\ 
 ~(<<y,z>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in Domain(u) \X Domain(v)) /\ ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)) /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))
    => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))   BECAUSE killCase;
 
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
    => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \* Solved because u \union v is an order
         \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
         \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
    BECAUSE TI;
+pushHypo(a,b,c) == ((a /\ b) => c) => ((a /\ b) => (a /\ c))   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+   => h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)))
+   BECAUSE pushHypo;
+
+IsOrder(u \union v) => (\A x : \A y : \A z : ((<<x,y>> \in u \union v) /\ (<<y,z>> \in u \union v)) => (<<x,z>> \in u \union v))
+   BECAUSE DropAndBoth;
+(\A x : \A y : \A z : ((<<x,y>> \in u \union v) /\ (<<y,z>> \in u \union v)) => (<<x,z>> \in u \union v))
+   => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v => <<x,z>> \in u \union v)   BECAUSE \A(x <- x, y <- y, z <- z);
+IsOrder(u \union v)
+   => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v => <<x,z>> \in u \union v)   BECAUSE TI;
+h(u,v) => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v => <<x,z>> \in u \union v)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) => <<x,z>> \in u \union v   BECAUSE HypoImplToAnd;
+<<x,z>> \in woAdd(u,v) <=> (<<x,z>> \in (u \union v) \/ <<x,z>> \in (Domain(u) \X Domain(v)))
+   BECAUSE \A(x <- (u \union v), y <- (Domain(u) \X Domain(v)), z <- <<x,z>>);
+(<<x,z>> \in (u \union v) \/ <<x,z>> \in (Domain(u) \X Domain(v))) => <<x,z>> \in woAdd(u,v)
+   BECAUSE EquivToImplReverse;
+<<x,z>> \in u \union v => (<<x,z>> \in (u \union v) \/ <<x,z>> \in (Domain(u) \X Domain(v)))   BECAUSE IntroOrLeft;
+<<x,z>> \in u \union v => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+
+<<y,z>> \in u \union v <=> <<y,z>> \in u \/ <<y,z>> \in v   BECAUSE \A(x <- u, y <- v, z <- <<y,z>>);
+<<y,z>> \in u \union v => <<y,z>> \in u \/ <<y,z>> \in v   BECAUSE EquivToImpl;
+<<x,y>> \in Domain(u) \X Domain(v) => <<x,y>> \in Domain(u) \X Domain(v)   BECAUSE ImplySelf;
+(<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+   => y \in Domain(v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)   BECAUSE MergeImplicationsAnd;
+semiDistrib(a,b,c) == a /\ (b \/ c) => (a /\ b) \/ c   PROPO_TAUTO;
+y \in Domain(v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)
+   => (y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v   BECAUSE semiDistrib;
+<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v
+   => (y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v   BECAUSE TI;
+\* Proof first case is impossible
+IsOrder(v) /\ y \in Domain(v) => <<y,y>> \in v   BECAUSE \A(o <- v, x <- y);
+IsOrder(u) => IsGraph(u) /\ (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE DropAndRight2;
+IsGraph(u) /\ (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))
+   => (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE DropAndLeft;
+IsOrder(u) => (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE TI;
+(\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u)) => ((<<y,z>> \in u) => (<<y,y>> \in u /\ <<z,z>> \in u))   BECAUSE \A(x <- y, y <- z);
+IsOrder(u) => ((<<y,z>> \in u) => (<<y,y>> \in u /\ <<z,z>> \in u))   BECAUSE TI;
+IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE HypoImplToAnd;
+<<y,y>> \in u /\ <<z,z>> \in u => <<y,y>> \in u   BECAUSE DropAndRight;
+IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u   BECAUSE TI;
+(IsOrder(u) /\ <<y,z>> \in u) /\ (IsOrder(v) /\ y \in Domain(v)) => <<y,y>> \in u /\ <<y,y>> \in v   BECAUSE MergeImplicationsAnd;
+~(<<y,y>> \in u /\ <<y,y>> \in v) => ~((IsOrder(u) /\ <<y,z>> \in u) /\ (IsOrder(v) /\ y \in Domain(v)))   BECAUSE Contraposition;
+AreDisjoint(u,v) => ~((IsOrder(u) /\ <<y,z>> \in u) /\ (IsOrder(v) /\ y \in Domain(v)))   BECAUSE TI;
+shuffleNot(a,b,c,d,e) == (a => ~((b /\ c) /\ (d /\ e))) => (b /\ d /\ a => ~(e /\ c))   PROPO_TAUTO;
+h(u,v) => ~(y \in Domain(v) /\ <<y,z>> \in u)   BECAUSE shuffleNot;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+   => ~(y \in Domain(v) /\ <<y,z>> \in u) /\ ((y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v)   BECAUSE MergeImplicationsAnd;
+distribNot(a,b) == ~a /\ (a \/ b) => b   PROPO_TAUTO;
+~(y \in Domain(v) /\ <<y,z>> \in u) /\ ((y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v)
+   => <<y,z>> \in v   BECAUSE distribNot;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => <<y,z>> \in v   BECAUSE TI;
+selectHypo(a,b,c,d) == (a => b) => (c /\ (a /\ d) => b)   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => x \in Domain(u)   BECAUSE selectHypo;
+\A u : IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE GENERALIZATION;
+IsOrder(v) /\ <<y,z>> \in v => <<y,y>> \in v /\ <<z,z>> \in v   BECAUSE \A(u <- v);
+<<y,y>> \in v /\ <<z,z>> \in v => <<z,z>> \in v   BECAUSE DropAndLeft;
+IsOrder(v) /\ <<y,z>> \in v => <<z,z>> \in v   BECAUSE TI;
+z \in Domain(v) <=> IsDefinedOn(v, z)   BECAUSE \A(g <- v, x <- z);
+(\E y : <<z,y>> \in v) => z \in Domain(v)   BECAUSE EquivToImplReverse;
+<<z,z>> \in v => (\E y : <<z,y>> \in v)   BECAUSE \E(y <- z);
+<<z,z>> \in v => z \in Domain(v)   BECAUSE TI;
+IsOrder(v) /\ <<y,z>> \in v => z \in Domain(v)   BECAUSE TI;
+IsOrder(v) => (<<y,z>> \in v => z \in Domain(v))   BECAUSE HypoAndToImpl;
+<<y,z>> \in v => (IsOrder(v) => z \in Domain(v))   BECAUSE SwitchHypos;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => (IsOrder(v) => z \in Domain(v))   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) /\ IsOrder(v) => z \in Domain(v)   BECAUSE HypoImplToAnd;
+repeatHypo(a,b,c,d) == a /\ b /\ c /\ d => a /\ b /\ c /\ d /\ b   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+   => h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) /\ IsOrder(v)   BECAUSE repeatHypo;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => z \in Domain(v)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+   => x \in Domain(u) /\ z \in Domain(v)   BECAUSE CombineImplicationsEnd;
+x \in Domain(u) /\ z \in Domain(v) <=> <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- x, b <- z);
+x \in Domain(u) /\ z \in Domain(v) => <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE EquivToImpl;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+   => <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE TI;
+<<x,z>> \in (Domain(u) \X Domain(v)) => (<<x,z>> \in (u \union v) \/ <<x,z>> \in (Domain(u) \X Domain(v)))
+   BECAUSE IntroOrRight;
+<<x,z>> \in (Domain(u) \X Domain(v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+
+\* (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+<<x,y>> \in u \union v <=> <<x,y>> \in u \/ <<x,y>> \in v   BECAUSE \A(x <- u, y <- v, z <- <<x,y>>);
+<<x,y>> \in u \union v => <<x,y>> \in u \/ <<x,y>> \in v   BECAUSE EquivToImpl;
+<<y,z>> \in Domain(u) \X Domain(v) => <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE ImplySelf;
+y \in Domain(u) /\ z \in Domain(v) <=> <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- y, b <- z);
+<<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u) /\ z \in Domain(v)   BECAUSE EquivToImplReverse;
+y \in Domain(u) /\ z \in Domain(v) => y \in Domain(u)   BECAUSE DropAndRight;
+<<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u)   BECAUSE TI;
+<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)
+   => (<<x,y>> \in u \/ <<x,y>> \in v) /\ y \in Domain(u)   BECAUSE MergeImplicationsAnd;
+semiDistribRight(a,b,c) == (b \/ c) /\ a => (b \/ (c /\ a))   PROPO_TAUTO;
+(<<x,y>> \in u \/ <<x,y>> \in v) /\ y \in Domain(u)
+   => <<x,y>> \in u \/ (<<x,y>> \in v /\ y \in Domain(u))   BECAUSE semiDistribRight;
+<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)
+   => <<x,y>> \in u \/ (<<x,y>> \in v /\ y \in Domain(u))   BECAUSE TI; \* second case is impossible
+IsOrder(u) /\ y \in Domain(u) => <<y,y>> \in u   BECAUSE \A(o <- u, x <- y);
+IsOrder(v) => IsGraph(v) /\ (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE DropAndRight2;
+IsGraph(v) /\ (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))
+   => (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE DropAndLeft;
+IsOrder(v) => (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE TI;
+(\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v)) => ((<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE \A(x <- x, y <- y);
+IsOrder(v) => ((<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE TI;
+IsOrder(v) /\ <<x,y>> \in v => <<x,x>> \in v /\ <<y,y>> \in v   BECAUSE HypoImplToAnd;
+<<x,x>> \in v /\ <<y,y>> \in v => <<y,y>> \in v   BECAUSE DropAndLeft;
+IsOrder(v) /\ <<x,y>> \in v => <<y,y>> \in v   BECAUSE TI;
+(IsOrder(v) /\ <<x,y>> \in v) /\ (IsOrder(u) /\ y \in Domain(u)) => <<y,y>> \in v /\ <<y,y>> \in u   BECAUSE MergeImplicationsAnd;
+<<y,y>> \in v /\ <<y,y>> \in u => <<y,y>> \in u /\ <<y,y>> \in v  BECAUSE AndSymmetry;
+(IsOrder(v) /\ <<x,y>> \in v) /\ (IsOrder(u) /\ y \in Domain(u)) => <<y,y>> \in u /\ <<y,y>> \in v   BECAUSE TI;
+~(<<y,y>> \in u /\ <<y,y>> \in v) => ~((IsOrder(v) /\ <<x,y>> \in v) /\ (IsOrder(u) /\ y \in Domain(u)))   BECAUSE Contraposition;
+AreDisjoint(u,v) => ~((IsOrder(v) /\ <<x,y>> \in v) /\ (IsOrder(u) /\ y \in Domain(u)))   BECAUSE TI;
+shuffleNotBis(a,b,c,d,e) == (a => ~((b /\ c) /\ (d /\ e))) => (d /\ b /\ a => ~(c /\ e))   PROPO_TAUTO;
+h(u,v) => ~(<<x,y>> \in v /\ y \in Domain(u))   BECAUSE shuffleNotBis;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+   => ~(<<x,y>> \in v /\ y \in Domain(u)) /\ (<<x,y>> \in u \/ (<<x,y>> \in v /\ y \in Domain(u)))   BECAUSE MergeImplicationsAnd;
+distribNotBis(a,b) == ~a /\ (b \/ a) => b   PROPO_TAUTO;
+~(<<x,y>> \in v /\ y \in Domain(u)) /\ (<<x,y>> \in u \/ (<<x,y>> \in v /\ y \in Domain(u)))
+   => <<x,y>> \in u   BECAUSE distribNotBis;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => <<x,y>> \in u   BECAUSE TI;
+y \in Domain(u) /\ z \in Domain(v) <=> <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- y, b <- z);
+<<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u) /\ z \in Domain(v)   BECAUSE EquivToImplReverse;
+y \in Domain(u) /\ z \in Domain(v) => z \in Domain(v)   BECAUSE DropAndLeft;
+<<y,z>> \in Domain(u) \X Domain(v) => z \in Domain(v)   BECAUSE TI;
+selectHypoBis(a,b,c,d) == (d => b) => (c /\ (a /\ d) => b)   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => z \in Domain(v)   BECAUSE selectHypoBis;
+\A y : \A z : IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE GENERALIZATION;
+IsOrder(u) /\ <<x,y>> \in u => <<x,x>> \in u /\ <<y,y>> \in u   BECAUSE \A(y <- x, z <- y);
+<<x,x>> \in u /\ <<y,y>> \in u => <<x,x>> \in u   BECAUSE DropAndRight;
+IsOrder(u) /\ <<x,y>> \in u => <<x,x>> \in u   BECAUSE TI;
+x \in Domain(u) <=> IsDefinedOn(u, x)   BECAUSE \A(g <- u, x <- x);
+(\E y : <<x,y>> \in u) => x \in Domain(u)   BECAUSE EquivToImplReverse;
+<<x,x>> \in u => (\E y : <<x,y>> \in u)   BECAUSE \E(y <- x);
+<<x,x>> \in u => x \in Domain(u)   BECAUSE TI;
+IsOrder(u) /\ <<x,y>> \in u => x \in Domain(u)   BECAUSE TI;
+IsOrder(u) => (<<x,y>> \in u => x \in Domain(u))   BECAUSE HypoAndToImpl;
+<<x,y>> \in u => (IsOrder(u) => x \in Domain(u))   BECAUSE SwitchHypos;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => (IsOrder(u) => x \in Domain(u))   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ IsOrder(u) => x \in Domain(u)   BECAUSE HypoImplToAnd;
+repeatHypoBis(a,b,c,d) == a /\ b /\ c /\ d => a /\ b /\ c /\ d /\ a   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+   => h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ IsOrder(u)   BECAUSE repeatHypoBis;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => x \in Domain(u)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+   => x \in Domain(u) /\ z \in Domain(v)   BECAUSE CombineImplicationsEnd;
+x \in Domain(u) /\ z \in Domain(v) <=> <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- x, b <- z);
+x \in Domain(u) /\ z \in Domain(v) => <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE EquivToImpl;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))
+   => <<x,z>> \in Domain(u) \X Domain(v)   BECAUSE TI;
+<<x,z>> \in (Domain(u) \X Domain(v)) => (<<x,z>> \in (u \union v) \/ <<x,z>> \in (Domain(u) \X Domain(v)))
+   BECAUSE IntroOrRight;
+<<x,z>> \in (Domain(u) \X Domain(v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+
+(h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v)) \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)) => <<x,z>> \in woAdd(u,v)   BECAUSE CombineImplicationsStart;
+(h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v)) \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)) \/ (h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))) => <<x,z>> \in woAdd(u,v)   BECAUSE CombineImplicationsStart;
+DistribAndOrLeft4(a,b,c,d) == (a /\ (b \/ c \/ d)) => ((a /\ b) \/ (a /\ c) \/ (a /\ d))   PROPO_TAUTO;
+h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)))
+   => ((h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v))
+        \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v))
+	\/ (h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))))   BECAUSE DistribAndOrLeft4;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => ((h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v))
+        \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v))
+	\/ (h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))))   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
 QED
 
 EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))
