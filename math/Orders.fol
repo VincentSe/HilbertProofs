@@ -588,10 +588,54 @@ orderDomainReflexive   BECAUSE THEOREM;
 IsOrder(u \union v) /\ x \in Domain(u \union v) => <<x,x>> \in u \union v   BECAUSE \A(o <- u \union v, x <- x);
 IsOrder(u \union v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in u \union v   BECAUSE TI;
 disjointOrders   BECAUSE THEOREM;
-IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
+h(u,v) => IsOrder(u \union v)   BECAUSE \A(u <- u, v <- v);
+<<x,y>> \in woAdd(u,v) => <<x,y>> \in woAdd(u,v)   BECAUSE ImplySelf;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v) /\ <<x,y>> \in woAdd(u,v)   BECAUSE MergeImplicationsAnd;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in u \union v   BECAUSE TI;
+<<x,x>> \in (u \union v) => <<x,x>> \in woAdd(u,v)   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<x,x>>);
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v)   BECAUSE TI;
 
-\* Proof that orderAddition is anti-symmetric : if both <<x,y>> and <<y,x>> are in the addition,
-\* then they're in u \union v and not in the product glue
+IsOrder(u \union v) => IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE DropAndRight2;
+IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v)) => (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE DropAndLeft;
+IsOrder(u \union v) => (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
+(\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))
+   => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE \A(x <- x, y <- y);
+IsOrder(u \union v) => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
+h(u,v) => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
+h(u,v) /\ (<<x,y>> \in u \union v) => <<x,x>> \in u \union v /\ <<y,y>> \in u \union v   BECAUSE HypoImplToAnd;
+<<x,x>> \in u \union v /\ <<y,y>> \in u \union v => <<y,y>> \in u \union v   BECAUSE DropAndLeft;
+h(u,v) /\ (<<x,y>> \in u \union v) => <<y,y>> \in u \union v   BECAUSE TI;
+\A x : <<x,y>> \in u \union v => x \in Domain(u \union v)   BECAUSE GENERALIZATION;
+<<y,y>> \in u \union v => y \in Domain(u \union v)   BECAUSE \A(x <- y);
+h(u,v) /\ <<x,y>> \in u \union v => y \in Domain(u \union v)   BECAUSE TI;
+x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE DropAndLeft;
+<<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(v)   BECAUSE TI;
+x \in Domain(v) <=> IsDefinedOn(v, x)   BECAUSE \A(g <- v, x <- x);
+x \in Domain(v) => \E y : <<x,y>> \in v   BECAUSE EquivToImpl;
+unionSecondInc   BECAUSE THEOREM;
+<<x,y>> \in v => <<x,y>> \in u \union v   BECAUSE \A(x <- u, y <- v, z <- <<x,y>>);
+(\E y : <<x,y>> \in v) => \E y : <<x,y>> \in u \union v   BECAUSE Q_SCHEME;
+x \in Domain(v) => \E y : <<x,y>> \in u \union v   BECAUSE TI;
+x \in Domain(v) => x \in Domain(u \union v)   BECAUSE TI;
+\A x : x \in Domain(v) => x \in Domain(u \union v)   BECAUSE GENERALIZATION;
+y \in Domain(v) => y \in Domain(u \union v)   BECAUSE \A(x <- y);
+<<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(u \union v)   BECAUSE TI;
+(h(u,v) /\ <<x,y>> \in u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(u \union v)   BECAUSE CombineImplicationsStart;
+semiDistrib(a,b,c) == a /\ (b \/ c) => (a /\ b) \/ c   PROPO_TAUTO;
+h(u,v) /\ (<<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v))
+   => (h(u,v) /\ <<x,y>> \in u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v)   BECAUSE semiDistrib;
+h(u,v) /\ (<<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v)) => y \in Domain(u \union v)   BECAUSE TI;
+h(u,v) => h(u,v)   BECAUSE ImplySelf;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => h(u,v) /\ (<<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v))   BECAUSE MergeImplicationsAnd;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => y \in Domain(u \union v)   BECAUSE TI;
+IsOrder(u \union v) /\ y \in Domain(u \union v) => <<y,y>> \in u \union v   BECAUSE \A(o <- u \union v, x <- y);
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => h(u,v)   BECAUSE DropAndRight;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v)   BECAUSE TI;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v) /\ y \in Domain(u \union v)   BECAUSE CombineImplicationsEnd;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<y,y>> \in u \union v   BECAUSE TI;
+<<y,y>> \in (u \union v) => <<y,y>> \in woAdd(u,v)   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<y,y>>);
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<y,y>> \in woAdd(u,v)   BECAUSE TI;
+
 
 \* Proof that orderAddition is transitive : if <<x,y>> and <<y,z>> are in the addition,
 \*    - <<x,y>> and <<y,z>> are is u \union v then <<x,z>> too be it's an order
@@ -619,6 +663,7 @@ IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v) => IsOrder(u) /\ y \in Domain(u
 IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v) => <<y,y>> \in u   BECAUSE TI;
 (IsOrder(u) /\ <<y,z>> \in Domain(u) \X Domain(v)) /\ (IsOrder(v) /\ <<x,y>> \in Domain(u) \X Domain(v))
    => <<y,y>> \in u /\ <<y,y>> \in v  BECAUSE MergeImplicationsAnd; \* Impossible, u and v are disjoint
+(\A z : ~(z \in u /\ z \in v)) => ~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE \A(z <- <<y,y>>);
 noCommonElements   BECAUSE THEOREM;
 AreDisjoint(u,v) <=> \A z : ~(z \in u /\ z \in v)   BECAUSE \A(x <- u, y <- v);
 AreDisjoint(u,v) => \A z : ~(z \in u /\ z \in v)   BECAUSE EquivToImpl;
@@ -671,7 +716,6 @@ h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) => <<x,z>> \in woAd
 <<x,y>> \in Domain(u) \X Domain(v) => <<x,y>> \in Domain(u) \X Domain(v)   BECAUSE ImplySelf;
 (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
    => y \in Domain(v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)   BECAUSE MergeImplicationsAnd;
-semiDistrib(a,b,c) == a /\ (b \/ c) => (a /\ b) \/ c   PROPO_TAUTO;
 y \in Domain(v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)
    => (y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v   BECAUSE semiDistrib;
 <<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v
@@ -813,6 +857,19 @@ h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => ((h(u,v) /\ (<<x
         \/ (h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v))
 	\/ (h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v))))   BECAUSE TI;
 h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v)) => <<x,z>> \in woAdd(u,v)   BECAUSE TI;
+
+\* Proof that orderAddition is anti-symmetric
+\A z : h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
+   => h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,z>> \in u \union v) \* Solved because u \union v is an order
+        \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v)
+        \/ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE GENERALIZATION;
+h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,x>> \in woAdd(u,v))
+   => h(u,v) /\ ((<<x,y>> \in u \union v /\ <<y,x>> \in u \union v) \* Solved because u \union v is an order
+        \/ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,x>> \in u \union v)
+        \/ (<<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v)))   BECAUSE \A(z <- x);
+\* Prove the last 2 cases are impossible
+
+disjointOrderAddition   BECAUSE GENERALIZATION;
 QED
 
 EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))
