@@ -1,5 +1,31 @@
 (*
-   The class of orders : graphs that are reflexive, anti-symmetric and transitive.
+   The elements of a ZFC set are not ordered. There is only one set
+   with elements x and y : { x, y } = { y, x }. Likewise with any
+   number of elements, by the axiom of extensionality the set is
+   the same, independently of the order in which its elements were
+   listed.
+
+   Couples introduce an order between two elements, because <<x,y>>
+   and <<y,x>> are different. Here we discuss the more general
+   structure of order, that applies to a set with any number of
+   elements.
+
+   Order is fundamental for numbers. When we measure things with
+   numbers, we're often only interested in the order the numbers
+   place on the things : which are bigger, faster, stronger, ...
+   The geometry of the real numbers comes from their order, which
+   tells when a point on a line lies between two other points.
+   Deeper still, orders are the very definition of natural numbers :
+   they are the finite well-orders. We will see that addition and
+   multiplication, often introduced at school for natural numbers,
+   are actually operations on orders.
+
+   Orders also serve for optimization. In the dictionary, the
+   alphabetical order allows to find any word among more than
+   100 000 words in a few seconds. This is true for any collection
+   of objects, in a book, house, factory or even human society :
+   when ordered, the objects are much faster to find and easier
+   to manipulate.
 *)
 
 EXTENDS Functions
@@ -55,10 +81,8 @@ PROOF
 \* By separation in Image(f) \X Image(f)
 VARIABLES a,b,c,f,o,x,y;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> (x \in (Image(f) \X Image(f)) /\ <<pre(f,fst(x)), pre(f,snd(x))>> \in o)
-   BECAUSE \A(a <- Image(f) \X Image(f));
-(\E b : \A x : x \in b <=> IsInInjectOrder(o,f,x)) => (\A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x))   BECAUSE CHOOSE injectOrder(o,f);
-\A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE MODUS_PONENS;
+\E b : \A x : x \in b <=> IsInInjectOrder(o,f,x)   BECAUSE \A(a <- Image(f) \X Image(f));
+\A x : x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE CHOOSE injectOrder(o,f);
 injectOrderExists   BECAUSE GENERALIZATION;
 QED
 
@@ -523,8 +547,12 @@ IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
 disjointOrders   BECAUSE GENERALIZATION;
 QED
 
-\* Not only can two disjoint orders be united, then can also be glued together,
-\* which will later define the addition of natural numbers.
+(*
+   Not only can two disjoint orders be united, then can also be glued together,
+   the second coming completely after then first, which defines their addition.
+
+   On natural numbers (finite well-orders, see below), this is the usual addition.
+*)
 disjointOrderAddition == \A u : \A v : (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
    => IsOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
 THEOREM disjointOrderAddition
@@ -976,6 +1004,20 @@ h(u,v) => IsOrder(woAdd(u,v))   BECAUSE CombineImplicationsEnd;
 disjointOrderAddition   BECAUSE GENERALIZATION;
 QED
 
+(*
+   Now the multiplication of orders, which is the usual multiplication on
+   natural numbers.
+*)
+OrderMultiplication(u,v) == CHOOSE m : \A x : x \in m
+   <=> IsCouple(x) /\ IsCouple(fst(x)) /\ IsCouple(snd(x))
+       /\ ((fst(fst(x)) # fst(snd(x)) /\ << fst(fst(x)), fst(snd(x))>> \in u)
+             \/ (fst(fst(x)) = fst(snd(x)) /\ << snd(fst(x)), snd(snd(x))>> \in v))
+
+orderMultiplicationIsOrder == \A u : \A v : (IsOrder(u) /\ IsOrder(v))
+   => IsOrder(OrderMultiplication(u,v))
+THEOREM orderMultiplicationIsOrder
+
+
 EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))
 
 minOfTwoParts == \A o : \A a : \A b :
@@ -1104,8 +1146,7 @@ QED
       - iterate
 
    For this reason, some well-orders (the finite ones) define the natural numbers.
-   The well-orders are stable under disjoint unions, which they call addition.
-   They are also stable under cartesian products, which they call multiplication.
+   The well-orders are stable under addition and multiplication, as defined above.
 *)
 IsWellOrder(w) == IsOrder(w) /\ (\A p : (p \subseteq Domain(w)) => EmptyOrHasMinimum(p, w))
 
@@ -1436,16 +1477,17 @@ QED
    class, so that addition and multiplication get their usual properties. The
    ordinals achieve that, they find canonical elements for the well-orders' domains.
 *)
-TransitiveSet(x) == \A a : a \in x => a \subseteq x
+IsTransitiveSet(x) == \A a : a \in x => a \subseteq x
 
 (*
    Predicate asserting that the set x is strictly well-ordered by the membership
    relation \in. In those sets, \in behaves like < on the natural numbers. Actually,
    those sets start with the natural numbers and \in will be the definition of <.
 *)
-WellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
+IsMinimumForIn(m, part) == m \in part /\ \A b : b \in part => (b = m \/ m \in b)
+IsWellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
    /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
-   /\ (\A p : (p # {} /\ p \subseteq x) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)) \* existence of minimums
+   /\ (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))
 
 (*
    The class of ordinals, which starts with the natural numbers. This predicate
@@ -1453,19 +1495,179 @@ WellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
       0 = {}
       n = { 0, ..., n-1 }
 *)
-IsOrdinal(o) == TransitiveSet(o) /\ WellOrderedByIn(o)
+IsOrdinal(o) == IsTransitiveSet(o) /\ IsWellOrderedByIn(o)
+
+ordinalsWellFounded == \A o : IsOrdinal(o) => o \notin o
+THEOREM ordinalsWellFounded
+PROOF
+VARIABLES a,o;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE DropAndLeft;
+IsWellOrderedByIn(o) => (\A a : a \in o => a \notin a)   BECAUSE DropAndRight2;
+IsOrdinal(o) => (\A a : a \in o => a \notin a)   BECAUSE TI;
+(\A a : a \in o => a \notin a) => (o \in o => o \notin o)   BECAUSE \A(a <- o);
+IsOrdinal(o) => (o \in o => o \notin o)   BECAUSE TI;
+absurd(a,b) == (a => (b => ~b)) => (a => ~b)   PROPO_TAUTO;
+IsOrdinal(o) => o \notin o   BECAUSE absurd;
+ordinalsWellFounded   BECAUSE GENERALIZATION;
+QED
+
+(*
+   The strict order \in between the elements of an ordinal p
+   extends to p itself, ie p \union {p} is an ordinal and p
+   is its maximum.
+*)
+ordinalComparesWithOwnElements == \A o : \A p : IsOrdinal(p) /\ o \in p
+   => o # p /\ p \notin o
+THEOREM ordinalComparesWithOwnElements
+PROOF
+VARIABLES a,o,p,x,z;
+ordinalsWellFounded   BECAUSE THEOREM;
+IsOrdinal(p) => p \notin p   BECAUSE \A(o <- p);
+\A o : \A p : o = p => (o \in x <=> p \in x)   BECAUSE E_SCHEME;
+o = p => (o \in x <=> p \in x)   BECAUSE \A(o <- o, p <- p);
+\A x : o = p => (o \in x <=> p \in x)   BECAUSE GENERALIZATION;
+o = p => (o \in p <=> p \in p)   BECAUSE \A(x <- p);
+IsOrdinal(p) /\ o = p => p \notin p /\ (o \in p <=> p \in p)   BECAUSE MergeImplicationsAnd;
+absurd(a,b,c,d) == (a /\ b => ~c /\ (d <=> c)) => (a /\ d => ~b)   PROPO_TAUTO;
+IsOrdinal(p) /\ o \in p => o # p   BECAUSE absurd;
+IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE DropAndRight;
+IsTransitiveSet(p) => (o \in p => o \subseteq p)   BECAUSE \A(a <- o);
+IsOrdinal(p) => (o \in p => o \subseteq p)   BECAUSE TI;
+IsOrdinal(p) /\ o \in p => o \subseteq p   BECAUSE HypoImplToAnd;
+o \subseteq p => (p \in o => p \in p)   BECAUSE \A(z <- p);
+IsOrdinal(p) /\ o \in p => (p \in o => p \in p)   BECAUSE TI;
+absurdAgain(a,b,c,d) == (a => ~b) => ((a /\ c => (d => b)) => (a /\ c => ~d))   PROPO_TAUTO;
+IsOrdinal(p) /\ o \in p => p \notin o   BECAUSE absurdAgain;
+IsOrdinal(p) /\ o \in p => o # p /\ p \notin o   BECAUSE CombineImplicationsEnd;
+ordinalComparesWithOwnElements   BECAUSE GENERALIZATION;
+QED
+
+elemOfOrdinalIsOrdinal == \A o : \A x : IsOrdinal(o) /\ x \in o => IsOrdinal(x)
+THEOREM elemOfOrdinalIsOrdinal
+PROOF
+elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
+QED
+
+\* The only increasing bijection between two ordinals is the identity function.
+\* Which means two ordinals in increasing bijection are equal.
+bijectOrdinalsEqual == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
+   /\ (\E f : IsBijection(f, o, p)
+        /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])
+   => o = p
+THEOREM bijectOrdinalsEqual
+PROOF
+VARIABLES a,b,f,o,p,x,y,z;
+cf(o,p) == CHOOSE f : IsBijection(f, o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y];
+\* By separation, take the subset of o where cf[x] # x
+\A a : \E b : \A x : x \in b <=> x \in a /\ cf(o,p)[x] # x   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in o /\ cf(o,p)[x] # x   BECAUSE \A(a <- o);
+cb(o,p) == CHOOSE b : \A x : x \in b <=> x \in o /\ cf(o,p)[x] # x;
+\A x : x \in cb(o,p) <=> x \in o /\ cf(o,p)[x] # x   BECAUSE CHOOSE cb(o,p);
+m(o,p) == CHOOSE x : IsMinimumForIn(x, cb(o,p)); \* we will show that m does not exist
+IsMinimumForIn(m(o,p), cb(o,p)) => m(o,p) \in cb(o,p)   BECAUSE DropAndRight;
+m(o,p) \in cb(o,p) <=> m(o,p) \in o /\ cf(o,p)[m(o,p)] # m(o,p)   BECAUSE \A(x <- m(o,p));
+m(o,p) \in cb(o,p) => m(o,p) \in o /\ cf(o,p)[m(o,p)] # m(o,p)   BECAUSE EquivToImpl;
+m(o,p) \in o /\ cf(o,p)[m(o,p)] # m(o,p) => m(o,p) \in o   BECAUSE DropAndRight;
+m(o,p) \in cb(o,p) => m(o,p) \in o   BECAUSE TI;
+IsMinimumForIn(m(o,p), cb(o,p)) => m(o,p) \in o   BECAUSE TI;
+\* The hypotheses and all their implications. Prove that h(o,p) is false,
+\* in other words ~IsMinimumForIn(m(o,p), cb(o,p)).
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p)
+   /\ (\E f : IsBijection(f, o, p)
+        /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])
+   /\ IsMinimumForIn(m(o,p), cb(o,p));
+h(o,p) => IsMinimumForIn(m(o,p), cb(o,p))   BECAUSE DropAndLeft;
+h(o,p) => IsOrdinal(o) /\ IsOrdinal(p)   BECAUSE DropAndRight2;
+IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(p)   BECAUSE DropAndLeft;
+h(o,p) => IsOrdinal(p)   BECAUSE TI;
+IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(o)   BECAUSE DropAndRight;
+h(o,p) => IsOrdinal(o)   BECAUSE TI;
+h(o,p) => (\E f : IsBijection(f, o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])   BECAUSE DropAndBoth;
+(\E f : IsBijection(f, o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])
+   => (IsBijection(cf(o,p), o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])   BECAUSE CHOOSE cf(o,p);
+h(o,p) => (IsBijection(cf(o,p), o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])   BECAUSE TI;
+(IsBijection(cf(o,p), o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => IsBijection(cf(o,p), o, p)   BECAUSE DropAndRight;
+h(o,p) => IsBijection(cf(o,p), o, p)   BECAUSE TI;
+(IsBijection(cf(o,p), o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]   BECAUSE DropAndLeft;
+h(o,p) => \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]   BECAUSE TI;
+
+\* Proof that h(o,p) /\ z \in m(o,p) => cf(o,p)[z] = z
+\* (z is below the minimum m(o,p), so doesn't have its defining property)
+h(o,p) => m(o,p) \in o   BECAUSE TI;
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(o) /\ m(o,p) \in o => IsOrdinal(m(o,p))   BECAUSE \A(o <- o, x <- m(o,p));
+h(o,p) => IsOrdinal(o) /\ m(o,p) \in o   BECAUSE CombineImplicationsEnd;
+h(o,p) => IsOrdinal(m(o,p))   BECAUSE TI;
+bijApply   BECAUSE THEOREM;
+(IsBijection(cf(o,p),o,p) /\ m(o,p) \in o) => cf(o,p)[m(o,p)] \in p
+   BECAUSE \A(f <- cf(o,p), a <- o, b <- p, x <- m(o,p));
+h(o,p) => IsBijection(cf(o,p), o, p) /\ m(o,p) \in o   BECAUSE CombineImplicationsEnd;
+h(o,p) => cf(o,p)[m(o,p)] \in p   BECAUSE TI;
+IsMinimumForIn(m(o,p), cb(o,p)) => \A b : b \in cb(o,p) => (b = m(o,p) \/ m(o,p) \in b)   BECAUSE DropAndLeft;
+h(o,p) => \A b : b \in cb(o,p) => (b = m(o,p) \/ m(o,p) \in b)   BECAUSE TI;
+(\A b : b \in cb(o,p) => (b = m(o,p) \/ m(o,p) \in b)) => (z \in cb(o,p) => (z = m(o,p) \/ m(o,p) \in z))
+   BECAUSE \A(b <- z);
+h(o,p) => (z \in cb(o,p) => (z = m(o,p) \/ m(o,p) \in z))   BECAUSE TI;
+h(o,p) /\ z \in cb(o,p) => (z = m(o,p) \/ m(o,p) \in z)   BECAUSE HypoImplToAnd;
+~(z = m(o,p) \/ m(o,p) \in z) => ~(h(o,p) /\ z \in cb(o,p))   BECAUSE Contraposition;
+ordinalComparesWithOwnElements   BECAUSE THEOREM;
+IsOrdinal(m(o,p)) /\ z \in m(o,p) => z # m(o,p) /\ m(o,p) \notin z   BECAUSE \A(o <- z, p <- m(o,p));
+IsOrdinal(m(o,p)) => (z \in m(o,p) => z # m(o,p) /\ m(o,p) \notin z)   BECAUSE HypoAndToImpl;
+h(o,p) => (z \in m(o,p) => z # m(o,p) /\ m(o,p) \notin z)   BECAUSE TI;
+z # m(o,p) /\ m(o,p) \notin z => ~(z = m(o,p) \/ m(o,p) \in z)   BECAUSE FactorNotOr;
+h(o,p) /\ z \in m(o,p) => z # m(o,p) /\ m(o,p) \notin z   BECAUSE HypoImplToAnd;
+h(o,p) /\ z \in m(o,p) => ~(z = m(o,p) \/ m(o,p) \in z)   BECAUSE TI;
+h(o,p) /\ z \in m(o,p) => ~(h(o,p) /\ z \in cb(o,p))   BECAUSE TI;
+killCase(a,b,c) == (a /\ b => ~(a /\ c)) => (a /\ b => ~c)   PROPO_TAUTO;
+h(o,p) /\ z \in m(o,p) => z \notin cb(o,p)   BECAUSE killCase;
+z \in cb(o,p) <=> z \in o /\ cf(o,p)[z] # z   BECAUSE \A(x <- z);
+z \in o /\ cf(o,p)[z] # z => z \in cb(o,p)   BECAUSE EquivToImplReverse;
+z \notin cb(o,p) => ~(z \in o /\ cf(o,p)[z] # z)   BECAUSE Contraposition;
+h(o,p) /\ z \in m(o,p) => ~(z \in o /\ cf(o,p)[z] # z)   BECAUSE TI;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE DropAndRight;
+IsTransitiveSet(o) => (m(o,p) \in o => m(o,p) \subseteq o)   BECAUSE \A(a <- m(o,p));
+IsTransitiveSet(o) /\ m(o,p) \in o => m(o,p) \subseteq o   BECAUSE HypoImplToAnd;
+h(o,p) => IsTransitiveSet(o)   BECAUSE TI;
+h(o,p) => IsTransitiveSet(o) /\ m(o,p) \in o   BECAUSE CombineImplicationsEnd;
+h(o,p) => m(o,p) \subseteq o   BECAUSE TI;
+m(o,p) \subseteq o => (z \in m(o,p) => z \in o)   BECAUSE \A(z <- z);
+h(o,p) => (z \in m(o,p) => z \in o)   BECAUSE TI;
+h(o,p) /\ z \in m(o,p) => z \in o   BECAUSE HypoImplToAnd;
+h(o,p) /\ z \in m(o,p) => z \in o /\ ~(z \in o /\ cf(o,p)[z] # z)   BECAUSE CombineImplicationsEnd;
+killCaseB(a,b) == a /\ ~(a /\ ~b) => b   PROPO_TAUTO;
+z \in o /\ ~(z \in o /\ cf(o,p)[z] # z) => cf(o,p)[z] = z   BECAUSE killCaseB;
+h(o,p) /\ z \in m(o,p) => cf(o,p)[z] = z   BECAUSE TI;
+
+\* Proof that m(o,p) \subseteq cf(o,p)[m(o,p)]
+(\A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])
+   => (z \in m(o,p) /\ m(o,p) \in o => cf(o,p)[z] \in cf(o,p)[m(o,p)])   BECAUSE \A(x <- z, y <- m(o,p));
+h(o,p) => (z \in m(o,p) /\ m(o,p) \in o => cf(o,p)[z] \in cf(o,p)[m(o,p)])   BECAUSE TI;
+h(o,p) /\ (z \in m(o,p) /\ m(o,p) \in o) => cf(o,p)[z] \in cf(o,p)[m(o,p)]   BECAUSE HypoImplToAnd;
+pushHypo(a,b,c) == (a => c) => (a /\ b => a /\ (b /\ c))   PROPO_TAUTO;
+h(o,p) /\ z \in m(o,p) => h(o,p) /\ (z \in m(o,p) /\ m(o,p) \in o)   BECAUSE pushHypo;
+h(o,p) /\ z \in m(o,p) => cf(o,p)[z] \in cf(o,p)[m(o,p)]   BECAUSE TI;
+h(o,p) /\ z \in m(o,p) => cf(o,p)[z] = z /\ cf(o,p)[z] \in cf(o,p)[m(o,p)]   BECAUSE CombineImplicationsEnd;
+
+\* Proof that m(o,p) \in p. By ordinal comparison,
+\* m(o,p) \subseteq cf(o,p)[m(o,p)] => m(o,p) = cf(o,p)[m(o,p)] \/ m(o,p) \in cf(o,p)[m(o,p)],
+\* in both cases m(o,p) \in p.
+
+\* Since f[m] # m, m is not reached by f, contradicting that
+\* f is a bijection.
+QED
 
 (*
    This is the link between a well-order and an ordinal :
    when there is an increasing bijection between them.
 *)
 IsOrdinalOfWellOrder(o, w) == IsOrdinal(o) /\ IsWellOrder(w)
- /\ (\E f : IsInjection(f) /\ Domain(f) = Domain(w) /\ Image(f) = o
-      /\ \A x : \A y : <<x,y>> \in w => f[x] \subseteq f[y])
+ /\ (\E f : IsBijection(f, Domain(w), o) /\ \A x : \A y : <<x,y>> \in w => f[x] \subseteq f[y])
 
 uniqueOrdinalOfWellOrder == \A w : \A o : \A p :
    IsOrdinalOfWellOrder(o, w) /\ IsOrdinalOfWellOrder(p, w) => o = p
 THEOREM uniqueOrdinalOfWellOrder
+\* To prove this, compose the two functions to make an increasing bijection
+\* between o and p, then conclude by the previous theorem.
 
 (*
    With this unicity of a well-order's ordinal, we can now prove
@@ -1491,7 +1693,7 @@ VARIABLES a,b,c,p,x;
 emptySetExists   BECAUSE THEOREM;
 a \notin {}   BECAUSE \A(x <- a);
 a \in {} => a \subseteq {}   BECAUSE Explosion;
-TransitiveSet( {} )   BECAUSE GENERALIZATION;
+IsTransitiveSet( {} )   BECAUSE GENERALIZATION;
 
 \* Proof of irreflexive
 a \in {} => a \notin a   BECAUSE Explosion;
@@ -1526,7 +1728,7 @@ p # {} => p # {}   BECAUSE ImplySelf;
 \* Conclude with PT6
 (\A a : a \in {} => a \notin a)
    /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAndRight;
-WellOrderedByIn( {} )   BECAUSE IntroAndRight;
+IsWellOrderedByIn( {} )   BECAUSE IntroAndRight;
 ordinalZero   BECAUSE IntroAndRight;
 QED
 

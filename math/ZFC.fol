@@ -182,9 +182,7 @@ VARIABLES x, a, b;
 
 \* Take one such set b and show no set x can be in it
 chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
-(\E b : \A x : x \in b <=> (x \in a /\ x # x)) => (\A x : x \in chooseB(a) <=> (x \in a /\ x # x)) 
-   BECAUSE CHOOSE chooseB(a);
-\A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE MODUS_PONENS;
+\A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE CHOOSE chooseB(a);
 x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
 x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
 (x \in a /\ x # x) => x # x   BECAUSE DropAndLeft;
@@ -196,9 +194,8 @@ x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 \A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
 
 \* Conclude chooseB(a) is the empty set
-(\E b : \A x : x \notin b) => (\A x : x \notin {})   BECAUSE CHOOSE {};
 \E b : \A x : x \notin b   BECAUSE \E(b <- chooseB(a));
-emptySetExists   BECAUSE MODUS_PONENS;
+emptySetExists   BECAUSE CHOOSE {};
 QED
 
 (*
@@ -275,9 +272,7 @@ VARIABLES a,b,x,y;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))   BECAUSE \A(a <- a);
 chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ ~(x \in x));
-(\E b : \A x : x \in b <=> (x \in a /\ ~(x \in x))) => (\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x)))
-   BECAUSE CHOOSE chooseB(a);
-\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))   BECAUSE MODUS_PONENS;
+\A x : x \in chooseB(a) <=> (x \in a /\ ~(x \in x))   BECAUSE CHOOSE chooseB(a);
 y \in chooseB(a) <=> (y \in a /\ ~(y \in y))   BECAUSE \A(x <- y);
 
 \* Force the hypothesis that a is the set of all sets (\A y : y \in a)
@@ -325,8 +320,6 @@ THEOREM intersectionExists
 PROOF
 VARIABLES a,b,u,v,x;
 \* By separation in u
-(\E b : (\A x : x \in b <=> (x \in u /\ x \in v))) => (\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v))
-   BECAUSE CHOOSE u \intersect v;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
 (x \in u /\ x \in v) => x \in u   BECAUSE DropAndRight;
@@ -334,7 +327,7 @@ VARIABLES a,b,u,v,x;
 (\A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\E b : \A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
 \E b : \A x : x \in b <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
-\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)   BECAUSE MODUS_PONENS;
+\A x : x \in (u \intersect v) <=> (x \in u /\ x \in v)   BECAUSE CHOOSE u \intersect v;
 intersectionExists   BECAUSE GENERALIZATION;
 QED
 
@@ -369,9 +362,7 @@ PROOF
 VARIABLES a,u,v;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ x \notin v)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in u /\ x \notin v)   BECAUSE \A(a <- u);
-(\E b : \A x : x \in b <=> (x \in u /\ x \notin v)) => \A x : x \in (u \ v) <=> (x \in u /\ x \notin v)
-   BECAUSE CHOOSE u \ v;
-\A x : x \in (u \ v) <=> (x \in u /\ x \notin v)   BECAUSE MODUS_PONENS;
+\A x : x \in (u \ v) <=> (x \in u /\ x \notin v)   BECAUSE CHOOSE u \ v;
 setDifferenceExists   BECAUSE GENERALIZATION;
 QED
 
@@ -549,7 +540,6 @@ THEOREM singletonExists
 PROOF
 VARIABLES a,b,c,x,z;
 \* Proof by separation in the powerset of a
-(\E b : \A x : x \in b <=> x = a) => (\A x : x \in { a } <=> x = a)   BECAUSE CHOOSE { a };
 \A a : \E b : \A x : x \in b <=> (x \in a /\ x = c)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE \A(a <- SUBSET a);
 \A c : \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = c)   BECAUSE GENERALIZATION;
@@ -573,7 +563,7 @@ x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
 (\A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\E b : \A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> x = a)   BECAUSE MODUS_PONENS;
-(\A x : x \in { a } <=> x = a)   BECAUSE MODUS_PONENS;
+(\A x : x \in { a } <=> x = a)   BECAUSE CHOOSE { a };
 singletonExists   BECAUSE GENERALIZATION;
 QED
 
@@ -584,7 +574,6 @@ THEOREM pairExists
 PROOF
 VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
-(\E b : \A y : y \in b <=> (y = c \/ y = d)) => (\A y : y \in { c, d } <=> (y = c \/ y = d))   BECAUSE CHOOSE {c, d};
 F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
       	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
@@ -691,7 +680,7 @@ y = d => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TI;
 (\A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
 (\E b : \A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
 (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE MODUS_PONENS;
-\A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
+\A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
 pairExists   BECAUSE GENERALIZATION;
 QED
 

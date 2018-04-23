@@ -17,6 +17,16 @@ IsFunction(f) == IsGraph(f)  /\  \A a : \A b : <<a,b>> \in f => b = f[a]
 IsInjection(f) == IsFunction(f)  /\  \A a : \A b : <<a,b>> \in f => a = pre(f,b)
 
 (*
+   A bijection is an equivalence between two sets, a one-to-one correspondence
+   between elements of each set. A relation IsBijection(f) would mean the same
+   as IsInjection(f) : an injection f is always a bijection to Image(f).
+
+   For an interesting bijection relation, we must specify the set b that we
+   want f to cover.
+*)
+IsBijection(f, a, b) == IsInjection(f) /\ Domain(f) = a /\ Image(f) = b
+
+(*
    The identity function on a domain d. It takes each element
    of the domain and simply returns it.
 *)
@@ -481,6 +491,11 @@ IsInjection(f) => (y \in multiApply(f,multiX) <=> (y \in Image(f) /\ pre(f,y) \i
 multiInjection   BECAUSE GENERALIZATION;
 QED
 
+bijApply == \A f : \A a : \A b : \A x : (IsBijection(f,a,b) /\ x \in a) => f[x] \in b
+THEOREM bijApply
+PROOF
+bijApply   BECAUSE GENERALIZATION;
+QED
 
 
 (*

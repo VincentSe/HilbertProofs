@@ -948,6 +948,23 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
   return 0;
 }
 
+unsigned char is_existence_of_choose(const formula* f, const formula* c)
+{
+  return f && f->builtInOp == exists
+    && c->builtInOp == choose
+    && strcmp(f->name, c->name) == 0 // same quantified variables
+    && formula_equal(get_first_operand(f), get_first_operand(c), 0, 0, 0);
+}
+
+unsigned char find_existence_of_choose(const struct FormulaDList* statement,
+				       const formula* c)
+{
+  for (statement = statement->previous; statement; statement = statement->previous)
+    if (is_existence_of_choose(statement->jf->formula, c))
+      return 1;
+  return 0;
+}
+
 /**
    Let T be a theory. When defining on top of T,
    someNewOp(x,y,z) == CHOOSE t : P(t,x,y,z)
@@ -962,8 +979,9 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
    so the previous axiom actually proves the equivalence :
    (\E t : P(t,x,y,z)) <=> P(someNewOp(x,y,z),x,y,z)
 
-   Let T+ be the extension of T by someNewOp and its axiom. Any model M of T
-   can be extended into a model M+ of T+ by
+   Let T+ be the extension of T by someNewOp and its axiom, where we further
+   assume that formula P does not involve someNewOp (no recursive definitions).
+   Any model M of T can be extended into a model M+ of T+ by
       - the same universe U
       - the interpretation of someNewOp as an application U^3 -> U such that
          - when M satisfies \E t : P(t,x,y,z), someNewOp(x,y,z) is interpreted
@@ -1010,13 +1028,14 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
       => G   BECAUSE TI;
    G   BECAUSE CombineImplicationsStart + MODUS_PONENS;   
 */
-short check_choose_statement(const formula* f,
+short check_choose_statement(const struct FormulaDList* statement,
 			     const formula* chooseReason)
 {
   // axiom scheme : (\E x : P) => P(CHOOSE x : P)
   // For example the empty set :
   // (\E b : \A x : x \notin b) => (\A x : x \notin {})
 
+  const formula* f = statement->jf->formula;
   const formula* chooseF = get_quantified_formula(chooseReason, choose);
   if (!chooseF)
     {
@@ -1025,29 +1044,29 @@ short check_choose_statement(const formula* f,
     }
 
   // Compare the reason chooseF and the existential formula
-  const formula* firstF = get_second_operand(f);
-  const formula* existsF = get_first_operand(f);
-  if (!firstF || !existsF
-      || f->builtInOp != limplies
-      || existsF->builtInOp != exists
-      || strcmp(existsF->name, chooseF->name) != 0 // different quantified variables
-      || !formula_equal(get_first_operand(chooseF), get_first_operand(existsF), 0, 0, 0))
+  const formula* conclusion = 0;
+  if (is_existence_of_choose(get_first_operand(f), chooseF))
+    conclusion = get_second_operand(f);
+  else if (find_existence_of_choose(statement, chooseF))
     {
-      printf("%s:%d: bad choose reason\n", f->file, f->first_line);
-      return 0;
+      // implicit modus ponens
+      conclusion = f;
     }
 
-  // Verify the substitution in the deduced formula
-  const formula* firstSecondF = get_first_operand(existsF);
-  variable_substitution before[2];
-  before[0].variable = existsF->name;
-  before[0].subst = chooseReason; // cut its defining formula locally ?
-  before[1].variable = (char*)0;
-  if (formula_equal(firstF,
-		    firstSecondF,
-		    (struct string_list*)0,
-		    before, 0))
-    return 1;
+  if (conclusion)
+    {
+      // Verify the substitution in conclusion
+      const formula* firstSecondF = get_first_operand(chooseF);
+      variable_substitution before[2];
+      before[0].variable = chooseF->name;
+      before[0].subst = chooseReason; // cut its defining formula locally ?
+      before[1].variable = (char*)0;
+      if (formula_equal(conclusion,
+			firstSecondF,
+			(struct string_list*)0,
+			before, 0))
+	return 1;
+    }
 
   printf("%s:%d: bad choose reason\n", f->file, f->first_line);
   return 0;
@@ -1139,7 +1158,7 @@ short check_proof_statement(const struct FormulaDList* statement,
       return check_propositional_tautology_statement(statement, assumedProofs,
 						     operators, proofLocalOps);
     case reasonChoose:
-      return check_choose_statement(statement->jf->formula, statement->jf->reason->formula);
+      return check_choose_statement(statement, statement->jf->reason->formula);
 
       // The only checking that looks at the previously proven formulas,
       // to cut proven hypotheses in proven implications.

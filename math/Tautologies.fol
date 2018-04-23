@@ -149,9 +149,6 @@ PROPO_TAUTO CombineImplicationsStart
 CombineImplicationsEnd(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
 PROPO_TAUTO CombineImplicationsEnd
 
-FactorAndImpl(a,b,c) == ((a => c) /\ (b => c)) => ((a \/ b) => c)
-PROPO_TAUTO FactorAndImpl
-
 HypoImplToAnd(a,b,c) == (a => (b => c)) => ((a /\ b) => c)
 PROPO_TAUTO HypoImplToAnd
 
@@ -179,7 +176,7 @@ PROPO_TAUTO OrSymmetry
 EquivSymmetry(a,b) == (a <=> b) => (b <=> a)
 PROPO_TAUTO EquivSymmetry
 
-DistribNotOr(a,b) == ~(a \/ b) <=> (~a /\ ~b)
+DistribNotOr(a,b) == ~(a \/ b) => (~a /\ ~b)
 PROPO_TAUTO DistribNotOr
 
 DistribNotAnd(a,b) == ~(a /\ b) => (~a \/ ~b)
@@ -196,6 +193,15 @@ PROPO_TAUTO DistribAndImpl
 
 FactorOrAndRight(a,b,c) == ((a \/ c) /\ (b \/ c)) => ((a /\ b) \/ c)
 PROPO_TAUTO FactorOrAndRight
+
+FactorNotOr(a,b) == (~a /\ ~b) => ~(a \/ b)
+PROPO_TAUTO FactorNotOr
+
+FactorNotAnd(a,b) == (~a \/ ~b) => ~(a /\ b)
+PROPO_TAUTO FactorNotAnd
+
+FactorAndImpl(a,b,c) == ((a => c) /\ (b => c)) => ((a \/ b) => c)
+PROPO_TAUTO FactorAndImpl
 
 OrFalseStart(a,f) == ~f => ((a \/ f) => a)
 PROPO_TAUTO OrFalseStart
