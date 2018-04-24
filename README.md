@@ -63,6 +63,26 @@ Each proof statement contains a formula and a reason, separated by the `BECAUSE`
 * The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~(\A x : ~(x = x))`, it finds the implication `~~(x = x) => ~(\A x : ~(x = x))` and its hypothesis `~~(x = x)`.
 * The fifth reason is `Q_SCHEME`. It regroups several axioms related to the quantifiers `\A` and `\E`. Here it states the definition of existence with respect to universal.
 
+## Inference rules
+
+In the following descriptions of HilbertProofs' inference rules, `x,y,z` are any variables and `p,q` any formulas. Under `E_SCHEME`,
+* `x = x` where `x` is any variable
+* `x = y /\ x = z => y = z` where `x,y,z` are any variables
+* `x = y => y = x`
+* `\A x1 : \A y1 : ... : \A xK : \A yK : (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))` where `xJ <- yJ` are renaming of free variables
+And under `Q_SCHEME`,
+* `(\A x : p => q)  =>  ( (\E x : p) => (\E x : q) )`
+* `(\A x : p => q)  =>  ( (\A x : p) => (\A x : q) )`
+* `(\E x : p) <=> ~(\A x : ~p)`
+* `(\A x : p => q) => (p => \A x : q)` when varibale x has no free occurrences in p
+* `(\E x : p => q) => (p => \E x : q)` when varibale x has no free occurrences in p
+* `(\E x : p) => p` when varibale x has no free occurrences in p
+
+And finally we have the instances of quantifiers
+* `(\A x : p) => p(x <- t)`
+* `p(x <- t) => \E x : p`
+where `p(x <- t)` means the free substitution of variable `x` by term `t` (HilbertProofs checks that all variables of `t` remain free in `p(x <- t)`).
+
 ## Conservative extensions, aka definitions
 
 The ZFC theory, which builds all mathematics, can be expressed with only one primitive symbol : the binary relation of membership `\in`. However if we only use this symbol, simple formulas like `a \subseteq (b \union c)`, which states that a set `a` is included in the union of sets `b` and `c`, explode as
@@ -131,12 +151,12 @@ However, it is much harder to prove that this axiom is a conservative extension.
 
 But this reasoning only holds when formula `P` doesn't involve `newOp`. If `P` involves `newOp` as `Factorial` does, then it is not a formula in the language of the previous theory : knowing whether M satisfies `\E x : P` makes no sense.
 
-For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly. And you have to prove yourself that your axiom is conservative.
+For this reason, the parser forces all symbols on the right-hand side of a `==` to be defined before the `==`. If this refuses the definition of one of your symbols like `Factorial`, you must write the `CONSTANT/AXIOM` pair explicitly. And you have to prove yourself that your axiom is conservative. HilbertProofs won't help you there, it has no syntax to quantify formulas or express that a theory is a conservative extension of another. Even less a checker for proofs that those extensions are conservative.
 
-Or find another way to define your symbol. Here `Factorial` could be defined as a function, a 0-ary symbol :
+In the case of `Factorial`, we can easily stay in the framework of HilbertProofs by making it a function (0-ary symbol), rather than a unary symbol :
 ```
-Factorial == CHOOSE f : IsFunction(f) /\ Domain(f) = Nat /\ f[1] = 1
-   /\ (\A n : n \in Nat /\ n > 0 => f[n] = n * f[n-1])
+Factorial == CHOOSE f : IsFunction(f) /\ Domain(f) = Nat \ {0} /\ f[1] = 1
+   /\ (\A n : n \in Nat /\ n > 1 => f[n] = n * f[n-1])
 ```
 
 ## Compile HilbertProofs
