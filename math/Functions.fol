@@ -91,9 +91,7 @@ shakeHypos(a,b,c,d) == (a => (b <=> c)) => ((d /\ b /\ a) => (d /\ b /\ c))   PR
 (\E b : \A x : x \in b <=> (x \in (d \X d) /\ (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))))
    => (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE MODUS_PONENS;
-(\E b : \A x : x \in b <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))
-   => (\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)))   BECAUSE CHOOSE identity(d);
-\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE MODUS_PONENS;
+\A x : x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE CHOOSE identity(d);
 identityExists   BECAUSE GENERALIZATION;
 QED
 

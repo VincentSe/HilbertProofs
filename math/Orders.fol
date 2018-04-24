@@ -1868,70 +1868,71 @@ hh(o,p) => cf(o,p) \in Bijections(o, p)   BECAUSE TI;
 hh(o,p) => Domain(cf(o,p)) = o   BECAUSE TI;
 identityBiject   BECAUSE THEOREM;
 identity(o) \in Bijections(o,o)   BECAUSE \A(d <- o);
+identity(o) \in Bijections(o,o) <=> IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o   BECAUSE \A(a <- o, b <- o, x <- identity(o));
+IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o   BECAUSE MODUS_PONENS;
+IsInjection(identity(o))   BECAUSE DropAndRight2;
+IsFunction(identity(o))   BECAUSE DropAndRight;
+Domain(identity(o)) = o   BECAUSE DropAndBoth;
 funcEqual   BECAUSE THEOREM;
 IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))
    /\ (\A x : x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])
    => cf(o,p) = identity(o)   BECAUSE \A(f <- cf(o,p), g <- identity(o));
-\* TODO
-
-
-domainExists   BECAUSE THEOREM;
-a \in Domain(cf(o,p)) <=> IsDefinedOn(cf(o,p),a)   BECAUSE \A(g <- cf(o,p), x <- a);
-a \in Domain(cf(o,p)) => \E y : <<a,y>> \in cf(o,p)   BECAUSE EquivToImpl;
-(\E y : <<a,y>> \in cf(o,p)) => <<a,cf(o,p)[a]>> \in cf(o,p)   BECAUSE CHOOSE cf(o,p)[a];
-a \in Domain(cf(o,p)) => <<a,cf(o,p)[a]>> \in cf(o,p)   BECAUSE TI;
-\A x : \A y : x = y => ((a \in x => <<a,cf(o,p)[a]>> \in cf(o,p)) <=> (a \in y => <<a,cf(o,p)[a]>> \in cf(o,p)))   BECAUSE E_SCHEME;
-Domain(cf(o,p)) = o => ((a \in Domain(cf(o,p)) => <<a,cf(o,p)[a]>> \in cf(o,p)) <=> (a \in o => <<a,cf(o,p)[a]>> \in cf(o,p)))   BECAUSE \A(x <- Domain(cf(o,p)), y <- o);
-hh(o,p) => ((a \in Domain(cf(o,p)) => <<a,cf(o,p)[a]>> \in cf(o,p)) <=> (a \in o => <<a,cf(o,p)[a]>> \in cf(o,p)))   BECAUSE TI;
-implyTrueEquiv(t,h,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
-hh(o,p) => (a \in o => <<a,cf(o,p)[a]>> \in cf(o,p))   BECAUSE implyTrueEquiv;
-hh(o,p) /\ a \in o => <<a,cf(o,p)[a]>> \in cf(o,p)   BECAUSE HypoImplToAnd;
-hh(o,p) /\ a \in o => cf(o,p)[a] = a   BECAUSE HypoImplToAnd;
-\A x : \A y : x = y => (<<a,x>> \in cf(o,p) <=> <<a,y>> \in cf(o,p))   BECAUSE E_SCHEME;
-cf(o,p)[a] = a => (<<a,cf(o,p)[a]>> \in cf(o,p) <=> <<a,a>> \in cf(o,p))   BECAUSE \A(x <- cf(o,p)[a], y <- a);
-hh(o,p) /\ a \in o => (<<a,cf(o,p)[a]>> \in cf(o,p) <=> <<a,a>> \in cf(o,p))   BECAUSE TI;
-hh(o,p) /\ a \in o /\ <<a,cf(o,p)[a]>> \in cf(o,p) => <<a,a>> \in cf(o,p)   BECAUSE HypoEquivToAnd;
-hh(o,p) /\ a \in o => hh(o,p) /\ a \in o   BECAUSE ImplySelf;
-hh(o,p) /\ a \in o => hh(o,p) /\ a \in o /\ <<a,cf(o,p)[a]>> \in cf(o,p)   BECAUSE CIA;
-hh(o,p) /\ a \in o => <<a,a>> \in cf(o,p)   BECAUSE TI;
-
-<<a,a>> \in cf(o,p) => \E x : <<x,a>> \in cf(o,p)   BECAUSE \E(x <- a);
-hh(o,p) /\ a \in o => Reaches(cf(o,p),a)   BECAUSE TI;
-\* conversely
-(\E x : <<x,a>> \in cf(o,p)) => <<pre(cf(o,p),a),a>> \in cf(o,p)   BECAUSE CHOOSE pre(cf(o,p),a);
-<<pre(cf(o,p),a),a>> \in cf(o,p) => \E y : <<pre(cf(o,p),a),y>> \in cf(o,p)   BECAUSE \E(y <- a);
-Reaches(cf(o,p),a) => \E y : <<pre(cf(o,p),a),y>> \in cf(o,p)   BECAUSE TI;
-pre(cf(o,p),a) \in Domain(cf(o,p)) <=> IsDefinedOn(cf(o,p),pre(cf(o,p),a))   BECAUSE \A(g <- cf(o,p), x <- pre(cf(o,p),a));
-(\E y : <<pre(cf(o,p),a),y>> \in cf(o,p)) => pre(cf(o,p),a) \in Domain(cf(o,p))   BECAUSE EquivToImplReverse;
-Reaches(cf(o,p),a) => pre(cf(o,p),a) \in Domain(cf(o,p))   BECAUSE TI;
-\A f : \A g : f = g => ((Reaches(cf(o,p),a) => pre(cf(o,p),a) \in f) <=> (Reaches(cf(o,p),a) => pre(cf(o,p),a) \in g))   BECAUSE E_SCHEME;
-Domain(cf(o,p)) = o => ((Reaches(cf(o,p),a) => pre(cf(o,p),a) \in Domain(cf(o,p))) <=> (Reaches(cf(o,p),a) => pre(cf(o,p),a) \in o))   BECAUSE \A(f <- Domain(cf(o,p)), g <- o);
-Domain(cf(o,p)) = o => (Reaches(cf(o,p),a) => pre(cf(o,p),a) \in o)   BECAUSE implyTrueEquiv;
-hh(o,p) => (Reaches(cf(o,p),a) => pre(cf(o,p),a) \in o)   BECAUSE TI;
-hh(o,p) /\ Reaches(cf(o,p),a) => pre(cf(o,p),a) \in o   BECAUSE HypoImplToAnd;
-hh(o,p) /\ Reaches(cf(o,p),a) => hh(o,p)   BECAUSE DropAndRight;
-hh(o,p) /\ Reaches(cf(o,p),a) => hh(o,p) /\ pre(cf(o,p),a) \in o   BECAUSE CIA;
-\A a : hh(o,p) /\ a \in o => <<a,a>> \in cf(o,p)   BECAUSE GENERALIZATION;
-hh(o,p) /\ pre(cf(o,p),a) \in o => <<pre(cf(o,p),a),pre(cf(o,p),a)>> \in cf(o,p)   BECAUSE \A(a <- pre(cf(o,p),a));
-hh(o,p) /\ Reaches(cf(o,p),a) => <<pre(cf(o,p),a),pre(cf(o,p),a)>> \in cf(o,p)   BECAUSE TI;
-IsFunction(cf(o,p)) => \A a : \A b : <<a,b>> \in cf(o,p) => b = cf(o,p)[a]   BECAUSE DropAndLeft;
-(\A a : \A b : <<a,b>> \in cf(o,p) => b = cf(o,p)[a]) => (<<pre(cf(o,p),a),pre(cf(o,p),a)>> \in cf(o,p) => pre(cf(o,p),a) = cf(o,p)[pre(cf(o,p),a)])   BECAUSE \A(a <- pre(cf(o,p),a), b <- pre(cf(o,p),a));
-IsFunction(cf(o,p)) => (<<pre(cf(o,p),a),pre(cf(o,p),a)>> \in cf(o,p) => pre(cf(o,p),a) = cf(o,p)[pre(cf(o,p),a)])   BECAUSE TI;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE DropAndRight2;
+cf(o,p) \in Bijections(o, p) => IsInjection(cf(o,p))   BECAUSE TI;
+hh(o,p) => IsInjection(cf(o,p))   BECAUSE TI;
+IsInjection(cf(o,p)) => IsFunction(cf(o,p))   BECAUSE DropAndRight;
 hh(o,p) => IsFunction(cf(o,p))   BECAUSE TI;
-
-\* hh(o,p) => cf(o,p) \in Bijections(o, p)   BECAUSE TI;
-\* TODO pre(cf(o,p),a) = f[pre(cf(o,p),a)] = a \in o
-
+hh(o,p) => IsFunction(identity(o))   BECAUSE PT1;
+hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o))  BECAUSE CIA;
+hh(o,p) => Domain(identity(o)) = o   BECAUSE PT1;
+hh(o,p) => Domain(cf(o,p)) = o /\ Domain(identity(o)) = o   BECAUSE CIA;
+Domain(cf(o,p)) = o /\ Domain(identity(o)) = o => Domain(cf(o,p)) = Domain(identity(o))   BECAUSE E_SCHEME;
+hh(o,p) => Domain(cf(o,p)) = Domain(identity(o))   BECAUSE TI;
+hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o))   BECAUSE CIA;
+hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))   BECAUSE CIA;
+identityVal   BECAUSE THEOREM;
+a \in o => (identity(o)[a] = a /\ pre(identity(o),a) = a)   BECAUSE \A(d <- o, x <- a);
+(identity(o)[a] = a /\ pre(identity(o),a) = a) => identity(o)[a] = a   BECAUSE DropAndRight;
+a \in o => identity(o)[a] = a   BECAUSE TI;
+hh(o,p) => (a \in o => identity(o)[a] = a)   BECAUSE PT1;
+hh(o,p) /\ a \in o => identity(o)[a] = a   BECAUSE HypoImplToAnd;
+hh(o,p) /\ a \in o => cf(o,p)[a] = a   BECAUSE HypoImplToAnd;
+hh(o,p) /\ a \in o => cf(o,p)[a] = a /\ identity(o)[a] = a   BECAUSE CIA;
+cf(o,p)[a] = a /\ identity(o)[a] = a => cf(o,p)[a] = identity(o)[a]   BECAUSE E_SCHEME;
+hh(o,p) /\ a \in o => cf(o,p)[a] = a /\ identity(o)[a] = a   BECAUSE CIA;
+hh(o,p) /\ a \in o => cf(o,p)[a] = identity(o)[a]   BECAUSE TI;
+hh(o,p) => (a \in o => cf(o,p)[a] = identity(o)[a])   BECAUSE HypoAndToImpl;
+\A x : \A y : x = y => ((a \in x => cf(o,p)[a] = identity(o)[a]) <=> (a \in y => cf(o,p)[a] = identity(o)[a]))
+   BECAUSE E_SCHEME;
+Domain(cf(o,p)) = o => ((a \in Domain(cf(o,p)) => cf(o,p)[a] = identity(o)[a]) <=> (a \in o => cf(o,p)[a] = identity(o)[a]))   BECAUSE \A(x <- Domain(cf(o,p)), y <- o);
+hh(o,p) => ((a \in Domain(cf(o,p)) => cf(o,p)[a] = identity(o)[a]) <=> (a \in o => cf(o,p)[a] = identity(o)[a]))   BECAUSE TI;
+hh(o,p) /\ (a \in o => cf(o,p)[a] = identity(o)[a]) => (a \in Domain(cf(o,p)) => cf(o,p)[a] = identity(o)[a])   BECAUSE HypoEquivToAndReverse;
+hh(o,p) => hh(o,p)   BECAUSE ImplySelf;
+hh(o,p) => hh(o,p) /\ (a \in o => cf(o,p)[a] = identity(o)[a])   BECAUSE CIA;
+hh(o,p) => (a \in Domain(cf(o,p)) => cf(o,p)[a] = identity(o)[a])   BECAUSE TI;
+\A a : hh(o,p) => (a \in Domain(cf(o,p)) => cf(o,p)[a] = identity(o)[a])   BECAUSE GENERALIZATION;
+hh(o,p) => (x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])   BECAUSE \A(a <- x);
+\A x : hh(o,p) => (x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])   BECAUSE GENERALIZATION;
+hh(o,p) => (\A x : x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])   BECAUSE Q_SCHEME;
+hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))
+   /\ (\A x : x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])   BECAUSE CIA;
+hh(o,p) => cf(o,p) = identity(o)   BECAUSE TI;
+\A x : \A y : x = y => Image(x) = Image(y)   BECAUSE E_SCHEME;
+cf(o,p) = identity(o) => Image(cf(o,p)) = Image(identity(o))   BECAUSE \A(x <- cf(o,p), y <- identity(o));
+hh(o,p) => Image(cf(o,p)) = Image(identity(o))   BECAUSE TI;
 IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Image(cf(o,p)) = p   BECAUSE DropAndLeft;
-cf(o,p) \in Bijections(o,p) => Image(cf(o,p)) = p   BECAUSE TI;
 hh(o,p) => Image(cf(o,p)) = p   BECAUSE TI;
-imageExists   BECAUSE THEOREM;
-a \in Image(cf(o,p)) <=> Reaches(cf(o,p),a)   BECAUSE \A(g <- cf(o,p), y <- a);
-\A x : \A y : x = y => ((a \in x <=> Reaches(cf(o,p),a)) <=> (a \in y <=> Reaches(cf(o,p),a)))   BECAUSE E_SCHEME;
-Image(cf(o,p)) = p => ((a \in Image(cf(o,p)) <=> Reaches(cf(o,p),a)) <=> (a \in p <=> Reaches(cf(o,p),a)))   BECAUSE \A(x <- Image(cf(o,p)), y <- p);
-hh(o,p) => ((a \in Image(cf(o,p)) <=> Reaches(cf(o,p),a)) <=> (a \in p <=> Reaches(cf(o,p),a)))   BECAUSE TI;
-hh(o,p) => (a \in p <=> Reaches(cf(o,p),a))   BECAUSE implyTrueEquiv;
-
+hh(o,p) => Image(cf(o,p)) = p /\ Image(cf(o,p)) = Image(identity(o))   BECAUSE CIA;
+Image(cf(o,p)) = p /\ Image(cf(o,p)) = Image(identity(o)) => p = Image(identity(o))  BECAUSE E_SCHEME;
+hh(o,p) => p = Image(identity(o))  BECAUSE TI;
+Image(identity(o)) = o   BECAUSE DropAndLeft;
+Image(identity(o)) = o => o = Image(identity(o))   BECAUSE E_SCHEME;
+o = Image(identity(o))   BECAUSE MODUS_PONENS;
+hh(o,p) => o = Image(identity(o))   BECAUSE PT1;
+hh(o,p) => o = Image(identity(o)) /\ p = Image(identity(o))   BECAUSE CIA;
+o = Image(identity(o)) /\ p = Image(identity(o)) => o = p   BECAUSE E_SCHEME;
+hh(o,p) => o = p   BECAUSE TI;
+bijectOrdinalsEqual   BECAUSE GENERALIZATION;
 QED
 
 (*
