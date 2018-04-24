@@ -277,11 +277,6 @@ short is_custom_operator(const formula* op)
   return 0;
 }
 
-/**
-   Find a variable v of formula f satisfying predicate pred, which is given
-   - the variable v
-   - the union of boundVars and all the bound variables of f at v.
-*/
 const char* find_variable(const formula* f,
 			  const struct string_list* boundVars,
 			  unsigned char (*pred)(const char* v,

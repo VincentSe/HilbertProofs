@@ -146,8 +146,9 @@ PROPO_TAUTO MergeImplicationsOr
 CombineImplicationsStart(a,b,c) == (a => c) => ((b => c) => ((a \/ b) => c))
 PROPO_TAUTO CombineImplicationsStart
 
-CombineImplicationsEnd(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
-PROPO_TAUTO CombineImplicationsEnd
+\* Combine implications with And
+CIA(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
+PROPO_TAUTO CIA
 
 HypoImplToAnd(a,b,c) == (a => (b => c)) => ((a /\ b) => c)
 PROPO_TAUTO HypoImplToAnd

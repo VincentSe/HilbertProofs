@@ -15,6 +15,23 @@ While a minimal set of axioms is practical to prove theoretical properties of ma
 
 Propositional tautologies are checked by Boolean affectations of propositional variables, rather than by arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
 
+## ASCII notations of formulas
+
+For compatibility with most editors and tools, the charset of HilbertProofs is ASCII. Here is how logical connectors are written
+* `~a` means not a
+* `a \/ b` means a or b
+* `a /\ b` means a and b
+* `a => b` means a implies b
+* `a <=> b` means a equivalent to b
+* `\A x : a` means for all x then a
+* `\E x : a` means there exists an x such that a
+
+Subformulas can be enclosed with parentheses `(` and `)`, otherwise the precedence rules make those two formulas equal :
+```
+~a /\ b => c \/ d
+((~a) /\ b) => (c \/ d)
+```
+
 ## A proof example
 
 Here is the first proof of file ZFC.fol, which proves the existence of a set :

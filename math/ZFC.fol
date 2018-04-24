@@ -466,7 +466,7 @@ z \in ordinalOne <=> z = {}   BECAUSE \A(x <- z);
 z \in ordinalOne => z = {}   BECAUSE EquivToImpl;
 (z \in x => z \in ordinalOne) => (z \in x => z = {})   BECAUSE AddHypothesis;
 z \in x => z \in x   BECAUSE ImplySelf;
-(z \in x => z = {}) => (z \in x => (z \in x /\ z = {}))   BECAUSE CombineImplicationsEnd;
+(z \in x => z = {}) => (z \in x => (z \in x /\ z = {}))   BECAUSE CIA;
 (z \in x => z \in ordinalOne) => (z \in x => (z \in x /\ z = {}))   BECAUSE TI;
 x \subseteq ordinalOne => (\A z : z \in x => (z \in x /\ z = {}))   BECAUSE Q_SCHEME;
 
@@ -501,7 +501,7 @@ z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TI;
 (x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TI;
 
 (x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE DropAndRight;
-(x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CombineImplicationsEnd;
+(x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CIA;
 bothInclusions BECAUSE THEOREM;
 (x \subseteq ordinalOne /\ ordinalOne \subseteq x) => x = ordinalOne   BECAUSE \A(a <- x, b <- ordinalOne);
 (x \subseteq ordinalOne /\ x # {}) => x = ordinalOne   BECAUSE TI;
@@ -547,8 +547,9 @@ VARIABLES a,b,c,x,z;
 
 \* Proof that (x \in SUBSET a /\ x = a) <=> x = a
 (x \in SUBSET a /\ x = a) => x = a   BECAUSE DropAndLeft;
-\A x : \A a : x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE E_SCHEME;
-x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE \A(x <- x, a <- a);
+\A x : \A a : x = a => (x \in z <=> a \in z)   BECAUSE E_SCHEME;
+\A z : \A x : \A a : x = a => (x \in z <=> a \in z)   BECAUSE GENERALIZATION;
+x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE \A(z <- SUBSET a, x <- x, a <- a);
 inclusionInOneself   BECAUSE THEOREM;
 a \subseteq a   BECAUSE \A(x <- a);
 powersetExists   BECAUSE AXIOM;
@@ -556,7 +557,7 @@ a \in SUBSET a <=> a \subseteq a   BECAUSE \A(x <- a, z <- a);
 a \in SUBSET a   BECAUSE MODUS_PONENS;
 x = a => x \in SUBSET a   BECAUSE ImplyEquivTrue;
 x = a => x = a   BECAUSE ImplySelf;
-x = a => (x \in SUBSET a /\ x = a)   BECAUSE CombineImplicationsEnd;
+x = a => (x \in SUBSET a /\ x = a)   BECAUSE CIA;
 x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
 
 (x \in b <=> (x \in SUBSET a /\ x = a)) => (x \in b <=> x = a)   BECAUSE TransitEquiv2;
@@ -734,7 +735,7 @@ c = a => c = a   BECAUSE ImplySelf;
 (c = a \/ c = b) => (c = a \/ b = c)  BECAUSE MergeImplicationsOr;
 {a,b} = {a,c} => (c = a \/ b = c)  BECAUSE TI;
 
-{a,b} = {a,c} => ((b = a \/ b = c) /\ (c = a \/ b = c))   BECAUSE CombineImplicationsEnd;
+{a,b} = {a,c} => ((b = a \/ b = c) /\ (c = a \/ b = c))   BECAUSE CIA;
 ((b = a \/ b = c) /\ (c = a \/ b = c)) => ((b = a /\ c = a) \/ b = c)  BECAUSE FactorOrAndRight;
 {a,b} = {a,c} => ((b = a /\ c = a) \/ b = c)  BECAUSE TI;
 (b = a /\ c = a) => b = c   BECAUSE E_SCHEME;
@@ -1000,7 +1001,7 @@ sameFirstPairs   BECAUSE THEOREM;
 <<a,b>> = <<c,d>> => {a,b} = {a,d}   BECAUSE TI;
 { a,b } = {a,d} => b = d   BECAUSE \A(a <- a, b <- b, c <- d);
 <<a,b>> = <<c,d>> => b = d   BECAUSE TI;
-<<a,b>> = <<c,d>> => (a = c /\ b = d)   BECAUSE CombineImplicationsEnd;
+<<a,b>> = <<c,d>> => (a = c /\ b = d)   BECAUSE CIA;
 tupleDecomposition   BECAUSE GENERALIZATION;
 QED
 
@@ -1098,7 +1099,7 @@ y \in { x, y }   BECAUSE MODUS_PONENS;
 {x,y} \in UNION g => y \in UNION UNION g   BECAUSE TI;
 <<x,y>> \in g => y \in UNION UNION g   BECAUSE TI;
 
-<<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE CombineImplicationsEnd;
+<<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE CIA;
 nodesInUnionUnion   BECAUSE GENERALIZATION;
 QED
 
@@ -1282,7 +1283,7 @@ pairInclusion   BECAUSE THEOREM;
 \* Proof of (u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)
 (u \in i /\ v \in j) => u \in i   BECAUSE DropAndRight;
 (u \in i /\ v \in j) => {u} \in SUBSET (i \union j)   BECAUSE TI;
-(u \in i /\ v \in j) => ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))   BECAUSE CombineImplicationsEnd;
+(u \in i /\ v \in j) => ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))   BECAUSE CIA;
 ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))
    => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE \A(x <- {u}, y <- {u,v}, t <- SUBSET (i \union j));
 (u \in i /\ v \in j) => <<u,v>> \subseteq SUBSET (i \union j)   BECAUSE TI;

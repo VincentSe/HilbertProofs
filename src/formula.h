@@ -169,6 +169,13 @@ short is_propositional_formula(const formula* f);
 unsigned char prove_propositional_tautology(const formula* op);
 const formula* get_first_operand(const formula* f);
 const formula* get_second_operand(const formula* f);
+
+/**
+   Find a variable v of formula f satisfying predicate pred, which is given
+   - the variable v
+   - the union of boundVars and all the bound variables of f at v.
+   - the same args as passed to find_variable
+*/
 const char* find_variable(const formula* f,
 			  const struct string_list* boundVars,
 			  unsigned char (*pred)(const char* v,
@@ -194,7 +201,6 @@ const char* find_variable(const formula* f,
    Boolean substituteMore allows to increase freeSubs, so that, when returning true,
    formula_equal(f, g, boundVariables, moreFreeSubs, false) is true.
 */
-
 unsigned char formula_equal(const formula* f,
 			    const formula* g,
 			    const struct string_list* boundVariables,

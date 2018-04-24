@@ -503,6 +503,18 @@ const formula* parse_equalities(const formula* f, /*out*/variable_substitution* 
   return equiv; // TODO check variables are distinct
 }
 
+unsigned char is_substituted_free_var(const char* v,
+				      const struct string_list* boundVars,
+				      const void* args)
+{
+  if (string_list_contains(boundVars, v))
+    return 0; // bound variable
+  for (const variable_substitution* subs = args; subs->variable; subs++)
+    if (strcmp(v, subs->subst->name) == 0)
+      return 1;
+  return 0;
+}
+
 /**
    Axiom scheme \A x1 : \A y1 : ... : \A xK : \A yK :
       (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))
@@ -537,9 +549,8 @@ const formula* parse_equalities(const formula* f, /*out*/variable_substitution* 
    remain free), for any formula s the formula
    \A x1 : \A y1 : ... : \A xK : \A yK :
       (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))
-   is true in all models : formulas s and s(x1 <- y1, ..., xK <- yK) are
-   interpreted by the same function in each model. By Gödel's
-   completeness theorem it is provable.
+   is true in all models. By Gödel's completeness theorem,
+   it is provable.
 
    Some free variables of formula s can be absent in the xI :
    those stay free with the same name.
@@ -548,10 +559,12 @@ unsigned char rename_free_variables_scheme(const formula* f)
 {
   variable_substitution subs[8];
   const formula* equiv = parse_equalities(f, /*out*/subs);
-  return equiv &&
-    formula_equal(get_second_operand(equiv),
-		  get_first_operand(equiv),
-		  0, subs, 0);
+  const formula* start = get_first_operand(equiv);
+  return equiv
+    && formula_equal(get_second_operand(equiv),
+		     start,
+		     0, subs, 0)
+    && !find_variable(start, (struct string_list*)0, is_substituted_free_var, subs);
 }
 
 short equality_axiom(const formula* f)
