@@ -1569,6 +1569,73 @@ QED
 elemOfOrdinalIsOrdinal == \A o : \A x : IsOrdinal(o) /\ x \in o => IsOrdinal(x)
 THEOREM elemOfOrdinalIsOrdinal
 PROOF
+VARIABLES a,b,c,o,x,z;
+h(o,x) == IsOrdinal(o) /\ x \in o;
+\* Proof that h(o,x) => IsTransitiveSet(x)
+h(o,x) => IsOrdinal(o)   BECAUSE DropAndRight;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE DropAndRight;
+h(o,x) => IsTransitiveSet(o)   BECAUSE TI;
+IsTransitiveSet(o) => (x \in o => x \subseteq o)   BECAUSE \A(a <- x);
+h(o,x) => (x \in o => x \subseteq o)   BECAUSE TI;
+h(o,x) => x \in o   BECAUSE DropAndLeft;
+h(o,x) => x \subseteq o   BECAUSE KillMiddleHypo;
+x \subseteq o => (a \in x => a \in o)   BECAUSE \A(z <- a);
+h(o,x) => (a \in x => a \in o)   BECAUSE TI;
+hh(a,o,x) == h(o,x) /\ a \in x;
+hh(a,o,x) => a \in o   BECAUSE HypoImplToAnd;
+IsTransitiveSet(o) => (a \in o => a \subseteq o)   BECAUSE \A(a <- a);
+h(o,x) => (a \in o => a \subseteq o)   BECAUSE TI;
+hh(a,o,x) => h(o,x)   BECAUSE DropAndRight;
+hh(a,o,x) => (a \in o => a \subseteq o)   BECAUSE TI;
+hh(a,o,x) => a \subseteq o   BECAUSE KillMiddleHypo;
+a \subseteq o => (z \in a => z \in o)   BECAUSE \A(z <- z);
+hh(a,o,x) => (z \in a => z \in o)   BECAUSE TI;
+hh(a,o,x) /\ z \in a => z \in o   BECAUSE HypoImplToAnd;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE DropAndLeft;
+IsWellOrderedByIn(o) => (\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)   BECAUSE DropAndBoth;
+(\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)
+   => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE \A(a <- z, b <- a, c <- x);
+IsWellOrderedByIn(o) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
+IsOrdinal(o) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
+h(o,x) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
+hh(a,o,x) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
+hh(a,o,x) /\ z \in a => hh(a,o,x)   BECAUSE DropAndRight;
+hh(a,o,x) /\ z \in a => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
+hh(a,o,x) /\ z \in a => a \in o   BECAUSE TI;
+hh(a,o,x) /\ z \in a => z \in o /\ a \in o   BECAUSE CIA;
+hh(a,o,x) => x \in o   BECAUSE TI;
+hh(a,o,x) /\ z \in a => x \in o   BECAUSE TI;
+hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o   BECAUSE CIA;
+hh(a,o,x) /\ z \in a => z \in a   BECAUSE DropAndLeft;
+hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o /\ z \in a   BECAUSE CIA;
+hh(a,o,x) => a \in x   BECAUSE DropAndLeft;
+hh(a,o,x) /\ z \in a => a \in x   BECAUSE TI;
+hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x   BECAUSE CIA;
+hh(a,o,x) /\ z \in a => z \in x   BECAUSE KillMiddleHypo;
+hh(a,o,x) => (z \in a => z \in x)   BECAUSE HypoAndToImpl;
+\A z : hh(a,o,x) => (z \in a => z \in x)   BECAUSE GENERALIZATION;
+hh(a,o,x) => a \subseteq x   BECAUSE Q_SCHEME;
+h(o,x) => (a \in x => a \subseteq x)   BECAUSE HypoAndToImpl;
+\A a : h(o,x) => (a \in x => a \subseteq x)   BECAUSE GENERALIZATION;
+h(o,x) => IsTransitiveSet(x)   BECAUSE Q_SCHEME;
+
+\* Proof of h(o,x) => IsWellOrderedByIn(x)
+IsWellOrderedByIn(o) => \A a : a \in o => a \notin a   BECAUSE DropAndRight2;
+(\A a : a \in o => a \notin a) => (a \in o => a \notin a)   BECAUSE \A(a <- a);
+IsWellOrderedByIn(o) => (a \in o => a \notin a)   BECAUSE TI;
+IsOrdinal(o) => (a \in o => a \notin a)   BECAUSE TI;
+h(o,x) => (a \in o => a \notin a)   BECAUSE TI;
+hh(a,o,x) => (a \in o => a \notin a)   BECAUSE TI;
+hh(a,o,x) => a \notin a   BECAUSE KillMiddleHypo;
+h(o,x) => (a \in x => a \notin a)   BECAUSE HypoAndToImpl;
+\A a : h(o,x) => (a \in x => a \notin a)   BECAUSE GENERALIZATION;
+h(o,x) => (\A a : a \in x => a \notin a)   BECAUSE Q_SCHEME;
+(*
+IsWellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
+   /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
+   /\ (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))
+*)
+
 elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
