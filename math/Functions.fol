@@ -10,9 +10,6 @@
 
 EXTENDS ZFC
 
-f[x] == CHOOSE y : <<x,y>> \in f
-pre(f,y) == CHOOSE x : <<x,y>> \in f
-
 IsFunction(f) == IsGraph(f)  /\  \A a : \A b : <<a,b>> \in f => b = f[a]
 IsInjection(f) == IsFunction(f)  /\  \A a : \A b : <<a,b>> \in f => a = pre(f,b)
 
@@ -20,11 +17,99 @@ IsInjection(f) == IsFunction(f)  /\  \A a : \A b : <<a,b>> \in f => a = pre(f,b)
    A bijection is an equivalence between two sets, a one-to-one correspondence
    between elements of each set.
 *)
-Bijections(a, b) == CHOOSE s : \A x : x \in s <=> IsInjection(x) /\ Domain(x) = a /\ Image(x) = b
-bijectionsExists == \A a : \A b : \A x : x \in Bijections(a,b) <=> IsInjection(x) /\ Domain(x) = a /\ Image(x) = b
+Bijections(d, i) == CHOOSE b : \A f : f \in b <=> IsInjection(f) /\ Domain(f) = d /\ Image(f) = i
+bijectionsExists == \A d : \A i : \A f : f \in Bijections(d,i) <=> IsInjection(f) /\ Domain(f) = d /\ Image(f) = i
 THEOREM bijectionsExists
 PROOF
-\* By separation in SUBSET (a \X b)
+\* By separation in SUBSET (d \X i)
+VARIABLES a,b,c,d,f,g,i,x,y,z;
+\A a : \E b : \A x : x \in b <=> x \in a /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in SUBSET (d \X i) /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i)   BECAUSE \A(a <- SUBSET (d \X i));
+powersetExists   BECAUSE AXIOM;
+x \in SUBSET (d \X i) <=> x \subseteq (d \X i)   BECAUSE \A(x <- d \X i, z <- x);
+x \subseteq (d \X i) => x \in SUBSET (d \X i)   BECAUSE EquivToImplReverse;
+
+h(d,i,x,z) == IsInjection(x) /\ Domain(x) = d /\ Image(x) = i /\ z \in x; \* Prove that z \in d \X i
+h(d,i,x,z) => h(d,i,x,z)   BECAUSE ImplySelf;
+h(d,i,x,z) => IsInjection(x)   BECAUSE DropAndRight3;
+IsInjection(x) => IsFunction(x)   BECAUSE DropAndRight;
+IsFunction(x) => IsGraph(x)   BECAUSE DropAndRight;
+h(d,i,x,z) => IsFunction(x)   BECAUSE TI;
+h(d,i,x,z) => IsGraph(x)   BECAUSE TI;
+IsGraph(a) => (z \in a => IsCouple(z))   BECAUSE \A(x <- z);
+\A a : IsGraph(a) => (z \in a => IsCouple(z))   BECAUSE GENERALIZATION;
+IsGraph(x) => (z \in x => IsCouple(z))   BECAUSE \A(a <- x);
+IsGraph(x) /\ z \in x => IsCouple(z)   BECAUSE HypoImplToAnd;
+h(d,i,x,z) => z \in x   BECAUSE DropAndLeft;
+h(d,i,x,z) => IsGraph(x) /\ z \in x   BECAUSE CIA;
+h(d,i,x,z) => IsCouple(z)   BECAUSE TI;
+domainExists   BECAUSE THEOREM;
+fst(z) \in Domain(x) <=> IsDefinedOn(x,fst(z))   BECAUSE \A(g <- x, x <- fst(z));
+(\E y : <<fst(z),y>> \in x) => fst(z) \in Domain(x)   BECAUSE EquivToImplReverse;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(z) => z = <<fst(z), snd(z)>>   BECAUSE \A(c <- z);
+h(d,i,x,z) => z = <<fst(z), snd(z)>>   BECAUSE TI;
+<<fst(z), snd(z)>> \in x => (\E y : <<fst(z),y>> \in x)   BECAUSE \E(y <- snd(z));
+<<fst(z), snd(z)>> \in x => fst(z) \in Domain(x)   BECAUSE TI;
+<<fst(z), snd(z)>> \in x => fst(z) \in Domain(x)   BECAUSE TI;
+\A z : \A y : z = y => (z \in x <=> y \in x)   BECAUSE E_SCHEME;
+z = <<fst(z), snd(z)>> => (z \in x <=> <<fst(z), snd(z)>> \in x)   BECAUSE \A(z <- z, y <- <<fst(z), snd(z)>>);
+h(d,i,x,z) => (z \in x <=> <<fst(z), snd(z)>> \in x)   BECAUSE TI;
+h(d,i,x,z) /\ z \in x => <<fst(z), snd(z)>> \in x   BECAUSE HypoEquivToAnd;
+h(d,i,x,z) => h(d,i,x,z) /\ z \in x   BECAUSE CIA;
+h(d,i,x,z) => <<fst(z), snd(z)>> \in x   BECAUSE TI;
+h(d,i,x,z) => fst(z) \in Domain(x)   BECAUSE TI;
+
+imageExists   BECAUSE THEOREM;
+snd(z) \in Image(a) <=> Reaches(a,snd(z))   BECAUSE \A(g <- a, y <- snd(z));
+(\E x : <<x,snd(z)>> \in a) => snd(z) \in Image(a)   BECAUSE EquivToImplReverse;
+<<fst(z), snd(z)>> \in a => (\E x : <<x,snd(z)>> \in a)   BECAUSE \E(x <- fst(z));
+<<fst(z), snd(z)>> \in a => snd(z) \in Image(a)   BECAUSE TI;
+\A a : <<fst(z), snd(z)>> \in a => snd(z) \in Image(a)   BECAUSE GENERALIZATION;
+<<fst(z), snd(z)>> \in x => snd(z) \in Image(x)   BECAUSE \A(a <- x);
+h(d,i,x,z) => snd(z) \in Image(x)   BECAUSE TI;
+h(d,i,x,z) => fst(z) \in Domain(x) /\ snd(z) \in Image(x)   BECAUSE CIA;
+cartesianProductCouples   BECAUSE THEOREM;
+(fst(z) \in Domain(x) /\ snd(z) \in Image(x)) <=> <<fst(z), snd(z)>> \in (Domain(x) \X Image(x))
+   BECAUSE \A(x <- Domain(x), y <- Image(x), a <- fst(z), b <- snd(z));
+(fst(z) \in Domain(x) /\ snd(z) \in Image(x)) => <<fst(z), snd(z)>> \in (Domain(x) \X Image(x))   BECAUSE EquivToImpl;
+h(d,i,x,z) => <<fst(z), snd(z)>> \in (Domain(x) \X Image(x))   BECAUSE TI;
+\A a : \A x : \A b : \A y : \A c : \A z : a = x /\ b = y /\ c = z => (a \in (b \X c) <=> x \in (y \X z))   BECAUSE E_SCHEME;
+<<fst(z), snd(z)>> = z /\ Domain(x) = d /\ Image(x) = i => (<<fst(z), snd(z)>> \in (Domain(x) \X Image(x)) <=> z \in (d \X i))
+   BECAUSE \A(a <- <<fst(z),snd(z)>>, x <- z, b <- Domain(x), y <- d, c <- Image(x), z <- i);
+z = <<fst(z), snd(z)>> => <<fst(z), snd(z)>> = z   BECAUSE E_SCHEME;
+h(d,i,x,z) => <<fst(z), snd(z)>> = z   BECAUSE TI;
+h(d,i,x,z) => IsInjection(x) /\ Domain(x) = d   BECAUSE DropAndRight2;
+IsInjection(x) /\ Domain(x) = d => Domain(x) = d   BECAUSE DropAndLeft;
+h(d,i,x,z) => Domain(x) = d   BECAUSE TI;
+h(d,i,x,z) => <<fst(z), snd(z)>> = z /\ Domain(x) = d   BECAUSE CIA;
+h(d,i,x,z) => Image(x) = i   BECAUSE DropAndBoth;
+h(d,i,x,z) => <<fst(z), snd(z)>> = z /\ Domain(x) = d /\ Image(x) = i   BECAUSE CIA;
+h(d,i,x,z) => (<<fst(z), snd(z)>> \in (Domain(x) \X Image(x)) <=> z \in (d \X i))   BECAUSE TI;
+h(d,i,x,z) /\ <<fst(z), snd(z)>> \in (Domain(x) \X Image(x)) => z \in (d \X i)   BECAUSE HypoEquivToAnd;
+h(d,i,x,z) => h(d,i,x,z) /\ <<fst(z), snd(z)>> \in (Domain(x) \X Image(x))   BECAUSE CIA;
+h(d,i,x,z) => z \in (d \X i)   BECAUSE TI;
+
+IsInjection(x) /\ Domain(x) = d /\ Image(x) = i => (z \in x => z \in (d \X i))   BECAUSE HypoAndToImpl;
+\A z : IsInjection(x) /\ Domain(x) = d /\ Image(x) = i => (z \in x => z \in (d \X i))   BECAUSE GENERALIZATION;
+IsInjection(x) /\ Domain(x) = d /\ Image(x) = i => x \subseteq (d \X i)   BECAUSE Q_SCHEME;
+IsInjection(x) /\ Domain(x) = d /\ Image(x) = i => x \in SUBSET (d \X i)   BECAUSE TI;
+(x \in b <=> x \in SUBSET (d \X i) /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (x \in b <=> (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))   BECAUSE SeparationTauto;
+(\A x : x \in b <=> x \in SUBSET (d \X i) /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (\A x : x \in b <=> (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))   BECAUSE Q_SCHEME;
+(\A x : x \in b <=> (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i))   BECAUSE \A(x <- f);
+\A f : (\A x : x \in b <=> (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i))   BECAUSE GENERALIZATION;
+(\A x : x \in b <=> (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (\A f : f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i))   BECAUSE Q_SCHEME;
+(\A x : x \in b <=> x \in SUBSET (d \X i) /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (\A f : f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i))   BECAUSE TI;
+(\E b : \A x : x \in b <=> x \in SUBSET (d \X i) /\ (IsInjection(x) /\ Domain(x) = d /\ Image(x) = i))
+   => (\E b : \A f : f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i))   BECAUSE Q_SCHEME;
+\E b : \A f : f \in b <=> (IsInjection(f) /\ Domain(f) = d /\ Image(f) = i)   BECAUSE MODUS_PONENS;
+\A f : f \in Bijections(d,i) <=> IsInjection(f) /\ Domain(f) = d /\ Image(f) = i   BECAUSE CHOOSE Bijections(d,i);
 bijectionsExists   BECAUSE GENERALIZATION;
 QED
 
@@ -161,19 +246,24 @@ QED
 identityBiject == \A d : identity(d) \in Bijections(d,d)
 THEOREM identityBiject
 PROOF
-VARIABLES a,b,d,x,y;
+VARIABLES a,b,d,f,g,i,j,x,y;
 identityExists   BECAUSE THEOREM;
-x \in identity(d) <=> (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE \A(d <- d, x <- x);
-x \in identity(d) => (IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x))   BECAUSE EquivToImpl;
-(IsCouple(x) /\ fst(x) \in d /\ fst(x) = snd(x)) => IsCouple(x)   BECAUSE DropAndRight2;
+x \in identity(d) <=> x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE \A(d <- d, x <- x);
+x \in identity(d) => x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE EquivToImpl;
+x \in (d \X d) /\ fst(x) = snd(x) => x \in (d \X d)   BECAUSE DropAndRight;
+x \in identity(d) => x \in (d \X d)   BECAUSE TI;
+cartesianProductExists   BECAUSE THEOREM;
+x \in (d \X d) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE \A(i <- d, j <- d, x <- x);
+x \in (d \X d) => (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE EquivToImpl;
+IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d => IsCouple(x)   BECAUSE DropAndRight2;
+x \in (d \X d) => IsCouple(x)   BECAUSE TI;
 x \in identity(d) => IsCouple(x)   BECAUSE TI;
 IsGraph(identity(d))   BECAUSE GENERALIZATION;
 
-<<a,b>> \in identity(d) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>))
-   BECAUSE \A(d <- d, x <- <<a,b>>);
-<<a,b>> \in identity(d) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>))
-   BECAUSE EquivToImpl;
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE DropAndLeft;
+\* Prove IsFunction(identity(d))
+<<a,b>> \in identity(d) <=> (<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>))   BECAUSE \A(d <- d, x <- <<a,b>>);
+<<a,b>> \in identity(d) => (<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>))   BECAUSE EquivToImpl;
+(<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE DropAndLeft;
 <<a,b>> \in identity(d) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE TI;
 fstExists   BECAUSE THEOREM;
 a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
@@ -192,12 +282,13 @@ a \in d => (identity(d)[a] = a /\ pre(identity(d),a) = a)   BECAUSE \A(d <- d, x
 a \in d => identity(d)[a] = a   BECAUSE TI;
 identity(d)[a] = a => a = identity(d)[a]   BECAUSE E_SCHEME;
 a \in d => a = identity(d)[a]   BECAUSE TI;
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) \in d   BECAUSE DropAndBoth;
-\A a : \A b : a = b => (a \in d <=> b \in d)   BECAUSE E_SCHEME;
-a = fst(<<a,b>>) => (a \in d <=> fst(<<a,b>>) \in d)   BECAUSE \A(a <- a, b <- fst(<<a,b>>));
-(a \in d <=> fst(<<a,b>>) \in d)   BECAUSE MODUS_PONENS;
-fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ fst(<<a,b>>) = snd(<<a,b>>)) => a \in d   BECAUSE TI;
+(<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>)) => <<a,b>> \in (d \X d)   BECAUSE DropAndRight;
+<<a,b>> \in identity(d) => <<a,b>> \in (d \X d)   BECAUSE TI;
+cartesianProductCouples   BECAUSE THEOREM;
+(a \in d /\ b \in d) <=> <<a,b>> \in (d \X d)   BECAUSE \A(x <- d, y <- d, a <- a, b <- b);
+<<a,b>> \in (d \X d) => (a \in d /\ b \in d)   BECAUSE EquivToImplReverse;
+<<a,b>> \in identity(d) => (a \in d /\ b \in d)   BECAUSE TI;
+(a \in d /\ b \in d) => a \in d   BECAUSE DropAndRight;
 <<a,b>> \in identity(d) => a \in d   BECAUSE TI;
 <<a,b>> \in identity(d) => a = identity(d)[a]   BECAUSE TI;
 <<a,b>> \in identity(d) => (a = b /\ a = identity(d)[a])   BECAUSE CIA;
@@ -206,6 +297,7 @@ fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
 \A a : \A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
 IsFunction(identity(d))   BECAUSE IntroAndRight;
 
+\* Prove IsInjection(identity(d))
 (identity(d)[a] = a /\ pre(identity(d),a) = a) => pre(identity(d),a) = a   BECAUSE DropAndLeft;
 a \in d => pre(identity(d),a) = a   BECAUSE TI;
 \A a : \A b : a = b => pre(identity(d),a) = pre(identity(d),b)   BECAUSE E_SCHEME;
@@ -219,6 +311,64 @@ pre(identity(d),b) = a => a = pre(identity(d),b)   BECAUSE E_SCHEME;
 <<a,b>> \in identity(d) => a = pre(identity(d),b)   BECAUSE TI;
 \A a : \A b : <<a,b>> \in identity(d) => a = pre(identity(d),b)   BECAUSE GENERALIZATION;
 IsInjection(identity(d))   BECAUSE IntroAndRight;
+
+\* Prove domain and image are d
+domainExists   BECAUSE THEOREM;
+x \in Domain(identity(d)) <=> IsDefinedOn(identity(d),x)   BECAUSE \A(g <- identity(d), x <- x);
+\A a : \A b : <<a,b>> \in identity(d) => a \in d   BECAUSE GENERALIZATION;
+<<x,y>> \in identity(d) => x \in d   BECAUSE \A(a <- x, b <- y);
+IsDefinedOn(identity(d),x) => \E y : x \in d   BECAUSE Q_SCHEME;
+(\E y : x \in d) => x \in d   BECAUSE Q_SCHEME;
+IsDefinedOn(identity(d),x) => x \in d   BECAUSE TI;
+(x \in d /\ x \in d) <=> <<x,x>> \in (d \X d)   BECAUSE \A(x <- d, y <- d, a <- x, b <- x);
+(x \in d /\ x \in d) => <<x,x>> \in (d \X d)   BECAUSE EquivToImpl;
+x \in d => (x \in d /\ x \in d)   BECAUSE AndSelf;
+x \in d => <<x,x>> \in (d \X d)   BECAUSE TI;
+\A a : \A b : a = b <=> fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE GENERALIZATION;
+x = x <=> fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+x = x => fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE EquivToImpl;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
+fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE MODUS_PONENS;
+<<x,x>> \in (d \X d) => <<x,x>> \in (d \X d) /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE IntroAndLeft;
+x \in d => <<x,x>> \in (d \X d) /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE TI;
+<<x,x>> \in identity(d) <=> <<x,x>> \in (d \X d) /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE \A(d <- d, x <- <<x,x>>);
+<<x,x>> \in (d \X d) /\ fst(<<x,x>>) = snd(<<x,x>>) => <<x,x>> \in identity(d)   BECAUSE EquivToImplReverse;
+x \in d => <<x,x>> \in identity(d)   BECAUSE TI;
+<<x,x>> \in identity(d) => \E y : <<x,y>> \in identity(d)   BECAUSE \E(y <- x);
+x \in d => IsDefinedOn(identity(d),x)   BECAUSE TI;
+x \in d <=> IsDefinedOn(identity(d),x)   BECAUSE IntroEquiv;
+x \in Domain(identity(d)) <=> x \in d   BECAUSE TransitEquiv2;
+\A x : x \in Domain(identity(d)) <=> x \in d   BECAUSE GENERALIZATION;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in Domain(identity(d)) <=> x \in d) => Domain(identity(d)) = d   BECAUSE \A(a <- Domain(identity(d)), b <- d);
+Domain(identity(d)) = d   BECAUSE MODUS_PONENS;
+
+imageExists   BECAUSE THEOREM;
+y \in Image(identity(d)) <=> Reaches(identity(d),y)   BECAUSE \A(g <- identity(d), y <- y);
+\A a : \A b : <<a,b>> \in identity(d) => (a \in d /\ b \in d)   BECAUSE GENERALIZATION;
+<<x,y>> \in identity(d) => (x \in d /\ y \in d)   BECAUSE \A(a <- x, b <- y);
+(x \in d /\ y \in d) => y \in d   BECAUSE DropAndLeft;
+<<x,y>> \in identity(d) => y \in d   BECAUSE TI;
+Reaches(identity(d),y) => \E x : y \in d   BECAUSE Q_SCHEME;
+(\E x : y \in d) => y \in d   BECAUSE Q_SCHEME;
+Reaches(identity(d),y) => y \in d   BECAUSE TI;
+\A x : x \in d => <<x,x>> \in identity(d)   BECAUSE GENERALIZATION;
+y \in d => <<y,y>> \in identity(d)   BECAUSE \A(x <- y);
+<<y,y>> \in identity(d) => \E x : <<x,y>> \in identity(d)   BECAUSE \E(x <- y);
+y \in d => Reaches(identity(d),y)   BECAUSE TI;
+y \in d <=> Reaches(identity(d),y)   BECAUSE IntroEquiv;
+y \in Image(identity(d)) <=> y \in d   BECAUSE TransitEquiv2;
+\A y : y \in Image(identity(d)) <=> y \in d   BECAUSE GENERALIZATION;
+x \in Image(identity(d)) <=> x \in d   BECAUSE \A(y <- x);
+\A x : x \in Image(identity(d)) <=> x \in d   BECAUSE GENERALIZATION;
+(\A x : x \in Image(identity(d)) <=> x \in d) => Image(identity(d)) = d   BECAUSE \A(a <- Image(identity(d)), b <- d);
+Image(identity(d)) = d   BECAUSE MODUS_PONENS;
+IsInjection(identity(d)) /\ Domain(identity(d)) = d   BECAUSE IntroAndRight;
+IsInjection(identity(d)) /\ Domain(identity(d)) = d /\ Image(identity(d)) = d   BECAUSE IntroAndRight;
+bijectionsExists   BECAUSE THEOREM;
+identity(d) \in Bijections(d,d) <=> IsInjection(identity(d)) /\ Domain(identity(d)) = d /\ Image(identity(d)) = d   BECAUSE \A(d <- d, i <- d, f <- identity(d));
+identity(d) \in Bijections(d,d)   BECAUSE MODUS_PONENS;
 identityBiject   BECAUSE GENERALIZATION;
 QED
 
@@ -282,7 +432,8 @@ snd(<<x,c>>) = c   BECAUSE MODUS_PONENS;
 (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d)
    => (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c)   BECAUSE IntroAndLeft;
 (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d) => <<x,c>> \in const(d,c)   BECAUSE TI;
-<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 \A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
 IsCouple(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
@@ -501,6 +652,24 @@ QED
 bijApply == \A f : \A a : \A b : \A x : (f \in Bijections(a,b) /\ x \in a) => f[x] \in b
 THEOREM bijApply
 PROOF
+VARIABLES a,b,c,d,f,g,i,x,y;
+imageInc2   BECAUSE THEOREM;
+x \in Domain(f) => f[x] \in Image(f)   BECAUSE \A(f <- f, x <- x);
+\A a : \A b : \A c : \A d : a = b /\ c = d => ((x \in a => f[x] \in c) <=> (x \in b => f[x] \in d))   BECAUSE E_SCHEME;
+Domain(f) = a /\ Image(f) = b => ((x \in Domain(f) => f[x] \in Image(f)) <=> (x \in a => f[x] \in b))
+   BECAUSE \A(a <- Domain(f), b <- a, c <- Image(f), d <- b);
+implyTrueEquiv(h,t,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+Domain(f) = a /\ Image(f) = b => (x \in a => f[x] \in b)   BECAUSE implyTrueEquiv;
+bijectionsExists   BECAUSE THEOREM;
+f \in Bijections(a,b) <=> IsInjection(f) /\ Domain(f) = a /\ Image(f) = b   BECAUSE \A(d <- a, i <- b, f <- f);
+f \in Bijections(a,b) => IsInjection(f) /\ Domain(f) = a /\ Image(f) = b   BECAUSE EquivToImpl;
+IsInjection(f) /\ Domain(f) = a /\ Image(f) = b => Domain(f) = a   BECAUSE DropAndBoth;
+IsInjection(f) /\ Domain(f) = a /\ Image(f) = b => Image(f) = b   BECAUSE DropAndLeft;
+f \in Bijections(a,b) => Domain(f) = a   BECAUSE TI;
+f \in Bijections(a,b) => Image(f) = b   BECAUSE TI;
+f \in Bijections(a,b) => Domain(f) = a /\ Image(f) = b   BECAUSE CIA;
+f \in Bijections(a,b) => (x \in a => f[x] \in b)   BECAUSE TI;
+f \in Bijections(a,b) /\ x \in a => f[x] \in b   BECAUSE HypoImplToAnd;
 bijApply   BECAUSE GENERALIZATION;
 QED
 

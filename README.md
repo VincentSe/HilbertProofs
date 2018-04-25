@@ -34,7 +34,7 @@ Subformulas can be enclosed with parentheses `(` and `)`, otherwise the preceden
 
 ## A proof example
 
-Here is the first proof of file ZFC.fol, which proves the existence of a set :
+Here is a proof in file ZFC.fol, which proves the existence of a set :
 
 ```
 aSetExists == \E x : x = x
@@ -44,7 +44,8 @@ PROOF
 VARIABLES x;
 (\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
 ~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
-x = x   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
 ~~(x = x)   BECAUSE IntroNotNot;
 ~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
 (\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
@@ -57,20 +58,20 @@ The first line `aSetExists == \E x : x = x` simply gives the name `aSetExists` t
 Next comes the proof, which is a sequence a statements separated by semicolons `;`. Each statement is proven by the statements before it, so the proof is an accumulation of truths. The last statement is the formula we wanted to prove, here `aSetExists`. `QED` stands for "quod erat demonstrandum", or in English "what was to be demonstrated". It marks the end of the proof.
 
 Each proof statement contains a formula and a reason, separated by the `BECAUSE` keyword. It asserts that its formula is proven by the reason and the previous statements.
-* The first reason invoked is `\A(x <- x)`, which is the instantiation of the universal quantifier `\A`. If a formula is true for any set `x`, then it is true when `x` is replaced by any particular value. Here `x` is replaced by itself to merely drop the quantifier `\A x` (allowing the use of an equality axiom `E_SCHEME` three statements after).
+* The first reason invoked is `\A(x <- x)`, which is the instantiation of the universal quantifier `\A`. If a formula is true for any set `x`, then it is true when `x` is replaced by any particular value. Here `x` is replaced by itself to merely drop the quantifier `\A x` (allowing the use of the theorem `equalSelf` three statements after).
 * The second reason is `Contraposition`. That is a propositional tautology defined in file `math/Tautologies.fol`, which `ZFC.fol` references by the statement `EXTENDS Tautologies` at the beginning. Any propositional tautology can be used as a reason, the checker will then try to match the propositional variables and implicitely use modus ponens with the previous statements. Here `Contraposition(a,b) == (a => b) => (~b => ~a)`, so propositional variable `a` is matched with formula `(\A x : ~(x = x))`, `b` is matched with `~(x = x)` and modus ponens is used with the first statement.
-* The third reason is `E_SCHEME`, which regroups several axioms concerning equality. `x = x` is one of those axioms.
+* The third reason is `THEOREM`, which invokes a previously proven theorem, here `equalSelf`.
 * The fourth reason is `MODUS_PONENS`. It searches the previous statements for an implication and its hypothesis. To prove `~(\A x : ~(x = x))`, it finds the implication `~~(x = x) => ~(\A x : ~(x = x))` and its hypothesis `~~(x = x)`.
 * The fifth reason is `Q_SCHEME`. It regroups several axioms related to the quantifiers `\A` and `\E`. Here it states the definition of existence with respect to universal.
 
 ## Inference rules
 
-In the following descriptions of HilbertProofs' inference rules, `x,y,z` are any variables and `p,q` any formulas. Under `E_SCHEME`,
-* `x = x` where `x` is any variable
-* `x = y /\ x = z => y = z` where `x,y,z` are any variables
+Here are the inference rules hardcoded in the C layer of HilbertProofs. Those are not redefinable or modifiable in the FOL files. `x,y,z` are any variables and `p,q` any formulas. Under `E_SCHEME`,
+* `x = y /\ x = z => y = z`
 * `x = y => y = x`
-* `\A x1 : \A y1 : ... : \A xK : \A yK : (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))` where `xJ <- yJ` are renaming of free variables
-And under `Q_SCHEME`,
+* `\A x1 : \A y1 : ... : \A xK : \A yK : (x1 = y1 /\ ... /\ xK = yK) => (s <=> s(x1 <- y1, ..., xK <- yK))` where `xJ <- yJ` are renaming of free variables. HilbertProofs checks that the xJ's and yJ's are distinct and that formula `s` doesn't have free variables in the yJ's. For example, this is a valid E_SCHEME statement, `\A x : \A y : x = y => (x \in a <=> y \in a)`.
+
+Under `Q_SCHEME`,
 * `(\A x : p => q)  =>  ( (\E x : p) => (\E x : q) )`
 * `(\A x : p => q)  =>  ( (\A x : p) => (\A x : q) )`
 * `(\E x : p) <=> ~(\A x : ~p)`
@@ -81,7 +82,9 @@ And under `Q_SCHEME`,
 And finally we have the instances of quantifiers
 * `(\A x : p) => p(x <- t)`
 * `p(x <- t) => \E x : p`
-where `p(x <- t)` means the free substitution of variable `x` by term `t` (HilbertProofs checks that all variables of `t` remain free in `p(x <- t)`).
+where `p(x <- t)` means the free substitution of variable `x` by term `t`. HilbertProofs checks that all variables of `t` remain free in `p(x <- t)`.
+
+The truth tables used in the checking of propositional tautologies are also hardcoded. For example, the truth table of implication is `(0 => 0) = 1, (0 => 1) = 1, (1 => 0) = 0, (1 => 1) = 1`.
 
 ## Conservative extensions, aka definitions
 

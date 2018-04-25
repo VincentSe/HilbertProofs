@@ -1380,7 +1380,17 @@ productFuncIsFunc   BECAUSE THEOREM;
    => IsFunction(pasteTags(Domain(u),y))
    BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),y));
 identityBiject   BECAUSE THEOREM;
-IsInjection(identity(Domain(u)))   BECAUSE \A(d <- Domain(u));
+identity(Domain(u)) \in Bijections(Domain(u),Domain(u))   BECAUSE \A(d <- Domain(u));
+bijectionsExists   BECAUSE THEOREM;
+identity(Domain(u)) \in Bijections(Domain(u),Domain(u))
+   <=> IsInjection(identity(Domain(u))) /\ Domain(identity(Domain(u))) = Domain(u) /\ Image(identity(Domain(u))) = Domain(u)
+   BECAUSE \A(d <- Domain(u), i <- Domain(u), f <- identity(Domain(u)));
+identity(Domain(u)) \in Bijections(Domain(u),Domain(u))
+   => IsInjection(identity(Domain(u))) /\ Domain(identity(Domain(u))) = Domain(u) /\ Image(identity(Domain(u))) = Domain(u)
+   BECAUSE EquivToImpl;
+IsInjection(identity(Domain(u))) /\ Domain(identity(Domain(u))) = Domain(u) /\ Image(identity(Domain(u))) = Domain(u)
+   BECAUSE MODUS_PONENS;
+IsInjection(identity(Domain(u)))   BECAUSE DropAndRight2;
 IsFunction(identity(Domain(u)))   BECAUSE DropAndRight;
 constFunc   BECAUSE THEOREM;
 IsFunction(const(Domain(u),y))   BECAUSE \A(d <- Domain(u), c <- y);
@@ -1570,7 +1580,7 @@ bijectOrdinalsEqual == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
    => o = p
 THEOREM bijectOrdinalsEqual
 PROOF
-VARIABLES a,b,d,f,g,o,p,x,y,z;
+VARIABLES a,b,d,f,g,i,o,p,x,y,z;
 \* If f is not the identity, there is a minimum element m(o,p) such that
 \* f[m(o,p)] # m(o,p). But then we will show that m(o,p) \in p and
 \* f doesn't reach it, contradicting f is bijection.
@@ -1692,8 +1702,8 @@ h(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
 cm(o,p) = cf(o,p)[cm(o,p)] => cf(o,p)[cm(o,p)] = cm(o,p)   BECAUSE E_SCHEME;
 cf(o,p)[cm(o,p)] # cm(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE Contraposition;
 h(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE TI;
-killCaseB(a,b,c) == (a => ~b) => ((a => (b \/ c)) => (a => c))   PROPO_TAUTO;
-h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE killCaseB;
+killCaseC(a,b,c) == (a => ~b) => ((a => (b \/ c)) => (a => c))   PROPO_TAUTO;
+h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE killCaseC;
 IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE DropAndRight;
 IsTransitiveSet(p) => (cf(o,p)[cm(o,p)] \in p => cf(o,p)[cm(o,p)] \subseteq p)   BECAUSE \A(a <- cf(o,p)[cm(o,p)]);
 IsTransitiveSet(p) /\ cf(o,p)[cm(o,p)] \in p => cf(o,p)[cm(o,p)] \subseteq p   BECAUSE HypoImplToAnd;
@@ -1728,7 +1738,7 @@ funcInversePre   BECAUSE THEOREM;
 IsFunction(cf(o,p)) /\ cm(o,p) \in Image(cf(o,p)) => cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p)
    BECAUSE \A(f <- cf(o,p), y <- cm(o,p));
 bijectionsExists   BECAUSE THEOREM;
-cf(o,p) \in Bijections(o,p) <=> IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p   BECAUSE \A(a <- o, b <- p, x <- cf(o,p));
+cf(o,p) \in Bijections(o,p) <=> IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p   BECAUSE \A(d <- o, i <- p, f <- cf(o,p));
 cf(o,p) \in Bijections(o,p) => IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p   BECAUSE EquivToImpl;
 IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE DropAndRight2;
 cf(o,p) \in Bijections(o,p) => IsInjection(cf(o,p))   BECAUSE TI;
@@ -1766,21 +1776,21 @@ h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => cm(o,p) \in cm(o,p)   BECAUSE TI;
 ordinalsWellFounded   BECAUSE THEOREM;
 IsOrdinal(cm(o,p)) => cm(o,p) \notin cm(o,p)   BECAUSE \A(o <- cm(o,p));
 h(o,p) => cm(o,p) \notin cm(o,p)   BECAUSE TI;
-killCaseC(h,a,b) == (h => ~a) => ((h /\ b => a) => (h => ~b))   PROPO_TAUTO;
-h(o,p) => pre(cf(o,p),cm(o,p)) \notin cm(o,p)   BECAUSE killCaseC;
+killCaseD(h,a,b) == (h => ~a) => ((h /\ b => a) => (h => ~b))   PROPO_TAUTO;
+h(o,p) => pre(cf(o,p),cm(o,p)) \notin cm(o,p)   BECAUSE killCaseD;
 \* Second case
 \A x : \A y : x = y => (cf(o,p)[x] = cf(o,p)[y])   BECAUSE E_SCHEME;
 pre(cf(o,p),cm(o,p)) = cm(o,p) => cf(o,p)[pre(cf(o,p),cm(o,p))] = cf(o,p)[cm(o,p)]   BECAUSE \A(x <- pre(cf(o,p),cm(o,p)), y <- cm(o,p));
 h(o,p) /\ pre(cf(o,p),cm(o,p)) = cm(o,p) => cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) /\ cf(o,p)[pre(cf(o,p),cm(o,p))] = cf(o,p)[cm(o,p)]   BECAUSE MergeImplicationsAnd;
 cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) /\ cf(o,p)[pre(cf(o,p),cm(o,p))] = cf(o,p)[cm(o,p)] => cm(o,p) = cf(o,p)[cm(o,p)]   BECAUSE E_SCHEME;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) = cm(o,p) => cm(o,p) = cf(o,p)[cm(o,p)]   BECAUSE TI;
-h(o,p) => pre(cf(o,p),cm(o,p)) # cm(o,p)   BECAUSE killCaseC;
+h(o,p) => pre(cf(o,p),cm(o,p)) # cm(o,p)   BECAUSE killCaseD;
 \* Third case
 (\A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])
    => (cm(o,p) \in pre(cf(o,p),cm(o,p)) /\ pre(cf(o,p),cm(o,p)) \in o => cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))])   BECAUSE \A(x <- cm(o,p), y <- pre(cf(o,p),cm(o,p)));
 h(o,p) => (cm(o,p) \in pre(cf(o,p),cm(o,p)) /\ pre(cf(o,p),cm(o,p)) \in o => cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))])   BECAUSE TI;
-killCaseD(h,a,b,c) == (h => b) => ((h => (a /\ b => c)) => (h /\ a => c))   PROPO_TAUTO;
-h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))]   BECAUSE killCaseD;
+killCaseE(h,a,b,c) == (h => b) => ((h => (a /\ b => c)) => (h /\ a => c))   PROPO_TAUTO;
+h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))]   BECAUSE killCaseE;
 \A x : \A y : x = y => (cf(o,p)[cm(o,p)] \in x <=> cf(o,p)[cm(o,p)] \in y)   BECAUSE E_SCHEME;
 cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) => (cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))] <=> cf(o,p)[cm(o,p)] \in cm(o,p))   BECAUSE \A(x <- cf(o,p)[pre(cf(o,p),cm(o,p))], y <- cm(o,p));
 h(o,p) => (cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))] <=> cf(o,p)[cm(o,p)] \in cm(o,p))   BECAUSE TI;
@@ -1806,7 +1816,7 @@ h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => (cm(o,p) \in cf(o,p)[cm(o,p)] /\ c
 andMP(a,b) == (a /\ (a => b)) => b   PROPO_TAUTO;
 (cm(o,p) \in cf(o,p)[cm(o,p)] /\ cf(o,p)[cm(o,p)] \in cm(o,p)) /\ (cm(o,p) \in cf(o,p)[cm(o,p)] /\ cf(o,p)[cm(o,p)] \in cm(o,p) => cm(o,p) \in cm(o,p)) => cm(o,p) \in cm(o,p)   BECAUSE andMP;
 h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cm(o,p) \in cm(o,p)   BECAUSE TI;
-h(o,p) => cm(o,p) \notin pre(cf(o,p),cm(o,p))   BECAUSE killCaseC;
+h(o,p) => cm(o,p) \notin pre(cf(o,p),cm(o,p))   BECAUSE killCaseD;
 
 \* Conclusion that h(o,p) is false
 h(o,p) => pre(cf(o,p),cm(o,p)) \notin cm(o,p) /\ pre(cf(o,p),cm(o,p)) # cm(o,p)   BECAUSE CIA;
@@ -1818,11 +1828,11 @@ h(o,p) => ~(pre(cf(o,p),cm(o,p)) \in cm(o,p) \/ pre(cf(o,p),cm(o,p)) = cm(o,p) \
 h(o,p) => ~(pre(cf(o,p),cm(o,p)) \in cm(o,p) \/ pre(cf(o,p),cm(o,p)) = cm(o,p) \/ cm(o,p) \in pre(cf(o,p),cm(o,p))) /\ (pre(cf(o,p),cm(o,p)) \in cm(o,p) \/ pre(cf(o,p),cm(o,p)) = cm(o,p) \/ cm(o,p) \in pre(cf(o,p),cm(o,p)))   BECAUSE CIA;
 absurd(a,h) == h => (~a /\ a) => ~h   PROPO_TAUTO;
 ~h(o,p)   BECAUSE absurd;
-killCaseE(a,b) == ~(a /\ b) => (a => ~b)   PROPO_TAUTO;
+killCaseF(a,b) == ~(a /\ b) => (a => ~b)   PROPO_TAUTO;
 \* The correct hypothesis
 hh(o,p) == IsOrdinal(o) /\ IsOrdinal(p)
    /\ (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y]);
-hh(o,p) => ~IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE killCaseE;
+hh(o,p) => ~IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE killCaseF;
 (\E m : IsMinimumForIn(m, cb(o,p))) => IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE CHOOSE cm(o,p);
 ~IsMinimumForIn(cm(o,p), cb(o,p)) => ~(\E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE Contraposition;
 hh(o,p) => ~(\E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE TI;
@@ -1841,8 +1851,8 @@ IsWellOrderedByIn(o) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECA
 IsOrdinal(o) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECAUSE TI;
 hh(o,p) => IsOrdinal(o)   BECAUSE DropAndRight2;
 hh(o,p) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECAUSE TI;
-killCaseF(h,a,b) == (h => ~a) => ((h => b \/ a) => (h => b))   PROPO_TAUTO;
-hh(o,p) => cb(o,p) = {}   BECAUSE killCaseF;
+killCaseG(h,a,b) == (h => ~a) => ((h => b \/ a) => (h => b))   PROPO_TAUTO;
+hh(o,p) => cb(o,p) = {}   BECAUSE killCaseG;
 \A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
 cb(o,p) = {} => (a \in cb(o,p) <=> a \in {})   BECAUSE \A(x <- cb(o,p), y <- {});
 emptySetExists   BECAUSE THEOREM;
@@ -1868,7 +1878,8 @@ hh(o,p) => cf(o,p) \in Bijections(o, p)   BECAUSE TI;
 hh(o,p) => Domain(cf(o,p)) = o   BECAUSE TI;
 identityBiject   BECAUSE THEOREM;
 identity(o) \in Bijections(o,o)   BECAUSE \A(d <- o);
-identity(o) \in Bijections(o,o) <=> IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o   BECAUSE \A(a <- o, b <- o, x <- identity(o));
+identity(o) \in Bijections(o,o) <=> IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o
+   BECAUSE \A(d <- o, i <- o, f <- identity(o));
 IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o   BECAUSE MODUS_PONENS;
 IsInjection(identity(o))   BECAUSE DropAndRight2;
 IsFunction(identity(o))   BECAUSE DropAndRight;
@@ -1995,8 +2006,7 @@ p \subseteq {} => p = {}   BECAUSE \A(x <- p);
 p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
 ~~(p = {} \/ ~(p \subseteq {}))   BECAUSE IntroNotNot;
 ~(p = {} \/ ~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE Explosion;
-~(p = {} \/ ~(p \subseteq {})) <=> (p # {} /\ ~~(p \subseteq {}))   BECAUSE DistribNotOr;
-(p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE EquivToImplReverse;
+(p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE FactorNotOr;
 (p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
 p \subseteq {} => ~~(p \subseteq {})   BECAUSE IntroNotNot;
 p # {} => p # {}   BECAUSE ImplySelf;
@@ -2025,3 +2035,15 @@ IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x
 Nat == CHOOSE o : IsLimitOrdinal(o) /\ \A x : x \in o => ~IsLimitOrdinal(x)
 naturalNumbersExist == IsLimitOrdinal(Nat) /\ \A x : x \in Nat => ~IsLimitOrdinal(x)
 THEOREM naturalNumbersExist
+PROOF
+\* By separation in a set given by the axiom of infinity
+VARIABLES a;
+Infinity   BECAUSE AXIOM;
+ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
+{} \in ca /\ \A x : x \in ca => successor(x) \in ca   BECAUSE CHOOSE ca;
+\A a : \E b : \A x : x \in b <=> x \in a /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y))
+   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in ca /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y))   BECAUSE \A(a <- ca);
+cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y));
+\* TODO prove cb is Nat
+QED

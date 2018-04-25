@@ -1,11 +1,6 @@
 \* Those are propositional tautologies, ie formulas true with any boolean
 \* assignments of the variables.
 
-\* First-order logic tautologies are harder to define, because they have
-\* primitive symbols that must be interpreted first, either by axioms
-\* or by an embedding into the ZFC set theory (a model).
-\* The 2 points of view are equivalent by Gödel's completeness theorem.
-
 \* Propositional tautologies serve as axiom schemes for first-order logic
 \* proofs : any substitution of first-order formulas in them is an axiom.
 \* They are named for easier invocations in first-order proofs.

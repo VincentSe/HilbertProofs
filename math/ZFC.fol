@@ -20,28 +20,6 @@ EXTENDS Tautologies
 \* The membership binary relation, the only primitive symbol of ZFC :
 CONSTANT _ \in _
 
-aSetExists == \E x : x = x
-
-THEOREM aSetExists
-PROOF
-VARIABLES x;
-(\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
-~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
-x = x   BECAUSE E_SCHEME;
-~~(x = x)   BECAUSE IntroNotNot;
-~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
-(\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
-aSetExists   BECAUSE MODUS_PONENS;
-QED
-
-(*
-   The theorem above uses only logical axioms, the constant binary
-   relation \in does not appear in the proof. It is a general property
-   of first-order logic with equality : something exists.
-
-   Let's continue with a property of binary relations in
-   first-order logic.
-*)
 russellParadox == ~\E x : \A y : y \in x <=> ~(y \in y)
 
 THEOREM russellParadox
@@ -65,12 +43,47 @@ QED
 
    Russell's paradox constrains what axioms we can take for sets.
    If we are not careful, we can choose axioms proving its contrary.
+   
+   The first axiom for sets defines their equality : two sets are
+   equal iif they have the same elements, and an element appears
+   at most once in a set.
 *)
-
-\* The first axiom for sets : two sets are equal iif they have the same
-\* elements, and an element appears at most once in a set.
 extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
 AXIOM extensionality
+
+\* In other theories without the axiom of extensionality, this
+\* basic rule of equality is usually taken as an axiom.
+equalSelf == \A a : a = a
+THEOREM equalSelf
+PROOF
+VARIABLES a,b,x;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in a <=> x \in a) => a = a   BECAUSE \A(a <- a, b <- a);
+equivSelf(a) == a <=> a   PROPO_TAUTO;
+x \in a <=> x \in a   BECAUSE equivSelf;
+\A x : x \in a <=> x \in a   BECAUSE GENERALIZATION;
+a = a   BECAUSE MODUS_PONENS;
+equalSelf   BECAUSE GENERALIZATION;
+QED
+
+aSetExists == \E x : x = x
+THEOREM aSetExists
+PROOF
+VARIABLES a,x;
+(\A x : ~(x = x)) => ~(x = x)   BECAUSE \A(x <- x);
+~~(x = x) => ~(\A x : ~(x = x))   BECAUSE Contraposition;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
+~~(x = x)   BECAUSE IntroNotNot;
+~(\A x : ~(x = x))   BECAUSE MODUS_PONENS;
+(\E x : x = x)  <=>  ~(\A x : ~(x = x))   BECAUSE Q_SCHEME;
+aSetExists   BECAUSE MODUS_PONENS;
+QED
+(*
+   The theorem above uses only logical axioms, the constant binary
+   relation \in does not appear in the proof. It is a general property
+   of first-order logic with equality : something exists.
+*)
 
 \* Inclusion of sets.
 x \subseteq y == \A z : z \in x => z \in y
@@ -188,7 +201,8 @@ x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
 (x \in a /\ x # x) => x # x   BECAUSE DropAndLeft;
 x \in chooseB(a) => x # x   BECAUSE TI;
 ~(x # x) => x \notin chooseB(a)   BECAUSE Contraposition;
-x = x   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
 ~(x # x)   BECAUSE IntroNotNot;
 x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 \A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
@@ -645,7 +659,8 @@ F(c,d,x,y) => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
 
 \* Case y = c
 ({} \in ordinalTwo /\ (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- {});
-{} = {}   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+{} = {}   BECAUSE \A(a <- {});
 y = c => ({} = {} /\ y = c)   BECAUSE IntroAndRight;
 ({} = {} /\ y = c) => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE IntroOrLeft;
 y = c => (({} = {} /\ y = c) \/ ({} = ordinalOne /\ y = d))   BECAUSE TI;
@@ -661,7 +676,8 @@ y = c => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TI;
 
 \* Case y = d
 (ordinalOne \in ordinalTwo /\ ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))) => (\E x : x \in ordinalTwo /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE \E(x <- ordinalOne);
-ordinalOne = ordinalOne   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+ordinalOne = ordinalOne   BECAUSE \A(a <- ordinalOne);
 y = d => (ordinalOne = ordinalOne /\ y = d)   BECAUSE IntroAndRight;
 (ordinalOne = ordinalOne /\ y = d) => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE IntroOrRight;
 y = d => ((ordinalOne = {} /\ y = c) \/ (ordinalOne = ordinalOne /\ y = d))   BECAUSE TI;
@@ -710,7 +726,8 @@ PROOF
 VARIABLES a,b,c,d,x,y;
 pairExists   BECAUSE THEOREM;
 b \in { a, b } <=> (b = a \/ b = b)   BECAUSE \A(c <- a, d <- b, y <- b);
-b = b   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+b = b   BECAUSE \A(a <- b);
 b = a \/ b = b   BECAUSE IntroOrRight;
 b \in {a,b}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (b \in x <=> b \in y)   BECAUSE E_SCHEME;
@@ -721,7 +738,8 @@ b \in { a,c } => (b = a \/ b = c)   BECAUSE EquivToImpl;
 {a,b} = {a,c} => (b = a \/ b = c)   BECAUSE TI;
 
 c \in { a, c } <=> (c = a \/ c = c)   BECAUSE \A(c <- a, d <- c, y <- c);
-c = c   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+c = c   BECAUSE \A(a <- c);
 c = a \/ c = c   BECAUSE IntroOrRight;
 c \in {a,c}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
@@ -817,14 +835,16 @@ z \in (x \union y) => (z \in x \/ z \in y)   BECAUSE TI;
 inInUnion   BECAUSE THEOREM;
 (z \in x /\ x \in {x,y}) => z \in UNION {x,y}   BECAUSE \A(a <- z, b <- x, c <- {x,y});
 x \in { x,y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
-x = x   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
 x = x \/ x = y   BECAUSE IntroOrLeft;
 x \in {x,y}   BECAUSE MODUS_PONENS;
 z \in x => (z \in x /\ x \in {x,y})   BECAUSE IntroAndLeft;
 z \in x => z \in (x \union y)   BECAUSE TI;
 (z \in y /\ y \in {x,y}) => z \in UNION {x,y}   BECAUSE \A(a <- z, b <- y, c <- {x,y});
 y \in { x,y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
-y = y   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+y = y   BECAUSE \A(a <- y);
 y = x \/ y = y   BECAUSE IntroOrRight;
 y \in {x,y}   BECAUSE MODUS_PONENS;
 z \in y => (z \in y /\ y \in {x,y})   BECAUSE IntroAndLeft;
@@ -840,7 +860,8 @@ PROOF
 VARIABLES a,b,c,d,x,y,z;
 pairExists   BECAUSE THEOREM;
 x \in { x, y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
-x = x   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
 x = x \/ x = y   BECAUSE IntroOrLeft;
 x \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
@@ -856,7 +877,8 @@ PROOF
 VARIABLES a,b,c,d,x,y,z;
 pairExists   BECAUSE THEOREM;
 y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
-y = y   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+y = y   BECAUSE \A(a <- y);
 y = x \/ y = y   BECAUSE IntroOrRight;
 y \in {x,y}   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
@@ -956,7 +978,8 @@ y \in { { c } , {c,d} } <=> (y = {c} \/ y = {c,d})   BECAUSE \A(c <- {c}, d <- {
 
 \* Proof of <<a,b>> = <<c,d>> => a = c
 <<a,b>> = <<c,d>> => (({c} = {a} \/ {c} = {a,b}) <=> ({c} = {c} \/ {c} = {c,d}))   BECAUSE \A(y <- {c});
-{c} = {c}   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+{c} = {c}   BECAUSE \A(a <- {c});
 {c} = {c} \/ {c} = {c,d}   BECAUSE IntroOrLeft;
 <<a,b>> = <<c,d>> => ({c} = {a} \/ {c} = {a,b})   BECAUSE ImplyEquivTrue;
 
@@ -964,7 +987,8 @@ singletonExists   BECAUSE THEOREM;
 c \in { a } <=> c = a   BECAUSE \A(a <- a, x <- c);
 c \in { a } => c = a   BECAUSE EquivToImpl;
 c \in { c } <=> c = c   BECAUSE \A(a <- c, x <- c);
-c = c   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+c = c   BECAUSE \A(a <- c);
 c \in { c }   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (c \in x <=> c \in y)   BECAUSE E_SCHEME;
 {c} = {a} => (c \in {c} <=> c \in {a})   BECAUSE \A(x <- {c}, y <- {a});
@@ -975,7 +999,8 @@ c = a => a = c   BECAUSE E_SCHEME;
 {c} = {a} => a = c   BECAUSE TI;
 
 a \in {a,b} <=> (a = a \/ a = b)   BECAUSE \A(c <- a, d <- b, y <- a);
-a = a   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+a = a   BECAUSE \A(a <- a);
 a = a \/ a = b   BECAUSE IntroOrLeft;
 a \in {a,b}   BECAUSE MODUS_PONENS;
 \A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
@@ -1026,7 +1051,8 @@ PROOF
 VARIABLES a,b,c,d,x,y;
 tupleComposition   BECAUSE THEOREM;
 IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
-<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
 tupleDecomposition   BECAUSE THEOREM;
@@ -1042,7 +1068,8 @@ PROOF
 VARIABLES a,b,c,d,x,y;
 tupleComposition   BECAUSE THEOREM;
 IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
-<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
 tupleDecomposition   BECAUSE THEOREM;
@@ -1059,6 +1086,8 @@ IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
+f[x] == CHOOSE y : <<x,y>> \in f
+pre(f,y) == CHOOSE x : <<x,y>> \in f
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
    => (x \in UNION UNION g /\ y \in UNION UNION g)
@@ -1067,7 +1096,8 @@ PROOF
 VARIABLES a,b,c,d,g,x,y;
 pairExists   BECAUSE THEOREM;
 {x} \in <<x,y>> <=> ({x} = {x} \/ {x} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x});
-{x} = {x}   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+{x} = {x}   BECAUSE \A(a <- {x});
 {x} = {x} \/ {x} = {x,y}   BECAUSE IntroOrLeft;
 {x} \in <<x,y>>   BECAUSE MODUS_PONENS;
 inInUnion   BECAUSE THEOREM;
@@ -1076,7 +1106,8 @@ inInUnion   BECAUSE THEOREM;
 <<x,y>> \in g => {x} \in UNION g   BECAUSE TI;
 singletonExists   BECAUSE THEOREM;
 x \in { x } <=> x = x   BECAUSE \A(a <- x, x <- x);
-x = x   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+x = x   BECAUSE \A(a <- x);
 x \in { x }   BECAUSE MODUS_PONENS;
 (x \in {x} /\ {x} \in UNION g) => x \in UNION UNION g   BECAUSE \A(a <- x, b <- {x}, c <- UNION g);
 {x} \in UNION g => (x \in {x} /\ {x} \in UNION g)   BECAUSE IntroAndRight;
@@ -1084,14 +1115,16 @@ x \in { x }   BECAUSE MODUS_PONENS;
 <<x,y>> \in g => x \in UNION UNION g   BECAUSE TI;
 
 {x,y} \in <<x,y>> <=> ({x,y} = {x} \/ {x,y} = {x,y})   BECAUSE \A(c <- {x}, d <- {x,y}, y <- {x,y});
-{x,y} = {x,y}   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+{x,y} = {x,y}   BECAUSE \A(a <- {x,y});
 {x,y} = {x} \/ {x,y} = {x,y}   BECAUSE IntroOrRight;
 {x,y} \in <<x,y>>   BECAUSE MODUS_PONENS;
 ({x,y} \in <<x,y>> /\ <<x,y>> \in g) => {x,y} \in UNION g   BECAUSE \A(a <- {x,y}, b <- <<x,y>>, c <- g);
 <<x,y>> \in g => ({x,y} \in <<x,y>> /\ <<x,y>> \in g)   BECAUSE IntroAndRight;
 <<x,y>> \in g => {x,y} \in UNION g   BECAUSE TI;
 y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
-y = y   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+y = y   BECAUSE \A(a <- y);
 y = x \/ y = y   BECAUSE IntroOrRight;
 y \in { x, y }   BECAUSE MODUS_PONENS;
 (y \in {x,y} /\ {x,y} \in UNION g) => y \in UNION UNION g   BECAUSE \A(a <- y, b <- {x,y}, c <- UNION g);
@@ -1182,6 +1215,27 @@ y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 <<x,y>> \in g => y \in Image(g)   BECAUSE TI;
 imageInc   BECAUSE GENERALIZATION;
 QED
+
+imageInc2 == \A f : \A x : x \in Domain(f) => f[x] \in Image(f)
+THEOREM imageInc2
+PROOF
+VARIABLES a,f,g,x,y;
+domainExists   BECAUSE THEOREM;
+x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
+x \in Domain(f) => IsDefinedOn(f,x)   BECAUSE EquivToImpl;
+IsDefinedOn(f,x) => <<x,f[x]>> \in f   BECAUSE CHOOSE f[x];
+x \in Domain(f) => <<x,f[x]>> \in f   BECAUSE TI;
+<<a,f[a]>> \in f => Reaches(f,f[a])   BECAUSE \E(x <- a);
+\A a : <<a,f[a]>> \in f => Reaches(f,f[a])   BECAUSE GENERALIZATION;
+<<x,f[x]>> \in f => Reaches(f,f[x])   BECAUSE \A(a <- x);
+x \in Domain(f) => Reaches(f,f[x])   BECAUSE TI;
+imageExists   BECAUSE THEOREM;
+f[x] \in Image(f) <=> Reaches(f,f[x])   BECAUSE \A(g <- f, y <- f[x]);
+Reaches(f,f[x]) => f[x] \in Image(f)   BECAUSE EquivToImplReverse;
+x \in Domain(f) => f[x] \in Image(f)   BECAUSE TI;
+imageInc2   BECAUSE GENERALIZATION;
+QED
+
 
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 
@@ -1330,7 +1384,8 @@ VARIABLES a,b,c,d,i,j,u,v,x,y;
 cartesianProductExists   BECAUSE THEOREM;
 <<a,b>> \in (x \X y) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)
    BECAUSE \A(i <- x, j <- y, x <- <<a,b>>);
-<<a,b>> = <<a,b>>   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
 IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 dropTrue(a,b,t) == t => ((t /\ a /\ b) <=> (a /\ b))   PROPO_TAUTO;
 (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y) <=> (fst(<<a,b>>) \in x /\ snd(<<a,b>>) \in y)   BECAUSE dropTrue;
@@ -1414,7 +1469,8 @@ cartesianProductCouples   BECAUSE THEOREM;
 (z \in x /\ {} \in {{}}) <=> <<z,{}>> \in (x \X {{}})   BECAUSE \A(x <- x, y <- {{}}, a <- z, b <- {});
 singletonExists   BECAUSE THEOREM;
 {} \in { {} } <=> {} = {}   BECAUSE \A(a <- {}, x <- {});
-{} = {}   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+{} = {}   BECAUSE \A(a <- {});
 {} \in { {} }   BECAUSE MODUS_PONENS;
 z \in x => (z \in x /\ {} \in {{}})   BECAUSE IntroAndLeft;
 z \in x => <<z,{}>> \in (x \X {{}})   BECAUSE TIE;
@@ -1433,7 +1489,8 @@ cartesianProductCouples   BECAUSE THEOREM;
 (z \in y /\ ordinalOne \in {ordinalOne}) <=> <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE \A(x <- y, y <- {ordinalOne}, a <- z, b <- ordinalOne);
 singletonExists   BECAUSE THEOREM;
 ordinalOne \in { ordinalOne } <=> ordinalOne = ordinalOne   BECAUSE \A(a <- ordinalOne, x <- ordinalOne);
-ordinalOne = ordinalOne   BECAUSE E_SCHEME;
+equalSelf   BECAUSE THEOREM;
+ordinalOne = ordinalOne   BECAUSE \A(a <- ordinalOne);
 ordinalOne \in { ordinalOne }   BECAUSE MODUS_PONENS;
 z \in y => (z \in y /\ ordinalOne \in {ordinalOne})   BECAUSE IntroAndLeft;
 z \in y => <<z,ordinalOne>> \in (y \X {ordinalOne})   BECAUSE TIE;

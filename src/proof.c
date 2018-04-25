@@ -572,16 +572,10 @@ short equality_axiom(const formula* f)
   if (rename_free_variables_scheme(f))
     return 1;
   
-  // axiom x = x, where x is a term
-  const formula* firstOp = get_first_operand(f);
-  const formula* secondOp = get_second_operand(f);
-
-  if (firstOp && secondOp && f->builtInOp == equal
-      && formula_equal(firstOp, secondOp, 0, 0, 0))
-    return 1;
-
   // axiom (x = y /\ x = z) => y = z, where x, y and z are terms
   // and also (y = x /\ z = x) => y = z
+  const formula* firstOp = get_first_operand(f);
+  const formula* secondOp = get_second_operand(f);
   const formula* firstFirstOp = get_first_operand(firstOp);
   const formula* firstSecondOp = get_second_operand(firstOp);
   const formula* secondSecondOp = get_second_operand(secondOp);
@@ -963,17 +957,19 @@ short check_axiom_scheme_statement(const struct FormulaDList* statement,
 
 unsigned char is_existence_of_choose(const formula* f, const formula* c)
 {
-  return f && f->builtInOp == exists
+  const formula* existF = f ? get_quantified_formula(f, exists) : 0;
+  return existF
     && c->builtInOp == choose
-    && strcmp(f->name, c->name) == 0 // same quantified variables
-    && formula_equal(get_first_operand(f), get_first_operand(c), 0, 0, 0);
+    && strcmp(existF->name, c->name) == 0 // same quantified variables
+    && formula_equal(get_first_operand(existF), get_first_operand(c), 0, 0, 0);
 }
 
 unsigned char find_existence_of_choose(const struct FormulaDList* statement,
 				       const formula* c)
 {
   for (statement = statement->previous; statement; statement = statement->previous)
-    if (is_existence_of_choose(statement->jf->formula, c))
+    if (statement->jf->reason // skip local operators
+	&& is_existence_of_choose(statement->jf->formula, c))
       return 1;
   return 0;
 }
@@ -1190,6 +1186,14 @@ short semantic_check_operator_definition(formula* op,
 {
   // A valid declaration is for example :
   // extensionality == \A a : \A b : (\A x : x \in a <=> x \in b) => a = b
+  if (find_formula_same_name(proofLocalDecl, op))
+    {
+      printf("%s:%d: local operator already defined %s\n",
+	     op->file,
+	     op->first_line,
+	     op->name);
+      return 0;
+    }
 
   // By prior syntax check, op->name != 0 and op->builtInOp == lnone
   short success = resolve_names(/*out*/op->definingFormula,
@@ -1236,6 +1240,14 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
       if (jf->reason->rk == propoTautology && !jf->reason->formula)
 	{
 	  // local propositional tautology
+	  if (find_formula_same_name(*proofLocalOps, jf->formula))
+	    {
+	      printf("%s:%d: local operator already defined %s\n",
+		     jf->formula->file,
+		     jf->formula->first_line,
+		     jf->formula->name);
+	      return 0;
+	    }
 	  *proofLocalOps = make_formula_list(jf->formula, *proofLocalOps);
 	  return resolve_names(jf->formula->definingFormula,
 			       constants,

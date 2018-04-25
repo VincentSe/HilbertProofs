@@ -8,7 +8,7 @@ SRC = src/folAST.c src/cli.c src/topoSort.c src/proof.c src/formula.c
 
 bin/proveMath: $(SRC) src/lex.fol.c src/fol.tab.c src/folAST.h src/formula.h src/proof.h
 	mkdir -p bin
-	gcc -g $(SRC) src/lex.fol.c src/fol.tab.c -o bin/proveMath
+	gcc -g -Werror $(SRC) src/lex.fol.c src/fol.tab.c -o bin/proveMath
 
 build: bin/proveMath
 
