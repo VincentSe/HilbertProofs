@@ -2095,22 +2095,30 @@ ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
 
 IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
+IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
+   /\ \A x : x \in o => ~IsLimitOrdinal(x)
 
 (*
    Definition of the set of natural numbers. They are the finite ordinals.
 *)
-Nat == CHOOSE o : IsLimitOrdinal(o) /\ \A x : x \in o => ~IsLimitOrdinal(x)
-naturalNumbersExist == IsLimitOrdinal(Nat) /\ \A x : x \in Nat => ~IsLimitOrdinal(x)
-THEOREM naturalNumbersExist
+Nat == CHOOSE o : \A x : x \in o <=> IsFiniteOrdinal(x)
+NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
+THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
 VARIABLES a;
 Infinity   BECAUSE AXIOM;
 ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
 {} \in ca /\ \A x : x \in ca => successor(x) \in ca   BECAUSE CHOOSE ca;
-\A a : \E b : \A x : x \in b <=> x \in a /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y))
-   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> x \in ca /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y))   BECAUSE \A(a <- ca);
-cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ (IsOrdinal(x) /\ ~IsLimitOrdinal(x) /\ \A y : y \in x => ~IsLimitOrdinal(y));
-\* TODO prove cb is Nat
+\A a : \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- ca);
+cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x);
+\A x : x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE CHOOSE cb;
+\* Prove cb is Nat, ie IsFiniteOrdinal(x) => x \in cb.
+\* UNION cb is an ordinal as a union of ordinals. UNION cb
+\* is a limit ordinal. Any finite ordinal is either in or
+\* contains UNION cb by ordinal comparison. But a finite
+\* ordinal cannot contain a limit ordinal so it is in UNION cb.
+\* This means the finite ordinal is in one of the elements of cb
+\* so in cb by ordinal transitivity.
 QED
