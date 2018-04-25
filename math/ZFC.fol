@@ -1204,6 +1204,26 @@ x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
 domainInc   BECAUSE GENERALIZATION;
 QED
 
+domainInc2 == \A f : \A y : y \in Image(f) => pre(f,y) \in Domain(f)
+THEOREM domainInc2
+PROOF
+VARIABLES a,f,g,x,y;
+imageExists   BECAUSE THEOREM;
+y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
+y \in Image(f) => Reaches(f,y)   BECAUSE EquivToImpl;
+Reaches(f,y) => <<pre(f,y),y>> \in f   BECAUSE CHOOSE pre(f,y);
+y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE TI;
+<<pre(f,a),a>> \in f => IsDefinedOn(f,pre(f,a))   BECAUSE \E(y <- a);
+\A a : <<pre(f,a),a>> \in f => IsDefinedOn(f,pre(f,a))   BECAUSE GENERALIZATION;
+<<pre(f,y),y>> \in f => IsDefinedOn(f,pre(f,y))   BECAUSE \A(a <- y);
+y \in Image(f) => IsDefinedOn(f,pre(f,y))   BECAUSE TI;
+domainExists   BECAUSE THEOREM;
+pre(f,y) \in Domain(f) <=> IsDefinedOn(f,pre(f,y))   BECAUSE \A(g <- f, x <- pre(f,y));
+IsDefinedOn(f,pre(f,y)) => pre(f,y) \in Domain(f)   BECAUSE EquivToImplReverse;
+y \in Image(f) => pre(f,y) \in Domain(f)   BECAUSE TI;
+domainInc2   BECAUSE GENERALIZATION;
+QED
+
 imageInc == \A g : \A x : \A y : <<x,y>> \in g => y \in Image(g)
 THEOREM imageInc
 PROOF

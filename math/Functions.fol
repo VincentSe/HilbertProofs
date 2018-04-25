@@ -676,6 +676,24 @@ QED
 bijPreApply == \A f : \A a : \A b : \A y : (f \in Bijections(a,b) /\ y \in b) => pre(f,y) \in a
 THEOREM bijPreApply
 PROOF
+VARIABLES a,b,c,d,f,i,x,y;
+domainInc2   BECAUSE THEOREM;
+y \in Image(f) => pre(f,y) \in Domain(f)   BECAUSE \A(f <- f, y <- y);
+\A a : \A b : \A c : \A d : a = b /\ c = d => ((y \in a => pre(f,y) \in c) <=> (y \in b => pre(f,y) \in d))   BECAUSE E_SCHEME;
+Image(f) = b /\ Domain(f) = a => ((y \in Image(f) => pre(f,y) \in Domain(f)) <=> (y \in b => pre(f,y) \in a))
+   BECAUSE \A(a <- Image(f), b <- b, c <- Domain(f), d <- a);
+implyTrueEquiv(h,t,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+Image(f) = b /\ Domain(f) = a => (y \in b => pre(f,y) \in a)   BECAUSE implyTrueEquiv;
+bijectionsExists   BECAUSE THEOREM;
+f \in Bijections(a,b) <=> IsInjection(f) /\ Domain(f) = a /\ Image(f) = b   BECAUSE \A(d <- a, i <- b, f <- f);
+f \in Bijections(a,b) => IsInjection(f) /\ Domain(f) = a /\ Image(f) = b   BECAUSE EquivToImpl;
+IsInjection(f) /\ Domain(f) = a /\ Image(f) = b => Domain(f) = a   BECAUSE DropAndBoth;
+IsInjection(f) /\ Domain(f) = a /\ Image(f) = b => Image(f) = b   BECAUSE DropAndLeft;
+f \in Bijections(a,b) => Domain(f) = a   BECAUSE TI;
+f \in Bijections(a,b) => Image(f) = b   BECAUSE TI;
+f \in Bijections(a,b) => Image(f) = b /\ Domain(f) = a   BECAUSE CIA;
+f \in Bijections(a,b) => (y \in b => pre(f,y) \in a)   BECAUSE TI;
+f \in Bijections(a,b) /\ y \in b => pre(f,y) \in a   BECAUSE HypoImplToAnd;
 bijPreApply   BECAUSE GENERALIZATION;
 QED
 
