@@ -1569,7 +1569,7 @@ QED
 elemOfOrdinalIsOrdinal == \A o : \A x : IsOrdinal(o) /\ x \in o => IsOrdinal(x)
 THEOREM elemOfOrdinalIsOrdinal
 PROOF
-VARIABLES a,b,c,o,x,z;
+VARIABLES a,b,c,o,p,x,z;
 h(o,x) == IsOrdinal(o) /\ x \in o;
 \* Proof that h(o,x) => IsTransitiveSet(x)
 h(o,x) => IsOrdinal(o)   BECAUSE DropAndRight;
@@ -1630,14 +1630,79 @@ hh(a,o,x) => a \notin a   BECAUSE KillMiddleHypo;
 h(o,x) => (a \in x => a \notin a)   BECAUSE HypoAndToImpl;
 \A a : h(o,x) => (a \in x => a \notin a)   BECAUSE GENERALIZATION;
 h(o,x) => (\A a : a \in x => a \notin a)   BECAUSE Q_SCHEME;
-(*
-IsWellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
-   /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
-   /\ (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))
-*)
 
+\* Proof of transitivity of the well-order
+transitX(a,b,c,o,x) == h(o,x) /\ (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c);
+transitX(a,b,c,o,x) => h(o,x)   BECAUSE DropAndRight;
+transitX(a,b,c,o,x) => (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c)   BECAUSE DropAndLeft;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => (a \in x /\ b \in x /\ c \in x)   BECAUSE DropAndRight2;
+transitX(a,b,c,o,x) => (a \in x /\ b \in x /\ c \in x)   BECAUSE TI;
+(a \in x /\ b \in x /\ c \in x) => a \in x   BECAUSE DropAndRight2;
+(a \in x /\ b \in x /\ c \in x) => b \in x   BECAUSE DropAndBoth;
+(a \in x /\ b \in x /\ c \in x) => c \in x   BECAUSE DropAndLeft;
+transitX(a,b,c,o,x) => a \in x   BECAUSE TI;
+transitX(a,b,c,o,x) => b \in x   BECAUSE TI;
+transitX(a,b,c,o,x) => c \in x   BECAUSE TI;
+transitX(a,b,c,o,x) => h(o,x) /\ a \in x   BECAUSE CIA;
+transitX(a,b,c,o,x) => h(o,x) /\ b \in x   BECAUSE CIA;
+transitX(a,b,c,o,x) => h(o,x) /\ c \in x   BECAUSE CIA;
+\A a : hh(a,o,x) => a \in o   BECAUSE GENERALIZATION;
+hh(b,o,x) => b \in o   BECAUSE \A(a <- b);
+hh(c,o,x) => c \in o   BECAUSE \A(a <- c);
+transitX(a,b,c,o,x) => a \in o   BECAUSE TI;
+transitX(a,b,c,o,x) => b \in o   BECAUSE TI;
+transitX(a,b,c,o,x) => c \in o   BECAUSE TI;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in b   BECAUSE DropAndBoth;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => b \in c   BECAUSE DropAndLeft;
+transitX(a,b,c,o,x) => a \in b   BECAUSE TI;
+transitX(a,b,c,o,x) => b \in c   BECAUSE TI;
+transitX(a,b,c,o,x) => a \in o /\ b \in o   BECAUSE CIA;
+transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o   BECAUSE CIA;
+transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o /\ a \in b   BECAUSE CIA;
+transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c   BECAUSE CIA;
+(\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)
+   => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE \A(a <- a, b <- b, c <- c);
+IsWellOrderedByIn(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
+IsOrdinal(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
+h(o,x) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
+transitX(a,b,c,o,x) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
+transitX(a,b,c,o,x) => a \in c   BECAUSE KillMiddleHypo;
+h(o,x) => ((a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE HypoAndToImpl;
+h(o,x) => ((a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE HypoAndToImpl;
+\A c : h(o,x) => ((a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
+h(o,x) => (\A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE Q_SCHEME;
+\A b : h(o,x) => (\A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
+h(o,x) => (\A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE Q_SCHEME;
+\A a : h(o,x) => (\A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
+h(o,x) => (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE Q_SCHEME;
+
+minPart(o,p,x) == h(o,x) /\ p \subseteq x;
+minPart(o,p,x) => h(o,x)   BECAUSE DropAndRight;
+minPart(o,p,x) => p \subseteq x   BECAUSE DropAndLeft;
+minPart(o,p,x) => x \subseteq o   BECAUSE TI;
+transitInclusion   BECAUSE THEOREM;
+p \subseteq x /\ x \subseteq o => p \subseteq o   BECAUSE \A(a <- p, b <- x, c <- o);
+minPart(o,p,x) => p \subseteq x /\ x \subseteq o   BECAUSE CIA;
+minPart(o,p,x) => p \subseteq o   BECAUSE TI;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE DropAndLeft;
+(\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p)) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE \A(p <- p);
+IsWellOrderedByIn(o) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+IsOrdinal(o) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+h(o,x) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+minPart(o,p,x) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+minPart(o,p,x) => (p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE KillMiddleHypo;
+h(o,x) => (p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+\A p : h(o,x) => (p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+h(o,x) => (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+
+h(o,x) => (\A a : a \in x => a \notin a) /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE CIA;
+h(o,x) => IsWellOrderedByIn(x)   BECAUSE CIA;
+h(o,x) => IsOrdinal(x)   BECAUSE CIA;
 elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
 QED
+
+unionOrdinalsIsOrdinal == \A a : (\A x : x \in a => IsOrdinal(x)) => IsOrdinal(UNION a)
+THEOREM unionOrdinalsIsOrdinal
 
 \* The only increasing bijection between two ordinals is the identity function.
 \* Which means two ordinals in increasing bijection are equal.
