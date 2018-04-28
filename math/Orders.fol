@@ -1474,7 +1474,6 @@ AreDisjoint(Ione(u),Itwo(v))   BECAUSE MODUS_PONENS;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v))) => (IsOrder(Ione(u)) /\ IsOrder(Itwo(v)) /\ AreDisjoint(Ione(u), Itwo(v)))   BECAUSE IntroAndLeft;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v))) => IsOrder(Ione(u) \union Itwo(v))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v)) => IsOrder(DO(u,v))   BECAUSE TI;
-
 QED
 
 
@@ -1703,6 +1702,9 @@ QED
 
 unionOrdinalsIsOrdinal == \A a : (\A x : x \in a => IsOrdinal(x)) => IsOrdinal(UNION a)
 THEOREM unionOrdinalsIsOrdinal
+PROOF
+unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
+QED
 
 \* The only increasing bijection between two ordinals is the identity function.
 \* Which means two ordinals in increasing bijection are equal.
@@ -2105,8 +2107,15 @@ ordinalOfWellOrderExists == \A w : IsWellOrder(w)
    => IsOrdinalOfWellOrder(OrdinalOfWellOrder(w), w)
 THEOREM ordinalOfWellOrderExists
 
+\* The +1 operation on ordinals
+successor(o) == o \union { o }
+
+IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
+IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
+   /\ \A x : x \in o => ~IsLimitOrdinal(x)
+
 \* The empty set is the smallest ordinal, called "zero" as an ordinal
-ordinalZero == IsOrdinal( {} )
+ordinalZero == IsFiniteOrdinal( {} )
 THEOREM ordinalZero
 PROOF
 \* Just check implications starting with the false formula x \in {}
@@ -2116,11 +2125,9 @@ emptySetExists   BECAUSE THEOREM;
 a \notin {}   BECAUSE \A(x <- a);
 a \in {} => a \subseteq {}   BECAUSE Explosion;
 IsTransitiveSet( {} )   BECAUSE GENERALIZATION;
-
 \* Proof of irreflexive
 a \in {} => a \notin a   BECAUSE Explosion;
 \A a : a \in {} => a \notin a   BECAUSE GENERALIZATION;
-
 \* Proof of transitive order
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c)
    => (a \in {} /\ b \in {} /\ c \in {})   BECAUSE DropAndRight2;
@@ -2129,39 +2136,33 @@ a \in {} => a \notin a   BECAUSE Explosion;
 a \in {} => a \in c   BECAUSE Explosion;
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE TI;
 \A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE GENERALIZATION;
-
 \* Proof of minimums
 includedInEmpty   BECAUSE THEOREM;
 p \subseteq {} => p = {}   BECAUSE \A(x <- p);
-(p \subseteq {} => p = {}) <=> (~(p \subseteq {}) \/ p = {})   BECAUSE BooleanImplication;
-~(p \subseteq {}) \/ p = {}   BECAUSE MODUS_PONENS;
-p = {} \/ ~(p \subseteq {})   BECAUSE OrSymmetry;
-~~(p = {} \/ ~(p \subseteq {}))   BECAUSE IntroNotNot;
-~(p = {} \/ ~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE Explosion;
-(p # {} /\ ~~(p \subseteq {})) => ~(p = {} \/ ~(p \subseteq {}))   BECAUSE FactorNotOr;
-(p # {} /\ ~~(p \subseteq {})) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
-p \subseteq {} => ~~(p \subseteq {})   BECAUSE IntroNotNot;
-p # {} => p # {}   BECAUSE ImplySelf;
-(p # {} /\ p \subseteq {}) => (p # {} /\ ~~(p \subseteq {}))   BECAUSE MergeImplicationsAnd;
-(p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE TI;
-\A p : (p # {} /\ p \subseteq {}) => \E a : a \in p /\ \A b : b \in p => (b = a \/ a \in b)   BECAUSE GENERALIZATION;
-
-\* Conclude with PT6
+p = {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE IntroOrLeft;
+p \subseteq {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE TI;
+\A p : p \subseteq {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE GENERALIZATION;
 (\A a : a \in {} => a \notin a)
    /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAndRight;
 IsWellOrderedByIn( {} )   BECAUSE IntroAndRight;
+IsOrdinal({})   BECAUSE IntroAndRight;
+\* Proof of finiteness
+IsLimitOrdinal({}) => {} # {}   BECAUSE DropAndBoth;
+contraposNeg(a,b) == (a => ~b) => (b => ~a)   PROPO_TAUTO;
+{} = {} => ~IsLimitOrdinal({})   BECAUSE contraposNeg;
+equalSelf   BECAUSE THEOREM;
+{} = {}   BECAUSE \A(a <- {});
+~IsLimitOrdinal({})   BECAUSE MODUS_PONENS;
+IsOrdinal({}) /\ ~IsLimitOrdinal({})   BECAUSE IntroAndRight;
+a \in {} => ~IsLimitOrdinal(a)   BECAUSE Explosion;
+\A a : a \in {} => ~IsLimitOrdinal(a)   BECAUSE GENERALIZATION;
+x \in {} => ~IsLimitOrdinal(x)   BECAUSE \A(a <- x);
+\A x : x \in {} => ~IsLimitOrdinal(x)   BECAUSE GENERALIZATION;
 ordinalZero   BECAUSE IntroAndRight;
 QED
 
-\* The +1 operation on ordinals
-successor(o) == o \union { o }
-
 ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
-
-IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
-IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
-   /\ \A x : x \in o => ~IsLimitOrdinal(x)
 
 (*
    Definition of the set of natural numbers. They are the finite ordinals.
@@ -2171,7 +2172,7 @@ NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
 THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
-VARIABLES a;
+VARIABLES a,x;
 Infinity   BECAUSE AXIOM;
 ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
 {} \in ca /\ \A x : x \in ca => successor(x) \in ca   BECAUSE CHOOSE ca;
@@ -2179,8 +2180,30 @@ ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
 \E b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- ca);
 cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x);
 \A x : x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE CHOOSE cb;
+
 \* Prove cb is Nat, ie IsFiniteOrdinal(x) => x \in cb.
-\* UNION cb is an ordinal as a union of ordinals. UNION cb
+unionOrdinalsIsOrdinal   BECAUSE THEOREM;
+(\A x : x \in cb => IsOrdinal(x)) => IsOrdinal(UNION cb)   BECAUSE \A(a <- cb);
+x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(x <- x);
+x \in cb => x \in ca /\ IsFiniteOrdinal(x)   BECAUSE EquivToImpl;
+x \in ca /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE DropAndLeft;
+x \in cb => IsFiniteOrdinal(x)   BECAUSE TI;
+IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE DropAndRight2;
+\A a : IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE GENERALIZATION;
+IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(a <- x);
+x \in cb => IsOrdinal(x)   BECAUSE TI;
+\A x : x \in cb => IsOrdinal(x)   BECAUSE GENERALIZATION;
+IsOrdinal(UNION cb)   BECAUSE MODUS_PONENS;
+
+\* Proof that UNION cb is a limit ordinal
+\* {} \in ordinalOne \in cb, so {} \in UNION cb
+{} \in ca   BECAUSE DropAndRight;
+ordinalZero   BECAUSE THEOREM;
+{} \in ca /\ IsFiniteOrdinal( {} )   BECAUSE IntroAndRight;
+{} \in cb <=> {} \in ca /\ IsFiniteOrdinal({})   BECAUSE \A(x <- {});
+{} \in cb   BECAUSE MODUS_PONENS;
+
+\* UNION cb
 \* is a limit ordinal. Any finite ordinal is either in or
 \* contains UNION cb by ordinal comparison. But a finite
 \* ordinal cannot contain a limit ordinal so it is in UNION cb.
