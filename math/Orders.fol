@@ -1506,13 +1506,6 @@ IsWellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
 *)
 IsOrdinal(o) == IsTransitiveSet(o) /\ IsWellOrderedByIn(o)
 
-ordinalTrichotomy == \A o : \A x : \A y : IsOrdinal(o) /\ x \in o /\ y \in o
-   => x \in y \/ x = y \/ y \in x
-THEOREM ordinalTrichotomy
-PROOF
-ordinalTrichotomy   BECAUSE GENERALIZATION;
-QED
-
 ordinalsWellFounded == \A o : IsOrdinal(o) => o \notin o
 THEOREM ordinalsWellFounded
 PROOF
@@ -1556,13 +1549,6 @@ absurdAgain(a,b,c,d) == (a => ~b) => ((a /\ c => (d => b)) => (a /\ c => ~d))   
 IsOrdinal(p) /\ o \in p => p \notin o   BECAUSE absurdAgain;
 IsOrdinal(p) /\ o \in p => o # p /\ p \notin o   BECAUSE CIA;
 ordinalComparesWithOwnElements   BECAUSE GENERALIZATION;
-QED
-
-includedOrdinal == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \subseteq p
-   => o = p \/ o \in p
-THEOREM includedOrdinal
-PROOF
-includedOrdinal   BECAUSE GENERALIZATION;
 QED
 
 elemOfOrdinalIsOrdinal == \A o : \A x : IsOrdinal(o) /\ x \in o => IsOrdinal(x)
@@ -1700,11 +1686,68 @@ h(o,x) => IsOrdinal(x)   BECAUSE CIA;
 elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
-unionOrdinalsIsOrdinal == \A a : (\A x : x \in a => IsOrdinal(x)) => IsOrdinal(UNION a)
+unionOrdinalsIsOrdinal == \A u : (\A x : x \in u => IsOrdinal(x)) => IsOrdinal(UNION u)
 THEOREM unionOrdinalsIsOrdinal
 PROOF
+VARIABLES a,b,u,x,z;
+h(u) == \A x : x \in u => IsOrdinal(x);
+\* Proof that UNION u is transitive
+unionExists   BECAUSE AXIOM;
+(a \in UNION u <=> \E t : t \in u /\ a \in t)   BECAUSE \A(b <- u, z <- a);
+a \in UNION u => \E t : t \in u /\ a \in t   BECAUSE EquivToImpl;
+ct(a,u) == CHOOSE t : t \in u /\ a \in t;
+(\E t : t \in u /\ a \in t) => ct(a,u) \in u /\ a \in ct(a,u)   BECAUSE CHOOSE ct(a,u);
+a \in UNION u => ct(a,u) \in u /\ a \in ct(a,u)   BECAUSE TI;
+ht(a,u) == h(u) /\ a \in UNION u;
+ht(a,u) => h(u)   BECAUSE DropAndRight;
+ht(a,u) => a \in UNION u   BECAUSE DropAndLeft;
+ct(a,u) \in u /\ a \in ct(a,u) => ct(a,u) \in u   BECAUSE DropAndRight;
+a \in UNION u => ct(a,u) \in u   BECAUSE TI;
+ht(a,u) => ct(a,u) \in u   BECAUSE TI;
+h(u) => (ct(a,u) \in u => IsOrdinal(ct(a,u)))   BECAUSE \A(x <- ct(a,u));
+ht(a,u) => (ct(a,u) \in u => IsOrdinal(ct(a,u)))   BECAUSE TI;
+ht(a,u) => IsOrdinal(ct(a,u))   BECAUSE KillMiddleHypo;
+IsOrdinal(ct(a,u)) => IsTransitiveSet(ct(a,u))   BECAUSE DropAndRight;
+IsTransitiveSet(x) => (a \in x => a \subseteq x)  BECAUSE \A(a <- a);
+\A x : IsTransitiveSet(x) => (a \in x => a \subseteq x)  BECAUSE GENERALIZATION;
+IsTransitiveSet(ct(a,u)) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE \A(x <- ct(a,u));
+IsOrdinal(ct(a,u)) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE TI;
+ht(a,u) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE TI;
+ct(a,u) \in u /\ a \in ct(a,u) => a \in ct(a,u)   BECAUSE DropAndLeft;
+a \in UNION u => a \in ct(a,u)   BECAUSE TI;
+ht(a,u) => a \in ct(a,u)   BECAUSE TI;
+ht(a,u) => a \subseteq ct(a,u)  BECAUSE KillMiddleHypo;
+
+\* IsTransitiveSet(UNION u) == \A a : a \in UNION u => a \subseteq UNION u
 unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
 QED
+
+ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
+   => o \in p \/ o = p \/ p \in o
+THEOREM ordinalComparison
+PROOF
+VARIABLES a,c,d,o,p,x,y;
+\* Proof that h(o,p) => IsOrdinal(o \union p)
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p);
+h(o,p) => IsOrdinal(o)   BECAUSE DropAndRight;
+unionOrdinalsIsOrdinal   BECAUSE THEOREM;
+(\A x : x \in {o,p} => IsOrdinal(x)) => IsOrdinal(UNION {o,p})   BECAUSE \A(a <- {o, p});
+pairExists   BECAUSE THEOREM;
+x \in { o, p } <=> (x = o \/ x = p)   BECAUSE \A(c <- o, d <- p, y <- x);
+x \in { o, p } => (x = o \/ x = p)   BECAUSE EquivToImpl;
+\A x : \A o : x = o => (IsOrdinal(x) <=> IsOrdinal(o))   BECAUSE E_SCHEME;
+x = o => (IsOrdinal(x) <=> IsOrdinal(o))   BECAUSE \A(x <- x, o <- o);
+x = p => (IsOrdinal(x) <=> IsOrdinal(p))   BECAUSE \A(x <- x, o <- p);
+(x = o \/ x = p) => (IsOrdinal(x) <=> IsOrdinal(o)) \/ (IsOrdinal(x) <=> IsOrdinal(p))   BECAUSE MergeImplicationsOr;
+x \in {o,p} => (IsOrdinal(x) <=> IsOrdinal(o)) \/ (IsOrdinal(x) <=> IsOrdinal(p))   BECAUSE TI;
+pullHypos(a,b,c,d) == (a => ((b <=> c) \/ (b <=> d))) => (c /\ d => (a => b))   PROPO_TAUTO;
+h(o,p) => (x \in {o,p} => IsOrdinal(x))   BECAUSE pullHypos;
+\A x : h(o,p) => (x \in {o,p} => IsOrdinal(x))   BECAUSE GENERALIZATION;
+h(o,p) => (\A x : x \in {o,p} => IsOrdinal(x))   BECAUSE Q_SCHEME;
+h(o,p) => IsOrdinal(o \union p)   BECAUSE TI;
+ordinalComparison   BECAUSE GENERALIZATION;
+QED
+
 
 \* The only increasing bijection between two ordinals is the identity function.
 \* Which means two ordinals in increasing bijection are equal.
@@ -1820,7 +1863,7 @@ h(o,p) => cm(o,p) \subseteq cf(o,p)[cm(o,p)]   BECAUSE Q_SCHEME;
 \* Proof that h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)] \in p. By ordinal comparison,
 \* cm(o,p) \subseteq cf(o,p)[cm(o,p)] => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)],
 \* and since f[m] # m we have the other case.
-includedOrdinal   BECAUSE THEOREM;
+ordinalComparison   BECAUSE THEOREM;
 IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)]) /\ cm(o,p) \subseteq cf(o,p)[cm(o,p)] => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)]
    BECAUSE \A(o <- cm(o,p), p <- cf(o,p)[cm(o,p)]);
 IsOrdinal(p) /\ cf(o,p)[cm(o,p)] \in p => IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE \A(o <- p, x <- cf(o,p)[cm(o,p)]);
@@ -1860,7 +1903,7 @@ bijPreApply   BECAUSE THEOREM;
    BECAUSE \A(f <- cf(o,p), a <- o, b <- p, y <- cm(o,p));
 h(o,p) => (cf(o,p) \in Bijections(o,p) /\ cm(o,p) \in p)   BECAUSE CIA;
 h(o,p) => pre(cf(o,p),cm(o,p)) \in o   BECAUSE TI;
-ordinalTrichotomy   BECAUSE THEOREM;
+\* ordinalTrichotomy   BECAUSE THEOREM;
 IsOrdinal(o) /\ pre(cf(o,p),cm(o,p)) \in o /\ cm(o,p) \in o
    => pre(cf(o,p),cm(o,p)) \in cm(o,p) \/ pre(cf(o,p),cm(o,p)) = cm(o,p) \/ cm(o,p) \in pre(cf(o,p),cm(o,p))
    BECAUSE \A(o <- o, x <- pre(cf(o,p),cm(o,p)), y <- cm(o,p));
