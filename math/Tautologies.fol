@@ -26,21 +26,31 @@ PROPO_TAUTO IntroAndRight
 IntroAndLeft(a,b) == a => (b => (b /\ a))
 PROPO_TAUTO IntroAndLeft
 
-DropAndRight(a,b) == (a /\ b) => a
-PROPO_TAUTO DropAndRight
+\* Selection of hypotheses.
+\* Select the first hypothesis among 2 hypotheses.
+S12(a,b) == (a /\ b) => a
+PROPO_TAUTO S12
 
-DropAndRight2(a,b,c) == (a /\ b /\ c) => a
-PROPO_TAUTO DropAndRight2
+S22(a,b) == (a /\ b) => b
+PROPO_TAUTO S22
 
-DropAndRight3(a,b,c,d) == (a /\ b /\ c /\ d) => a
-PROPO_TAUTO DropAndRight3
+S13(a,b,c) == (a /\ b /\ c) => a
+PROPO_TAUTO S13
 
-DropAndBoth(a,b,c) == (a /\ b /\ c) => b
-PROPO_TAUTO DropAndBoth
+S23(a,b,c) == (a /\ b /\ c) => b
+PROPO_TAUTO S23
 
-\* DropAndLeft2 is included in DropAndLeft, because of left-associativity
-DropAndLeft(a,b) == (a /\ b) => b
-PROPO_TAUTO DropAndLeft
+\* S33 is S22, because of left-associativity
+
+S14(a,b,c,d) == (a /\ b /\ c /\ d) => a
+PROPO_TAUTO S14
+
+S24(a,b,c,d) == (a /\ b /\ c /\ d) => b
+PROPO_TAUTO S24
+
+\* S34 is S23, because of left-associativity
+
+\* S44 is S22, because of left-associativity
 
 IntroOrLeft(a,b) == a => (a \/ b)
 PROPO_TAUTO IntroOrLeft
@@ -57,6 +67,9 @@ PROPO_TAUTO ContradictionAnd
 \* Transitivity of implication
 TI(a,b,c) == (a => b) => ((b => c) => (a => c))
 PROPO_TAUTO TI
+
+TI2(a,b,c,d) == (a => b) => ((b => c) => (((c => d) => (a => d))))
+PROPO_TAUTO TI2
 
 TIE(a,b,c) == (a => b) => ((b <=> c) => (a => c))
 PROPO_TAUTO TIE
@@ -144,6 +157,9 @@ PROPO_TAUTO CombineImplicationsStart
 \* Combine implications with And
 CIA(a,b,c) == (a => b) => ((a => c) => (a => (b /\ c)))
 PROPO_TAUTO CIA
+
+CIA2(a,b,c,d) == (a => b) => ((a => c) => (((a => d) => (a => (b /\ c /\ d)))))
+PROPO_TAUTO CIA2
 
 HypoImplToAnd(a,b,c) == (a => (b => c)) => ((a /\ b) => c)
 PROPO_TAUTO HypoImplToAnd

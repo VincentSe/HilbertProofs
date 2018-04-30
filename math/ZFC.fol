@@ -198,7 +198,7 @@ chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
 \A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE CHOOSE chooseB(a);
 x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
 x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
-(x \in a /\ x # x) => x # x   BECAUSE DropAndLeft;
+(x \in a /\ x # x) => x # x   BECAUSE S22;
 x \in chooseB(a) => x # x   BECAUSE TI;
 ~(x # x) => x \notin chooseB(a)   BECAUSE Contraposition;
 equalSelf   BECAUSE THEOREM;
@@ -336,7 +336,7 @@ VARIABLES a,b,u,v,x;
 \* By separation in u
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (x \in u /\ x \in v))   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))   BECAUSE \A(a <- u);
-(x \in u /\ x \in v) => x \in u   BECAUSE DropAndRight;
+(x \in u /\ x \in v) => x \in u   BECAUSE S12;
 (x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (x \in b <=> (x \in u /\ x \in v))   BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in u /\ (x \in u /\ x \in v))) => (\E b : \A x : x \in b <=> (x \in u /\ x \in v))   BECAUSE Q_SCHEME;
@@ -514,7 +514,7 @@ z \in ordinalOne => ({} \in x => z \in x)   BECAUSE TI;
 {} \in x => ordinalOne \subseteq x   BECAUSE Q_SCHEME;
 (x \subseteq ordinalOne /\ x # {}) => ordinalOne \subseteq x   BECAUSE TI;
 
-(x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE DropAndRight;
+(x \subseteq ordinalOne /\ x # {}) => x \subseteq ordinalOne   BECAUSE S12;
 (x \subseteq ordinalOne /\ x # {}) => (x \subseteq ordinalOne /\ ordinalOne \subseteq x)   BECAUSE CIA;
 bothInclusions BECAUSE THEOREM;
 (x \subseteq ordinalOne /\ ordinalOne \subseteq x) => x = ordinalOne   BECAUSE \A(a <- x, b <- ordinalOne);
@@ -560,7 +560,7 @@ VARIABLES a,b,c,x,z;
 \E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)   BECAUSE \A(c <- a);
 
 \* Proof that (x \in SUBSET a /\ x = a) <=> x = a
-(x \in SUBSET a /\ x = a) => x = a   BECAUSE DropAndLeft;
+(x \in SUBSET a /\ x = a) => x = a   BECAUSE S22;
 \A x : \A a : x = a => (x \in z <=> a \in z)   BECAUSE E_SCHEME;
 \A z : \A x : \A a : x = a => (x \in z <=> a \in z)   BECAUSE GENERALIZATION;
 x = a => (x \in SUBSET a <=> a \in SUBSET a)   BECAUSE \A(z <- SUBSET a, x <- x, a <- a);
@@ -600,13 +600,13 @@ F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 \* Case x = {}
 (F(c,d,x,y) /\ (x = {} /\ z = c))
    => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))   BECAUSE DistribAndOrRight;
-(x = {} /\ z = c) => x = {}   BECAUSE DropAndRight;
-(x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE DropAndRight;
+(x = {} /\ z = c) => x = {}   BECAUSE S12;
+(x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE S12;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => (x = ordinalOne /\ x = {})   BECAUSE MergeImplicationsAnd;
 (x = ordinalOne /\ x = {}) => ordinalOne = {}   BECAUSE E_SCHEME;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => ordinalOne = {}   BECAUSE TI;
-(x = {} /\ y = c) => y = c   BECAUSE DropAndLeft;
-(x = {} /\ z = c) => z = c   BECAUSE DropAndLeft;
+(x = {} /\ y = c) => y = c   BECAUSE S22;
+(x = {} /\ z = c) => z = c   BECAUSE S22;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => (y = c /\ z = c)   BECAUSE MergeImplicationsAnd;
 (y = c /\ z = c) => y = z   BECAUSE E_SCHEME;
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
@@ -620,13 +620,13 @@ oneIsNotZero   BECAUSE THEOREM;
 \* Case x = ordinalOne
 (F(c,d,x,y) /\ (x = ordinalOne /\ z = d))
    => (((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) \/ ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrRight;
-(x = {} /\ y = c) => x = {}   BECAUSE DropAndRight;
-(x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE DropAndRight;
+(x = {} /\ y = c) => x = {}   BECAUSE S12;
+(x = ordinalOne /\ z = d) => x = ordinalOne   BECAUSE S12;
 ((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => (x = {} /\ x = ordinalOne)   BECAUSE MergeImplicationsAnd;
 (x = {} /\ x = ordinalOne) => {} = ordinalOne   BECAUSE E_SCHEME;
 ((x = {} /\ y = c) /\ (x = ordinalOne /\ z = d)) => {} = ordinalOne   BECAUSE TI;
-(x = ordinalOne /\ y = d) => y = d   BECAUSE DropAndLeft;
-(x = ordinalOne /\ z = d) => z = d   BECAUSE DropAndLeft;
+(x = ordinalOne /\ y = d) => y = d   BECAUSE S22;
+(x = ordinalOne /\ z = d) => z = d   BECAUSE S22;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => (y = d /\ z = d)   BECAUSE MergeImplicationsAnd;
 (y = d /\ z = d) => y = z   BECAUSE E_SCHEME;
 ((x = ordinalOne /\ y = d) /\ (x = ordinalOne /\ z = d)) => y = z   BECAUSE TI;
@@ -651,7 +651,7 @@ x \in ordinalTwo => (x = {} \/ x = ordinalOne)   BECAUSE EquivToImpl;
 (x = {} \/ x = ordinalOne) => x \in ordinalTwo   BECAUSE EquivToImplReverse;
 
 F(c,d,x,y) => (y = c \/ y = d)   BECAUSE MergeImplicationsOr;
-(x \in ordinalTwo /\ F(c,d,x,y)) => F(c,d,x,y)   BECAUSE DropAndLeft;
+(x \in ordinalTwo /\ F(c,d,x,y)) => F(c,d,x,y)   BECAUSE S22;
 (x \in ordinalTwo /\ F(c,d,x,y)) => (y = c \/ y = d)   BECAUSE TI;
 (\E x : x \in ordinalTwo /\ F(c,d,x,y)) => (\E x : y = c \/ y = d)   BECAUSE Q_SCHEME;
 (\E x : y = c \/ y = d) => (y = c \/ y = d)   BECAUSE Q_SCHEME;
@@ -1058,7 +1058,7 @@ IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
 a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-a = fst(<<a,b>>)   BECAUSE DropAndRight;
+a = fst(<<a,b>>)   BECAUSE S12;
 fstExists   BECAUSE GENERALIZATION;
 QED
 
@@ -1075,7 +1075,7 @@ IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
 tupleDecomposition   BECAUSE THEOREM;
 <<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
 a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-b = snd(<<a,b>>)   BECAUSE DropAndLeft;
+b = snd(<<a,b>>)   BECAUSE S22;
 sndExists   BECAUSE GENERALIZATION;
 QED
 
@@ -1145,10 +1145,10 @@ VARIABLES a,b,g,x,y;
    => (\A x : x \in Domain(g) <=> IsDefinedOn(g,x))   BECAUSE CHOOSE Domain(g);
 \A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
-(x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE DropAndLeft;
+(x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE S22;
 nodesInUnionUnion   BECAUSE THEOREM;
 <<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
-(x \in UNION UNION g /\ y \in UNION UNION g) => x \in UNION UNION g   BECAUSE DropAndRight;
+(x \in UNION UNION g /\ y \in UNION UNION g) => x \in UNION UNION g   BECAUSE S12;
 <<x,y>> \in g => x \in UNION UNION g   BECAUSE TI;
 IsDefinedOn(g,x) => \E y : x \in UNION UNION g   BECAUSE Q_SCHEME;
 (\E y : x \in UNION UNION g) => x \in UNION UNION g   BECAUSE Q_SCHEME;
@@ -1175,10 +1175,10 @@ chooseB(g) == CHOOSE b : \A x : x \in b <=> (x \in UNION UNION g /\ Reaches(g,x)
 \A x : x \in chooseB(g) <=> (x \in UNION UNION g /\ Reaches(g,x))   BECAUSE MODUS_PONENS;
 y \in chooseB(g) <=> (y \in UNION UNION g /\ Reaches(g,y))   BECAUSE \A(x <- y);
 
-(y \in UNION UNION g /\ Reaches(g,y)) => Reaches(g,y)   BECAUSE DropAndLeft;
+(y \in UNION UNION g /\ Reaches(g,y)) => Reaches(g,y)   BECAUSE S22;
 nodesInUnionUnion   BECAUSE THEOREM;
 <<x,y>> \in g => (x \in UNION UNION g /\ y \in UNION UNION g)   BECAUSE \A(x <- x, y <- y, g <- g);
-(x \in UNION UNION g /\ y \in UNION UNION g) => y \in UNION UNION g   BECAUSE DropAndLeft;
+(x \in UNION UNION g /\ y \in UNION UNION g) => y \in UNION UNION g   BECAUSE S22;
 <<x,y>> \in g => y \in UNION UNION g   BECAUSE TI;
 (\E x : <<x,y>> \in g) => \E x : y \in UNION UNION g   BECAUSE Q_SCHEME;
 (\E x : y \in UNION UNION g) => y \in UNION UNION g   BECAUSE Q_SCHEME;
@@ -1273,7 +1273,7 @@ VARIABLES a,b,c,f,g,u,x,y,multiX;
 
 imageInc   BECAUSE THEOREM;
 <<u,x>> \in f => x \in Image(f)   BECAUSE \A(g <- f, x <- u, y <- x);
-(u \in multiX /\ <<u,x>> \in f) => <<u,x>> \in f   BECAUSE DropAndLeft;
+(u \in multiX /\ <<u,x>> \in f) => <<u,x>> \in f   BECAUSE S22;
 (u \in multiX /\ <<u,x>> \in f) => x \in Image(f)   BECAUSE TI;
 (\E u : u \in multiX /\ <<u,x>> \in f) => \E u : x \in Image(f)   BECAUSE Q_SCHEME;
 (\E u : x \in Image(f)) => x \in Image(f)   BECAUSE Q_SCHEME;
@@ -1355,7 +1355,7 @@ pairInclusion   BECAUSE THEOREM;
 (u \in i /\ v \in j) => {u,v} \in SUBSET (i \union j)   BECAUSE TI;
 
 \* Proof of (u \in i /\ v \in j) => <<u,v>> \in SUBSET SUBSET (i \union j)
-(u \in i /\ v \in j) => u \in i   BECAUSE DropAndRight;
+(u \in i /\ v \in j) => u \in i   BECAUSE S12;
 (u \in i /\ v \in j) => {u} \in SUBSET (i \union j)   BECAUSE TI;
 (u \in i /\ v \in j) => ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))   BECAUSE CIA;
 ({u} \in SUBSET (i \union j) /\ {u,v} \in SUBSET (i \union j))

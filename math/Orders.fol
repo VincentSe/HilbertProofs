@@ -52,9 +52,9 @@ VARIABLES g,o,x,y;
 domainExists   BECAUSE THEOREM;
 x \in Domain(o) <=> IsDefinedOn(o,x)   BECAUSE \A(g <- o, x <- x);
 x \in Domain(o) => \E y : <<x,y>> \in o   BECAUSE EquivToImpl;
-IsOrder(o) => IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndRight2;
+IsOrder(o) => IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S13;
 IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
-   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndLeft;
+   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S22;
 IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
 (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
    => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE \A(x <- x, y <- y);
@@ -66,7 +66,7 @@ IsDefinedOn(o,x) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
 x \in Domain(o) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
 IsOrder(o) => (x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE SwitchHypos;
 IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o   BECAUSE HypoImplToAnd;
-<<x,x>> \in o /\ <<y,y>> \in o => <<x,x>> \in o   BECAUSE DropAndRight;
+<<x,x>> \in o /\ <<y,y>> \in o => <<x,x>> \in o   BECAUSE S12;
 IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o   BECAUSE TI;
 orderDomainReflexive   BECAUSE GENERALIZATION;
 QED
@@ -123,12 +123,12 @@ VARIABLES a,b,d,f,g,i,j,o,x,y,z;
 injectOrderExists   BECAUSE THEOREM;
 x \in injectOrder(o,f) <=> IsInInjectOrder(o,f,x)   BECAUSE \A(o <- o, f <- f, x <- x);
 x \in injectOrder(o,f) => IsInInjectOrder(o,f,x)   BECAUSE EquivToImpl;
-IsInInjectOrder(o,f,x) => x \in (Image(f) \X Image(f))   BECAUSE DropAndRight;
+IsInInjectOrder(o,f,x) => x \in (Image(f) \X Image(f))   BECAUSE S12;
 cartesianProductExists   BECAUSE THEOREM;
 x \in (Image(f) \X Image(f)) <=> (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f))
    BECAUSE \A(i <- Image(f), j <- Image(f), x <- x);
 x \in (Image(f) \X Image(f)) => (IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f))   BECAUSE EquivToImpl;
-(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => IsCouple(x)   BECAUSE DropAndRight2;
+(IsCouple(x) /\ fst(x) \in Image(f) /\ snd(x) \in Image(f)) => IsCouple(x)   BECAUSE S13;
 x \in (Image(f) \X Image(f)) => IsCouple(x)   BECAUSE TI;
 IsInInjectOrder(o,f,x) => IsCouple(x)   BECAUSE TI;
 x \in injectOrder(o,f) => IsCouple(x)   BECAUSE TI;
@@ -136,9 +136,9 @@ IsGraph(injectOrder(o,f))   BECAUSE GENERALIZATION;
 (IsOrder(o) /\ IsFunction(f)) => IsGraph(injectOrder(o,f))   BECAUSE PT1;
 
 \* Proof that injectOrder(o,f) is reflexive
-IsOrder(o) => (IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))   BECAUSE DropAndRight2;
+IsOrder(o) => (IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))   BECAUSE S13;
 (IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)))
-   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE DropAndLeft;
+   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S22;
 IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
 (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
    => (<<pre(f,x), pre(f,y)>> \in o => (<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o))
@@ -149,7 +149,7 @@ injectOrderCouples   BECAUSE THEOREM;
 <<x,y>> \in injectOrder(o,f) <=> (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)
    BECAUSE \A(o <- o, f <- f, x <- x, y <- y);
 <<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE EquivToImpl;
-(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE DropAndLeft;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE S22;
 <<x,y>> \in injectOrder(o,f) => <<pre(f,x), pre(f,y)>> \in o   BECAUSE TI;
 IsOrder(o) => IsOrder(o)   BECAUSE ImplySelf;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (IsOrder(o) /\ <<pre(f,x), pre(f,y)>> \in o)   BECAUSE MergeImplicationsAnd;
@@ -169,11 +169,11 @@ d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
    \* <<x, x>>
 (x \in Image(f) /\ <<pre(f,x), pre(f,x)>> \in o) => <<x,x>> \in injectOrder(o,f)
    BECAUSE \A(d <- x);
-(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => x \in Image(f)   BECAUSE DropAndRight2;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => x \in Image(f)   BECAUSE S13;
 <<x,y>> \in injectOrder(o,f) => x \in Image(f)   BECAUSE TI;
-(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,x), pre(f,x)>> \in o   BECAUSE DropAndRight;
+(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,x), pre(f,x)>> \in o   BECAUSE S12;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<pre(f,x), pre(f,x)>> \in o   BECAUSE TI;
-(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE S22;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => x \in Image(f)   BECAUSE TI;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (x \in Image(f) /\ <<pre(f,x), pre(f,x)>> \in o)
    BECAUSE CIA;
@@ -182,11 +182,11 @@ d \in Image(f) => (d \in Image(f) /\ d \in Image(f))   BECAUSE AndSelf;
    \* <<y, y>>
 (y \in Image(f) /\ <<pre(f,y), pre(f,y)>> \in o) => <<y,y>> \in injectOrder(o,f)
    BECAUSE \A(d <- y);
-(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => y \in Image(f)   BECAUSE DropAndBoth;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => y \in Image(f)   BECAUSE S23;
 <<x,y>> \in injectOrder(o,f) => y \in Image(f)   BECAUSE TI;
-(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,y), pre(f,y)>> \in o   BECAUSE DropAndLeft;
+(<<pre(f,x), pre(f,x)>> \in o /\ <<pre(f,y), pre(f,y)>> \in o) => <<pre(f,y), pre(f,y)>> \in o   BECAUSE S22;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<pre(f,y), pre(f,y)>> \in o   BECAUSE TI;
-(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndLeft;
+(IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => <<x,y>> \in injectOrder(o,f)   BECAUSE S22;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => y \in Image(f)   BECAUSE TI;
 (IsOrder(o) /\ <<x,y>> \in injectOrder(o,f)) => (y \in Image(f) /\ <<pre(f,y), pre(f,y)>> \in o)
    BECAUSE CIA;
@@ -204,7 +204,7 @@ IsOrder(o) => (\A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o
    BECAUSE GENERALIZATION;
 IsOrder(o) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))
    BECAUSE Q_SCHEME;
-(IsOrder(o) /\ IsFunction(f)) => IsOrder(o)   BECAUSE DropAndRight;
+(IsOrder(o) /\ IsFunction(f)) => IsOrder(o)   BECAUSE S12;
 IsOrder(o) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))   BECAUSE TI;
 (IsOrder(o) /\ IsFunction(f)) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in injectOrder(o,f) /\ <<y,y>> \in injectOrder(o,f)))   BECAUSE TI;
 
@@ -213,7 +213,7 @@ IsOrder(o) => (\A x : \A y : <<x,y>> \in injectOrder(o,f) => (<<x,x>> \in inject
 <<y,x>> \in injectOrder(o,f) => <<pre(f,y), pre(f,x)>> \in o   BECAUSE \A(x <- y, y <- x);
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f))
    => (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o)   BECAUSE MergeImplicationsAnd;
-IsOrder(o) => (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)   BECAUSE DropAndLeft;
+IsOrder(o) => (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)   BECAUSE S22;
 (\A x : \A y : (<<x,y>> \in o /\ <<y,x>> \in o) => x = y)
    => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) => pre(f,x) = pre(f,y))
    BECAUSE \A(x <- pre(f,x), y <- pre(f,y));
@@ -222,8 +222,8 @@ IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,x)>> \in o) =>
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f)) => (IsOrder(o) => pre(f,x) = pre(f,y))   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => pre(f,x) = pre(f,y)   BECAUSE HypoImplToAnd;
 
-(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => <<x,y>> \in injectOrder(o,f)   BECAUSE DropAndRight2;
-(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => (x \in Image(f) /\ y \in Image(f))   BECAUSE DropAndRight;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => <<x,y>> \in injectOrder(o,f)   BECAUSE S13;
+(x \in Image(f) /\ y \in Image(f) /\ <<pre(f,x), pre(f,y)>> \in o) => (x \in Image(f) /\ y \in Image(f))   BECAUSE S12;
 <<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f))   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o)) => (x \in Image(f) /\ y \in Image(f))   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,x>> \in injectOrder(o,f) /\ IsOrder(o))
@@ -248,7 +248,7 @@ massageHypos(a,b,c,d) == ((c /\ d) /\ (a /\ b)) => (a /\ b /\ c /\ d)   PROPO_TA
 <<y,z>> \in injectOrder(o,f) => <<pre(f,y), pre(f,z)>> \in o   BECAUSE \A(x <- y, y <- z);
 (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f))
    => (<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o)   BECAUSE MergeImplicationsAnd;
-IsOrder(o) => (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)   BECAUSE DropAndBoth;
+IsOrder(o) => (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)   BECAUSE S23;
 (\A x : \A y : \A z : (<<x,y>> \in o /\ <<y,z>> \in o) => <<x,z>> \in o)
    => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE \A(x <- pre(f,x), y <- pre(f,y), z <- pre(f,z));
 IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) => <<pre(f,x), pre(f,z)>> \in o)   BECAUSE TI;
@@ -258,12 +258,12 @@ IsOrder(o) => ((<<pre(f,x), pre(f,y)>> \in o /\ <<pre(f,y), pre(f,z)>> \in o) =>
    BECAUSE HypoImplToAnd;
 \A x : \A y : <<x,y>> \in injectOrder(o,f) => (x \in Image(f) /\ y \in Image(f))   BECAUSE GENERALIZATION;
 <<y,z>> \in injectOrder(o,f) => (y \in Image(f) /\ z \in Image(f))   BECAUSE \A(x <- y, y <- z);
-(y \in Image(f) /\ z \in Image(f)) => z \in Image(f)   BECAUSE DropAndLeft;
+(y \in Image(f) /\ z \in Image(f)) => z \in Image(f)   BECAUSE S22;
 <<y,z>> \in injectOrder(o,f) => z \in Image(f)   BECAUSE TI;
-(x \in Image(f) /\ y \in Image(f)) => x \in Image(f)   BECAUSE DropAndRight;
+(x \in Image(f) /\ y \in Image(f)) => x \in Image(f)   BECAUSE S12;
 <<x,y>> \in injectOrder(o,f) => x \in Image(f)   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f)) => (x \in Image(f) /\ z \in Image(f))   BECAUSE MergeImplicationsAnd;
-(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f))   BECAUSE DropAndRight;
+(<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f))   BECAUSE S12;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o)) => (x \in Image(f) /\ z \in Image(f))   BECAUSE TI;
 (<<x,y>> \in injectOrder(o,f) /\ <<y,z>> \in injectOrder(o,f) /\ IsOrder(o))
    => (x \in Image(f) /\ z \in Image(f) /\ <<pre(f,x), pre(f,z)>> \in o)   BECAUSE CIA;
@@ -297,17 +297,17 @@ VARIABLES g,u,v,x,y,z;
 unionInc   BECAUSE THEOREM;
 x \in (u \union v) <=> (x \in u \/ x \in v)   BECAUSE \A(x <- u, y <- v, z <- x);
 x \in (u \union v) => (x \in u \/ x \in v)   BECAUSE EquivToImpl;
-IsOrder(u) => IsGraph(u)   BECAUSE DropAndRight3;
+IsOrder(u) => IsGraph(u)   BECAUSE S14;
 IsGraph(u) => (x \in u => IsCouple(x))   BECAUSE \A(x <- x);
 IsOrder(u) => (x \in u => IsCouple(x))   BECAUSE TI;
-(IsOrder(u) /\ IsOrder(v)) => IsOrder(u)   BECAUSE DropAndRight;
+(IsOrder(u) /\ IsOrder(v)) => IsOrder(u)   BECAUSE S12;
 (IsOrder(u) /\ IsOrder(v)) => (x \in u => IsCouple(x))   BECAUSE TI;
 x \in u => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE SwitchHypos;
 \A u : x \in u => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE GENERALIZATION;
-IsOrder(v) => IsGraph(v)   BECAUSE DropAndRight3;
+IsOrder(v) => IsGraph(v)   BECAUSE S14;
 IsGraph(v) => (x \in v => IsCouple(x))   BECAUSE \A(x <- x);
 IsOrder(v) => (x \in v => IsCouple(x))   BECAUSE TI;
-(IsOrder(u) /\ IsOrder(v)) => IsOrder(v)   BECAUSE DropAndLeft;
+(IsOrder(u) /\ IsOrder(v)) => IsOrder(v)   BECAUSE S22;
 (IsOrder(u) /\ IsOrder(v)) => (x \in v => IsCouple(x))   BECAUSE TI;
 x \in v => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE SwitchHypos;
 (x \in u \/ x \in v) => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE CombineImplicationsStart;
@@ -315,7 +315,7 @@ x \in (u \union v) => ((IsOrder(u) /\ IsOrder(v)) => IsCouple(x))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v)) => (x \in (u \union v) => IsCouple(x))   BECAUSE SwitchHypos;
 \A x : (IsOrder(u) /\ IsOrder(v)) => (x \in (u \union v) => IsCouple(x))   BECAUSE GENERALIZATION;
 (IsOrder(u) /\ IsOrder(v)) => IsGraph(u \union v)   BECAUSE Q_SCHEME;
-(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (IsOrder(u) /\ IsOrder(v))   BECAUSE DropAndRight;
+(IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => (IsOrder(u) /\ IsOrder(v))   BECAUSE S12;
 (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsGraph(u \union v)   BECAUSE TI;
 
 \* Proof that u \union v is reflexive.
@@ -326,7 +326,7 @@ IsOrder(u) => (\A x : \A y : <<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u)) 
 (\A x : \A y : <<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u))
    => (<<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE \A(x <- x, y <- y);
 IsOrder(u) => (<<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE TI;
-(IsOrder(u) /\ IsOrder(v)) => IsOrder(u)   BECAUSE DropAndRight;
+(IsOrder(u) /\ IsOrder(v)) => IsOrder(u)   BECAUSE S12;
 (IsOrder(u) /\ IsOrder(v)) => (<<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v) /\ <<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u)   BECAUSE HypoImplToAnd;
 unionFirstInc   BECAUSE THEOREM;
@@ -336,7 +336,7 @@ unionFirstInc   BECAUSE THEOREM;
 (IsOrder(u) /\ IsOrder(v) /\ <<x,y>> \in u) => (<<x,x>> \in (u \union v) /\ <<y,y>> \in (u \union v))   BECAUSE TI;
 \A u : IsOrder(u) => (<<x,y>> \in u => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE GENERALIZATION;
 IsOrder(v) => (<<x,y>> \in v => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE \A(u <- v);
-(IsOrder(u) /\ IsOrder(v)) => IsOrder(v)   BECAUSE DropAndLeft;
+(IsOrder(u) /\ IsOrder(v)) => IsOrder(v)   BECAUSE S22;
 (IsOrder(u) /\ IsOrder(v)) => (<<x,y>> \in v => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v) /\ <<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v)   BECAUSE HypoImplToAnd;
 unionSecondInc   BECAUSE THEOREM;
@@ -376,7 +376,7 @@ AreDisjoint(u,v) => ~(<<y,y>> \in u /\ <<y,y>> \in v)   BECAUSE TI;
 implyNotAnd(a,b,c) == (a => ~(b /\ c)) => ((a /\ b) => ~c)   PROPO_TAUTO;
 (AreDisjoint(u,v) /\ <<y,y>> \in u) => <<y,y>> \notin v   BECAUSE implyNotAnd;
 
-(<<x,x>> \in v /\ <<y,y>> \in v) => <<y,y>> \in v   BECAUSE DropAndLeft;
+(<<x,x>> \in v /\ <<y,y>> \in v) => <<y,y>> \in v   BECAUSE S22;
 (IsOrder(v) /\ <<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v)   BECAUSE HypoImplToAnd;
 (IsOrder(v) /\ <<x,y>> \in v) => <<y,y>> \in v   BECAUSE TI;
 andContrapos(a,b,c) == ((a /\ b) => c) => (~c => (a => ~b))   PROPO_TAUTO;
@@ -386,7 +386,7 @@ andContrapos(a,b,c) == ((a /\ b) => c) => (~c => (a => ~b))   PROPO_TAUTO;
 
 \A x : \A y : IsOrder(v) => (<<x,y>> \in v => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE GENERALIZATION;
 IsOrder(v) => (<<y,x>> \in v => (<<y,y>> \in v /\ <<x,x>> \in v))   BECAUSE \A(x <- y, y <- x);
-(<<y,y>> \in v /\ <<x,x>> \in v) => <<y,y>> \in v   BECAUSE DropAndRight;
+(<<y,y>> \in v /\ <<x,x>> \in v) => <<y,y>> \in v   BECAUSE S12;
 (IsOrder(v) /\ <<y,x>> \in v) => (<<y,y>> \in v /\ <<x,x>> \in v)   BECAUSE HypoImplToAnd;
 (IsOrder(v) /\ <<y,x>> \in v) => <<y,y>> \in v   BECAUSE TI;
 <<y,y>> \notin v => (IsOrder(v) => <<y,x>> \notin v)   BECAUSE andContrapos;
@@ -407,7 +407,7 @@ killCases(a,b,c,d) == (~a /\ ~b /\ ((c \/ a) /\ (d \/ b))) => (c /\ d)   PROPO_T
    => (<<x,y>> \in u  /\ <<y,x>> \in u)   BECAUSE killCases;
 (AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ (<<x,y>> \in (u \union v) /\ <<y,x>> \in (u \union v)))
    => (<<x,y>> \in u  /\ <<y,x>> \in u)   BECAUSE TI;
-IsOrder(u) => (\A x : \A y : (<<x,y>> \in u /\ <<y,x>> \in u) => x = y)   BECAUSE DropAndLeft;
+IsOrder(u) => (\A x : \A y : (<<x,y>> \in u /\ <<y,x>> \in u) => x = y)   BECAUSE S22;
 (\A x : \A y : (<<x,y>> \in u /\ <<y,x>> \in u) => x = y) => ((<<x,y>> \in u /\ <<y,x>> \in u) => x = y)   BECAUSE \A(x <- x, y <- y);
 IsOrder(u) => ((<<x,y>> \in u /\ <<y,x>> \in u) => x = y)   BECAUSE TI;
 (<<x,y>> \in u /\ <<y,x>> \in u) => (IsOrder(u) => x = y)   BECAUSE SwitchHypos;
@@ -467,7 +467,7 @@ exclMid(a,b,c,d) == (a /\ b /\ c) => ((c /\ d /\ b /\ a) \/ (~d /\ a /\ b))   PR
 \* <<y,z>> \notin u and <<x,y>> \notin u.
 IsOrder(v) => (<<y,z>> \in v => (<<y,y>> \in v /\ <<z,z>> \in v))   BECAUSE \A(x <- y, y <- z);
 (IsOrder(v) /\ <<y,z>> \in v) => (<<y,y>> \in v /\ <<z,z>> \in v)   BECAUSE HypoImplToAnd;
-(<<y,y>> \in v /\ <<z,z>> \in v) => <<y,y>> \in v   BECAUSE DropAndRight;
+(<<y,y>> \in v /\ <<z,z>> \in v) => <<y,y>> \in v   BECAUSE S12;
 (IsOrder(v) /\ <<y,z>> \in v) => <<y,y>> \in v   BECAUSE TI;
 <<y,y>> \notin v => (IsOrder(v) => <<y,z>> \notin v)   BECAUSE andContrapos;
 (AreDisjoint(u,v) /\ <<y,y>> \in u) => (IsOrder(v) => <<y,z>> \notin v)   BECAUSE TI;
@@ -487,7 +487,7 @@ IsOrder(v) => (<<y,z>> \in v => (<<y,y>> \in v /\ <<z,z>> \in v))   BECAUSE \A(x
 (AreDisjoint(u,v) /\ <<y,y>> \in u /\ IsOrder(v) /\ (<<x,y>> \in (u \union v) /\ <<y,z>> \in (u \union v)))
    => (<<x,y>> \in u /\ <<y,z>> \in u)   BECAUSE TI;
 
-IsOrder(u) => (\A x : \A y : \A z : (<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE DropAndBoth;
+IsOrder(u) => (\A x : \A y : \A z : (<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE S23;
 (\A x : \A y : \A z : (<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)
    => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE \A(x <- x, y <- y, z <- z);
 IsOrder(u) => ((<<x,y>> \in u /\ <<y,z>> \in u) => <<x,z>> \in u)   BECAUSE TI;
@@ -570,9 +570,9 @@ x \in woAdd(u,v)
 x \in (Domain(u) \X Domain(v)) <=> (IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v))
    BECAUSE \A(i <- Domain(u), j <- Domain(v), x <- x);
 x \in (Domain(u) \X Domain(v)) => (IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v))   BECAUSE EquivToImpl;
-(IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v)) => IsCouple(x)   BECAUSE DropAndRight2;
+(IsCouple(x) /\ fst(x) \in Domain(u) /\ snd(x) \in Domain(v)) => IsCouple(x)   BECAUSE S13;
 x \in (Domain(u) \X Domain(v)) => IsCouple(x)   BECAUSE TI;
-IsOrder(u \union v) => IsGraph(u \union v)   BECAUSE DropAndRight3;
+IsOrder(u \union v) => IsGraph(u \union v)   BECAUSE S14;
 (\A x : x \in (u \union v) => IsCouple(x)) => (x \in (u \union v) => IsCouple(x))   BECAUSE \A(x <- x);
 IsOrder(u \union v) => (x \in (u \union v) => IsCouple(x))   BECAUSE TI;
 mergeWithHypo(a,b,c,d) == (a => b) => ((c => (d => b)) => ((d \/ a) => (c => b)))   PROPO_TAUTO;
@@ -598,7 +598,7 @@ x \in Domain(u \union v) <=> IsDefinedOn(u \union v, x)   BECAUSE \A(g <- u \uni
 cartesianProductCouples   BECAUSE THEOREM;
 x \in Domain(u) /\ y \in Domain(v) <=> <<x,y>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- x, b <- y);
 <<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u) /\ y \in Domain(v)   BECAUSE EquivToImplReverse;
-x \in Domain(u) /\ y \in Domain(v) => x \in Domain(u)   BECAUSE DropAndRight;
+x \in Domain(u) /\ y \in Domain(v) => x \in Domain(u)   BECAUSE S12;
 <<x,y>> \in Domain(u) \X Domain(v) => x \in Domain(u)   BECAUSE TI;
 x \in Domain(u) <=> IsDefinedOn(u, x)   BECAUSE \A(g <- u, x <- x);
 x \in Domain(u) => \E y : <<x,y>> \in u   BECAUSE EquivToImpl;
@@ -623,20 +623,20 @@ h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in u \union v   BECAUSE TI;
 <<x,x>> \in (u \union v) => <<x,x>> \in woAdd(u,v)   BECAUSE \A(x <- u \union v, y <- Domain(u) \X Domain(v), z <- <<x,x>>);
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v)   BECAUSE TI;
 
-IsOrder(u \union v) => IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE DropAndRight2;
-IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v)) => (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE DropAndLeft;
+IsOrder(u \union v) => IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE S13;
+IsGraph(u \union v) /\ (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v)) => (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE S22;
 IsOrder(u \union v) => (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
 (\A x : \A y : (<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))
    => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE \A(x <- x, y <- y);
 IsOrder(u \union v) => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
 h(u,v) => ((<<x,y>> \in u \union v) => (<<x,x>> \in u \union v /\ <<y,y>> \in u \union v))   BECAUSE TI;
 h(u,v) /\ (<<x,y>> \in u \union v) => <<x,x>> \in u \union v /\ <<y,y>> \in u \union v   BECAUSE HypoImplToAnd;
-<<x,x>> \in u \union v /\ <<y,y>> \in u \union v => <<y,y>> \in u \union v   BECAUSE DropAndLeft;
+<<x,x>> \in u \union v /\ <<y,y>> \in u \union v => <<y,y>> \in u \union v   BECAUSE S22;
 h(u,v) /\ (<<x,y>> \in u \union v) => <<y,y>> \in u \union v   BECAUSE TI;
 \A x : <<x,y>> \in u \union v => x \in Domain(u \union v)   BECAUSE GENERALIZATION;
 <<y,y>> \in u \union v => y \in Domain(u \union v)   BECAUSE \A(x <- y);
 h(u,v) /\ <<x,y>> \in u \union v => y \in Domain(u \union v)   BECAUSE TI;
-x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE DropAndLeft;
+x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE S22;
 <<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(v)   BECAUSE TI;
 x \in Domain(v) <=> IsDefinedOn(v, x)   BECAUSE \A(g <- v, x <- x);
 x \in Domain(v) => \E y : <<x,y>> \in v   BECAUSE EquivToImpl;
@@ -657,7 +657,7 @@ h(u,v) => h(u,v)   BECAUSE ImplySelf;
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => h(u,v) /\ (<<x,y>> \in u \union v \/ <<x,y>> \in Domain(u) \X Domain(v))   BECAUSE MergeImplicationsAnd;
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => y \in Domain(u \union v)   BECAUSE TI;
 IsOrder(u \union v) /\ y \in Domain(u \union v) => <<y,y>> \in u \union v   BECAUSE \A(o <- u \union v, x <- y);
-h(u,v) /\ <<x,y>> \in woAdd(u,v) => h(u,v)   BECAUSE DropAndRight;
+h(u,v) /\ <<x,y>> \in woAdd(u,v) => h(u,v)   BECAUSE S12;
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v)   BECAUSE TI;
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => IsOrder(u \union v) /\ y \in Domain(u \union v)   BECAUSE CIA;
 h(u,v) /\ <<x,y>> \in woAdd(u,v) => <<y,y>> \in u \union v   BECAUSE TI;
@@ -681,7 +681,7 @@ h(u,v) => (\A x : \A y : <<x,y>> \in woAdd(u,v) => <<x,x>> \in woAdd(u,v) /\ <<y
    => ((<<x,y>> \in (u \union v) \/ <<x,y>> \in Domain(u) \X Domain(v))
         /\ (<<y,z>> \in (u \union v) \/ <<y,z>> \in Domain(u) \X Domain(v)))   BECAUSE MergeImplicationsAnd;
 \* Kill the double-glue case
-x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE DropAndLeft;
+x \in Domain(u) /\ y \in Domain(v) => y \in Domain(v)   BECAUSE S22;
 <<x,y>> \in Domain(u) \X Domain(v) => y \in Domain(v)   BECAUSE TI;
 IsOrder(v) /\ y \in Domain(v) => <<y,y>> \in v   BECAUSE \A(o <- v, x <- y);
 IsOrder(v) => IsOrder(v)   BECAUSE ImplySelf;
@@ -730,7 +730,7 @@ h(u,v) /\ (<<x,y>> \in woAdd(u,v) /\ <<y,z>> \in woAdd(u,v))
    BECAUSE pushHypo;
 
 IsOrder(u \union v) => (\A x : \A y : \A z : ((<<x,y>> \in u \union v) /\ (<<y,z>> \in u \union v)) => (<<x,z>> \in u \union v))
-   BECAUSE DropAndBoth;
+   BECAUSE S23;
 (\A x : \A y : \A z : ((<<x,y>> \in u \union v) /\ (<<y,z>> \in u \union v)) => (<<x,z>> \in u \union v))
    => (<<x,y>> \in u \union v /\ <<y,z>> \in u \union v => <<x,z>> \in u \union v)   BECAUSE \A(x <- x, y <- y, z <- z);
 IsOrder(u \union v)
@@ -756,14 +756,14 @@ y \in Domain(v) /\ (<<y,z>> \in u \/ <<y,z>> \in v)
    => (y \in Domain(v) /\ <<y,z>> \in u) \/ <<y,z>> \in v   BECAUSE TI;
 \* Proof first case is impossible
 IsOrder(v) /\ y \in Domain(v) => <<y,y>> \in v   BECAUSE \A(o <- v, x <- y);
-IsOrder(u) => IsGraph(u) /\ (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE DropAndRight2;
+IsOrder(u) => IsGraph(u) /\ (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE S13;
 IsGraph(u) /\ (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))
-   => (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE DropAndLeft;
+   => (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE S22;
 IsOrder(u) => (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u))   BECAUSE TI;
 (\A x : \A y : (<<x,y>> \in u) => (<<x,x>> \in u /\ <<y,y>> \in u)) => ((<<y,z>> \in u) => (<<y,y>> \in u /\ <<z,z>> \in u))   BECAUSE \A(x <- y, y <- z);
 IsOrder(u) => ((<<y,z>> \in u) => (<<y,y>> \in u /\ <<z,z>> \in u))   BECAUSE TI;
 IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE HypoImplToAnd;
-<<y,y>> \in u /\ <<z,z>> \in u => <<y,y>> \in u   BECAUSE DropAndRight;
+<<y,y>> \in u /\ <<z,z>> \in u => <<y,y>> \in u   BECAUSE S12;
 IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u   BECAUSE TI;
 (IsOrder(u) /\ <<y,z>> \in u) /\ (IsOrder(v) /\ y \in Domain(v)) => <<y,y>> \in u /\ <<y,y>> \in v   BECAUSE MergeImplicationsAnd;
 ~(<<y,y>> \in u /\ <<y,y>> \in v) => ~((IsOrder(u) /\ <<y,z>> \in u) /\ (IsOrder(v) /\ y \in Domain(v)))   BECAUSE Contraposition;
@@ -780,7 +780,7 @@ selectHypo(a,b,c,d) == (a => b) => (c /\ (a /\ d) => b)   PROPO_TAUTO;
 h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => x \in Domain(u)   BECAUSE selectHypo;
 \A u : IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE GENERALIZATION;
 IsOrder(v) /\ <<y,z>> \in v => <<y,y>> \in v /\ <<z,z>> \in v   BECAUSE \A(u <- v);
-<<y,y>> \in v /\ <<z,z>> \in v => <<z,z>> \in v   BECAUSE DropAndLeft;
+<<y,y>> \in v /\ <<z,z>> \in v => <<z,z>> \in v   BECAUSE S22;
 IsOrder(v) /\ <<y,z>> \in v => <<z,z>> \in v   BECAUSE TI;
 z \in Domain(v) <=> IsDefinedOn(v, z)   BECAUSE \A(g <- v, x <- z);
 (\E y : <<z,y>> \in v) => z \in Domain(v)   BECAUSE EquivToImplReverse;
@@ -812,7 +812,7 @@ h(u,v) /\ (<<x,y>> \in Domain(u) \X Domain(v) /\ <<y,z>> \in u \union v) => <<x,
 <<y,z>> \in Domain(u) \X Domain(v) => <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE ImplySelf;
 y \in Domain(u) /\ z \in Domain(v) <=> <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- y, b <- z);
 <<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u) /\ z \in Domain(v)   BECAUSE EquivToImplReverse;
-y \in Domain(u) /\ z \in Domain(v) => y \in Domain(u)   BECAUSE DropAndRight;
+y \in Domain(u) /\ z \in Domain(v) => y \in Domain(u)   BECAUSE S12;
 <<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u)   BECAUSE TI;
 <<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)
    => (<<x,y>> \in u \/ <<x,y>> \in v) /\ y \in Domain(u)   BECAUSE MergeImplicationsAnd;
@@ -822,14 +822,14 @@ semiDistribRight(a,b,c) == (b \/ c) /\ a => (b \/ (c /\ a))   PROPO_TAUTO;
 <<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)
    => <<x,y>> \in u \/ (<<x,y>> \in v /\ y \in Domain(u))   BECAUSE TI; \* second case is impossible
 IsOrder(u) /\ y \in Domain(u) => <<y,y>> \in u   BECAUSE \A(o <- u, x <- y);
-IsOrder(v) => IsGraph(v) /\ (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE DropAndRight2;
+IsOrder(v) => IsGraph(v) /\ (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE S13;
 IsGraph(v) /\ (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))
-   => (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE DropAndLeft;
+   => (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE S22;
 IsOrder(v) => (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE TI;
 (\A x : \A y : (<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v)) => ((<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE \A(x <- x, y <- y);
 IsOrder(v) => ((<<x,y>> \in v) => (<<x,x>> \in v /\ <<y,y>> \in v))   BECAUSE TI;
 IsOrder(v) /\ <<x,y>> \in v => <<x,x>> \in v /\ <<y,y>> \in v   BECAUSE HypoImplToAnd;
-<<x,x>> \in v /\ <<y,y>> \in v => <<y,y>> \in v   BECAUSE DropAndLeft;
+<<x,x>> \in v /\ <<y,y>> \in v => <<y,y>> \in v   BECAUSE S22;
 IsOrder(v) /\ <<x,y>> \in v => <<y,y>> \in v   BECAUSE TI;
 (IsOrder(v) /\ <<x,y>> \in v) /\ (IsOrder(u) /\ y \in Domain(u)) => <<y,y>> \in v /\ <<y,y>> \in u   BECAUSE MergeImplicationsAnd;
 <<y,y>> \in v /\ <<y,y>> \in u => <<y,y>> \in u /\ <<y,y>> \in v  BECAUSE AndSymmetry;
@@ -846,13 +846,13 @@ distribNotBis(a,b) == ~a /\ (b \/ a) => b   PROPO_TAUTO;
 h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => <<x,y>> \in u   BECAUSE TI;
 y \in Domain(u) /\ z \in Domain(v) <=> <<y,z>> \in Domain(u) \X Domain(v)   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- y, b <- z);
 <<y,z>> \in Domain(u) \X Domain(v) => y \in Domain(u) /\ z \in Domain(v)   BECAUSE EquivToImplReverse;
-y \in Domain(u) /\ z \in Domain(v) => z \in Domain(v)   BECAUSE DropAndLeft;
+y \in Domain(u) /\ z \in Domain(v) => z \in Domain(v)   BECAUSE S22;
 <<y,z>> \in Domain(u) \X Domain(v) => z \in Domain(v)   BECAUSE TI;
 selectHypoBis(a,b,c,d) == (d => b) => (c /\ (a /\ d) => b)   PROPO_TAUTO;
 h(u,v) /\ (<<x,y>> \in u \union v /\ <<y,z>> \in Domain(u) \X Domain(v)) => z \in Domain(v)   BECAUSE selectHypoBis;
 \A y : \A z : IsOrder(u) /\ <<y,z>> \in u => <<y,y>> \in u /\ <<z,z>> \in u   BECAUSE GENERALIZATION;
 IsOrder(u) /\ <<x,y>> \in u => <<x,x>> \in u /\ <<y,y>> \in u   BECAUSE \A(y <- x, z <- y);
-<<x,x>> \in u /\ <<y,y>> \in u => <<x,x>> \in u   BECAUSE DropAndRight;
+<<x,x>> \in u /\ <<y,y>> \in u => <<x,x>> \in u   BECAUSE S12;
 IsOrder(u) /\ <<x,y>> \in u => <<x,x>> \in u   BECAUSE TI;
 x \in Domain(u) <=> IsDefinedOn(u, x)   BECAUSE \A(g <- u, x <- x);
 (\E y : <<x,y>> \in u) => x \in Domain(u)   BECAUSE EquivToImplReverse;
@@ -946,7 +946,7 @@ y \in Domain(v) /\ <<y,x>> \in u /\ (IsOrder(v) /\ IsOrder(u)) => ~AreDisjoint(u
 pullH(a,b,c,d) == (a /\ (b /\ c) => ~d) => (a => ~(c /\ b /\ d))   PROPO_TAUTO;
 (y \in Domain(v) /\ <<y,x>> \in u) => ~h(u,v)   BECAUSE pullH;
 
-<<x,x>> \in u /\ <<y,y>> \in u => <<y,y>> \in u   BECAUSE DropAndLeft;
+<<x,x>> \in u /\ <<y,y>> \in u => <<y,y>> \in u   BECAUSE S22;
 IsOrder(u) /\ <<x,y>> \in u => <<y,y>> \in u   BECAUSE TI;
 \A u : \A x : \A y : IsOrder(u) /\ <<x,y>> \in u => <<y,y>> \in u   BECAUSE GENERALIZATION;
 IsOrder(v) /\ <<y,x>> \in v => <<x,x>> \in v   BECAUSE \A(u <- v, x <- y, y <- x);
@@ -976,7 +976,7 @@ pullHbis(a,b,c,d) == (a /\ (b /\ c) => ~d) => (a => ~(b /\ c /\ d))   PROPO_TAUT
 <<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v) => <<y,x>> \in Domain(u) \X Domain(v) /\ <<x,y>> \in u \union v   BECAUSE AndSymmetry;
 <<x,y>> \in u \union v /\ <<y,x>> \in Domain(u) \X Domain(v) => ~h(u,v)   BECAUSE TI;
 
-IsOrder(u \union v) => (\A x : \A y : ((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE DropAndLeft;
+IsOrder(u \union v) => (\A x : \A y : ((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE S22;
 (\A x : \A y : ((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)
    => (((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE \A(x <- x, y <- y);
 IsOrder(u \union v) => (((<<x,y>> \in u \union v) /\ (<<y,x>> \in u \union v)) => x = y)   BECAUSE TI;
@@ -1040,7 +1040,7 @@ killCase(a,b) == ((a \/ b) /\ ~a) => b   PROPO_TAUTO;
 pullHypo(a,b,c,d) == (a => ((b /\ c) => d)) => ((a /\ b) => (c => d))   PROPO_TAUTO;
 ((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ ma(a,o) \in a)
    => (x \in b => <<ma(a,o), x>> \in o)   BECAUSE pullHypo;
-IsMinimum(ma(a,o), a, o) => ma(a,o) \in a   BECAUSE DropAndRight;
+IsMinimum(ma(a,o), a, o) => ma(a,o) \in a   BECAUSE S12;
 (EmptyOrHasMinimum(a,o) /\ a # {}) => ma(a,o) \in a   BECAUSE TI;
 (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) => (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)   BECAUSE ImplySelf;
 ((\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ (EmptyOrHasMinimum(a,o) /\ a # {}))
@@ -1049,10 +1049,10 @@ IsMinimum(ma(a,o), a, o) => ma(a,o) \in a   BECAUSE DropAndRight;
    => (x \in b => <<ma(a,o), x>> \in o)   BECAUSE TI;
 
    \* ma(a,o) is the minimum of (a \union b)
-IsMinimum(ma(a,o), a, o) => \A x : x \in a => <<ma(a,o),x>> \in o   BECAUSE DropAndLeft;
+IsMinimum(ma(a,o), a, o) => \A x : x \in a => <<ma(a,o),x>> \in o   BECAUSE S22;
 (\A x : x \in a => <<ma(a,o),x>> \in o) => (x \in a => <<ma(a,o),x>> \in o)   BECAUSE \A(x <- x);
 IsMinimum(ma(a,o), a, o) => (x \in a => <<ma(a,o),x>> \in o)   BECAUSE TI;
-(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)) => EmptyOrHasMinimum(a,o)   BECAUSE DropAndRight;
+(EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o)) => EmptyOrHasMinimum(a,o)   BECAUSE S12;
 a # {} => a # {}   BECAUSE ImplySelf;
 (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
    => (EmptyOrHasMinimum(a,o) /\ a # {})   BECAUSE MergeImplicationsAnd;
@@ -1117,7 +1117,7 @@ a = {} => (EmptyOrHasMinimum(a \union b,o) <=> EmptyOrHasMinimum(b,o))   BECAUSE
 (EmptyOrHasMinimum(b,o) /\ a = {}) => EmptyOrHasMinimum(a \union b, o)   BECAUSE TI;
 EmptyOrHasMinimum(b,o) => (a = {} => EmptyOrHasMinimum(a \union b, o))   BECAUSE HypoAndToImpl;
 (EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
-   => EmptyOrHasMinimum(b,o)   BECAUSE DropAndBoth;
+   => EmptyOrHasMinimum(b,o)   BECAUSE S23;
 (EmptyOrHasMinimum(a,o) /\ EmptyOrHasMinimum(b,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o))
    => (a = {} => EmptyOrHasMinimum(a \union b, o))   BECAUSE TI;
 
@@ -1162,13 +1162,13 @@ woAdd(u,v) == u \union v \union (Domain(u) \X Domain(v)); \* Shorter name
 disjointOrderAddition   BECAUSE THEOREM;
 (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v)) => IsOrder(u \union v \union (Domain(u) \X Domain(v)))
    BECAUSE \A(u <- u, v <- v);
-(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsWellOrder(u)   BECAUSE DropAndRight2;
-IsWellOrder(u) => IsOrder(u)   BECAUSE DropAndRight;
+(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsWellOrder(u)   BECAUSE S13;
+IsWellOrder(u) => IsOrder(u)   BECAUSE S12;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsOrder(u)   BECAUSE TI;
-(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsWellOrder(v)   BECAUSE DropAndBoth;
-IsWellOrder(v) => IsOrder(v)   BECAUSE DropAndRight;
+(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsWellOrder(v)   BECAUSE S23;
+IsWellOrder(v) => IsOrder(v)   BECAUSE S12;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsOrder(v)   BECAUSE TI;
-(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => AreDisjoint(u,v)   BECAUSE DropAndLeft;
+(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => AreDisjoint(u,v)   BECAUSE S22;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => (IsOrder(u) /\ IsOrder(v))   BECAUSE CIA;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => (IsOrder(u) /\ IsOrder(v) /\ AreDisjoint(u,v))
    BECAUSE CIA;
@@ -1191,7 +1191,7 @@ unionInc   BECAUSE THEOREM;
 cartesianProductCouples   BECAUSE THEOREM;
 (z \in Domain(u) /\ y \in Domain(v)) <=> <<z,y>> \in (Domain(u) \X Domain(v))   BECAUSE \A(x <- Domain(u), y <- Domain(v), a <- z, b <- y);
 <<z,y>> \in (Domain(u) \X Domain(v)) => (z \in Domain(u) /\ y \in Domain(v))   BECAUSE EquivToImplReverse;
-(z \in Domain(u) /\ y \in Domain(v)) => z \in Domain(u)   BECAUSE DropAndRight;
+(z \in Domain(u) /\ y \in Domain(v)) => z \in Domain(u)   BECAUSE S12;
 <<z,y>> \in (Domain(u) \X Domain(v)) => z \in Domain(u)   BECAUSE TI;
 <<z,y>> \in (u \union v) <=> (<<z,y>> \in u \/ <<z,y>> \in v)   BECAUSE \A(x <- u, y <- v, z <- <<z,y>>);
 <<z,y>> \in (u \union v) => (<<z,y>> \in u \/ <<z,y>> \in v)   BECAUSE EquivToImpl;
@@ -1234,7 +1234,7 @@ part \subseteq Domain(woAdd(u,v)) => (part \intersect (Domain(u) \union Domain(v
 part \subseteq (Domain(u) \union Domain(v)) => part = ((part \intersect Domain(u)) \union (part \intersect Domain(v)))   BECAUSE TI;
 part \subseteq Domain(woAdd(u,v)) => part = ((part \intersect Domain(u)) \union (part \intersect Domain(v)))   BECAUSE TI;
 
-IsWellOrder(u) => (\A p : p \subseteq Domain(u) => EmptyOrHasMinimum(p, u))   BECAUSE DropAndLeft;
+IsWellOrder(u) => (\A p : p \subseteq Domain(u) => EmptyOrHasMinimum(p, u))   BECAUSE S22;
 (\A p : p \subseteq Domain(u) => EmptyOrHasMinimum(p, u))
    => ((part \intersect Domain(u)) \subseteq Domain(u) => EmptyOrHasMinimum(part \intersect Domain(u), u))   BECAUSE \A(p <- part \intersect Domain(u));
 IsWellOrder(u)
@@ -1244,7 +1244,7 @@ IsWellOrder(u)
 intersectionExists   BECAUSE THEOREM;
 z \in (part \intersect Domain(u)) <=> (z \in part /\ z \in Domain(u))   BECAUSE \A(u <- part, v <- Domain(u), x <- z);
 z \in (part \intersect Domain(u)) => (z \in part /\ z \in Domain(u))   BECAUSE EquivToImpl;
-(z \in part /\ z \in Domain(u)) => z \in Domain(u)   BECAUSE DropAndLeft;
+(z \in part /\ z \in Domain(u)) => z \in Domain(u)   BECAUSE S22;
 z \in (part \intersect Domain(u)) => z \in Domain(u)   BECAUSE TI;
 (part \intersect Domain(u)) \subseteq Domain(u)   BECAUSE GENERALIZATION;
 IsWellOrder(u) => EmptyOrHasMinimum(part \intersect Domain(u), u)   BECAUSE MODUS_PONENS;
@@ -1253,7 +1253,7 @@ IsWellOrder(v) => EmptyOrHasMinimum(part \intersect Domain(v), v)   BECAUSE \A(u
 
 \* Proof of EmptyOrHasMinimum(part \intersect Domain(u), u) => EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v))
 IsMinimum(m, part \intersect Domain(u), u)
-   => \A x : x \in (part \intersect Domain(u)) => <<m,x>> \in u   BECAUSE DropAndLeft;
+   => \A x : x \in (part \intersect Domain(u)) => <<m,x>> \in u   BECAUSE S22;
 (\A x : x \in (part \intersect Domain(u)) => <<m,x>> \in u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in u)   BECAUSE \A(x <- x);
 IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in u)   BECAUSE TI;
 (IsMinimum(m, part \intersect Domain(u), u) /\ x \in (part \intersect Domain(u))) => <<m,x>> \in u   BECAUSE HypoImplToAnd;
@@ -1274,7 +1274,7 @@ x \in u => x \in woAdd(u,v)   BECAUSE TI;
 IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
 \A x : IsMinimum(m, part \intersect Domain(u), u) => (x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
 IsMinimum(m, part \intersect Domain(u), u) => (\A x : x \in (part \intersect Domain(u)) => <<m,x>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
-IsMinimum(m, part \intersect Domain(u), u) => m \in (part \intersect Domain(u))   BECAUSE DropAndRight;
+IsMinimum(m, part \intersect Domain(u), u) => m \in (part \intersect Domain(u))   BECAUSE S12;
 IsMinimum(m, part \intersect Domain(u), u) => IsMinimum(m, part \intersect Domain(u), woAdd(u,v))
    BECAUSE CIA;
 (\E m : IsMinimum(m, part \intersect Domain(u), u)) => \E m : IsMinimum(m, part \intersect Domain(u), woAdd(u,v))
@@ -1284,7 +1284,7 @@ EmptyOrHasMinimum(part \intersect Domain(u), u) => EmptyOrHasMinimum(part \inter
 IsWellOrder(u) => EmptyOrHasMinimum(part \intersect Domain(u), woAdd(u,v))   BECAUSE TI;
 
 IsMinimum(m, part \intersect Domain(v), v)
-   => \A x : x \in (part \intersect Domain(v)) => <<m,x>> \in v   BECAUSE DropAndLeft;
+   => \A x : x \in (part \intersect Domain(v)) => <<m,x>> \in v   BECAUSE S22;
 (\A x : x \in (part \intersect Domain(v)) => <<m,x>> \in v) => (x \in (part \intersect Domain(v)) => <<m,x>> \in v)   BECAUSE \A(x <- x);
 IsMinimum(m, part \intersect Domain(v), v) => (x \in (part \intersect Domain(v)) => <<m,x>> \in v)   BECAUSE TI;
 (IsMinimum(m, part \intersect Domain(v), v) /\ x \in (part \intersect Domain(v))) => <<m,x>> \in v   BECAUSE HypoImplToAnd;
@@ -1297,7 +1297,7 @@ x \in v => x \in woAdd(u,v)   BECAUSE TI;
 IsMinimum(m, part \intersect Domain(v), v) => (x \in (part \intersect Domain(v)) => <<m,x>> \in woAdd(u,v))   BECAUSE HypoAndToImpl;
 \A x : IsMinimum(m, part \intersect Domain(v), v) => (x \in (part \intersect Domain(v)) => <<m,x>> \in woAdd(u,v))   BECAUSE GENERALIZATION;
 IsMinimum(m, part \intersect Domain(v), v) => (\A x : x \in (part \intersect Domain(v)) => <<m,x>> \in woAdd(u,v))   BECAUSE Q_SCHEME;
-IsMinimum(m, part \intersect Domain(v), v) => m \in (part \intersect Domain(v))   BECAUSE DropAndRight;
+IsMinimum(m, part \intersect Domain(v), v) => m \in (part \intersect Domain(v))   BECAUSE S12;
 IsMinimum(m, part \intersect Domain(v), v) => IsMinimum(m, part \intersect Domain(v), woAdd(u,v))
    BECAUSE CIA;
 (\E m : IsMinimum(m, part \intersect Domain(v), v)) => \E m : IsMinimum(m, part \intersect Domain(v), woAdd(u,v))
@@ -1351,7 +1351,7 @@ part \subseteq Domain(woAdd(u,v)) => part \subseteq Domain(woAdd(u,v))   BECAUSE
 (IsWellOrder(u) /\ IsWellOrder(v)) => (p \subseteq Domain(woAdd(u,v)) => EmptyOrHasMinimum(p, woAdd(u,v)))   BECAUSE \A(part <- p);
 \A p : (IsWellOrder(u) /\ IsWellOrder(v)) => (p \subseteq Domain(woAdd(u,v)) => EmptyOrHasMinimum(p, woAdd(u,v)))   BECAUSE GENERALIZATION;
 (IsWellOrder(u) /\ IsWellOrder(v)) => (\A p : p \subseteq Domain(woAdd(u,v)) => EmptyOrHasMinimum(p, woAdd(u,v)))   BECAUSE Q_SCHEME;
-(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => (IsWellOrder(u) /\ IsWellOrder(v))   BECAUSE DropAndRight;
+(IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => (IsWellOrder(u) /\ IsWellOrder(v))   BECAUSE S12;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => (\A p : p \subseteq Domain(woAdd(u,v)) => EmptyOrHasMinimum(p, woAdd(u,v)))   BECAUSE TI;
 (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v)) => IsWellOrder(woAdd(u,v))   BECAUSE CIA;
 disjointWOAddition   BECAUSE GENERALIZATION;
@@ -1390,8 +1390,8 @@ identity(Domain(u)) \in Bijections(Domain(u),Domain(u))
    BECAUSE EquivToImpl;
 IsInjection(identity(Domain(u))) /\ Domain(identity(Domain(u))) = Domain(u) /\ Image(identity(Domain(u))) = Domain(u)
    BECAUSE MODUS_PONENS;
-IsInjection(identity(Domain(u)))   BECAUSE DropAndRight2;
-IsFunction(identity(Domain(u)))   BECAUSE DropAndRight;
+IsInjection(identity(Domain(u)))   BECAUSE S13;
+IsFunction(identity(Domain(u)))   BECAUSE S12;
 constFunc   BECAUSE THEOREM;
 IsFunction(const(Domain(u),y))   BECAUSE \A(d <- Domain(u), c <- y);
 IsFunction(identity(Domain(u))) /\ IsFunction(const(Domain(u),y))   BECAUSE IntroAndRight;
@@ -1415,18 +1415,18 @@ injectOrderExists   BECAUSE THEOREM;
 z \in Ione(u) <=> IsInInjectOrder(u,pasteTags(Domain(u),{}),z)   BECAUSE \A(o <- u, f <- pasteTags(Domain(u),{}), x <- z);
 z \in Itwo(v) <=> IsInInjectOrder(v,pasteTags(Domain(v),ordinalOne),z)   BECAUSE \A(o <- v, f <- pasteTags(Domain(v),ordinalOne), x <- z);
 IsInInjectOrder(u,pasteTags(Domain(u),tag),z)
-   => z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag)))   BECAUSE DropAndRight;
+   => z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag)))   BECAUSE S12;
 cartesianProductExists   BECAUSE THEOREM;
 z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag))) <=> (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))
    BECAUSE \A(i <- Image(pasteTags(Domain(u),tag)), j <- Image(pasteTags(Domain(u),tag)), x <- z);
 z \in (Image(pasteTags(Domain(u),tag)) \X Image(pasteTags(Domain(u),tag))) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))   BECAUSE EquivToImpl;
 IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => (IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag)))   BECAUSE TI;
-(IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag))) => snd(z) \in Image(pasteTags(Domain(u),tag))   BECAUSE DropAndLeft;
+(IsCouple(z) /\ fst(z) \in Image(pasteTags(Domain(u),tag)) /\ snd(z) \in Image(pasteTags(Domain(u),tag))) => snd(z) \in Image(pasteTags(Domain(u),tag))   BECAUSE S22;
 IsInInjectOrder(u,pasteTags(Domain(u),tag),z) => snd(z) \in Image(pasteTags(Domain(u),tag))   BECAUSE TI;
 productFuncVal   BECAUSE THEOREM;
 <<x,snd(z)>> \in pasteTags(Domain(u),tag) => (IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),tag))
    BECAUSE \A(f <- identity(Domain(u)), g <- const(Domain(u),tag), x <- x, y <- snd(z));
-(IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),tag)) => <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE DropAndLeft;
+(IsCouple(snd(z)) /\ <<x,fst(snd(z))>> \in identity(Domain(u)) /\ <<x,snd(snd(z))>> \in const(Domain(u),tag)) => <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE S22;
 <<x,snd(z)>> \in pasteTags(Domain(u),tag) => <<x,snd(snd(z))>> \in const(Domain(u),tag)   BECAUSE TI;
 imageExists   BECAUSE THEOREM;
 snd(z) \in Image(pasteTags(Domain(u),tag)) <=> Reaches(pasteTags(Domain(u),tag),snd(z))   BECAUSE \A(g <- pasteTags(Domain(u),tag), y <- snd(z));
@@ -1438,7 +1438,7 @@ constExists   BECAUSE THEOREM;
 <<x,snd(snd(z))>> \in const(Domain(u),tag) <=> (IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)   BECAUSE \A(d <- Domain(u), c <- tag, x <- <<x,snd(snd(z))>>);
 <<x,snd(snd(z))>> \in const(Domain(u),tag) => (IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)   BECAUSE EquivToImpl;
 (IsCouple(<<x,snd(snd(z))>>) /\ fst(<<x,snd(snd(z))>>) \in Domain(u) /\ snd(<<x,snd(snd(z))>>) = tag)
-   => snd(<<x,snd(snd(z))>>) = tag   BECAUSE DropAndLeft;
+   => snd(<<x,snd(snd(z))>>) = tag   BECAUSE S22;
 <<x,snd(snd(z))>> \in const(Domain(u),tag) => snd(<<x,snd(snd(z))>>) = tag   BECAUSE TI;
 sndExists   BECAUSE THEOREM;
 snd(snd(z)) = snd(<<x,snd(snd(z))>>)   BECAUSE \A(a <- x, b <- snd(snd(z)));
@@ -1494,8 +1494,9 @@ IsTransitiveSet(x) == \A a : a \in x => a \subseteq x
    those sets start with the natural numbers and \in will be the definition of <.
 *)
 IsMinimumForIn(m, part) == m \in part /\ \A b : b \in part => (b = m \/ m \in b)
+IsTransitiveIn(x) == \A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c
 IsWellOrderedByIn(x) == (\A a : a \in x => a \notin a) \* irreflexive
-   /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c) \* transitive
+   /\ IsTransitiveIn(x)
    /\ (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))
 
 (*
@@ -1510,8 +1511,8 @@ ordinalsWellFounded == \A o : IsOrdinal(o) => o \notin o
 THEOREM ordinalsWellFounded
 PROOF
 VARIABLES a,o;
-IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE DropAndLeft;
-IsWellOrderedByIn(o) => (\A a : a \in o => a \notin a)   BECAUSE DropAndRight2;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => (\A a : a \in o => a \notin a)   BECAUSE S13;
 IsOrdinal(o) => (\A a : a \in o => a \notin a)   BECAUSE TI;
 (\A a : a \in o => a \notin a) => (o \in o => o \notin o)   BECAUSE \A(a <- o);
 IsOrdinal(o) => (o \in o => o \notin o)   BECAUSE TI;
@@ -1539,7 +1540,7 @@ o = p => (o \in p <=> p \in p)   BECAUSE \A(x <- p);
 IsOrdinal(p) /\ o = p => p \notin p /\ (o \in p <=> p \in p)   BECAUSE MergeImplicationsAnd;
 absurd(a,b,c,d) == (a /\ b => ~c /\ (d <=> c)) => (a /\ d => ~b)   PROPO_TAUTO;
 IsOrdinal(p) /\ o \in p => o # p   BECAUSE absurd;
-IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE DropAndRight;
+IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE S12;
 IsTransitiveSet(p) => (o \in p => o \subseteq p)   BECAUSE \A(a <- o);
 IsOrdinal(p) => (o \in p => o \subseteq p)   BECAUSE TI;
 IsOrdinal(p) /\ o \in p => o \subseteq p   BECAUSE HypoImplToAnd;
@@ -1557,12 +1558,12 @@ PROOF
 VARIABLES a,b,c,o,p,x,z;
 h(o,x) == IsOrdinal(o) /\ x \in o;
 \* Proof that h(o,x) => IsTransitiveSet(x)
-h(o,x) => IsOrdinal(o)   BECAUSE DropAndRight;
-IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE DropAndRight;
+h(o,x) => IsOrdinal(o)   BECAUSE S12;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
 h(o,x) => IsTransitiveSet(o)   BECAUSE TI;
 IsTransitiveSet(o) => (x \in o => x \subseteq o)   BECAUSE \A(a <- x);
 h(o,x) => (x \in o => x \subseteq o)   BECAUSE TI;
-h(o,x) => x \in o   BECAUSE DropAndLeft;
+h(o,x) => x \in o   BECAUSE S22;
 h(o,x) => x \subseteq o   BECAUSE KillMiddleHypo;
 x \subseteq o => (a \in x => a \in o)   BECAUSE \A(z <- a);
 h(o,x) => (a \in x => a \in o)   BECAUSE TI;
@@ -1570,30 +1571,30 @@ hh(a,o,x) == h(o,x) /\ a \in x;
 hh(a,o,x) => a \in o   BECAUSE HypoImplToAnd;
 IsTransitiveSet(o) => (a \in o => a \subseteq o)   BECAUSE \A(a <- a);
 h(o,x) => (a \in o => a \subseteq o)   BECAUSE TI;
-hh(a,o,x) => h(o,x)   BECAUSE DropAndRight;
+hh(a,o,x) => h(o,x)   BECAUSE S12;
 hh(a,o,x) => (a \in o => a \subseteq o)   BECAUSE TI;
 hh(a,o,x) => a \subseteq o   BECAUSE KillMiddleHypo;
 a \subseteq o => (z \in a => z \in o)   BECAUSE \A(z <- z);
 hh(a,o,x) => (z \in a => z \in o)   BECAUSE TI;
 hh(a,o,x) /\ z \in a => z \in o   BECAUSE HypoImplToAnd;
-IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE DropAndLeft;
-IsWellOrderedByIn(o) => (\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)   BECAUSE DropAndBoth;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => IsTransitiveIn(o)   BECAUSE S23;
 (\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)
    => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE \A(a <- z, b <- a, c <- x);
 IsWellOrderedByIn(o) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
 IsOrdinal(o) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
 h(o,x) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
 hh(a,o,x) => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
-hh(a,o,x) /\ z \in a => hh(a,o,x)   BECAUSE DropAndRight;
+hh(a,o,x) /\ z \in a => hh(a,o,x)   BECAUSE S12;
 hh(a,o,x) /\ z \in a => (z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x => z \in x)   BECAUSE TI;
 hh(a,o,x) /\ z \in a => a \in o   BECAUSE TI;
 hh(a,o,x) /\ z \in a => z \in o /\ a \in o   BECAUSE CIA;
 hh(a,o,x) => x \in o   BECAUSE TI;
 hh(a,o,x) /\ z \in a => x \in o   BECAUSE TI;
 hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o   BECAUSE CIA;
-hh(a,o,x) /\ z \in a => z \in a   BECAUSE DropAndLeft;
+hh(a,o,x) /\ z \in a => z \in a   BECAUSE S22;
 hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o /\ z \in a   BECAUSE CIA;
-hh(a,o,x) => a \in x   BECAUSE DropAndLeft;
+hh(a,o,x) => a \in x   BECAUSE S22;
 hh(a,o,x) /\ z \in a => a \in x   BECAUSE TI;
 hh(a,o,x) /\ z \in a => z \in o /\ a \in o /\ x \in o /\ z \in a /\ a \in x   BECAUSE CIA;
 hh(a,o,x) /\ z \in a => z \in x   BECAUSE KillMiddleHypo;
@@ -1605,7 +1606,7 @@ h(o,x) => (a \in x => a \subseteq x)   BECAUSE HypoAndToImpl;
 h(o,x) => IsTransitiveSet(x)   BECAUSE Q_SCHEME;
 
 \* Proof of h(o,x) => IsWellOrderedByIn(x)
-IsWellOrderedByIn(o) => \A a : a \in o => a \notin a   BECAUSE DropAndRight2;
+IsWellOrderedByIn(o) => \A a : a \in o => a \notin a   BECAUSE S13;
 (\A a : a \in o => a \notin a) => (a \in o => a \notin a)   BECAUSE \A(a <- a);
 IsWellOrderedByIn(o) => (a \in o => a \notin a)   BECAUSE TI;
 IsOrdinal(o) => (a \in o => a \notin a)   BECAUSE TI;
@@ -1618,13 +1619,13 @@ h(o,x) => (\A a : a \in x => a \notin a)   BECAUSE Q_SCHEME;
 
 \* Proof of transitivity of the well-order
 transitX(a,b,c,o,x) == h(o,x) /\ (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c);
-transitX(a,b,c,o,x) => h(o,x)   BECAUSE DropAndRight;
-transitX(a,b,c,o,x) => (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c)   BECAUSE DropAndLeft;
-(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => (a \in x /\ b \in x /\ c \in x)   BECAUSE DropAndRight2;
+transitX(a,b,c,o,x) => h(o,x)   BECAUSE S12;
+transitX(a,b,c,o,x) => (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c)   BECAUSE S22;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => (a \in x /\ b \in x /\ c \in x)   BECAUSE S13;
 transitX(a,b,c,o,x) => (a \in x /\ b \in x /\ c \in x)   BECAUSE TI;
-(a \in x /\ b \in x /\ c \in x) => a \in x   BECAUSE DropAndRight2;
-(a \in x /\ b \in x /\ c \in x) => b \in x   BECAUSE DropAndBoth;
-(a \in x /\ b \in x /\ c \in x) => c \in x   BECAUSE DropAndLeft;
+(a \in x /\ b \in x /\ c \in x) => a \in x   BECAUSE S13;
+(a \in x /\ b \in x /\ c \in x) => b \in x   BECAUSE S23;
+(a \in x /\ b \in x /\ c \in x) => c \in x   BECAUSE S22;
 transitX(a,b,c,o,x) => a \in x   BECAUSE TI;
 transitX(a,b,c,o,x) => b \in x   BECAUSE TI;
 transitX(a,b,c,o,x) => c \in x   BECAUSE TI;
@@ -1637,16 +1638,16 @@ hh(c,o,x) => c \in o   BECAUSE \A(a <- c);
 transitX(a,b,c,o,x) => a \in o   BECAUSE TI;
 transitX(a,b,c,o,x) => b \in o   BECAUSE TI;
 transitX(a,b,c,o,x) => c \in o   BECAUSE TI;
-(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in b   BECAUSE DropAndBoth;
-(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => b \in c   BECAUSE DropAndLeft;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in b   BECAUSE S23;
+(a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => b \in c   BECAUSE S22;
 transitX(a,b,c,o,x) => a \in b   BECAUSE TI;
 transitX(a,b,c,o,x) => b \in c   BECAUSE TI;
 transitX(a,b,c,o,x) => a \in o /\ b \in o   BECAUSE CIA;
 transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o   BECAUSE CIA;
 transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o /\ a \in b   BECAUSE CIA;
 transitX(a,b,c,o,x) => a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c   BECAUSE CIA;
-(\A a : \A b : \A c : (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)
-   => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE \A(a <- a, b <- b, c <- c);
+IsTransitiveIn(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)
+   BECAUSE \A(a <- a, b <- b, c <- c);
 IsWellOrderedByIn(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
 IsOrdinal(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
 h(o,x) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
@@ -1659,17 +1660,17 @@ h(o,x) => (\A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in
 \A b : h(o,x) => (\A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
 h(o,x) => (\A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE Q_SCHEME;
 \A a : h(o,x) => (\A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
-h(o,x) => (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE Q_SCHEME;
+h(o,x) => IsTransitiveIn(x)   BECAUSE Q_SCHEME;
 
 minPart(o,p,x) == h(o,x) /\ p \subseteq x;
-minPart(o,p,x) => h(o,x)   BECAUSE DropAndRight;
-minPart(o,p,x) => p \subseteq x   BECAUSE DropAndLeft;
+minPart(o,p,x) => h(o,x)   BECAUSE S12;
+minPart(o,p,x) => p \subseteq x   BECAUSE S22;
 minPart(o,p,x) => x \subseteq o   BECAUSE TI;
 transitInclusion   BECAUSE THEOREM;
 p \subseteq x /\ x \subseteq o => p \subseteq o   BECAUSE \A(a <- p, b <- x, c <- o);
 minPart(o,p,x) => p \subseteq x /\ x \subseteq o   BECAUSE CIA;
 minPart(o,p,x) => p \subseteq o   BECAUSE TI;
-IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE DropAndLeft;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
 (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p)) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE \A(p <- p);
 IsWellOrderedByIn(o) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
 IsOrdinal(o) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
@@ -1680,8 +1681,7 @@ h(o,x) => (p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Hyp
 \A p : h(o,x) => (p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
 h(o,x) => (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
 
-h(o,x) => (\A a : a \in x => a \notin a) /\ (\A a : \A b : \A c : (a \in x /\ b \in x /\ c \in x /\ a \in b /\ b \in c) => a \in c)   BECAUSE CIA;
-h(o,x) => IsWellOrderedByIn(x)   BECAUSE CIA;
+h(o,x) => IsWellOrderedByIn(x)   BECAUSE CIA2;
 h(o,x) => IsOrdinal(x)   BECAUSE CIA;
 elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
 QED
@@ -1689,7 +1689,7 @@ QED
 unionOrdinalsIsOrdinal == \A u : (\A x : x \in u => IsOrdinal(x)) => IsOrdinal(UNION u)
 THEOREM unionOrdinalsIsOrdinal
 PROOF
-VARIABLES a,b,u,x,z;
+VARIABLES a,b,c,o,u,x,z;
 h(u) == \A x : x \in u => IsOrdinal(x);
 \* Proof that UNION u is transitive
 unionExists   BECAUSE AXIOM;
@@ -1699,26 +1699,83 @@ ct(a,u) == CHOOSE t : t \in u /\ a \in t;
 (\E t : t \in u /\ a \in t) => ct(a,u) \in u /\ a \in ct(a,u)   BECAUSE CHOOSE ct(a,u);
 a \in UNION u => ct(a,u) \in u /\ a \in ct(a,u)   BECAUSE TI;
 ht(a,u) == h(u) /\ a \in UNION u;
-ht(a,u) => h(u)   BECAUSE DropAndRight;
-ht(a,u) => a \in UNION u   BECAUSE DropAndLeft;
-ct(a,u) \in u /\ a \in ct(a,u) => ct(a,u) \in u   BECAUSE DropAndRight;
-a \in UNION u => ct(a,u) \in u   BECAUSE TI;
-ht(a,u) => ct(a,u) \in u   BECAUSE TI;
+ht(a,u) => h(u)   BECAUSE S12;
+ht(a,u) => a \in UNION u   BECAUSE S22;
+ct(a,u) \in u /\ a \in ct(a,u) => ct(a,u) \in u   BECAUSE S12;
+ht(a,u) => ct(a,u) \in u   BECAUSE TI2;
 h(u) => (ct(a,u) \in u => IsOrdinal(ct(a,u)))   BECAUSE \A(x <- ct(a,u));
 ht(a,u) => (ct(a,u) \in u => IsOrdinal(ct(a,u)))   BECAUSE TI;
 ht(a,u) => IsOrdinal(ct(a,u))   BECAUSE KillMiddleHypo;
-IsOrdinal(ct(a,u)) => IsTransitiveSet(ct(a,u))   BECAUSE DropAndRight;
+IsOrdinal(ct(a,u)) => IsTransitiveSet(ct(a,u))   BECAUSE S12;
 IsTransitiveSet(x) => (a \in x => a \subseteq x)  BECAUSE \A(a <- a);
 \A x : IsTransitiveSet(x) => (a \in x => a \subseteq x)  BECAUSE GENERALIZATION;
 IsTransitiveSet(ct(a,u)) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE \A(x <- ct(a,u));
-IsOrdinal(ct(a,u)) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE TI;
-ht(a,u) => (a \in ct(a,u) => a \subseteq ct(a,u))  BECAUSE TI;
-ct(a,u) \in u /\ a \in ct(a,u) => a \in ct(a,u)   BECAUSE DropAndLeft;
-a \in UNION u => a \in ct(a,u)   BECAUSE TI;
-ht(a,u) => a \in ct(a,u)   BECAUSE TI;
-ht(a,u) => a \subseteq ct(a,u)  BECAUSE KillMiddleHypo;
+ht(a,u) => (a \in ct(a,u) => a \subseteq ct(a,u))   BECAUSE TI2;
+ct(a,u) \in u /\ a \in ct(a,u) => a \in ct(a,u)   BECAUSE S22;
+ht(a,u) => a \in ct(a,u)   BECAUSE TI2;
+ht(a,u) => a \subseteq ct(a,u)   BECAUSE KillMiddleHypo;
+a \subseteq ct(a,u) => (z \in a => z \in ct(a,u))   BECAUSE \A(z <- z);
+ht(a,u) => (z \in a => z \in ct(a,u))   BECAUSE TI;
+ht(a,u) /\ z \in a => z \in ct(a,u)   BECAUSE HypoImplToAnd;
+inInUnion   BECAUSE THEOREM;
+z \in ct(a,u) /\ ct(a,u) \in u => z \in UNION u   BECAUSE \A(a <- z, b <- ct(a,u), c <- u);
+ht(a,u) /\ z \in a => ht(a,u)   BECAUSE S12;
+ht(a,u) /\ z \in a => ct(a,u) \in u   BECAUSE TI;
+ht(a,u) /\ z \in a => z \in ct(a,u) /\ ct(a,u) \in u   BECAUSE CIA;
+ht(a,u) /\ z \in a => z \in UNION u   BECAUSE TI;
+ht(a,u) => (z \in a => z \in UNION u)   BECAUSE HypoAndToImpl;
+\A z : ht(a,u) => (z \in a => z \in UNION u)   BECAUSE GENERALIZATION;
+ht(a,u) => a \subseteq UNION u   BECAUSE Q_SCHEME;
+h(u) => (a \in UNION u => a \subseteq UNION u)   BECAUSE HypoAndToImpl;
+\A a : h(u) => (a \in UNION u => a \subseteq UNION u)   BECAUSE GENERALIZATION;
+h(u) => IsTransitiveSet(UNION u)   BECAUSE Q_SCHEME;
 
-\* IsTransitiveSet(UNION u) == \A a : a \in UNION u => a \subseteq UNION u
+\* Proof that UNION u is irreflexive
+IsWellOrderedByIn(x) => (\A a : a \in x => a \notin a)   BECAUSE S13;
+(\A a : a \in x => a \notin a) => (a \in x => a \notin a)   BECAUSE \A(a <- a);
+IsWellOrderedByIn(x) => (a \in x => a \notin a)   BECAUSE TI;
+\A x : IsWellOrderedByIn(x) => (a \in x => a \notin a)   BECAUSE GENERALIZATION;
+IsWellOrderedByIn(ct(a,u)) => (a \in ct(a,u) => a \notin a)   BECAUSE \A(x <- ct(a,u));
+IsOrdinal(ct(a,u)) => IsWellOrderedByIn(ct(a,u))   BECAUSE S22;
+ht(a,u) => (a \in ct(a,u) => a \notin a)   BECAUSE TI2;
+ht(a,u) => a \notin a   BECAUSE KillMiddleHypo;
+h(u) => (a \in UNION u => a \notin a)   BECAUSE HypoAndToImpl;
+\A a : h(u) => (a \in UNION u => a \notin a)   BECAUSE GENERALIZATION;
+h(u) => (\A a : a \in UNION u => a \notin a)   BECAUSE Q_SCHEME;
+
+\* Proof that \in is transitive on UNION u
+\A a : ht(a,u) => IsOrdinal(ct(a,u))   BECAUSE GENERALIZATION;
+ht(c,u) => IsOrdinal(ct(c,u))   BECAUSE \A(a <- c);
+\A a : ht(a,u) => a \in ct(a,u)   BECAUSE GENERALIZATION;
+ht(c,u) => c \in ct(c,u)   BECAUSE \A(a <- c);
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(ct(c,u)) /\ c \in ct(c,u) => IsOrdinal(c)   BECAUSE \A(o <- ct(c,u), x <- c);
+ht(c,u) => IsOrdinal(ct(c,u)) /\ c \in ct(c,u)   BECAUSE CIA;
+ht(c,u) => IsOrdinal(c)   BECAUSE TI;
+IsOrdinal(c) => IsTransitiveSet(c)   BECAUSE S12;
+IsTransitiveSet(c) => (b \in c => b \subseteq c)   BECAUSE \A(a <- b);
+ht(c,u) => (b \in c => b \subseteq c)   BECAUSE TI2;
+ht(c,u) /\ b \in c => b \subseteq c   BECAUSE HypoImplToAnd;
+b \subseteq c => (a \in b => a \in c)   BECAUSE \A(z <- a);
+ht(c,u) /\ b \in c => (a \in b => a \in c)  BECAUSE TI;
+ht(c,u) /\ b \in c /\ a \in b => a \in c  BECAUSE HypoImplToAnd;
+shuffleHypos(a,c,d,e,h) == h /\ (a /\ c /\ d /\ e) => h /\ c /\ e /\ d   PROPO_TAUTO;
+h(u) /\ (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c)
+   => ht(c,u) /\ b \in c /\ a \in b   BECAUSE shuffleHypos;
+h(u) /\ (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c)
+   => a \in c   BECAUSE TI;
+h(u) => (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE HypoAndToImpl;
+\A c : h(u) => (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+h(u) => (\A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A b : h(u) => (\A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A a : h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+h(u) => IsTransitiveIn(UNION u)   BECAUSE Q_SCHEME;
+
+\* Proof that minimums exist
+\* TODO
+
+h(u) => IsOrdinal(UNION u)   BECAUSE TI;
 unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
@@ -1726,12 +1783,12 @@ ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
    => o \in p \/ o = p \/ p \in o
 THEOREM ordinalComparison
 PROOF
-VARIABLES a,c,d,o,p,x,y;
+VARIABLES a,c,d,o,p,u,x,y;
 \* Proof that h(o,p) => IsOrdinal(o \union p)
 h(o,p) == IsOrdinal(o) /\ IsOrdinal(p);
-h(o,p) => IsOrdinal(o)   BECAUSE DropAndRight;
+h(o,p) => IsOrdinal(o)   BECAUSE S12;
 unionOrdinalsIsOrdinal   BECAUSE THEOREM;
-(\A x : x \in {o,p} => IsOrdinal(x)) => IsOrdinal(UNION {o,p})   BECAUSE \A(a <- {o, p});
+(\A x : x \in {o,p} => IsOrdinal(x)) => IsOrdinal(UNION {o,p})   BECAUSE \A(u <- {o, p});
 pairExists   BECAUSE THEOREM;
 x \in { o, p } <=> (x = o \/ x = p)   BECAUSE \A(c <- o, d <- p, y <- x);
 x \in { o, p } => (x = o \/ x = p)   BECAUSE EquivToImpl;
@@ -1768,10 +1825,10 @@ cf(o,p) == CHOOSE f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o
 cb(o,p) == CHOOSE b : \A x : x \in b <=> x \in o /\ cf(o,p)[x] # x;
 \A x : x \in cb(o,p) <=> x \in o /\ cf(o,p)[x] # x   BECAUSE CHOOSE cb(o,p);
 cm(o,p) == CHOOSE m : IsMinimumForIn(m, cb(o,p)); \* we will show that m does not exist
-IsMinimumForIn(cm(o,p), cb(o,p)) => cm(o,p) \in cb(o,p)   BECAUSE DropAndRight;
+IsMinimumForIn(cm(o,p), cb(o,p)) => cm(o,p) \in cb(o,p)   BECAUSE S12;
 cm(o,p) \in cb(o,p) <=> cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE \A(x <- cm(o,p));
 cm(o,p) \in cb(o,p) => cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE EquivToImpl;
-cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p) => cm(o,p) \in o   BECAUSE DropAndRight;
+cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p) => cm(o,p) \in o   BECAUSE S12;
 cm(o,p) \in cb(o,p) => cm(o,p) \in o   BECAUSE TI;
 IsMinimumForIn(cm(o,p), cb(o,p)) => cm(o,p) \in o   BECAUSE TI;
 \* The hypotheses and all their implications. Prove that h(o,p) is false,
@@ -1781,19 +1838,19 @@ h(o,p) == IsOrdinal(o) /\ IsOrdinal(p)
         /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])
    /\ IsMinimumForIn(cm(o,p), cb(o,p));
 h(o,p) => h(o,p)   BECAUSE ImplySelf;
-h(o,p) => IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE DropAndLeft;
-h(o,p) => IsOrdinal(o) /\ IsOrdinal(p)   BECAUSE DropAndRight2;
-IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(p)   BECAUSE DropAndLeft;
+h(o,p) => IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE S22;
+h(o,p) => IsOrdinal(o) /\ IsOrdinal(p)   BECAUSE S13;
+IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(p)   BECAUSE S22;
 h(o,p) => IsOrdinal(p)   BECAUSE TI;
-IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(o)   BECAUSE DropAndRight;
+IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(o)   BECAUSE S12;
 h(o,p) => IsOrdinal(o)   BECAUSE TI;
-h(o,p) => (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])   BECAUSE DropAndBoth;
+h(o,p) => (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])   BECAUSE S23;
 (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])
    => (cf(o,p) \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])   BECAUSE CHOOSE cf(o,p);
 h(o,p) => (cf(o,p) \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])   BECAUSE TI;
-(cf(o,p) \in Bijections(o,p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => cf(o,p) \in Bijections(o,p)   BECAUSE DropAndRight;
+(cf(o,p) \in Bijections(o,p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => cf(o,p) \in Bijections(o,p)   BECAUSE S12;
 h(o,p) => cf(o,p) \in Bijections(o,p)   BECAUSE TI;
-(cf(o,p) \in Bijections(o,p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]   BECAUSE DropAndLeft;
+(cf(o,p) \in Bijections(o,p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]   BECAUSE S22;
 h(o,p) => \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]   BECAUSE TI;
 
 \* Proof that h(o,p) /\ z \in cm(o,p) => cf(o,p)[z] = z
@@ -1808,7 +1865,7 @@ bijApply   BECAUSE THEOREM;
    BECAUSE \A(f <- cf(o,p), a <- o, b <- p, x <- cm(o,p));
 h(o,p) => cf(o,p) \in Bijections(o,p) /\ cm(o,p) \in o   BECAUSE CIA;
 h(o,p) => cf(o,p)[cm(o,p)] \in p   BECAUSE TI;
-IsMinimumForIn(cm(o,p), cb(o,p)) => \A b : b \in cb(o,p) => (b = cm(o,p) \/ cm(o,p) \in b)   BECAUSE DropAndLeft;
+IsMinimumForIn(cm(o,p), cb(o,p)) => \A b : b \in cb(o,p) => (b = cm(o,p) \/ cm(o,p) \in b)   BECAUSE S22;
 h(o,p) => \A b : b \in cb(o,p) => (b = cm(o,p) \/ cm(o,p) \in b)   BECAUSE TI;
 (\A b : b \in cb(o,p) => (b = cm(o,p) \/ cm(o,p) \in b)) => (z \in cb(o,p) => (z = cm(o,p) \/ cm(o,p) \in z))
    BECAUSE \A(b <- z);
@@ -1829,7 +1886,7 @@ z \in cb(o,p) <=> z \in o /\ cf(o,p)[z] # z   BECAUSE \A(x <- z);
 z \in o /\ cf(o,p)[z] # z => z \in cb(o,p)   BECAUSE EquivToImplReverse;
 z \notin cb(o,p) => ~(z \in o /\ cf(o,p)[z] # z)   BECAUSE Contraposition;
 h(o,p) /\ z \in cm(o,p) => ~(z \in o /\ cf(o,p)[z] # z)   BECAUSE TI;
-IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE DropAndRight;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
 IsTransitiveSet(o) => (cm(o,p) \in o => cm(o,p) \subseteq o)   BECAUSE \A(a <- cm(o,p));
 IsTransitiveSet(o) /\ cm(o,p) \in o => cm(o,p) \subseteq o   BECAUSE HypoImplToAnd;
 h(o,p) => IsTransitiveSet(o)   BECAUSE TI;
@@ -1872,7 +1929,7 @@ h(o,p) => IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE TI;
 h(o,p) => IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE CIA;
 h(o,p) => IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)]) /\ cm(o,p) \subseteq cf(o,p)[cm(o,p)]   BECAUSE CIA;
 h(o,p) => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE TI;
-cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE DropAndLeft;
+cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE S22;
 cm(o,p) \in cb(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
 IsMinimumForIn(cm(o,p), cb(o,p)) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
 h(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
@@ -1881,7 +1938,7 @@ cf(o,p)[cm(o,p)] # cm(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE Contrapositio
 h(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE TI;
 killCaseC(a,b,c) == (a => ~b) => ((a => (b \/ c)) => (a => c))   PROPO_TAUTO;
 h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE killCaseC;
-IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE DropAndRight;
+IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE S12;
 IsTransitiveSet(p) => (cf(o,p)[cm(o,p)] \in p => cf(o,p)[cm(o,p)] \subseteq p)   BECAUSE \A(a <- cf(o,p)[cm(o,p)]);
 IsTransitiveSet(p) /\ cf(o,p)[cm(o,p)] \in p => cf(o,p)[cm(o,p)] \subseteq p   BECAUSE HypoImplToAnd;
 h(o,p) => IsTransitiveSet(p)   BECAUSE TI;
@@ -1917,12 +1974,12 @@ IsFunction(cf(o,p)) /\ cm(o,p) \in Image(cf(o,p)) => cf(o,p)[pre(cf(o,p),cm(o,p)
 bijectionsExists   BECAUSE THEOREM;
 cf(o,p) \in Bijections(o,p) <=> IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p   BECAUSE \A(d <- o, i <- p, f <- cf(o,p));
 cf(o,p) \in Bijections(o,p) => IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p   BECAUSE EquivToImpl;
-IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE DropAndRight2;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE S13;
 cf(o,p) \in Bijections(o,p) => IsInjection(cf(o,p))   BECAUSE TI;
-IsInjection(cf(o,p)) => IsFunction(cf(o,p))   BECAUSE DropAndRight;
+IsInjection(cf(o,p)) => IsFunction(cf(o,p))   BECAUSE S12;
 h(o,p) => IsInjection(cf(o,p))   BECAUSE TI;
 h(o,p) => IsFunction(cf(o,p))   BECAUSE TI;
-IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Image(cf(o,p)) = p   BECAUSE DropAndLeft;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Image(cf(o,p)) = p   BECAUSE S22;
 cf(o,p) \in Bijections(o,p) => Image(cf(o,p)) = p   BECAUSE TI;
 h(o,p) => Image(cf(o,p)) = p   BECAUSE TI;
 \A x : \A y : x = y => (cm(o,p) \in x <=> cm(o,p) \in y)   BECAUSE E_SCHEME;
@@ -1937,14 +1994,14 @@ h(o,p) => cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p)   BECAUSE TI;
 \A z : h(o,p) /\ z \in cm(o,p) => cf(o,p)[z] = z   BECAUSE GENERALIZATION;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p)
    => cf(o,p)[pre(cf(o,p),cm(o,p))] = pre(cf(o,p),cm(o,p))   BECAUSE \A(z <- pre(cf(o,p),cm(o,p)));
-h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => h(o,p)   BECAUSE DropAndRight;
+h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => h(o,p)   BECAUSE S12;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p)   BECAUSE TI;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p)
    => cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) /\ cf(o,p)[pre(cf(o,p),cm(o,p))] = pre(cf(o,p),cm(o,p))   BECAUSE CIA;
 cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) /\ cf(o,p)[pre(cf(o,p),cm(o,p))] = pre(cf(o,p),cm(o,p))
    => cm(o,p) = pre(cf(o,p),cm(o,p))   BECAUSE E_SCHEME;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => cm(o,p) = pre(cf(o,p),cm(o,p))   BECAUSE TI;
-h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => pre(cf(o,p),cm(o,p)) \in cm(o,p)   BECAUSE DropAndLeft;
+h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => pre(cf(o,p),cm(o,p)) \in cm(o,p)   BECAUSE S22;
 h(o,p) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p) => cm(o,p) = pre(cf(o,p),cm(o,p)) /\ pre(cf(o,p),cm(o,p)) \in cm(o,p)   BECAUSE CIA;
 \A x : \A y : x = y => (x \in cm(o,p) <=> y \in cm(o,p))   BECAUSE E_SCHEME;
 cm(o,p) = pre(cf(o,p),cm(o,p)) => (cm(o,p) \in cm(o,p) <=> pre(cf(o,p),cm(o,p)) \in cm(o,p))   BECAUSE \A(x <- cm(o,p), y <- pre(cf(o,p),cm(o,p)));
@@ -1972,12 +2029,12 @@ h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cf(o,p)[cm(o,p)] \in cf(o,p)[pre(c
 cf(o,p)[pre(cf(o,p),cm(o,p))] = cm(o,p) => (cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))] <=> cf(o,p)[cm(o,p)] \in cm(o,p))   BECAUSE \A(x <- cf(o,p)[pre(cf(o,p),cm(o,p))], y <- cm(o,p));
 h(o,p) => (cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))] <=> cf(o,p)[cm(o,p)] \in cm(o,p))   BECAUSE TI;
 h(o,p) /\ cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))] => cf(o,p)[cm(o,p)] \in cm(o,p)   BECAUSE HypoEquivToAnd;
-h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => h(o,p)   BECAUSE DropAndRight;
+h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => h(o,p)   BECAUSE S12;
 h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => h(o,p) /\ cf(o,p)[cm(o,p)] \in cf(o,p)[pre(cf(o,p),cm(o,p))]   BECAUSE CIA;
 h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cf(o,p)[cm(o,p)] \in cm(o,p)   BECAUSE TI;
 h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE TI;
 h(o,p) /\ cm(o,p) \in pre(cf(o,p),cm(o,p)) => cm(o,p) \in cf(o,p)[cm(o,p)] /\ cf(o,p)[cm(o,p)] \in cm(o,p)   BECAUSE CIA;
-IsOrdinal(cm(o,p)) => IsTransitiveSet(cm(o,p))   BECAUSE DropAndRight;
+IsOrdinal(cm(o,p)) => IsTransitiveSet(cm(o,p))   BECAUSE S12;
 IsTransitiveSet(cm(o,p)) => (a \in cm(o,p) => a \subseteq cm(o,p))   BECAUSE \A(a <- a);
 h(o,p) => IsTransitiveSet(cm(o,p))   BECAUSE TI;
 h(o,p) => (a \in cm(o,p) => a \subseteq cm(o,p))   BECAUSE TI;
@@ -2013,20 +2070,20 @@ hh(o,p) => ~IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE killCaseF;
 (\E m : IsMinimumForIn(m, cb(o,p))) => IsMinimumForIn(cm(o,p), cb(o,p))   BECAUSE CHOOSE cm(o,p);
 ~IsMinimumForIn(cm(o,p), cb(o,p)) => ~(\E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE Contraposition;
 hh(o,p) => ~(\E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE TI;
-IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE DropAndLeft;
-IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE DropAndLeft;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
 (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))
    => (cb(o,p) \subseteq o => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE \A(p <- cb(o,p));
 IsWellOrderedByIn(o) => (cb(o,p) \subseteq o => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE TI;
 z \in cb(o,p) <=> z \in o /\ cf(o,p)[z] # z   BECAUSE \A(x <- z);
 z \in cb(o,p) => z \in o /\ cf(o,p)[z] # z   BECAUSE EquivToImpl;
-z \in o /\ cf(o,p)[z] # z => z \in o   BECAUSE DropAndRight;
+z \in o /\ cf(o,p)[z] # z => z \in o   BECAUSE S12;
 z \in cb(o,p) => z \in o   BECAUSE TI;
 cb(o,p) \subseteq o   BECAUSE GENERALIZATION;
 cb(o,p) \subseteq o => (IsWellOrderedByIn(o) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p)))   BECAUSE SwitchHypos;
 IsWellOrderedByIn(o) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECAUSE MODUS_PONENS;
 IsOrdinal(o) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECAUSE TI;
-hh(o,p) => IsOrdinal(o)   BECAUSE DropAndRight2;
+hh(o,p) => IsOrdinal(o)   BECAUSE S13;
 hh(o,p) => cb(o,p) = {} \/ \E m : IsMinimumForIn(m, cb(o,p))   BECAUSE TI;
 killCaseG(h,a,b) == (h => ~a) => ((h => b \/ a) => (h => b))   PROPO_TAUTO;
 hh(o,p) => cb(o,p) = {}   BECAUSE killCaseG;
@@ -2046,11 +2103,11 @@ cb(o,p) = {} => (a \in o => cf(o,p)[a] = a)   BECAUSE TI;
 hh(o,p) => (a \in o => cf(o,p)[a] = a)   BECAUSE TI;
 \* Prove hh(o,p) => cf(o,p) = identity(o) by funcEqual,
 \* then its domain and image are the same, o = p.
-IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Domain(cf(o,p)) = o   BECAUSE DropAndBoth;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Domain(cf(o,p)) = o   BECAUSE S23;
 cf(o,p) \in Bijections(o,p) => Domain(cf(o,p)) = o   BECAUSE TI;
-hh(o,p) => (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])   BECAUSE DropAndLeft;
+hh(o,p) => (\E f : f \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => f[x] \in f[y])   BECAUSE S22;
 hh(o,p) => (cf(o,p) \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y])   BECAUSE TI;
-(cf(o,p) \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => cf(o,p) \in Bijections(o, p)   BECAUSE DropAndRight;
+(cf(o,p) \in Bijections(o, p) /\ \A x : \A y : x \in y /\ y \in o => cf(o,p)[x] \in cf(o,p)[y]) => cf(o,p) \in Bijections(o, p)   BECAUSE S12;
 hh(o,p) => cf(o,p) \in Bijections(o, p)   BECAUSE TI;
 hh(o,p) => Domain(cf(o,p)) = o   BECAUSE TI;
 identityBiject   BECAUSE THEOREM;
@@ -2058,17 +2115,17 @@ identity(o) \in Bijections(o,o)   BECAUSE \A(d <- o);
 identity(o) \in Bijections(o,o) <=> IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o
    BECAUSE \A(d <- o, i <- o, f <- identity(o));
 IsInjection(identity(o)) /\ Domain(identity(o)) = o /\ Image(identity(o)) = o   BECAUSE MODUS_PONENS;
-IsInjection(identity(o))   BECAUSE DropAndRight2;
-IsFunction(identity(o))   BECAUSE DropAndRight;
-Domain(identity(o)) = o   BECAUSE DropAndBoth;
+IsInjection(identity(o))   BECAUSE S13;
+IsFunction(identity(o))   BECAUSE S12;
+Domain(identity(o)) = o   BECAUSE S23;
 funcEqual   BECAUSE THEOREM;
 IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))
    /\ (\A x : x \in Domain(cf(o,p)) => cf(o,p)[x] = identity(o)[x])
    => cf(o,p) = identity(o)   BECAUSE \A(f <- cf(o,p), g <- identity(o));
-IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE DropAndRight2;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => IsInjection(cf(o,p))   BECAUSE S13;
 cf(o,p) \in Bijections(o, p) => IsInjection(cf(o,p))   BECAUSE TI;
 hh(o,p) => IsInjection(cf(o,p))   BECAUSE TI;
-IsInjection(cf(o,p)) => IsFunction(cf(o,p))   BECAUSE DropAndRight;
+IsInjection(cf(o,p)) => IsFunction(cf(o,p))   BECAUSE S12;
 hh(o,p) => IsFunction(cf(o,p))   BECAUSE TI;
 hh(o,p) => IsFunction(identity(o))   BECAUSE PT1;
 hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o))  BECAUSE CIA;
@@ -2080,7 +2137,7 @@ hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o))   BECAUSE CIA;
 hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))   BECAUSE CIA;
 identityVal   BECAUSE THEOREM;
 a \in o => (identity(o)[a] = a /\ pre(identity(o),a) = a)   BECAUSE \A(d <- o, x <- a);
-(identity(o)[a] = a /\ pre(identity(o),a) = a) => identity(o)[a] = a   BECAUSE DropAndRight;
+(identity(o)[a] = a /\ pre(identity(o),a) = a) => identity(o)[a] = a   BECAUSE S12;
 a \in o => identity(o)[a] = a   BECAUSE TI;
 hh(o,p) => (a \in o => identity(o)[a] = a)   BECAUSE PT1;
 hh(o,p) /\ a \in o => identity(o)[a] = a   BECAUSE HypoImplToAnd;
@@ -2108,12 +2165,12 @@ hh(o,p) => cf(o,p) = identity(o)   BECAUSE TI;
 \A x : \A y : x = y => Image(x) = Image(y)   BECAUSE E_SCHEME;
 cf(o,p) = identity(o) => Image(cf(o,p)) = Image(identity(o))   BECAUSE \A(x <- cf(o,p), y <- identity(o));
 hh(o,p) => Image(cf(o,p)) = Image(identity(o))   BECAUSE TI;
-IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Image(cf(o,p)) = p   BECAUSE DropAndLeft;
+IsInjection(cf(o,p)) /\ Domain(cf(o,p)) = o /\ Image(cf(o,p)) = p => Image(cf(o,p)) = p   BECAUSE S22;
 hh(o,p) => Image(cf(o,p)) = p   BECAUSE TI;
 hh(o,p) => Image(cf(o,p)) = p /\ Image(cf(o,p)) = Image(identity(o))   BECAUSE CIA;
 Image(cf(o,p)) = p /\ Image(cf(o,p)) = Image(identity(o)) => p = Image(identity(o))  BECAUSE E_SCHEME;
 hh(o,p) => p = Image(identity(o))  BECAUSE TI;
-Image(identity(o)) = o   BECAUSE DropAndLeft;
+Image(identity(o)) = o   BECAUSE S22;
 Image(identity(o)) = o => o = Image(identity(o))   BECAUSE E_SCHEME;
 o = Image(identity(o))   BECAUSE MODUS_PONENS;
 hh(o,p) => o = Image(identity(o))   BECAUSE PT1;
@@ -2173,24 +2230,23 @@ a \in {} => a \notin a   BECAUSE Explosion;
 \A a : a \in {} => a \notin a   BECAUSE GENERALIZATION;
 \* Proof of transitive order
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c)
-   => (a \in {} /\ b \in {} /\ c \in {})   BECAUSE DropAndRight2;
-(a \in {} /\ b \in {} /\ c \in {}) => a \in {}   BECAUSE DropAndRight2;
+   => (a \in {} /\ b \in {} /\ c \in {})   BECAUSE S13;
+(a \in {} /\ b \in {} /\ c \in {}) => a \in {}   BECAUSE S13;
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in {}   BECAUSE TI;
 a \in {} => a \in c   BECAUSE Explosion;
 (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE TI;
-\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c   BECAUSE GENERALIZATION;
+IsTransitiveIn( {} )  BECAUSE GENERALIZATION;
 \* Proof of minimums
 includedInEmpty   BECAUSE THEOREM;
 p \subseteq {} => p = {}   BECAUSE \A(x <- p);
 p = {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE IntroOrLeft;
 p \subseteq {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE TI;
 \A p : p \subseteq {} => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE GENERALIZATION;
-(\A a : a \in {} => a \notin a)
-   /\ (\A a : \A b : \A c : (a \in {} /\ b \in {} /\ c \in {} /\ a \in b /\ b \in c) => a \in c)   BECAUSE IntroAndRight;
+(\A a : a \in {} => a \notin a) /\ IsTransitiveIn( {} )   BECAUSE IntroAndRight;
 IsWellOrderedByIn( {} )   BECAUSE IntroAndRight;
 IsOrdinal({})   BECAUSE IntroAndRight;
 \* Proof of finiteness
-IsLimitOrdinal({}) => {} # {}   BECAUSE DropAndBoth;
+IsLimitOrdinal({}) => {} # {}   BECAUSE S23;
 contraposNeg(a,b) == (a => ~b) => (b => ~a)   PROPO_TAUTO;
 {} = {} => ~IsLimitOrdinal({})   BECAUSE contraposNeg;
 equalSelf   BECAUSE THEOREM;
@@ -2215,7 +2271,7 @@ NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
 THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
-VARIABLES a,x;
+VARIABLES a,u,x;
 Infinity   BECAUSE AXIOM;
 ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
 {} \in ca /\ \A x : x \in ca => successor(x) \in ca   BECAUSE CHOOSE ca;
@@ -2226,12 +2282,12 @@ cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x);
 
 \* Prove cb is Nat, ie IsFiniteOrdinal(x) => x \in cb.
 unionOrdinalsIsOrdinal   BECAUSE THEOREM;
-(\A x : x \in cb => IsOrdinal(x)) => IsOrdinal(UNION cb)   BECAUSE \A(a <- cb);
+(\A x : x \in cb => IsOrdinal(x)) => IsOrdinal(UNION cb)   BECAUSE \A(u <- cb);
 x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(x <- x);
 x \in cb => x \in ca /\ IsFiniteOrdinal(x)   BECAUSE EquivToImpl;
-x \in ca /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE DropAndLeft;
+x \in ca /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE S22;
 x \in cb => IsFiniteOrdinal(x)   BECAUSE TI;
-IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE DropAndRight2;
+IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE S13;
 \A a : IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE GENERALIZATION;
 IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(a <- x);
 x \in cb => IsOrdinal(x)   BECAUSE TI;
@@ -2240,7 +2296,7 @@ IsOrdinal(UNION cb)   BECAUSE MODUS_PONENS;
 
 \* Proof that UNION cb is a limit ordinal
 \* {} \in ordinalOne \in cb, so {} \in UNION cb
-{} \in ca   BECAUSE DropAndRight;
+{} \in ca   BECAUSE S12;
 ordinalZero   BECAUSE THEOREM;
 {} \in ca /\ IsFiniteOrdinal( {} )   BECAUSE IntroAndRight;
 {} \in cb <=> {} \in ca /\ IsFiniteOrdinal({})   BECAUSE \A(x <- {});
