@@ -58,6 +58,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 \r { /* discard carriage returns */ }
 
 "CHOOSE"  { return CHOOSE; }
+"CHOOSE_UNIQUE"  { return CHOOSE_UNIQUE; }
 "LOCAL" { return LOCAL; }
 "PROOF" { return PROOF; }
 "QED" { return QED; }

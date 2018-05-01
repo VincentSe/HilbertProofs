@@ -65,7 +65,8 @@ void print_formula(const formula* f)
 
   if (f->builtInOp == exists
       || f->builtInOp == forall
-      || f->builtInOp == choose)
+      || f->builtInOp == choose
+      || f->builtInOp == chooseUnique)
     {
       printf("%s %s (", op_to_string(f->builtInOp), f->name);
       print_formula(get_first_operand(f));
@@ -106,6 +107,7 @@ unsigned char formula_is_term(const formula* f,
   switch (f->builtInOp)
     {
     case choose:
+    case chooseUnique:
     case variable:
       return 1;
     case in: // TODO look at axioms using it to know its a relational operator
@@ -141,6 +143,7 @@ const char* op_to_string(enum builtin_operator op)
     case forall: return "\\A";
     case exists: return "\\E";
     case choose: return "CHOOSE";
+    case chooseUnique: return "CHOOSE_UNIQUE";
     case setEnumerate: return "setEnumerate";
     case setSeparation: return "setSeparation";
     case in: return "\\in";
@@ -291,7 +294,8 @@ const char* find_variable(const formula* f,
 
   if (f->builtInOp == forall
       || f->builtInOp == exists
-      || f->builtInOp == choose)
+      || f->builtInOp == choose
+      || f->builtInOp == chooseUnique)
     {
       struct string_list bindOneMore; // TODO check if f->name already in boundVars
       bindOneMore.string_elem = f->name;
@@ -415,7 +419,8 @@ unsigned char formula_equal(const formula* f,
 
       if (g->builtInOp == forall
 	  || g->builtInOp == exists
-	  || g->builtInOp == choose)
+	  || g->builtInOp == choose
+	  || g->builtInOp == chooseUnique)
 	{
 	  if (strcmp(f->name, g->name) != 0)
 	    return 0; // different quantified variables
@@ -506,7 +511,8 @@ unsigned char formula_equal(const formula* f,
 
       // Try defining formulas last, after we know the true ops don't work
       if (is_custom_operator(f) && f->definingFormula
-	  && f->definingFormula->builtInOp != choose) // CHOOSE is not an operator in itself
+	  && f->definingFormula->builtInOp != choose // CHOOSE is not an operator in itself
+	  && f->definingFormula->builtInOp != chooseUnique)
 	{
 	  // Assume f <=> f->definingFormula (which was tested in
 	  // resolve_operator_or_variable).
@@ -518,7 +524,8 @@ unsigned char formula_equal(const formula* f,
 	}
 
       if (is_custom_operator(g) && g->definingFormula && !freeSubs
-	  && g->definingFormula->builtInOp != choose) // CHOOSE is not an operator in itself
+	  && g->definingFormula->builtInOp != choose // CHOOSE is not an operator in itself
+	  && g->definingFormula->builtInOp != chooseUnique)
 	{
 	  // Assume g <=> g->definingFormula (which was tested in
 	  // resolve_operator_or_variable).
@@ -919,7 +926,8 @@ unsigned char resolve_names(/*out*/formula* f,
 
   if (f->builtInOp == forall
       || f->builtInOp == exists
-      || f->builtInOp == choose)
+      || f->builtInOp == choose
+      || f->builtInOp == chooseUnique)
     {
       // Only one operand to check
       struct string_list bindVariable;

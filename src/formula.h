@@ -20,7 +20,7 @@ enum builtin_operator
     lnot, lor, land, limplies, lequiv,
 
     // quantifiers
-    forall, exists, choose,
+    forall, exists, choose, chooseUnique,
 
     // equality
     equal, different,

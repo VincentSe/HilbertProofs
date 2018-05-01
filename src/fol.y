@@ -55,7 +55,7 @@
 
 %precedence <sVal> NAME
 %precedence LEFT_PARENTHESIS
-%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW LOCAL CHOOSE
+%token PROOF QED COMMA SEMICOLON COLON BECAUSE CONSTANT UNDERSCORE VARIABLES EXTENDS BOUND_VAR LEFT_ARROW LOCAL CHOOSE CHOOSE_UNIQUE
 
 %type  <formulaVal> formula
 %type  <formulaVal> setDef
@@ -131,6 +131,15 @@ formula NAME_SEPARATOR formula {
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
 | formula NAME_SEPARATOR CHOOSE NAME COLON formula {
   formula* chooseF = make_formula(choose,
+				  $4,
+				  make_formula_list($6, 0),
+				  ast->file,
+				  @1.first_line);
+  $$ = check_operator_definition($1, chooseF);
+  if (!$$)
+    yyerror(&@$, scanner, ast, "Bad operator definition"); }
+| formula NAME_SEPARATOR CHOOSE_UNIQUE NAME COLON formula { // TODO token type CHOOSE with 2 values
+  formula* chooseF = make_formula(chooseUnique,
 				  $4,
 				  make_formula_list($6, 0),
 				  ast->file,

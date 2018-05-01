@@ -185,6 +185,8 @@ AXIOM_SCHEME BOUND_VAR(b) replacement
 *)
 {} == CHOOSE b : \A x : x \notin b
 emptySetExists == \A x : x \notin {}
+\* TODO CHOOSE_UNIQUE and \A b : b = {} <=> \A x : x \notin b
+\* TODO probably keep separated existence for convenience, by \A(b <- {}).
 
 THEOREM emptySetExists
 PROOF

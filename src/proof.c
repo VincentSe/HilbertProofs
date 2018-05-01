@@ -959,7 +959,7 @@ unsigned char is_existence_of_choose(const formula* f, const formula* c)
 {
   const formula* existF = f ? get_quantified_formula(f, exists) : 0;
   return existF
-    && c->builtInOp == choose
+    && (c->builtInOp == choose || c->builtInOp == chooseUnique)
     && strcmp(existF->name, c->name) == 0 // same quantified variables
     && formula_equal(get_first_operand(existF), get_first_operand(c), 0, 0, 0);
 }
@@ -1008,6 +1008,14 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    and some in which F is false. Take a model M of T where F is false.
    In the extended model M+, F is still false because model extensions
    preserve truth values. Hence T+ does not prove F.
+
+   If some axioms in T derive from an axiom scheme, we might ask whether
+   we take as axioms in the new theory the applications of the scheme to
+   formulas involving someNewOp. This can break the conservation :
+   Choice(a) == CHOOSE x : x \in p
+   applied in the separation axiom scheme yields the axiom of choice.
+   For this reason we refuse CHOOSE symbols in axiom schemes, we require
+   CHOOSE_UNIQUE instead.
 
    Syntactically, T+ proves a formula G involving someNewOp(x,y,z) if
    and only if T proves the formula
