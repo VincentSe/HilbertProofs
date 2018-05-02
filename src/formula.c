@@ -730,22 +730,27 @@ formula* equivalent_defining_formula(const formula* f,
   if (!f || !free_define(f->operands, opDef))
     return (formula*)0;
 
-  if (!f->operands)
-    return opDef->definingFormula; // share the formula when there is no substitution of variables
-
+  // Substitute f's operands into opDef's free variables
   variable_substitution subs[16];
   variable_substitution* sub = subs;
-  struct formula_list* op = f->operands;
-  struct formula_list* oop = opDef->operands;
-  while (op)
+  struct formula_list* op;
+  struct formula_list* oop = opDef->operands; // free variables of the operator
+  for (op = f->operands; op; op = op->next)
     {
-      sub->variable = oop->formula_elem->name;
-      sub->subst = op->formula_elem;
-      sub++;
-      op = op->next;
+      if (op->formula_elem->builtInOp != variable
+	  || strcmp(op->formula_elem->name, oop->formula_elem->name) != 0)
+	{
+	  // do not substitute a variable into itself
+	  sub->variable = oop->formula_elem->name;
+	  sub->subst = op->formula_elem;
+	  sub++;
+	}
       oop = oop->next;
     }
   sub->variable = (char*)0;
+
+  if (sub == subs)
+    return opDef->definingFormula; // share the formula when there is no substitution of variables
 
   formula* def = formula_clone(opDef->definingFormula, subs);
 
@@ -754,13 +759,11 @@ formula* equivalent_defining_formula(const formula* f,
   if (resolvedF)
     def->definingFormula = equivalent_defining_formula(def, resolvedF,
 						       operatorDefinitions);
-  op = def->operands;
-  while (op)
+  for (op = def->operands; op; op = op->next)
     {
       resolvedF = formula_set_find(op->formula_elem, operatorDefinitions);
       if (resolvedF)
 	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions);
-      op = op->next;
     }
   return def;
 }

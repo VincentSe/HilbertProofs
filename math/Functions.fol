@@ -140,10 +140,10 @@ funcEqual == \A f : \A g : IsFunction(f) /\ IsFunction(g) /\ Domain(f) = Domain(
    => f = g
 THEOREM funcEqual
 PROOF
-VARIABLES a,b,f,g,x,y;
-h(f,g,x,y) == IsFunction(f) /\ IsFunction(g) /\ Domain(f) = Domain(g)
-   /\ (\A x : x \in Domain(f) => f[x] = g[x])
-   /\ <<x,y>> \in f;
+VARIABLES a,b,c,f,g,x,y,z;
+mainHypo(f,g) == IsFunction(f) /\ IsFunction(g) /\ Domain(f) = Domain(g)
+   /\ (\A x : x \in Domain(f) => f[x] = g[x]);
+h(f,g,x,y) == mainHypo(f,g) /\ <<x,y>> \in f;
 \* Prove that h(f,g,x,y) => <<x,y>> \in g
 domainExists   BECAUSE THEOREM;
 x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
@@ -151,8 +151,8 @@ IsDefinedOn(f,x) => x \in Domain(f)   BECAUSE EquivToImplReverse;
 <<x,y>> \in f => IsDefinedOn(f,x)   BECAUSE \E(y <- y);
 h(f,g,x,y) => <<x,y>> \in f   BECAUSE S22;
 h(f,g,x,y) => x \in Domain(f)   BECAUSE TI2;
-h(f,g,x,y) => IsFunction(f) /\ IsFunction(g)   BECAUSE S14;
-IsFunction(f) /\ IsFunction(g) => IsFunction(f)   BECAUSE S12;
+h(f,g,x,y) => mainHypo(f,g)   BECAUSE S12;
+mainHypo(f,g) => IsFunction(f)   BECAUSE S14;
 IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
 (\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,y>> \in f => y = f[x])   BECAUSE \A(a <- x, b <- y);
 IsFunction(f) => (<<x,y>> \in f => y = f[x])   BECAUSE TI;
@@ -172,11 +172,49 @@ x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
 x \in Domain(g) => IsDefinedOn(g,x)   BECAUSE EquivToImpl;
 IsDefinedOn(g,x) => <<x,g[x]>> \in g   BECAUSE CHOOSE g[x];
 x \in Domain(g) => <<x,g[x]>> \in g   BECAUSE TI;
+\A a : \A b : a = b => (x \in a <=> x \in b)   BECAUSE E_SCHEME;
+Domain(f) = Domain(g) => (x \in Domain(f) <=> x \in Domain(g))   BECAUSE \A(a <- Domain(f), b <- Domain(g));
+h(f,g,x,y) => Domain(f) = Domain(g)   BECAUSE S24;
+(x \in Domain(f) <=> x \in Domain(g)) => (x \in Domain(f) => x \in Domain(g))   BECAUSE EquivToImpl;
+h(f,g,x,y) => (x \in Domain(f) => x \in Domain(g))   BECAUSE TI2;
+h(f,g,x,y) => x \in Domain(g)   BECAUSE KillMiddleHypo;
+h(f,g,x,y) => <<x,g[x]>> \in g   BECAUSE TI;
 \A a : \A b : a = b => (<<x,a>> \in g <=> <<x,b>> \in g)   BECAUSE E_SCHEME;
 y = g[x] => (<<x,y>> \in g <=> <<x,g[x]>> \in g)   BECAUSE \A(a <- y, b <- g[x]);
 (<<x,y>> \in g <=> <<x,g[x]>> \in g) => (<<x,g[x]>> \in g => <<x,y>> \in g)   BECAUSE EquivToImplReverse;
 h(f,g,x,y) => (<<x,g[x]>> \in g => <<x,y>> \in g)   BECAUSE TI2;
-h(f,g,x,y) => <<x,y>> \in g   BECAUSE KillMiddleHypo; \* TODO by Domain(f) = Domain(g)
+h(f,g,x,y) => <<x,y>> \in g   BECAUSE KillMiddleHypo;
+
+\A x : \A y : h(f,g,x,y) => <<x,y>> \in g   BECAUSE GENERALIZATION;
+h(f,g,fst(z),snd(z)) => <<fst(z),snd(z)>> \in g   BECAUSE \A(x <- fst(z), y <- snd(z));
+hh(f,g,z) == mainHypo(f,g) /\ z \in f;
+hh(f,g,z) => mainHypo(f,g)   BECAUSE S12;
+IsFunction(f) => IsGraph(f)   BECAUSE S12;
+IsGraph(f) => (z \in f => IsCouple(z))   BECAUSE \A(x <- z);
+hh(f,g,z) => IsGraph(f)   BECAUSE TI2;
+hh(f,g,z) => (z \in f => IsCouple(z))   BECAUSE TI;
+hh(f,g,z) => z \in f   BECAUSE S22;
+hh(f,g,z) => IsCouple(z)   BECAUSE KillMiddleHypo;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(z) => z = <<fst(z), snd(z)>>   BECAUSE \A(c <- z);
+hh(f,g,z) => z = <<fst(z), snd(z)>>   BECAUSE TI;
+\A a : \A b : a = b => (a \in f <=> b \in f)   BECAUSE E_SCHEME;
+z = <<fst(z), snd(z)>> => (z \in f <=> <<fst(z), snd(z)>> \in f)  BECAUSE \A(a <- z, b <- <<fst(z), snd(z)>>);
+(z \in f <=> <<fst(z), snd(z)>> \in f) => (z \in f => <<fst(z), snd(z)>> \in f)   BECAUSE EquivToImpl;
+hh(f,g,z) => (z \in f => <<fst(z), snd(z)>> \in f)  BECAUSE TI2;
+hh(f,g,z) => <<fst(z), snd(z)>> \in f  BECAUSE KillMiddleHypo;
+hh(f,g,z) => h(f,g,fst(z),snd(z))  BECAUSE CIA;
+hh(f,g,z) => <<fst(z),snd(z)>> \in g  BECAUSE TI;
+\A a : \A b : a = b => (a \in g <=> b \in g)   BECAUSE E_SCHEME;
+z = <<fst(z), snd(z)>> => (z \in g <=> <<fst(z), snd(z)>> \in g)  BECAUSE \A(a <- z, b <- <<fst(z), snd(z)>>);
+(z \in g <=> <<fst(z), snd(z)>> \in g) => (<<fst(z), snd(z)>> \in g => z \in g)   BECAUSE EquivToImplReverse;
+hh(f,g,z) => (<<fst(z), snd(z)>> \in g => z \in g)  BECAUSE TI2;
+hh(f,g,z) => z \in g  BECAUSE KillMiddleHypo;
+mainHypo(f,g) => (z \in f => z \in g)  BECAUSE HypoAndToImpl;
+\A z : mainHypo(f,g) => (z \in f => z \in g)  BECAUSE GENERALIZATION;
+mainHypo(f,g) => f \subseteq g  BECAUSE Q_SCHEME;
+
+\* TODO reverse g \subseteq f by variable swapping
 
 funcEqual   BECAUSE GENERALIZATION;
 QED
