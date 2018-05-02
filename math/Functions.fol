@@ -140,6 +140,44 @@ funcEqual == \A f : \A g : IsFunction(f) /\ IsFunction(g) /\ Domain(f) = Domain(
    => f = g
 THEOREM funcEqual
 PROOF
+VARIABLES a,b,f,g,x,y;
+h(f,g,x,y) == IsFunction(f) /\ IsFunction(g) /\ Domain(f) = Domain(g)
+   /\ (\A x : x \in Domain(f) => f[x] = g[x])
+   /\ <<x,y>> \in f;
+\* Prove that h(f,g,x,y) => <<x,y>> \in g
+domainExists   BECAUSE THEOREM;
+x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
+IsDefinedOn(f,x) => x \in Domain(f)   BECAUSE EquivToImplReverse;
+<<x,y>> \in f => IsDefinedOn(f,x)   BECAUSE \E(y <- y);
+h(f,g,x,y) => <<x,y>> \in f   BECAUSE S22;
+h(f,g,x,y) => x \in Domain(f)   BECAUSE TI2;
+h(f,g,x,y) => IsFunction(f) /\ IsFunction(g)   BECAUSE S14;
+IsFunction(f) /\ IsFunction(g) => IsFunction(f)   BECAUSE S12;
+IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
+(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,y>> \in f => y = f[x])   BECAUSE \A(a <- x, b <- y);
+IsFunction(f) => (<<x,y>> \in f => y = f[x])   BECAUSE TI;
+h(f,g,x,y) => (<<x,y>> \in f => y = f[x])   BECAUSE TI2;
+h(f,g,x,y) => y = f[x]   BECAUSE KillMiddleHypo;
+h(f,g,x,y) => (\A x : x \in Domain(f) => f[x] = g[x])   BECAUSE S23;
+(\A x : x \in Domain(f) => f[x] = g[x]) => (x \in Domain(f) => f[x] = g[x])   BECAUSE \A(x <- x);
+h(f,g,x,y) => (x \in Domain(f) => f[x] = g[x])   BECAUSE TI;
+h(f,g,x,y) => f[x] = g[x]   BECAUSE KillMiddleHypo;
+f[x] = g[x] => g[x] = f[x]   BECAUSE E_SCHEME;
+h(f,g,x,y) => g[x] = f[x]   BECAUSE TI;
+h(f,g,x,y) => y = f[x] /\ g[x] = f[x]   BECAUSE CIA;
+y = f[x] /\ g[x] = f[x] => y = g[x]   BECAUSE E_SCHEME;
+h(f,g,x,y) => y = g[x]   BECAUSE TI;
+domainExists   BECAUSE THEOREM;
+x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(g <- g, x <- x);
+x \in Domain(g) => IsDefinedOn(g,x)   BECAUSE EquivToImpl;
+IsDefinedOn(g,x) => <<x,g[x]>> \in g   BECAUSE CHOOSE g[x];
+x \in Domain(g) => <<x,g[x]>> \in g   BECAUSE TI;
+\A a : \A b : a = b => (<<x,a>> \in g <=> <<x,b>> \in g)   BECAUSE E_SCHEME;
+y = g[x] => (<<x,y>> \in g <=> <<x,g[x]>> \in g)   BECAUSE \A(a <- y, b <- g[x]);
+(<<x,y>> \in g <=> <<x,g[x]>> \in g) => (<<x,g[x]>> \in g => <<x,y>> \in g)   BECAUSE EquivToImplReverse;
+h(f,g,x,y) => (<<x,g[x]>> \in g => <<x,y>> \in g)   BECAUSE TI2;
+h(f,g,x,y) => <<x,y>> \in g   BECAUSE KillMiddleHypo; \* TODO by Domain(f) = Domain(g)
+
 funcEqual   BECAUSE GENERALIZATION;
 QED
 
@@ -1175,4 +1213,110 @@ IsGraph(productFunc(f,g))   BECAUSE GENERALIZATION;
 (IsFunction(f) /\ IsFunction(g)) => IsGraph(productFunc(f,g))   BECAUSE PT1;
 (IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))   BECAUSE CIA;
 productFuncIsFunc   BECAUSE GENERALIZATION;
+QED
+
+(*
+   Proof that CHOOSE combined with axiom schemes is not always a conservative extension.
+   This proof introduces the symbol Choice(p) == CHOOSE z : z \in p
+   and uses it inside the separation axiom scheme, to prove the axiom of choice.
+   
+   For this reason CHOOSE symbols are forbidden in axiom schemes, CHOOSE_UNIQUE
+   must be used instead.
+*)
+choiceFunctionsExist == \A a : \E f : IsFunction(f)
+  /\ \A p : p \subseteq a /\ p # {} => f[p] \in p
+THEOREM choiceFunctionsExist
+PROOF
+VARIABLES a,b,f,i,j,p,x,y,z;
+\* By separation in (SUBSET a \ {}) \X a, prove cf(a) is a graph
+Choice(p) == CHOOSE z : z \in p;
+\A a : \E b : \A x : x \in b <=> x \in a /\ snd(x) = Choice(fst(x))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x))   BECAUSE \A(a <- (SUBSET a) \X a);
+cf(a) == CHOOSE b : \A x : x \in b <=> x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x));
+\A x : x \in cf(a) <=> x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x))   BECAUSE CHOOSE cf(a);
+x \in cf(a) <=> x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x))   BECAUSE \A(x <- x);
+x \in cf(a) => x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x))   BECAUSE EquivToImpl;
+x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x)) => x \in (SUBSET a) \X a   BECAUSE S12;
+x \in cf(a) => x \in (SUBSET a) \X a   BECAUSE TI;
+cartesianProductExists   BECAUSE THEOREM;
+x \in (SUBSET a) \X a <=> (IsCouple(x) /\ fst(x) \in (SUBSET a) /\ snd(x) \in a)   BECAUSE \A(i <- SUBSET a, j <- a, x <- x);
+x \in (SUBSET a) \X a => (IsCouple(x) /\ fst(x) \in (SUBSET a) /\ snd(x) \in a)   BECAUSE EquivToImpl;
+(IsCouple(x) /\ fst(x) \in (SUBSET a) /\ snd(x) \in a) => IsCouple(x)   BECAUSE S13;
+x \in cf(a) => IsCouple(x)   BECAUSE TI2;
+IsGraph(cf(a))   BECAUSE GENERALIZATION;
+
+\* Prove cf(a) is a function
+x \in (SUBSET a) \X a /\ snd(x) = Choice(fst(x)) => snd(x) = Choice(fst(x))   BECAUSE S22;
+x \in cf(a) => snd(x) = Choice(fst(x))   BECAUSE TI;
+\A x : \A a : x \in cf(a) => snd(x) = Choice(fst(x))   BECAUSE GENERALIZATION;
+<<a,b>> \in cf(z) => snd(<<a,b>>) = Choice(fst(<<a,b>>))   BECAUSE \A(x <- <<a,b>>, a <- z);
+\A x : \A a : \A z : \A b : x = a /\ z = b => (x = Choice(z) <=> a = Choice(b))   BECAUSE E_SCHEME;
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>) => (b = Choice(a) <=> snd(<<a,b>>) = Choice(fst(<<a,b>>)))   BECAUSE \A(x <- b, a <- snd(<<a,b>>), z <- a, b <- fst(<<a,b>>));
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>)   BECAUSE IntroAndRight;
+b = Choice(a) <=> snd(<<a,b>>) = Choice(fst(<<a,b>>))   BECAUSE MODUS_PONENS;
+snd(<<a,b>>) = Choice(fst(<<a,b>>)) => b = Choice(a)   BECAUSE EquivToImplReverse;
+<<a,b>> \in cf(z) => b = Choice(a)   BECAUSE TI;
+<<a,b>> \in cf(z) => \E y : <<a,y>> \in cf(z)   BECAUSE \E(y <- b);
+(\E y : <<a,y>> \in cf(z)) => <<a,cf(z)[a]>> \in cf(z)   BECAUSE CHOOSE cf(z)[a];
+<<a,b>> \in cf(z) => <<a,cf(z)[a]>> \in cf(z)   BECAUSE TI;
+\A b : <<a,b>> \in cf(z) => b = Choice(a)   BECAUSE GENERALIZATION;
+<<a,cf(z)[a]>> \in cf(z) => cf(z)[a] = Choice(a)   BECAUSE \A(b <- cf(z)[a]);
+<<a,b>> \in cf(z) => cf(z)[a] = Choice(a)   BECAUSE TI;
+<<a,b>> \in cf(z) => (b = Choice(a) /\ cf(z)[a] = Choice(a))   BECAUSE CIA;
+(b = Choice(a) /\ cf(z)[a] = Choice(a)) => b = cf(z)[a]   BECAUSE E_SCHEME;
+<<a,b>> \in cf(z) => b = cf(z)[a]   BECAUSE TI;
+\A a : \A b : <<a,b>> \in cf(z) => b = cf(z)[a]   BECAUSE GENERALIZATION;
+\A a : IsGraph(cf(a))   BECAUSE GENERALIZATION;
+IsGraph(cf(z))   BECAUSE \A(a <- z);
+IsFunction(cf(z))   BECAUSE IntroAndRight;
+\A z : IsFunction(cf(z))   BECAUSE GENERALIZATION;
+IsFunction(cf(a))   BECAUSE \A(z <- a);
+
+\* Prove cf(a)[p] \in p
+h(a,p) == p \subseteq a /\ p # {};
+<<p,Choice(p)>> \in cf(a) <=> <<p,Choice(p)>> \in (SUBSET a) \X a /\ snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE \A(x <- <<p,Choice(p)>>);
+<<p,Choice(p)>> \in (SUBSET a) \X a /\ snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>)) => <<p,Choice(p)>> \in cf(a)   BECAUSE EquivToImplReverse;
+h(a,p) => p # {}   BECAUSE S22;
+notEmpty   BECAUSE THEOREM;
+p # {} => \E z : z \in p   BECAUSE \A(x <- p);
+(\E z : z \in p) => Choice(p) \in p   BECAUSE CHOOSE Choice(p);
+h(a,p) => Choice(p) \in p   BECAUSE TI2;
+h(a,p) => p \subseteq a   BECAUSE S12;
+p \subseteq a => (Choice(p) \in p => Choice(p) \in a)   BECAUSE \A(z <- Choice(p));
+h(a,p) => (Choice(p) \in p => Choice(p) \in a)   BECAUSE TI;
+h(a,p) => Choice(p) \in a   BECAUSE KillMiddleHypo;
+powersetExists   BECAUSE AXIOM;
+p \in SUBSET a <=> p \subseteq a   BECAUSE \A(x <- a, z <- p);
+p \subseteq a => p \in SUBSET a   BECAUSE EquivToImplReverse;
+h(a,p) => p \in SUBSET a   BECAUSE TI;
+h(a,p) => p \in SUBSET a /\ Choice(p) \in a   BECAUSE CIA;
+cartesianProductCouples   BECAUSE THEOREM;
+(p \in SUBSET a /\ Choice(p) \in a) <=> <<p,Choice(p)>> \in (SUBSET a) \X a   BECAUSE \A(x <- SUBSET a, y <- a, a <- p, b <- Choice(p));
+p \in SUBSET a /\ Choice(p) \in a => <<p,Choice(p)>> \in (SUBSET a) \X a   BECAUSE EquivToImpl;
+h(a,p) => <<p,Choice(p)>> \in (SUBSET a) \X a   BECAUSE TI;
+\A a : \A b : b = Choice(a) <=> snd(<<a,b>>) = Choice(fst(<<a,b>>))   BECAUSE GENERALIZATION;
+Choice(p) = Choice(p) <=> snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE \A(a <- p, b <- Choice(p));
+equalSelf   BECAUSE THEOREM;
+Choice(p) = Choice(p)   BECAUSE \A(a <- Choice(p));
+snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE MODUS_PONENS;
+<<p,Choice(p)>> \in (SUBSET a) \X a => <<p,Choice(p)>> \in (SUBSET a) \X a /\ snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE IntroAndLeft;
+h(a,p) => <<p,Choice(p)>> \in cf(a)   BECAUSE TI2;
+<<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE \A(a <- p, b <- Choice(p));
+\A z : <<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE GENERALIZATION;
+<<p,Choice(p)>> \in cf(a) => Choice(p) = cf(a)[p]   BECAUSE \A(z <- a);
+h(a,p) => Choice(p) = cf(a)[p]   BECAUSE TI;
+\A x : \A y : x = y => (x \in p <=> y \in p)   BECAUSE E_SCHEME;
+Choice(p) = cf(a)[p] => (Choice(p) \in p <=> cf(a)[p] \in p)   BECAUSE \A(x <- Choice(p), y <- cf(a)[p]);
+h(a,p) => (Choice(p) \in p <=> cf(a)[p] \in p)   BECAUSE TI;
+(Choice(p) \in p <=> cf(a)[p] \in p) => (Choice(p) \in p => cf(a)[p] \in p)   BECAUSE EquivToImpl;
+h(a,p) => (Choice(p) \in p => cf(a)[p] \in p)   BECAUSE TI;
+h(a,p) => cf(a)[p] \in p   BECAUSE KillMiddleHypo;
+\A p : h(a,p) => cf(a)[p] \in p   BECAUSE GENERALIZATION;
+IsFunction(cf(a)) /\ \A p : h(a,p) => cf(a)[p] \in p   BECAUSE IntroAndRight;
+\E f : IsFunction(f) /\ \A p : p \subseteq a /\ p # {} => f[p] \in p   BECAUSE \E(f <- cf(a));
+choiceFunctionsExist   BECAUSE GENERALIZATION;
 QED

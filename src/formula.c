@@ -782,9 +782,13 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
   if (!f)
     return (formula*)0;
 
-  variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
-  if (sub && sub->variable)
-    return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
+  if (f->builtInOp == variable)
+    {
+      // TODO free variable
+      variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
+      if (sub && sub->variable)
+	return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
+    }
 
   formula* c = make_formula(f->builtInOp,
 			    f->name ? strdup(f->name) : 0,
