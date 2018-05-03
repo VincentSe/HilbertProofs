@@ -182,15 +182,17 @@ AXIOM_SCHEME BOUND_VAR(b) replacement
 
    Besides, we will see with the axiom of foundation that this empty set is
    the atom, the elementary building block for all sets, ie all mathematics.
+   
+   Another clue to the importance and solidity of the empty set :
+   it is unique. There are not different ways of being empty,
+   the empty set only has only one form, it is the same everywhere
+   we use it.
 *)
-{} == CHOOSE b : \A x : x \notin b
-emptySetExists == \A x : x \notin {}
-\* TODO CHOOSE_UNIQUE and \A b : b = {} <=> \A x : x \notin b
-\* TODO probably keep separated existence for convenience, by \A(b <- {}).
-
-THEOREM emptySetExists
+{} == CHOOSE_UNIQUE b : \A c : c = b <=> \A x : x \notin c
+emptySetExistsUniquely == \A c : c = {} <=> \A x : x \notin c
+THEOREM emptySetExistsUniquely
 PROOF
-VARIABLES x, a, b;
+VARIABLES a,b,c,i,j,x;
 \* Construct the empty set by the separation axiom with a contradictory formula
 \A a : \E b : \A x : x \in b <=> (x \in a /\ x # x)   BECAUSE AXIOM_SCHEME; \* separation
 \E b : \A x : x \in b <=> (x \in a /\ x # x)   BECAUSE \A(a <- a);
@@ -209,31 +211,40 @@ x = x   BECAUSE \A(a <- x);
 x \notin chooseB(a)   BECAUSE MODUS_PONENS;
 \A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
 
-\* Conclude chooseB(a) is the empty set
 \E b : \A x : x \notin b   BECAUSE \E(b <- chooseB(a));
-emptySetExists   BECAUSE CHOOSE {};
+
+\* Now prove the unicity of chooseB(a)
+equivImpossible(a,b) == ~b => (~a => (a <=> b)) PROPO_TAUTO;
+x \notin c => (x \in c <=> x \in chooseB(a))  BECAUSE equivImpossible;
+(\A x : x \notin c) => x \notin c   BECAUSE \A(x <- x);
+(\A x : x \notin c) => (x \in c <=> x \in chooseB(a))   BECAUSE TI;
+\A x : (\A x : x \notin c) => (x \in c <=> x \in chooseB(a))   BECAUSE GENERALIZATION;
+(\A x : x \notin c) => (\A x : x \in c <=> x \in chooseB(a))   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in c <=> x \in chooseB(a)) => c = chooseB(a)   BECAUSE \A(a <- c, b <- chooseB(a));
+(\A x : x \notin c) => c = chooseB(a)   BECAUSE TI;
+
+\A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
+c = chooseB(a) => ((\A x : x \notin c) <=> (\A x : x \notin chooseB(a)))   BECAUSE \A(i <- c, j <- chooseB(a));
+c = chooseB(a) => (\A x : x \notin c)   BECAUSE ImplyEquivTrue;
+c = chooseB(a) <=> (\A x : x \notin c)   BECAUSE IntroEquiv;
+\A c : c = chooseB(a) <=> (\A x : x \notin c)   BECAUSE GENERALIZATION;
+
+\* Conclude chooseB(a) is the empty set
+\E b : \A c : c = b <=> (\A x : x \notin c)   BECAUSE \E(b <- chooseB(a));
+emptySetExistsUniquely   BECAUSE CHOOSE {};
 QED
 
-(*
-   Another clue to the importance and solidity of the empty set :
-   it is unique. There are not different ways of being empty,
-   the empty set only has only one form, it is the same everywhere
-   we use it.
-*)
-emptySetUnique == \A a : (\A x : x \notin a) => a = {}
-THEOREM emptySetUnique
+\* Convenience theorem
+emptySetExists == \A x : x \notin {}
+THEOREM emptySetExists
 PROOF
-VARIABLES a,b,x;
-emptySetExists BECAUSE THEOREM;
-x \notin {} BECAUSE \A(x <- x);
-equivImpossible(a,b) == ~b => (~a => (a <=> b)) PROPO_TAUTO;
-(x \notin a) => (x \in a <=> x \in {})  BECAUSE equivImpossible;
-(\A x : x \notin a) => (\A x : x \in a <=> x \in {})   BECAUSE Q_SCHEME;
-
-extensionality   BECAUSE AXIOM;
-(\A x : x \in a <=> x \in {}) => a = {}   BECAUSE \A(a <- a, b <- {});
-(\A x : x \notin a) => a = {}   BECAUSE TI;
-\A a : (\A x : x \notin a) => a = {}   BECAUSE GENERALIZATION;
+VARIABLES a,b,c;
+emptySetExistsUniquely   BECAUSE THEOREM;
+{} = {} <=> \A x : x \notin {}   BECAUSE \A(c <- {});
+equalSelf   BECAUSE THEOREM;
+{} = {}   BECAUSE \A(a <- {});
+emptySetExists   BECAUSE MODUS_PONENS;
 QED
 
 emptyIncludedInAny == \A x : {} \subseteq x
@@ -260,12 +271,14 @@ x \subseteq {} => x = {}   BECAUSE TI;
 includedInEmpty   BECAUSE GENERALIZATION;
 QED
 
+\* TODO remove and replace by emptySetExistsUniquely
 notEmpty == \A x : x # {} => \E z : z \in x
 THEOREM notEmpty
 PROOF
-VARIABLES a,x,z;
-emptySetUnique BECAUSE THEOREM;
-(\A x : x \notin a) => a = {} BECAUSE \A(a <- a);
+VARIABLES a,c,x,z;
+emptySetExistsUniquely   BECAUSE THEOREM;
+a = {} <=> \A x : x \notin a   BECAUSE \A(c <- a);
+(\A x : x \notin a) => a = {}   BECAUSE EquivToImplReverse;
 (\A z : z \notin a) => x \notin a   BECAUSE \A(z <- x);
 \A x : (\A z : z \notin a) => x \notin a   BECAUSE GENERALIZATION;
 (\A z : z \notin a) => \A x : x \notin a   BECAUSE Q_SCHEME;
@@ -347,7 +360,7 @@ VARIABLES a,b,u,v,x;
 intersectionExists   BECAUSE GENERALIZATION;
 QED
 
-intersectSuper == \A a : \A b : a \subseteq b => a \intersect b = a
+intersectSuper == \A a : \A b : a \subseteq b => (a \intersect b) = a
 THEOREM intersectSuper
 PROOF
 VARIABLES a,b,u,v,x,z;
@@ -366,6 +379,13 @@ extensionality   BECAUSE AXIOM;
 a \subseteq b => (a \intersect b) = a   BECAUSE TI;
 intersectSuper   BECAUSE GENERALIZATION;
 QED
+
+intersectIncludes == \A a : \A b : (a \intersect b) \subseteq b
+THEOREM intersectIncludes
+PROOF
+intersectIncludes   BECAUSE GENERALIZATION; \* TODO
+QED
+
 
 
 \* The complement of a set into another set
@@ -386,7 +406,7 @@ AreDisjoint(x,y) == x \intersect y = {}
 noCommonElements == \A x : \A y : AreDisjoint(x,y) <=> \A z : ~(z \in x /\ z \in y)
 THEOREM noCommonElements
 PROOF
-VARIABLES a,u,v,x,y,z;
+VARIABLES a,c,u,v,x,y,z;
 intersectionExists   BECAUSE THEOREM;
 z \in (x \intersect y) <=> (z \in x /\ z \in y)   BECAUSE \A(u <- x, v <- y, x <- z);
 contraEquiv(a,b) == (a <=> b) => (~a <=> ~b)   PROPO_TAUTO;
@@ -402,8 +422,9 @@ AreDisjoint(x,y) => ~(z \in x /\ z \in y)   BECAUSE TI;
 \A z : AreDisjoint(x,y) => ~(z \in x /\ z \in y)   BECAUSE GENERALIZATION;
 AreDisjoint(x,y) => \A z : ~(z \in x /\ z \in y)   BECAUSE Q_SCHEME;
 
-emptySetUnique   BECAUSE THEOREM;
-(\A x : x \notin a) => a = {}   BECAUSE \A(a <- a);
+emptySetExistsUniquely   BECAUSE THEOREM;
+a = {} <=> \A x : x \notin a   BECAUSE \A(c <- a);
+(\A x : x \notin a) => a = {}   BECAUSE EquivToImplReverse;
 (\A z : z \notin a) => x \notin a   BECAUSE \A(z <- x);
 \A x : (\A z : z \notin a) => x \notin a   BECAUSE GENERALIZATION;
 (\A z : z \notin a) => \A x : x \notin a   BECAUSE Q_SCHEME;
@@ -1033,53 +1054,102 @@ tupleDecomposition   BECAUSE GENERALIZATION;
 QED
 
 IsCouple(c) == \E x : \E y : c = <<x,y>>
-fst(c) == CHOOSE x : \E y : c = <<x,y>>
-snd(c) == CHOOSE y : c = <<fst(c), y>>
+fst(c) == CHOOSE_UNIQUE x : \A z : z = x <=> \E y : c = <<z,y>>
+snd(c) == CHOOSE_UNIQUE y : \A z : z = y <=> c = <<fst(c), z>>
 swap(c) == <<snd(c), fst(c)>>
-
-tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
-THEOREM tupleComposition
-PROOF
-VARIABLES c,x,y;
-(\E x : \E y : c = <<x,y>>) => (\E y : c = <<fst(c),y>>)   BECAUSE CHOOSE fst(c);
-(\E y : c = <<fst(c),y>>) => c = <<fst(c),snd(c)>>   BECAUSE CHOOSE snd(c);
-IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TI;
-tupleComposition   BECAUSE GENERALIZATION;
-QED
 
 fstExists == \A a : \A b : a = fst(<<a,b>>)
 THEOREM fstExists
 PROOF
-VARIABLES a,b,c,d,x,y;
-tupleComposition   BECAUSE THEOREM;
-IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
+VARIABLES a,b,c,d,x,y,z;
 equalSelf   BECAUSE THEOREM;
 <<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
-IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
-<<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
+\E y : <<a,b>> = <<a,y>>   BECAUSE \E(y <- b);
+\A z : \A x : z = x => ((\E y : <<a,b>> = <<z,y>>) <=> (\E y : <<a,b>> = <<x,y>>))   BECAUSE E_SCHEME;
+z = a => ((\E y : <<a,b>> = <<z,y>>) <=> (\E y : <<a,b>> = <<a,y>>))   BECAUSE \A(z <- z, x <- a);
+z = a => (\E y : <<a,b>> = <<z,y>>)   BECAUSE ImplyEquivTrue;
+
 tupleDecomposition   BECAUSE THEOREM;
-<<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
-a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-a = fst(<<a,b>>)   BECAUSE S12;
+<<a, b>> = <<z,y>> => a = z /\ b = y   BECAUSE \A(a <- a, b <- b, c <- z, d <- y);
+a = z /\ b = y => a = z   BECAUSE S12;
+a = z => z = a   BECAUSE E_SCHEME;
+<<a, b>> = <<z,y>> => z = a   BECAUSE TI2;
+(\E y : <<a, b>> = <<z,y>>) => \E y : z = a   BECAUSE Q_SCHEME;
+(\E y : z = a) => z = a   BECAUSE Q_SCHEME;
+(\E y : <<a, b>> = <<z,y>>) => z = a   BECAUSE TI;
+z = a <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE IntroEquiv;
+\A z : z = a <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE GENERALIZATION;
+\E x : \A z : z = x <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE \E(x <- a);
+\A z : z = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE CHOOSE fst(<<a,b>>);
+a = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<a,y>>)   BECAUSE \A(z <- a);
+a = fst(<<a,b>>)   BECAUSE MODUS_PONENS;
 fstExists   BECAUSE GENERALIZATION;
 QED
 
 sndExists == \A a : \A b : b = snd(<<a,b>>)
 THEOREM sndExists
 PROOF
-VARIABLES a,b,c,d,x,y;
-tupleComposition   BECAUSE THEOREM;
-IsCouple(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE \A(c <- <<a,b>>);
-equalSelf   BECAUSE THEOREM;
-<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
-IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
-<<a,b>> = <<fst(<<a,b>>), snd(<<a,b>>)>>   BECAUSE MODUS_PONENS;
+VARIABLES a,b,c,d,x,y,z;
+\A z : \A x : z = x => (<<a,b>> = <<fst(<<a,b>>),z>> <=> <<a,b>> = <<fst(<<a,b>>),x>>)   BECAUSE E_SCHEME;
+z = b => (<<a,b>> = <<fst(<<a,b>>),z>> <=> <<a,b>> = <<fst(<<a,b>>),b>>)   BECAUSE \A(z <- z, x <- b);
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+\A x : \A y : x = y => <<x,b>> = <<y,b>>   BECAUSE E_SCHEME;
+a = fst(<<a,b>>) => <<a,b>> = <<fst(<<a,b>>),b>>   BECAUSE \A(x <- a, y <- fst(<<a,b>>));
+<<a,b>> = <<fst(<<a,b>>),b>>   BECAUSE MODUS_PONENS;
+z = b => <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE ImplyEquivTrue;
+
 tupleDecomposition   BECAUSE THEOREM;
-<<a, b>> = <<fst(<<a,b>>), snd(<<a,b>>)>> => (a = fst(<<a,b>>) /\ b = snd(<<a,b>>))   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- snd(<<a,b>>));
-a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-b = snd(<<a,b>>)   BECAUSE S22;
+<<a,b>> = <<fst(<<a,b>>),z>> => a = fst(<<a,b>>) /\ b = z   BECAUSE \A(a <- a, b <- b, c <- fst(<<a,b>>), d <- z);
+a = fst(<<a,b>>) /\ b = z => b = z   BECAUSE S22;
+b = z => z = b   BECAUSE E_SCHEME;
+<<a,b>> = <<fst(<<a,b>>),z>> => z = b   BECAUSE TI2;
+z = b <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE IntroEquiv;
+\A z : z = b <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE GENERALIZATION;
+\E y : \A z : z = y <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE \E(y <- b);
+\A z : z = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE CHOOSE snd(<<a,b>>);
+b = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),b>>   BECAUSE \A(z <- b);
+b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 sndExists   BECAUSE GENERALIZATION;
 QED
+
+tupleComposition == \A c : IsCouple(c) => c = <<fst(c), snd(c)>>
+THEOREM tupleComposition
+PROOF
+VARIABLES a,b,c,x,y;
+\* Proof that c = <<x,y>> => c = <<fst(c), snd(c)>>
+fstExists   BECAUSE THEOREM;
+x = fst(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+sndExists   BECAUSE THEOREM;
+y = snd(<<x,y>>)   BECAUSE \A(a <- x, b <- y);
+\A a : \A b : a = b => fst(a) = fst(b)   BECAUSE E_SCHEME;
+c = <<x,y>> => fst(c) = fst(<<x,y>>)   BECAUSE \A(a <- c, b <- <<x,y>>);
+fst(c) = fst(<<x,y>>) /\ x = fst(<<x,y>>) => fst(c) = x   BECAUSE E_SCHEME;
+fst(c) = fst(<<x,y>>) => fst(c) = fst(<<x,y>>) /\ x = fst(<<x,y>>)   BECAUSE IntroAndLeft;
+c = <<x,y>> => fst(c) = x   BECAUSE TI2;
+\A a : \A b : a = b => snd(a) = snd(b)   BECAUSE E_SCHEME;
+c = <<x,y>> => snd(c) = snd(<<x,y>>)   BECAUSE \A(a <- c, b <- <<x,y>>);
+snd(c) = snd(<<x,y>>) /\ y = snd(<<x,y>>) => snd(c) = y   BECAUSE E_SCHEME;
+snd(c) = snd(<<x,y>>) => snd(c) = snd(<<x,y>>) /\ y = snd(<<x,y>>)   BECAUSE IntroAndLeft;
+c = <<x,y>> => snd(c) = y   BECAUSE TI2;
+c = <<x,y>> => fst(c) = x /\ snd(c) = y   BECAUSE CIA;
+\A a : \A b : \A x : \A y : a = b /\ x = y => <<a,x>> = <<b,y>>   BECAUSE E_SCHEME;
+fst(c) = x /\ snd(c) = y => <<fst(c),snd(c)>> = <<x,y>>   BECAUSE \A(a <- fst(c), b <- x, x <- snd(c), y <- y);
+c = <<x,y>> => <<fst(c),snd(c)>> = <<x,y>>   BECAUSE TI;
+c = <<x,y>> => c = <<x,y>>   BECAUSE ImplySelf;
+c = <<x,y>> => c = <<x,y>> /\ <<fst(c),snd(c)>> = <<x,y>>   BECAUSE CIA;
+c = <<x,y>> /\ <<fst(c),snd(c)>> = <<x,y>> => c = <<fst(c),snd(c)>>   BECAUSE E_SCHEME;
+c = <<x,y>> => c = <<fst(c),snd(c)>>   BECAUSE TI;
+
+\* Then add the existential quantifiers
+(\E y : c = <<x,y>>) => \E y : c = <<fst(c),snd(c)>>   BECAUSE Q_SCHEME;
+IsCouple(c) => \E x : \E y : c = <<fst(c),snd(c)>>   BECAUSE Q_SCHEME;
+(\E x : \E y : c = <<fst(c),snd(c)>>) => \E y : c = <<fst(c),snd(c)>>   BECAUSE Q_SCHEME;
+(\E y : c = <<fst(c),snd(c)>>) => c = <<fst(c),snd(c)>>   BECAUSE Q_SCHEME;
+IsCouple(c) => c = <<fst(c),snd(c)>>   BECAUSE TI2;
+tupleComposition   BECAUSE GENERALIZATION;
+QED
+
 
 
 \* The class of oriented graphs, ie sets of couples.

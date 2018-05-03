@@ -1052,8 +1052,12 @@ short check_choose_statement(const struct FormulaDList* statement,
   // For example the empty set :
   // (\E b : \A x : x \notin b) => (\A x : x \notin {})
 
+  const formula* chooseF = get_quantified_formula(chooseReason, chooseUnique);
+
   const formula* f = statement->jf->formula;
-  const formula* chooseF = get_quantified_formula(chooseReason, choose);
+  if (!chooseF)
+    chooseF = get_quantified_formula(chooseReason, choose);
+
   if (!chooseF)
     {
       printf("%s:%d: bad choose reason\n", f->file, f->first_line);
@@ -1187,6 +1191,17 @@ short check_proof_statement(const struct FormulaDList* statement,
   return 0;
 }
 
+unsigned char is_free_var(const char* v,
+			  const struct string_list* boundVars,
+			  const void* args)
+{
+  const char* targetVar = args;
+  if (string_list_contains(boundVars, v))
+    return 0; // bound variable
+  return strcmp(v, targetVar) == 0;
+}
+
+
 short semantic_check_operator_definition(formula* op,
 					 const formula_set operators,
 					 const struct formula_list* constants,
@@ -1210,7 +1225,30 @@ short semantic_check_operator_definition(formula* op,
 				(struct string_list*)0,
 				op->operands,
 				proofLocalDecl);
-  return success;
+  if (!success)
+    return 0;
+
+  if (op->definingFormula->builtInOp == chooseUnique)
+    {
+      // Check chooseF implies the unicity of the chosen term
+      const formula* fa = get_first_operand(op->definingFormula);
+      const formula* equiv = get_first_operand(fa);
+      const formula* eq = get_first_operand(equiv);
+      const formula* cvar = get_second_operand(eq);
+      const formula* genvar = get_first_operand(eq);
+      if (!fa || fa->builtInOp != forall
+	  || !equiv || equiv->builtInOp != lequiv
+	  || !eq || eq->builtInOp != equal
+	  || !genvar || genvar->builtInOp != variable
+	  || !cvar || cvar->builtInOp != variable
+	  || strcmp(cvar->name, op->definingFormula->name) != 0
+	  || find_variable(get_second_operand(equiv), (struct string_list*)0, is_free_var, cvar->name))
+	{
+	  printf("%s:%d: the choosing formula does not imply unicity\n", op->file, op->first_line);
+	  return 0;
+	}
+    }
+  return 1;
 
   // TODO Check that op->freeVariables are not quantified in the right-hand side formula
 }
