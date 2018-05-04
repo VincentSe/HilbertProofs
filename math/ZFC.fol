@@ -198,40 +198,42 @@ VARIABLES a,b,c,i,j,x;
 \E b : \A x : x \in b <=> (x \in a /\ x # x)   BECAUSE \A(a <- a);
 
 \* Take one such set b and show no set x can be in it
-chooseB(a) == CHOOSE b : \A x : x \in b <=> (x \in a /\ x # x);
-\A x : x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE CHOOSE chooseB(a);
-x \in chooseB(a) <=> (x \in a /\ x # x)   BECAUSE \A(x <- x);
-x \in chooseB(a) => (x \in a /\ x # x)   BECAUSE EquivToImpl;
-(x \in a /\ x # x) => x # x   BECAUSE S22;
-x \in chooseB(a) => x # x   BECAUSE TI;
-~(x # x) => x \notin chooseB(a)   BECAUSE Contraposition;
+h(a,b) == \A x : x \in b <=> (x \in a /\ x # x);
+h(a,b) => (x \in b <=> (x \in a /\ x # x))   BECAUSE \A(x <- x);
 equalSelf   BECAUSE THEOREM;
 x = x   BECAUSE \A(a <- x);
-~(x # x)   BECAUSE IntroNotNot;
-x \notin chooseB(a)   BECAUSE MODUS_PONENS;
-\A x : x \notin chooseB(a)   BECAUSE GENERALIZATION;
+implyEquivFalse(a,b,h,t) == t => ((h => (a <=> b /\ ~t)) => (h => ~a))   PROPO_TAUTO;
+h(a,b) => x \notin b   BECAUSE implyEquivFalse;
+\A x : h(a,b) => x \notin b   BECAUSE GENERALIZATION;
+h(a,b) => \A x : x \notin b   BECAUSE Q_SCHEME;
 
-\E b : \A x : x \notin b   BECAUSE \E(b <- chooseB(a));
-
-\* Now prove the unicity of chooseB(a)
-equivImpossible(a,b) == ~b => (~a => (a <=> b)) PROPO_TAUTO;
-x \notin c => (x \in c <=> x \in chooseB(a))  BECAUSE equivImpossible;
+\* Now prove the unicity of b
+equivImpossible(a,b,h) == (h => ~b) => (h => (~a => (a <=> b)))   PROPO_TAUTO;
+h(a,b) => (x \notin c => (x \in c <=> x \in b))  BECAUSE equivImpossible;
 (\A x : x \notin c) => x \notin c   BECAUSE \A(x <- x);
-(\A x : x \notin c) => (x \in c <=> x \in chooseB(a))   BECAUSE TI;
-\A x : (\A x : x \notin c) => (x \in c <=> x \in chooseB(a))   BECAUSE GENERALIZATION;
-(\A x : x \notin c) => (\A x : x \in c <=> x \in chooseB(a))   BECAUSE Q_SCHEME;
+combineImpl(h,a,b,c) == (h => (a => b)) => ((c => a) => (h => (c => b)))   PROPO_TAUTO;
+h(a,b) => ((\A x : x \notin c) => (x \in c <=> x \in b))   BECAUSE combineImpl;
+\A x : h(a,b) => ((\A x : x \notin c) => (x \in c <=> x \in b))   BECAUSE GENERALIZATION;
+h(a,b) => (\A x : (\A x : x \notin c) => (x \in c <=> x \in b))   BECAUSE Q_SCHEME;
+(\A x : (\A x : x \notin c) => (x \in c <=> x \in b)) => ((\A x : x \notin c) => (\A x : x \in c <=> x \in b))   BECAUSE Q_SCHEME;
+h(a,b) => ((\A x : x \notin c) => (\A x : x \in c <=> x \in b))   BECAUSE TI;
 extensionality   BECAUSE AXIOM;
-(\A x : x \in c <=> x \in chooseB(a)) => c = chooseB(a)   BECAUSE \A(a <- c, b <- chooseB(a));
-(\A x : x \notin c) => c = chooseB(a)   BECAUSE TI;
+(\A x : x \in c <=> x \in b) => c = b   BECAUSE \A(a <- c, b <- b);
+combineImpl2(h,a,b,c) == (h => (a => b)) => ((b => c) => (h => (a => c)))   PROPO_TAUTO;
+h(a,b) => ((\A x : x \notin c) => c = b)   BECAUSE combineImpl2;
 
 \A i : \A j : i = j => ((\A x : x \notin i) <=> (\A x : x \notin j))   BECAUSE E_SCHEME;
-c = chooseB(a) => ((\A x : x \notin c) <=> (\A x : x \notin chooseB(a)))   BECAUSE \A(i <- c, j <- chooseB(a));
-c = chooseB(a) => (\A x : x \notin c)   BECAUSE ImplyEquivTrue;
-c = chooseB(a) <=> (\A x : x \notin c)   BECAUSE IntroEquiv;
-\A c : c = chooseB(a) <=> (\A x : x \notin c)   BECAUSE GENERALIZATION;
+c = b => ((\A x : x \notin c) <=> (\A x : x \notin b))   BECAUSE \A(i <- c, j <- b);
+implyEquivTrue(a,b,h,t) == (h => t) => ((b => (a <=> t)) => (h => (b => a)))   PROPO_TAUTO;
+h(a,b) => (c = b => (\A x : x \notin c))   BECAUSE implyEquivTrue;
+introEquiv(h,a,b) == (h => (a => b)) => ((h => (b => a)) => (h => (a <=> b)))   PROPO_TAUTO;
+h(a,b) => (c = b <=> (\A x : x \notin c))   BECAUSE introEquiv;
+\A c : h(a,b) => (c = b <=> (\A x : x \notin c))   BECAUSE GENERALIZATION;
+h(a,b) => (\A c : c = b <=> (\A x : x \notin c))   BECAUSE Q_SCHEME;
 
-\* Conclude chooseB(a) is the empty set
-\E b : \A c : c = b <=> (\A x : x \notin c)   BECAUSE \E(b <- chooseB(a));
+\* Conclude b is the empty set
+(\E b : h(a,b)) => (\E b : \A c : c = b <=> (\A x : x \notin c))   BECAUSE Q_SCHEME;
+\E b : \A c : c = b <=> (\A x : x \notin c)   BECAUSE MODUS_PONENS;
 emptySetExistsUniquely   BECAUSE CHOOSE {};
 QED
 

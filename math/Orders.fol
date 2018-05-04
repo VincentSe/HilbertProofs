@@ -1521,43 +1521,12 @@ IsOrdinal(o) => o \notin o   BECAUSE absurd;
 ordinalsWellFounded   BECAUSE GENERALIZATION;
 QED
 
-includedOrdinals == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \subseteq p
-   => o \in p \/ o = p
-THEOREM includedOrdinals
+ordinalIsTotalOrder == \A o : \A x : \A y : IsOrdinal(o) /\ x \in o /\ y \in o
+   => x \in y \/ x = y \/ y \in x
+THEOREM ordinalIsTotalOrder
 PROOF
-VARIABLES a,b,o,p,z;
-bothInclusions   BECAUSE THEOREM;
-(o \subseteq p /\ p \subseteq o) => o = p   BECAUSE \A(a <- o, b <- p);
-h(o,p) == IsOrdinal(o) /\ IsOrdinal(p) /\ o \subseteq p;
-h(o,p) => o \subseteq p   BECAUSE S22;
-o \subseteq p => (p \subseteq o => o = p)   BECAUSE HypoAndToImpl;
-h(o,p) => (p \subseteq o => o = p)   BECAUSE TI;
-(p \subseteq o => o = p) => (o # p => ~(p \subseteq o))   BECAUSE Contraposition;
-h(o,p) => (o # p => ~(p \subseteq o))   BECAUSE TI;
-h(o,p) /\ o # p => ~(p \subseteq o)   BECAUSE HypoImplToAnd;
-(\E z : ~(z \in p => z \in o)) <=> ~\A z : ~~(z \in p => z \in o)   BECAUSE Q_SCHEME;
-~(\A z : ~~(z \in p => z \in o)) => (\E z : ~(z \in p => z \in o))   BECAUSE EquivToImplReverse;
-~~(z \in p => z \in o) => (z \in p => z \in o)   BECAUSE DropNotNot;
-(\A z : ~~(z \in p => z \in o)) => p \subseteq o   BECAUSE Q_SCHEME;
-~(p \subseteq o) => ~\A z : ~~(z \in p => z \in o)   BECAUSE Contraposition;
-h(o,p) /\ o # p => \E z : ~(z \in p => z \in o)   BECAUSE TI2;
-
-\* CHOOSE such the minimal such z, which is in p and not in o. Show that z = o.
-includedOrdinals   BECAUSE GENERALIZATION;
+ordinalIsTotalOrder   BECAUSE GENERALIZATION;
 QED
-
-ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
-   => o \in p \/ o = p \/ p \in o
-THEOREM ordinalComparison
-PROOF
-VARIABLES a,c,d,o,p,u,x,y;
-includedOrdinals   BECAUSE THEOREM;
-\* o \intersect p is an ordinal included in both o and p
-\* By the previous theorem, either (o \intersect p) \in o or (o \intersect p) = o
-\* Same (o \intersect p) \in p or (o \intersect p) = p
-\* But both \in would yield (o \intersect p) \in (o \intersect p), absurd
-QED
-
 
 (*
    The strict order \in between the elements of an ordinal p
@@ -1724,10 +1693,182 @@ h(o,x) => IsOrdinal(x)   BECAUSE CIA;
 elemOfOrdinalIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
+includedOrdinals == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \subseteq p
+   => o \in p \/ o = p
+THEOREM includedOrdinals
+PROOF
+VARIABLES a,b,c,o,m,p,u,v,x,y,z;
+bothInclusions   BECAUSE THEOREM;
+(o \subseteq p /\ p \subseteq o) => o = p   BECAUSE \A(a <- o, b <- p);
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p) /\ o \subseteq p;
+h(o,p) => o \subseteq p   BECAUSE S22;
+contraPos(a,b,c,h) == ((a /\ b) => c) => ((h => a) => (h /\ ~c => ~b))   PROPO_TAUTO;
+h(o,p) /\ o # p => ~(p \subseteq o)   BECAUSE contraPos;
+
+\* Proof that p \ o is not empty
+setDifferenceExists   BECAUSE THEOREM;
+z \in (p \ o) <=> (z \in p /\ z \notin o)   BECAUSE \A(u <- p, v <- o, x <- z);
+(z \in p /\ z \notin o) => z \in (p \ o)   BECAUSE EquivToImplReverse;
+z \notin (p \ o) => ~(z \in p /\ z \notin o)   BECAUSE Contraposition;
+(\E z : z \in p \ o) <=> ~\A z : z \notin (p \ o)   BECAUSE Q_SCHEME;
+~(\A z : z \notin p \ o) => (\E z : z \in p \ o)   BECAUSE EquivToImplReverse;
+boolImpl(a,b) == ~(a /\ ~b) => (a => b)   PROPO_TAUTO;
+~(z \in p /\ z \notin o) => (z \in p => z \in o)   BECAUSE boolImpl;
+z \notin p \ o => (z \in p => z \in o)   BECAUSE TI;
+(\A z : z \notin p \ o) => p \subseteq o   BECAUSE Q_SCHEME;
+~(p \subseteq o) => ~\A z : z \notin p \ o   BECAUSE Contraposition;
+h(o,p) /\ o # p => \E z : z \in (p \ o)   BECAUSE TI2;
+emptySetExistsUniquely   BECAUSE THEOREM;
+(p \ o) = {} <=> \A x : x \notin p \ o   BECAUSE \A(c <- p \ o);
+(p \ o) = {} => \A x : x \notin p \ o   BECAUSE EquivToImpl;
+~(\A x : x \notin p \ o) => (p \ o) # {}   BECAUSE Contraposition;
+(\E x : x \in (p \ o)) <=> ~\A x : x \notin p \ o   BECAUSE Q_SCHEME;
+(\E x : x \in (p \ o)) => ~\A x : x \notin p \ o   BECAUSE EquivToImpl;
+z \in (p \ o) => \E x : x \in (p \ o)   BECAUSE \E(x <- z);
+(\E z : z \in (p \ o)) => \E z : \E x : x \in (p \ o)   BECAUSE Q_SCHEME;
+(\E z : \E x : x \in (p \ o)) => \E x : x \in (p \ o)   BECAUSE Q_SCHEME;
+(\E z : z \in (p \ o)) => ~\A x : x \notin p \ o   BECAUSE TI2;
+h(o,p) /\ o # p => (p \ o) # {}   BECAUSE TI2;
+
+\* Take m the minimum of p \ o as a subset of ordinal p
+h(o,p) => IsOrdinal(p)  BECAUSE S23;
+IsWellOrderedByIn(x) => (\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
+(\A p : p \subseteq x => p = {} \/ \E m : IsMinimumForIn(m, p)) => (p \ o \subseteq x => p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE \A(p <- p\o);
+IsWellOrderedByIn(x) => (p \ o \subseteq x => p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE TI;
+\A x : IsWellOrderedByIn(x) => (p \ o \subseteq x => p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE GENERALIZATION;
+IsWellOrderedByIn(p) => (p \ o \subseteq p => p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE \A(x <- p);
+IsOrdinal(p) => IsWellOrderedByIn(p)   BECAUSE S22;
+h(o,p) => (p \ o \subseteq p => p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE TI2;
+z \in (p \ o) => (z \in p /\ z \notin o)   BECAUSE EquivToImpl;
+(z \in p /\ z \notin o) => z \in p   BECAUSE S12;
+z \in p \ o => z \in p   BECAUSE TI;
+p \ o \subseteq p   BECAUSE GENERALIZATION;
+h(o,p) => p \ o \subseteq p   BECAUSE PT1;
+h(o,p) => (p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE KillMiddleHypo;
+h(o,p) /\ o # p => h(o,p)   BECAUSE S12;
+h(o,p) /\ o # p => (p\o = {} \/ \E m : IsMinimumForIn(m, p\o))   BECAUSE TI;
+killCase(h,a,b) == (h => ~a) => ((h => a \/ b) => (h => b))   PROPO_TAUTO;
+h(o,p) /\ o # p => \E m : IsMinimumForIn(m, p\o)   BECAUSE killCase;
+hh(o,p,m) == h(o,p) /\ o # p /\ IsMinimumForIn(m, p\o);
+
+\* Then show that m = o by double inclusion.
+\* If x \in m, below minimum so x \in o.
+hh(o,p,m) => IsMinimumForIn(m, p\o)   BECAUSE S22;
+hh(o,p,m) => h(o,p)   BECAUSE S13;
+IsMinimumForIn(m, p\o) => m \in p\o   BECAUSE S12;
+IsMinimumForIn(m, p\o) => \A b : b \in p\o => (b = m \/ m \in b)   BECAUSE S22;
+(\A b : b \in p\o => (b = m \/ m \in b)) => (x \in p\o => (x = m \/ m \in x))   BECAUSE \A(b <- x);
+hh(o,p,m) => (x \in p\o => (x = m \/ m \in x))   BECAUSE TI2;
+hh(o,p,m) => m \in p\o   BECAUSE TI;
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(p) /\ m \in p => IsOrdinal(m)   BECAUSE \A(o <- p, x <- m);
+m \in (p \ o) <=> (m \in p /\ m \notin o)   BECAUSE \A(u <- p, v <- o, x <- m);
+m \in (p \ o) => (m \in p /\ m \notin o)   BECAUSE EquivToImpl;
+(m \in p /\ m \notin o) => m \in p   BECAUSE S12;
+hh(o,p,m) => m \in p   BECAUSE TI2;
+hh(o,p,m) => IsOrdinal(p)   BECAUSE TI;
+hh(o,p,m) => IsOrdinal(p) /\ m \in p   BECAUSE CIA;
+hh(o,p,m) => IsOrdinal(m)   BECAUSE TI;
+ordinalComparesWithOwnElements   BECAUSE THEOREM;
+IsOrdinal(m) /\ x \in m => x # m /\ m \notin x   BECAUSE \A(o <- x, p <- m);
+x \in m => x \in m   BECAUSE ImplySelf;
+hh(o,p,m) /\ x \in m => IsOrdinal(m) /\ x \in m   BECAUSE MergeImplicationsAnd;
+hh(o,p,m) /\ x \in m => x # m /\ m \notin x   BECAUSE TI;
+x # m /\ m \notin x => ~(x = m \/ m \in x)   BECAUSE FactorNotOr;
+hh(o,p,m) /\ x \in m => ~(x = m \/ m \in x)   BECAUSE TI;
+hh(o,p,m) /\ x \in m => hh(o,p,m)   BECAUSE S12;
+hh(o,p,m) /\ x \in m => (x \in p\o => (x = m \/ m \in x))   BECAUSE TI;
+contrapos(h,a,b) == (h => ~a) => ((h => (b => a)) => (h => ~b))   PROPO_TAUTO;
+hh(o,p,m) /\ x \in m => x \notin p\o   BECAUSE contrapos;
+x \in (p \ o) <=> (x \in p /\ x \notin o)   BECAUSE \A(u <- p, v <- o, x <- x);
+(x \in p /\ x \notin o) => x \in (p \ o)   BECAUSE EquivToImplReverse;
+x \notin (p \ o) => ~(x \in p /\ x \notin o)   BECAUSE Contraposition;
+hh(o,p,m) /\ x \in m => ~(x \in p /\ x \notin o)   BECAUSE TI;
+IsTransitiveSet(p) => (m \in p => m \subseteq p)   BECAUSE \A(a <- m);
+IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE S12;
+hh(o,p,m) => (m \in p => m \subseteq p)   BECAUSE TI2;
+hh(o,p,m) => m \subseteq p   BECAUSE KillMiddleHypo;
+m \subseteq p => (x \in m => x \in p)   BECAUSE \A(z <- x);
+hh(o,p,m) => (x \in m => x \in p)   BECAUSE TI;
+hh(o,p,m) /\ x \in m => x \in p   BECAUSE HypoImplToAnd;
+killCaseB(h,a,b) == (h => a) => ((h => ~(a /\ ~b)) => (h => b))   PROPO_TAUTO;
+hh(o,p,m) /\ x \in m => x \in o   BECAUSE killCaseB;
+
+\* If x \in o, then by total order of p, x \in m.
+ordinalIsTotalOrder   BECAUSE THEOREM;
+IsOrdinal(p) /\ x \in p /\ m \in p => x \in m \/ x = m \/ m \in x   BECAUSE \A(o <- p, x <- x, y <- m);
+hh(o,p,m) /\ x \in o => x \in o   BECAUSE S22;
+o \subseteq p => (x \in o => x \in p)   BECAUSE \A(z <- x);
+hh(o,p,m) => (x \in o => x \in p)   BECAUSE TI2;
+hh(o,p,m) /\ x \in o => x \in p   BECAUSE HypoImplToAnd;
+hh(o,p,m) /\ x \in o => hh(o,p,m)   BECAUSE S12;
+hh(o,p,m) /\ x \in o => m \in p   BECAUSE TI;
+hh(o,p,m) /\ x \in o => IsOrdinal(p)   BECAUSE TI;
+hh(o,p,m) /\ x \in o => IsOrdinal(p) /\ x \in p   BECAUSE CIA;
+hh(o,p,m) /\ x \in o => IsOrdinal(p) /\ x \in p /\ m \in p   BECAUSE CIA;
+hh(o,p,m) /\ x \in o => x \in m \/ x = m \/ m \in x   BECAUSE TI;
+(m \in p /\ m \notin o) => m \notin o   BECAUSE S22;
+hh(o,p,m) => m \notin o   BECAUSE TI2;
+\A x : \A m : x = m => (x \notin o <=> m \notin o)   BECAUSE E_SCHEME;
+x = m => (x \notin o <=> m \notin o)   BECAUSE \A(x <- x, m <- m);
+implyEquivTrue(a,b,h,t) == (h => t) => ((b => (~a <=> t)) => (h /\ a => ~b))   PROPO_TAUTO;
+hh(o,p,m) /\ x \in o => x # m   BECAUSE implyEquivTrue;
+IsTransitiveSet(o) => (x \in o => x \subseteq o)   BECAUSE \A(a <- x);
+h(o,p) => IsOrdinal(o)  BECAUSE S13;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
+hh(o,p,m) => IsOrdinal(o)   BECAUSE TI;
+hh(o,p,m) => (x \in o => x \subseteq o)   BECAUSE TI2;
+hh(o,p,m) /\ x \in o => x \subseteq o   BECAUSE HypoImplToAnd;
+x \subseteq o => (m \in x => m \in o)   BECAUSE \A(z <- m);
+hh(o,p,m) /\ x \in o => (m \in x => m \in o)   BECAUSE TI;
+hh(o,p,m) /\ x \in o => hh(o,p,m)   BECAUSE S12;
+hh(o,p,m) /\ x \in o => m \notin o   BECAUSE TI;
+killCaseC(h,a,b) == (h => ~a) => ((h => (b => a)) => (h => ~b))   PROPO_TAUTO;
+hh(o,p,m) /\ x \in o => m \notin x   BECAUSE killCaseC;
+killCaseD(h,a,b,c) == (h => a \/ b \/ c) => ((h => ~b) => (((h => ~c) => (h => a))))   PROPO_TAUTO;
+hh(o,p,m) /\ x \in o => x \in m   BECAUSE killCaseD;
+
+hIntroEquiv(h,a,b) == (h /\ a => b) => ((h /\ b => a) => (h => (a <=> b)))   PROPO_TAUTO;
+hh(o,p,m) => (x \in o <=> x \in m)   BECAUSE hIntroEquiv;
+\A x : hh(o,p,m) => (x \in o <=> x \in m)   BECAUSE GENERALIZATION;
+hh(o,p,m) => (\A x : x \in o <=> x \in m)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in o <=> x \in m) => o = m   BECAUSE \A(a <- o, b <- m);
+hh(o,p,m) => o = m   BECAUSE TI;
+\A o : \A m : o = m => (o \in p <=> m \in p)   BECAUSE E_SCHEME;
+o = m => (o \in p <=> m \in p)   BECAUSE \A(o <- o, m <- m);
+hh(o,p,m) => (o \in p <=> m \in p)   BECAUSE TI;
+killCaseE(h,a,t) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+hh(o,p,m) => o \in p   BECAUSE killCaseE;
+h(o,p) /\ o # p => (IsMinimumForIn(m, p\o) => o \in p)   BECAUSE HypoAndToImpl;
+\A m : h(o,p) /\ o # p => (IsMinimumForIn(m, p\o) => o \in p)   BECAUSE GENERALIZATION;
+h(o,p) /\ o # p => (\A m : IsMinimumForIn(m, p\o) => o \in p)   BECAUSE Q_SCHEME;
+(\A m : IsMinimumForIn(m, p\o) => o \in p) => ((\E m : IsMinimumForIn(m, p\o)) => \E m : o \in p)   BECAUSE Q_SCHEME;
+h(o,p) /\ o # p => ((\E m : IsMinimumForIn(m, p\o)) => \E m : o \in p)   BECAUSE TI;
+h(o,p) /\ o # p => \E m : o \in p   BECAUSE KillMiddleHypo;
+(\E m : o \in p) => o \in p   BECAUSE Q_SCHEME;
+h(o,p) /\ o # p => o \in p   BECAUSE TI;
+boolImplB(h,a,b) == (h /\ ~a => b) => (h => b \/ a)   PROPO_TAUTO;
+h(o,p) => o \in p \/ o = p   BECAUSE boolImplB;
+includedOrdinals   BECAUSE GENERALIZATION;
+QED
+
+ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
+   => o \in p \/ o = p \/ p \in o
+THEOREM ordinalComparison
+PROOF
+VARIABLES a,c,d,o,p,u,x,y;
+includedOrdinals   BECAUSE THEOREM;
+\* o \intersect p is an ordinal included in both o and p
+\* By the previous theorem, either (o \intersect p) \in o or (o \intersect p) = o
+\* Same (o \intersect p) \in p or (o \intersect p) = p
+\* But both \in would yield (o \intersect p) \in (o \intersect p), absurd
+QED
+
 unionOrdinalsIsOrdinal == \A u : (\A x : x \in u => IsOrdinal(x)) => IsOrdinal(UNION u)
 THEOREM unionOrdinalsIsOrdinal
 PROOF
-VARIABLES a,b,c,o,p,q,u,v,x,z;
+VARIABLES a,b,c,o,p,q,u,v,x,y,z;
 h(u) == \A x : x \in u => IsOrdinal(x);
 \* Proof that UNION u is transitive
 unionExists   BECAUSE AXIOM;
@@ -1810,6 +1951,11 @@ h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in 
 \A a : h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
 h(u) => IsTransitiveIn(UNION u)   BECAUSE Q_SCHEME;
 
+\* Proof that \in is a total strict order on UNION u
+htot(u,x,y) == h(u) /\ x \in UNION u /\ y \in UNION u;
+
+htot(u,x,y) => x \in y \/ x = y \/ y \in x   BECAUSE TI;
+
 \* Proof that minimums exist
 hm(p,u) == h(u) /\ p \subseteq (UNION u) /\ p # {};
 hm(p,u) => h(u)   BECAUSE S13;
@@ -1873,9 +2019,12 @@ cm(p,u) \in (p \intersect ct(cp(p),u)) => (cm(p,u) \in p /\ cm(p,u) \in ct(cp(p)
 hm(p,u) => cm(p,u) \in p   BECAUSE TI2; \* First condition for IsMinimumForIn(cm(p,u), p)
 hm(p,u) => cm(p,u) \in ct(cp(p),u)   BECAUSE TI2;
 
-\* TODO ct(cp(p),u) which is transitive : if there was an x \in cm(p,u) and \in p, that x would be in p \intersect ct(cp(p),u), contradicting the minimality of cm(p,u)
-\* IsMinimumForIn(m, p) == m \in p /\ \A b : b \in p => (b = m \/ m \in b)
+htot(u,x,cm(p,u)) => x \in cm(p,u) \/ x = cm(p,u) \/ cm(p,u) \in x   BECAUSE TI;
+\* TODO first case impossible : if there was an x \in cm(p,u) and \in p,
+\* then x \in ct(cp(p),u) by transitivity of ct(cp(p),u),
+\* that x would be in p \intersect ct(cp(p),u), contradicting the minimality of cm(p,u)
 
+\* IsMinimumForIn(m, p) == m \in p /\ \A b : b \in p => (b = m \/ m \in b)
 
 h(u) => IsOrdinal(UNION u)   BECAUSE TI;
 unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
@@ -1995,15 +2144,16 @@ h(o,p) => cm(o,p) \subseteq cf(o,p)[cm(o,p)]   BECAUSE Q_SCHEME;
 \* Proof that h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)] \in p. By ordinal comparison,
 \* cm(o,p) \subseteq cf(o,p)[cm(o,p)] => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)],
 \* and since f[m] # m we have the other case.
-ordinalComparison   BECAUSE THEOREM;
-IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)]) /\ cm(o,p) \subseteq cf(o,p)[cm(o,p)] => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)]
+includedOrdinals   BECAUSE THEOREM;
+IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)]) /\ cm(o,p) \subseteq cf(o,p)[cm(o,p)]
+   => cm(o,p) \in cf(o,p)[cm(o,p)] \/ cm(o,p) = cf(o,p)[cm(o,p)]
    BECAUSE \A(o <- cm(o,p), p <- cf(o,p)[cm(o,p)]);
 IsOrdinal(p) /\ cf(o,p)[cm(o,p)] \in p => IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE \A(o <- p, x <- cf(o,p)[cm(o,p)]);
 h(o,p) => IsOrdinal(p) /\ cf(o,p)[cm(o,p)] \in p   BECAUSE CIA;
 h(o,p) => IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE TI;
 h(o,p) => IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)])   BECAUSE CIA;
 h(o,p) => IsOrdinal(cm(o,p)) /\ IsOrdinal(cf(o,p)[cm(o,p)]) /\ cm(o,p) \subseteq cf(o,p)[cm(o,p)]   BECAUSE CIA;
-h(o,p) => cm(o,p) = cf(o,p)[cm(o,p)] \/ cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE TI;
+h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)] \/ cm(o,p) = cf(o,p)[cm(o,p)]   BECAUSE TI;
 cm(o,p) \in o /\ cf(o,p)[cm(o,p)] # cm(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE S22;
 cm(o,p) \in cb(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
 IsMinimumForIn(cm(o,p), cb(o,p)) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
@@ -2011,7 +2161,7 @@ h(o,p) => cf(o,p)[cm(o,p)] # cm(o,p)   BECAUSE TI;
 cm(o,p) = cf(o,p)[cm(o,p)] => cf(o,p)[cm(o,p)] = cm(o,p)   BECAUSE E_SCHEME;
 cf(o,p)[cm(o,p)] # cm(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE Contraposition;
 h(o,p) => cm(o,p) # cf(o,p)[cm(o,p)]   BECAUSE TI;
-killCaseC(a,b,c) == (a => ~b) => ((a => (b \/ c)) => (a => c))   PROPO_TAUTO;
+killCaseC(a,b,c) == (a => ~b) => ((a => (c \/ b)) => (a => c))   PROPO_TAUTO;
 h(o,p) => cm(o,p) \in cf(o,p)[cm(o,p)]   BECAUSE killCaseC;
 IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE S12;
 IsTransitiveSet(p) => (cf(o,p)[cm(o,p)] \in p => cf(o,p)[cm(o,p)] \subseteq p)   BECAUSE \A(a <- cf(o,p)[cm(o,p)]);
@@ -2035,7 +2185,7 @@ bijPreApply   BECAUSE THEOREM;
    BECAUSE \A(f <- cf(o,p), a <- o, b <- p, y <- cm(o,p));
 h(o,p) => (cf(o,p) \in Bijections(o,p) /\ cm(o,p) \in p)   BECAUSE CIA;
 h(o,p) => pre(cf(o,p),cm(o,p)) \in o   BECAUSE TI;
-\* ordinalTrichotomy   BECAUSE THEOREM;
+ordinalIsTotalOrder   BECAUSE THEOREM;
 IsOrdinal(o) /\ pre(cf(o,p),cm(o,p)) \in o /\ cm(o,p) \in o
    => pre(cf(o,p),cm(o,p)) \in cm(o,p) \/ pre(cf(o,p),cm(o,p)) = cm(o,p) \/ cm(o,p) \in pre(cf(o,p),cm(o,p))
    BECAUSE \A(o <- o, x <- pre(cf(o,p),cm(o,p)), y <- cm(o,p));

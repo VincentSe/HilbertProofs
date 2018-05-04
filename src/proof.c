@@ -691,17 +691,17 @@ unsigned char find_impl(const struct FormulaDList* statement,
    Could be deduced as
    (\A x : p => q) => (p => q)   BECAUSE \A(x <- x);
    (p => q) => (~q => ~p)   BECAUSE Contraposition;
-   (\A x : p => q) => (~q => ~p) BECAUSE TransitImplication;
+   (\A x : p => q) => (~q => ~p) BECAUSE TI;
    (\A x : ~q) => ~q   BECAUSE \A(x <- x);
-   (~q => ~p) => ((\A x : ~q) => ~p)   BECAUSE TransitImplication;
-   (\A x : p => q) => ((\A x : ~q) => ~p)   BECAUSE TransitImplication;
+   (~q => ~p) => ((\A x : ~q) => ~p)   BECAUSE TI;
+   (\A x : p => q) => ((\A x : ~q) => ~p)   BECAUSE TI;
    \A x : (\A x : p => q) => ((\A x : ~q) => ~p)   BECAUSE GENERALIZATION;
    (\A x : p => q) => (\A x : (\A x : ~q) => ~p)   BECAUSE AXIOM_SCHEME;
    (\A x : (\A x : ~q) => ~p) => ((\A x : ~q) => (\A x : ~p))   BECAUSE AXIOM_SCHEME;
-   (\A x : p => q) => ((\A x : ~q) => (\A x : ~p))   BECAUSE TransitImplication;
+   (\A x : p => q) => ((\A x : ~q) => (\A x : ~p))   BECAUSE TI;
    ((\A x : ~q) => (\A x : ~p)) => (~(\A x : ~p) => ~(\A x : ~q))   BECAUSE Contraposition;
-   (\A x : p => q) => (~(\A x : ~p) => ~(\A x : ~q))   BECAUSE TransitImplication;
-   (\A x : p => q) => ((\E x : p) => (\E x : q))   BECAUSE TransitImplication;
+   (\A x : p => q) => (~(\A x : ~p) => ~(\A x : ~q))   BECAUSE TI;
+   (\A x : p => q) => ((\E x : p) => (\E x : q))   BECAUSE TI;
 
    Can be deduced as
    p => q   BECAUSE HYPOTHESIS;
@@ -729,28 +729,75 @@ unsigned char add_quantifiers_axiom_schemes(const struct FormulaDList* statement
     && find_impl(statement, p, q);
 }
 
+// Find \A x : p => q
+unsigned char is_forall_p_implies_q(const formula* f,
+				    const formula* quant,
+				    const formula* p)
+{
+  const formula* firstJF = get_first_operand(f); // p => q
+  return f->builtInOp == quant->builtInOp
+    && firstJF->builtInOp == limplies
+    && strcmp(f->name, quant->name) == 0 // same quantified variable
+    && formula_equal(p,
+		     get_first_operand(firstJF), // p
+		     0,0,0)
+    && formula_equal(get_first_operand(quant),
+		     get_second_operand(firstJF), // q
+		     0,0,0)
+    && is_bound_variable(p, quant->name);
+}
+
 unsigned char find_forall(const struct FormulaDList* statement,
-			  const formula* quant,
-			  const formula* firstF)
+			  const formula* quant, // \A x : q
+			  const formula* firstF) // p
 {
   for (const struct FormulaDList* x = statement->previous; x; x = x->previous)
+    if (is_forall_p_implies_q(x->jf->formula, quant, firstF))
+      return 1;
+  return 0;
+}
+
+/* 
+   axiom scheme : (\A x : p => q) => (p => \A x : q)
+   and scheme     (\E x : p => q) => (p => \E x : q)
+   when varibale x has no free occurrences in p.
+
+   It is fine to use equivalent defining formulas in
+   formula_equal, because they never introduce free variables.
+
+   Only the universal scheme is a rule of first-order logic,
+   the existential can be deduced as
+   (\A x : ~q) => ~q   BECAUSE \A(a);
+   q => \E x : q   BECAUSE Contraposition;
+   p => (q => \E x : q)   BECAUSE PT1;
+   (p => q) => (p => \E x : q)   BECAUSE PT2;
+   ~(p => \E x : q) => ~(p => q)   BECAUSE Contraposition;
+   \A x : ~(p => \E x : q) => ~(p => q)   BECAUSE GENERALIZATION;
+   ~(p => \E x : q) => \A x : ~(p => q)   BECAUSE AXIOM_SCHEME; (x has no free occurrences in ~(p => \E x : q))
+   (\E x : p => q) => (p => \E x : q)   BECAUSE Contraposition;
+*/
+unsigned char shift_quantifiers_axiom_schemes(const struct FormulaDList* statement)
+{
+  const formula* f = statement->jf->formula;
+  const formula* secondF = get_second_operand(f);
+  const formula* quant;
+
+  // Try the full one-line schemes
+  if (f->builtInOp == limplies && secondF->builtInOp == limplies)
     {
-      const struct JustifiedFormula* jf = x->jf;
-      const formula* firstJF = get_first_operand(jf->formula); // p => q
-      unsigned char success = jf->formula->builtInOp == quant->builtInOp
-	&& firstJF->builtInOp == limplies
-	&& strcmp(jf->formula->name, quant->name) == 0 // same quantified variable
-	&& formula_equal(firstF,
-			 get_first_operand(firstJF), // p
-			 0,0,0)
-	&& formula_equal(get_first_operand(quant),
-			 get_second_operand(firstJF), // q
-			 0,0,0)
-	&& is_bound_variable(firstF, quant->name);
-      if (success)
+      quant = get_quantified_formula(get_second_operand(secondF), forall);
+      if (!quant)
+	quant = get_quantified_formula(get_second_operand(secondF), exists);
+
+      if (quant && is_forall_p_implies_q(get_first_operand(f), quant, get_first_operand(secondF)))
 	return 1;
     }
-  return 0;
+  
+  // Try implicit modus ponens
+  quant = get_quantified_formula(secondF, forall);
+  if (!quant)
+    quant = get_quantified_formula(secondF, exists);
+  return f->builtInOp == limplies && quant && find_forall(statement, quant, get_first_operand(f));
 }
 
 
@@ -787,36 +834,9 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
 		       0,0,0))
     return 1;
 
-  if (add_quantifiers_axiom_schemes(statement))
+  if (add_quantifiers_axiom_schemes(statement)
+      || shift_quantifiers_axiom_schemes(statement))
     return 1;
-
-  /* 
-     axiom scheme : (\A x : p => q) => (p => \A x : q)
-     and scheme     (\E x : p => q) => (p => \E x : q)
-     when varibale x has no free occurrences in p.
-
-     It is fine to use equivalent defining formulas in
-     formula_equal, because they never introduce free variables.
-
-     Only the universal scheme is a rule of first-order logic,
-     the existential can be deduced as
-     (\A x : ~q) => ~q   BECAUSE \A(a);
-     q => \E x : q   BECAUSE Contraposition;
-     p => (q => \E x : q)   BECAUSE PT1;
-     (p => q) => (p => \E x : q)   BECAUSE PT2;
-     ~(p => \E x : q) => ~(p => q)   BECAUSE Contraposition;
-     \A x : ~(p => \E x : q) => ~(p => q)   BECAUSE GENERALIZATION;
-     ~(p => \E x : q) => \A x : ~(p => q)   BECAUSE AXIOM_SCHEME; (x has no free occurrences in ~(p => \E x : q))
-     (\E x : p => q) => (p => \E x : q)   BECAUSE Contraposition;
-  */
-  const formula* quant = get_quantified_formula(secondF, forall);
-  if (!quant)
-    quant = get_quantified_formula(secondF, exists);
-
-  if (f->builtInOp == limplies && quant && find_forall(statement, quant, firstF))
-    {
-      return 1;
-    }
 
   /* axiom scheme : (\E x : p) => p
      when varibale x has no free occurrences in p.
@@ -997,6 +1017,13 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
 	   as one of those t's in U
 	 - otherwise someNewOp(x,y,z) is interpreted as any element of U.
    The axiom above is satisfied in M+.
+
+   Note that in general, the existence of the interpreted function U^3 -> U
+   needs the axiom of choice, because we didn't tell which t was chosen in
+   each case x,y,z. In the special case where each such choice is unique,
+   the axiom of choice can be avoided. This unicity is guaranteed when
+   formula P starts with an equivalent equality, as in
+   someNewOp(x,y,z) == CHOOSE t : \A s : s = t <=> Q(s,x,y,z)
 
    By Gödel's completeness theorem, if T+ has a contradiction then so does T
    (neither has models). Put differently, the introduction of operator 
@@ -1286,7 +1313,8 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
       if (jf->reason->rk == propoTautology && !jf->reason->formula)
 	{
 	  // local propositional tautology
-	  if (find_formula_same_name(*proofLocalOps, jf->formula))
+	  if (find_formula_same_name(*proofLocalOps, jf->formula)
+	      || formula_set_find(jf->formula, operators))
 	    {
 	      printf("%s:%d: local operator already defined %s\n",
 		     jf->formula->file,
@@ -1313,6 +1341,15 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
     {
       // A statement without reason in a proof is a local operator.
       // Check it and register it in p->operators.
+      if (formula_set_find(jf->formula, operators))
+	{
+	  printf("%s:%d: local operator already defined %s\n",
+		 jf->formula->file,
+		 jf->formula->first_line,
+		 jf->formula->name);
+	  return 0;
+	}
+
       if (!semantic_check_operator_definition(jf->formula,
 					      operators,
 					      constants,
