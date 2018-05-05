@@ -2456,6 +2456,38 @@ IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
 finiteInFinite == \A o : \A x : IsFiniteOrdinal(o) /\ x \in o => IsFiniteOrdinal(x)
 THEOREM finiteInFinite
 PROOF
+VARIABLES a,o,x,y,z;
+h(o,y) == IsFiniteOrdinal(o) /\ y \in o;
+h(o,y) => IsFiniteOrdinal(o)   BECAUSE S12;
+h(o,y) => y \in o   BECAUSE S22;
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(o) /\ y \in o => IsOrdinal(y)   BECAUSE \A(o <- o, x <- y);
+IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE S13;
+h(o,y) => IsOrdinal(o)   BECAUSE TI;
+h(o,y) => IsOrdinal(o) /\ y \in o   BECAUSE CIA;
+h(o,y) => IsOrdinal(y)   BECAUSE TI;
+IsFiniteOrdinal(o) => \A x : x \in o => ~IsLimitOrdinal(x)   BECAUSE S22;
+(\A x : x \in o => ~IsLimitOrdinal(x)) => (y \in o => ~IsLimitOrdinal(y))   BECAUSE \A(x <- y);
+h(o,y) => (y \in o => ~IsLimitOrdinal(y))   BECAUSE TI2;
+h(o,y) => ~IsLimitOrdinal(y)   BECAUSE KillMiddleHypo;
+
+(\A x : x \in o => ~IsLimitOrdinal(x)) => (x \in o => ~IsLimitOrdinal(x))   BECAUSE \A(x <- x);
+h(o,y) => (x \in o => ~IsLimitOrdinal(x))   BECAUSE TI2;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
+IsTransitiveSet(o) => (y \in o => y \subseteq o)   BECAUSE \A(a <- y);
+h(o,y) => (y \in o => y \subseteq o)   BECAUSE TI2;
+h(o,y) => y \subseteq o   BECAUSE KillMiddleHypo;
+y \subseteq o => (x \in y => x \in o)   BECAUSE \A(z <- x);
+h(o,y) => (x \in y => x \in o)   BECAUSE TI;
+mergeHypos(h,a,b,c) == (h => (a => b)) => ((h => (c => a)) => (h => (c => b)))   PROPO_TAUTO;
+h(o,y) => (x \in y => ~IsLimitOrdinal(x))   BECAUSE mergeHypos;
+\A x : h(o,y) => (x \in y => ~IsLimitOrdinal(x))   BECAUSE GENERALIZATION;
+h(o,y) => (\A x : x \in y => ~IsLimitOrdinal(x))   BECAUSE Q_SCHEME;
+
+h(o,y) => IsOrdinal(y) /\ ~IsLimitOrdinal(y)   BECAUSE CIA;
+h(o,y) => IsFiniteOrdinal(y)   BECAUSE CIA;
+\A y : h(o,y) => IsFiniteOrdinal(y)   BECAUSE GENERALIZATION;
+h(o,x) => IsFiniteOrdinal(x)   BECAUSE \A(y <- x);
 finiteInFinite   BECAUSE GENERALIZATION;
 QED
 

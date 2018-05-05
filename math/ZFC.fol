@@ -385,10 +385,14 @@ QED
 intersectIncludes == \A a : \A b : (a \intersect b) \subseteq b
 THEOREM intersectIncludes
 PROOF
-intersectIncludes   BECAUSE GENERALIZATION; \* TODO
+VARIABLES a,b,u,v,x,z;
+intersectionExists   BECAUSE THEOREM;
+z \in (a \intersect b) <=> (z \in a /\ z \in b)   BECAUSE \A(u <- a, v <- b, x <- z);
+z \in (a \intersect b) => (z \in a /\ z \in b)   BECAUSE EquivToImpl;
+(z \in a /\ z \in b) => z \in b   BECAUSE S22;
+z \in (a \intersect b) => z \in b   BECAUSE TI;
+intersectIncludes   BECAUSE GENERALIZATION;
 QED
-
-
 
 \* The complement of a set into another set
 u \ v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \notin v)
