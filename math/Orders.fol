@@ -2435,6 +2435,14 @@ THEOREM ordinalOfWellOrderExists
 \* The +1 operation on ordinals
 successor(o) == o \union { o }
 
+successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
+   => successor(o) \in successor(p)
+THEOREM successorIncreasing
+PROOF
+\* o \union { o } \subseteq p then \in succesor(p)
+successorIncreasing   BECAUSE GENERALIZATION;
+QED
+
 IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
 IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
    /\ \A x : x \in o => ~IsLimitOrdinal(x)
@@ -2488,6 +2496,12 @@ QED
 ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
 
+finiteOrdinalSuccessorStable == \A o : IsFiniteOrdinal(o) => IsFiniteOrdinal( successor(o) )
+THEOREM finiteOrdinalSuccessorStable
+PROOF
+finiteOrdinalSuccessorStable   BECAUSE GENERALIZATION;
+QED
+
 (*
    Definition of the set of natural numbers. They are the finite ordinals.
 *)
@@ -2496,40 +2510,112 @@ NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
 THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
-VARIABLES a,u,x;
+VARIABLES a,b,c,o,p,t,u,x,z;
 Infinity   BECAUSE AXIOM;
-ca == CHOOSE a : {} \in a /\ \A x : x \in a => successor(x) \in a;
-{} \in ca /\ \A x : x \in ca => successor(x) \in ca   BECAUSE CHOOSE ca;
 \A a : \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- ca);
-cb == CHOOSE b : \A x : x \in b <=> x \in ca /\ IsFiniteOrdinal(x);
-\A x : x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE CHOOSE cb;
+\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- a);
+\* Take a from the axiom of infinity and b from separation of finite ordinals
+h(a,b) == {} \in a /\ (\A x : x \in a => successor(x) \in a)
+   /\ \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x);
+h(a,b) => \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE S22;
 
-\* Prove cb is Nat, ie IsFiniteOrdinal(x) => x \in cb.
+\* Prove b is Nat, ie IsFiniteOrdinal(x) => x \in b
 unionOrdinalsIsOrdinal   BECAUSE THEOREM;
-(\A x : x \in cb => IsOrdinal(x)) => IsOrdinal(UNION cb)   BECAUSE \A(u <- cb);
-x \in cb <=> x \in ca /\ IsFiniteOrdinal(x)   BECAUSE \A(x <- x);
-x \in cb => x \in ca /\ IsFiniteOrdinal(x)   BECAUSE EquivToImpl;
-x \in ca /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE S22;
-x \in cb => IsFiniteOrdinal(x)   BECAUSE TI;
+(\A x : x \in b => IsOrdinal(x)) => IsOrdinal(UNION b)   BECAUSE \A(u <- b);
+(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (x \in b <=> x \in a /\ IsFiniteOrdinal(x))
+   BECAUSE \A(x <- x);
+(x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE EquivToImpl;
+h(a,b) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE TI2;
 IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE S13;
 \A a : IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE GENERALIZATION;
 IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(a <- x);
-x \in cb => IsOrdinal(x)   BECAUSE TI;
-\A x : x \in cb => IsOrdinal(x)   BECAUSE GENERALIZATION;
-IsOrdinal(UNION cb)   BECAUSE MODUS_PONENS;
+extractProp(a,b,c,d) == (a => b) => ((c => d /\ a) => (c => b))   PROPO_TAUTO;
+(x \in b => x \in a /\ IsFiniteOrdinal(x)) => (x \in b => IsOrdinal(x))   BECAUSE extractProp;
+h(a,b) => (x \in b => IsOrdinal(x))   BECAUSE TI;
+\A x : h(a,b) => (x \in b => IsOrdinal(x))   BECAUSE GENERALIZATION;
+h(a,b) => (\A x : x \in b => IsOrdinal(x))   BECAUSE Q_SCHEME;
+h(a,b) => IsOrdinal(UNION b)   BECAUSE TI;
 
-\* Proof that UNION cb is a limit ordinal
-\* {} \in ordinalOne \in cb, so {} \in UNION cb
+\* Proof that UNION b is a limit ordinal.
+\* If o \in b then successor(o) \in b, so b # successor o.
+unionExists   BECAUSE AXIOM;
+x \in UNION b <=> \E t : t \in b /\ x \in t   BECAUSE \A(b <- b, z <- x);
+x \in UNION b => \E t : t \in b /\ x \in t   BECAUSE EquivToImpl;
+\A x : h(a,b) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
+h(a,b) => (t \in b => t \in a /\ IsFiniteOrdinal(t))   BECAUSE \A(x <- t);
+h(a,b) /\ t \in b /\ x \in t => h(a,b)   BECAUSE S13;
+h(a,b) /\ t \in b /\ x \in t => (t \in b => t \in a /\ IsFiniteOrdinal(t))   BECAUSE TI;
+h(a,b) /\ t \in b /\ x \in t => t \in b   BECAUSE S23;
+h(a,b) /\ t \in b /\ x \in t => t \in a /\ IsFiniteOrdinal(t)   BECAUSE KillMiddleHypo;
+h(a,b) => \A x : x \in a => successor(x) \in a   BECAUSE S23;
+(\A x : x \in a => successor(x) \in a) => (t \in a => successor(t) \in a)   BECAUSE \A(x <- t);
+h(a,b) /\ t \in b /\ x \in t => (t \in a => successor(t) \in a)   BECAUSE TI2;
+t \in a /\ IsFiniteOrdinal(t) => t \in a   BECAUSE S12;
+h(a,b) /\ t \in b /\ x \in t => t \in a   BECAUSE TI;
+h(a,b) /\ t \in b /\ x \in t => successor(t) \in a   BECAUSE KillMiddleHypo;
+\* So successor(t) \in b.
+\* Then successor(x) \in successor(t) \in b implies successor(x) \in UNION b.
+finiteOrdinalSuccessorStable   BECAUSE THEOREM;
+IsFiniteOrdinal(t) => IsFiniteOrdinal( successor(t) )   BECAUSE \A(o <- t);
+(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (successor(t) \in b <=> successor(t) \in a /\ IsFiniteOrdinal(successor(t)))   BECAUSE \A(x <- successor(t));
+(successor(t) \in b <=> successor(t) \in a /\ IsFiniteOrdinal(successor(t))) => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE EquivToImplReverse;
+h(a,b) => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE TI2;
+t \in a /\ IsFiniteOrdinal(t) => IsFiniteOrdinal(t)   BECAUSE S22;
+h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(successor(t))   BECAUSE TI2;
+h(a,b) /\ t \in b /\ x \in t => successor(t) \in a /\ IsFiniteOrdinal(successor(t))   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE TI;
+h(a,b) /\ t \in b /\ x \in t => successor(t) \in b   BECAUSE KillMiddleHypo;
+successorIncreasing   BECAUSE THEOREM;
+IsOrdinal(x) /\ IsOrdinal(t) /\ x \in t => successor(x) \in successor(t)   BECAUSE \A(o <- x, p <- t);
+IsFiniteOrdinal(t) => IsOrdinal(t)   BECAUSE S13;
+h(a,b) /\ t \in b /\ x \in t => IsOrdinal(t)   BECAUSE TI2;
+h(a,b) /\ t \in b /\ x \in t => x \in t   BECAUSE S22;
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(t) /\ x \in t => IsOrdinal(x)   BECAUSE \A(o <- t, x <- x);
+h(a,b) /\ t \in b /\ x \in t => IsOrdinal(t) /\ x \in t   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x)   BECAUSE TI;
+h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x) /\ IsOrdinal(t)   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x) /\ IsOrdinal(t) /\ x \in t   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => successor(x) \in successor(t)   BECAUSE TI;
+inInUnion   BECAUSE THEOREM;
+(successor(x) \in successor(t) /\ successor(t) \in b) => successor(x) \in UNION b   BECAUSE \A(a <- successor(x), b <- successor(t), c <- b);
+h(a,b) /\ t \in b /\ x \in t => successor(x) \in successor(t) /\ successor(t) \in b   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => successor(x) \in UNION b   BECAUSE TI;
+pushHypos(h,a,b,c) == (h /\ a /\ b => c) => (h => (a /\ b => c))   PROPO_TAUTO;
+h(a,b) => (t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE pushHypos;
+\A t : h(a,b) => (t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE GENERALIZATION;
+h(a,b) => (\A t : t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE Q_SCHEME;
+(\A t : t \in b /\ x \in t => successor(x) \in UNION b) => ((\E t : t \in b /\ x \in t) => \E t : successor(x) \in UNION b)   BECAUSE Q_SCHEME;
+h(a,b) => ((\E t : t \in b /\ x \in t) => \E t : successor(x) \in UNION b)   BECAUSE TI;
+mergeHypos(h,a,b,c) == (a => b) => ((h => (b => c)) => (h /\ a => c))   PROPO_TAUTO;
+h(a,b) /\ x \in UNION b => \E t : successor(x) \in UNION b   BECAUSE mergeHypos;
+(\E t : successor(x) \in UNION b) => successor(x) \in UNION b   BECAUSE Q_SCHEME;
+h(a,b) /\ x \in UNION b => successor(x) \in UNION b   BECAUSE TI;
+ordinalComparesWithOwnElements   BECAUSE THEOREM;
+IsOrdinal(UNION b) /\ successor(x) \in UNION b => successor(x) # (UNION b) /\ (UNION b) \notin successor(x)   BECAUSE \A(o <- successor(x), p <- UNION b);
+h(a,b) /\ x \in UNION b => h(a,b)   BECAUSE S12;
+h(a,b) /\ x \in UNION b => IsOrdinal(UNION b)   BECAUSE TI2;
+h(a,b) /\ x \in UNION b => IsOrdinal(UNION b) /\ successor(x) \in UNION b   BECAUSE CIA;
+successor(x) # (UNION b) /\ (UNION b) \notin successor(x) => successor(x) # UNION b   BECAUSE S12;
+h(a,b) /\ x \in UNION b => successor(x) # UNION b   BECAUSE TI2;
+UNION b = successor(x) => successor(x) = UNION b   BECAUSE E_SCHEME;
+successor(x) # UNION b => UNION b # successor(x)   BECAUSE Contraposition;
+h(a,b) /\ x \in UNION b => UNION b # successor(x)   BECAUSE TI;
+h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE HypoAndToImpl;
+\A x : h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE GENERALIZATION;
+h(a,b) => (\A x : x \in UNION b => UNION b # successor(x))   BECAUSE Q_SCHEME;
+
+\* IsLimitOrdinal(UNION b) == IsOrdinal(UNION b) /\ UNION b # {} /\ \A x : x \in UNION b => UNION b # successor(x)
+
+\* {} \in ordinalOne \in b, so {} \in UNION b
 {} \in ca   BECAUSE S12;
 ordinalZero   BECAUSE THEOREM;
 {} \in ca /\ IsFiniteOrdinal( {} )   BECAUSE IntroAndRight;
 {} \in cb <=> {} \in ca /\ IsFiniteOrdinal({})   BECAUSE \A(x <- {});
 {} \in cb   BECAUSE MODUS_PONENS;
 
-\* UNION cb
-\* is a limit ordinal. Any finite ordinal is either in or
-\* contains UNION cb by ordinal comparison. But a finite
+\* Any finite ordinal is either in or
+\* contains UNION b by ordinal comparison. But a finite
 \* ordinal cannot contain a limit ordinal so it is in UNION cb.
 \* This means the finite ordinal is in one of the elements of cb
 \* so in cb by ordinal transitivity.
