@@ -2519,11 +2519,12 @@ QED
 *)
 Nat == CHOOSE_UNIQUE o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
 
-NatExists == \A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
+NatExists == (\A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))
+   /\ IsLimitOrdinal(Nat)
 THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
-VARIABLES a,b,c,o,p,t,u,x,z,nat;
+VARIABLES a,b,c,o,p,t,u,x,y,z,nat;
 Infinity   BECAUSE AXIOM;
 \A a : \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- a);
@@ -2746,5 +2747,29 @@ ho(o) => (z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE HIE;
 ho(o) => (\A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
 (\E o : ho(o)) => (\E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
 \E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE MODUS_PONENS;
-NatExists   BECAUSE CHOOSE Nat;
+\A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE CHOOSE Nat;
+
+\* Extract the fact that Nat is a limit ordinal
+UNION b = Nat <=> (\A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE \A(z <- UNION b);
+(\A x : x \in UNION b <=> IsFiniteOrdinal(x)) => UNION b = Nat   BECAUSE EquivToImplReverse;
+h(a,b) => UNION b = Nat   BECAUSE TI;
+\A x : \A y : x = y => (IsLimitOrdinal(x) <=> IsLimitOrdinal(y))   BECAUSE E_SCHEME;
+UNION b = Nat => (IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat))   BECAUSE \A(x <- UNION b, y <- Nat);
+h(a,b) => (IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat))   BECAUSE TI;
+(IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat)) => (IsLimitOrdinal(UNION b) => IsLimitOrdinal(Nat))   BECAUSE EquivToImpl;
+h(a,b) => (IsLimitOrdinal(UNION b) => IsLimitOrdinal(Nat))   BECAUSE TI;
+h(a,b) => IsLimitOrdinal(Nat)   BECAUSE KillMiddleHypo;
+hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE HypoAndToImpl;
+\A b : hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE GENERALIZATION;
+hA(a) => (\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat)) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => \E b : IsLimitOrdinal(Nat))   BECAUSE Q_SCHEME;
+hA(a) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => \E b : IsLimitOrdinal(Nat))   BECAUSE TI;
+hA(a) => \E b : IsLimitOrdinal(Nat)   BECAUSE KillMiddleHypo;
+(\E a : hA(a)) => \E a : \E b : IsLimitOrdinal(Nat)   BECAUSE Q_SCHEME;
+\E a : \E b : IsLimitOrdinal(Nat)   BECAUSE MODUS_PONENS;
+(\E a : \E b : IsLimitOrdinal(Nat)) => (\E b : IsLimitOrdinal(Nat))  BECAUSE Q_SCHEME;
+(\E b : IsLimitOrdinal(Nat))   BECAUSE MODUS_PONENS;
+(\E b : IsLimitOrdinal(Nat)) => IsLimitOrdinal(Nat)   BECAUSE Q_SCHEME;
+IsLimitOrdinal(Nat)   BECAUSE MODUS_PONENS;
+NatExists   BECAUSE IntroAndRight;
 QED
