@@ -2518,11 +2518,12 @@ QED
    Definition of the set of natural numbers. They are the finite ordinals.
 *)
 Nat == CHOOSE_UNIQUE o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
-NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
+
+NatExists == \A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
 THEOREM NatExists
 PROOF
 \* By separation in a set given by the axiom of infinity
-VARIABLES a,b,c,o,p,t,u,x,z;
+VARIABLES a,b,c,o,p,t,u,x,z,nat;
 Infinity   BECAUSE AXIOM;
 \A a : \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- a);
@@ -2685,11 +2686,65 @@ h(a,b) /\ IsFiniteOrdinal(x) => x \in UNION b   BECAUSE killCaseE;
 
 \* Conversely, x \in UNION b is an ordinal as an element of an ordinal.
 \* And x \in t \in b where t is a finite ordinal, so x is finite too.
+IsFiniteOrdinal(t) /\ x \in t => IsFiniteOrdinal(x)   BECAUSE \A(o <- t, x <- x);
+h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(t)   BECAUSE TI;
+h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(t) /\ x \in t   BECAUSE CIA;
+h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(x)   BECAUSE TI;
+h(a,b) => (t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE pushHypos;
+\A t : h(a,b) => (t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
+h(a,b) => (\A t : t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
+(\A t : t \in b /\ x \in t => IsFiniteOrdinal(x)) => ((\E t : t \in b /\ x \in t) => \E t : IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
+h(a,b) /\ x \in UNION b => ((\E t : t \in b /\ x \in t) => \E t : IsFiniteOrdinal(x))   BECAUSE TI2;
+h(a,b) /\ x \in UNION b => x \in UNION b   BECAUSE S22;
+h(a,b) /\ x \in UNION b => (\E t : t \in b /\ x \in t)   BECAUSE TI;
+h(a,b) /\ x \in UNION b => \E t : IsFiniteOrdinal(x)   BECAUSE KillMiddleHypo;
+(\E t : IsFiniteOrdinal(x)) => IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
+h(a,b) /\ x \in UNION b => IsFiniteOrdinal(x)   BECAUSE TI;
+h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE HIE;
+\A x : h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
+h(a,b) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
 
-
-hIntroEquiv(h,a,b) == (h /\ a => b) => ((h /\ b => a) => (h => (b <=> a)))   PROPO_TAUTO;
-h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE hIntroEquiv;
+hA(a) == {} \in a /\ (\A x : x \in a => successor(x) \in a);
+hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE HypoAndToImpl;
+\A b : hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE GENERALIZATION;
+hA(a) => (\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))
+   => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
+hA(a) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE TI;
+hA(a) => (\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x))   BECAUSE PT1;
+hA(a) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE KillMiddleHypo;
+(\A x : x \in UNION b <=> IsFiniteOrdinal(x)) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE \E(o <- UNION b);
+(\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)) => \E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
+hA(a) => (\E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x))   BECAUSE TI;
+(\E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)) => (\E o : \A x : x \in o <=> IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
+hA(a) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE TI;
+(\E a : hA(a)) => \E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
+\E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE MODUS_PONENS;
+(\E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
+\E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE MODUS_PONENS;
 
 \* Proof that Nat is unique. By extensionality, being in another Nat
 \* is equivalent, it is being a finite ordinal.
+ho(o) == \A x : x \in o <=> IsFiniteOrdinal(x);
+\A z : \A o : z = o => ((\A x : x \in z <=> IsFiniteOrdinal(x)) <=> (\A x : x \in o <=> IsFiniteOrdinal(x)))   BECAUSE E_SCHEME;
+z = o => ((\A x : x \in z <=> IsFiniteOrdinal(x)) <=> (\A x : x \in o <=> IsFiniteOrdinal(x)))   BECAUSE \A(z <- z, o <- o);
+killCaseF(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+ho(o) /\ z = o => (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE killCaseF;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in o) => z = o   BECAUSE \A(a <- z, b <- o);
+ho(o) => (x \in o <=> IsFiniteOrdinal(x))   BECAUSE \A(x <- x);
+tEquiv(a,b,c,h) == (h => (a <=> b)) => (h => ((c <=> b) => (c <=> a)))   PROPO_TAUTO;
+ho(o) => ((x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE tEquiv;
+\A x : ho(o) => ((x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE GENERALIZATION;
+ho(o) => (\A x : (x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE Q_SCHEME;
+(\A x : (x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o)) => ((\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o))   BECAUSE Q_SCHEME;
+ho(o) => ((\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o))   BECAUSE TI;
+ho(o) /\ (\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o)   BECAUSE HypoImplToAnd;
+ho(o) /\ (\A x : x \in z <=> IsFiniteOrdinal(x)) => z = o   BECAUSE TI;
+ho(o) => (z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE HIE;
+\A z : ho(o) => (z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE GENERALIZATION;
+ho(o) => (\A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
+(\E o : ho(o)) => (\E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
+\E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE MODUS_PONENS;
+NatExists   BECAUSE CHOOSE Nat;
 QED

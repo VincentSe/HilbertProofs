@@ -236,3 +236,7 @@ PROPO_TAUTO SeparationTauto
 
 KillMiddleHypo(h,a,b) == (h => a) => ((h => (a => b)) => (h => b))
 PROPO_TAUTO KillMiddleHypo
+
+\* Introduction of an equivalence with hypothesis
+HIE(h,a,b) == (h /\ a => b) => ((h /\ b => a) => (h => (a <=> b)))
+PROPO_TAUTO HIE
