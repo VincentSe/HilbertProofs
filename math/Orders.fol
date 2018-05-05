@@ -2435,6 +2435,12 @@ THEOREM ordinalOfWellOrderExists
 \* The +1 operation on ordinals
 successor(o) == o \union { o }
 
+inSuccessor == \A o : o \in successor(o)
+THEOREM inSuccessor
+PROOF
+inSuccessor   BECAUSE GENERALIZATION;
+QED
+
 successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
    => successor(o) \in successor(p)
 THEOREM successorIncreasing
@@ -2446,6 +2452,12 @@ QED
 IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
 IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
    /\ \A x : x \in o => ~IsLimitOrdinal(x)
+
+finiteInFinite == \A o : \A x : IsFiniteOrdinal(o) /\ x \in o => IsFiniteOrdinal(x)
+THEOREM finiteInFinite
+PROOF
+finiteInFinite   BECAUSE GENERALIZATION;
+QED
 
 \* The empty set is the smallest ordinal, called "zero" as an ordinal
 ordinalZero == IsFiniteOrdinal( {} )
@@ -2505,7 +2517,7 @@ QED
 (*
    Definition of the set of natural numbers. They are the finite ordinals.
 *)
-Nat == CHOOSE o : \A x : x \in o <=> IsFiniteOrdinal(x)
+Nat == CHOOSE_UNIQUE o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
 NatExists == \A x : x \in Nat <=> IsFiniteOrdinal(x)
 THEOREM NatExists
 PROOF
@@ -2519,7 +2531,8 @@ h(a,b) == {} \in a /\ (\A x : x \in a => successor(x) \in a)
    /\ \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x);
 h(a,b) => \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE S22;
 
-\* Prove b is Nat, ie IsFiniteOrdinal(x) => x \in b
+\* Prove UNION b is Nat, ie IsFiniteOrdinal(x) <=> x \in UNION b.
+\* First prove that UNION b is an ordinal.
 unionOrdinalsIsOrdinal   BECAUSE THEOREM;
 (\A x : x \in b => IsOrdinal(x)) => IsOrdinal(UNION b)   BECAUSE \A(u <- b);
 (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (x \in b <=> x \in a /\ IsFiniteOrdinal(x))
@@ -2537,7 +2550,7 @@ h(a,b) => (\A x : x \in b => IsOrdinal(x))   BECAUSE Q_SCHEME;
 h(a,b) => IsOrdinal(UNION b)   BECAUSE TI;
 
 \* Proof that UNION b is a limit ordinal.
-\* If o \in b then successor(o) \in b, so b # successor o.
+\* If o \in UNION b then successor(o) \in UNION b, so UNION b # successor o.
 unionExists   BECAUSE AXIOM;
 x \in UNION b <=> \E t : t \in b /\ x \in t   BECAUSE \A(b <- b, z <- x);
 x \in UNION b => \E t : t \in b /\ x \in t   BECAUSE EquivToImpl;
@@ -2605,18 +2618,78 @@ h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE HypoAndToImpl;
 \A x : h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE GENERALIZATION;
 h(a,b) => (\A x : x \in UNION b => UNION b # successor(x))   BECAUSE Q_SCHEME;
 
-\* IsLimitOrdinal(UNION b) == IsOrdinal(UNION b) /\ UNION b # {} /\ \A x : x \in UNION b => UNION b # successor(x)
-
-\* {} \in ordinalOne \in b, so {} \in UNION b
-{} \in ca   BECAUSE S12;
+\* {} \in successor({}) \in b, so {} \in UNION b
+h(a,b) => {} \in a   BECAUSE S13;
+(\A x : x \in a => successor(x) \in a) => ({} \in a => successor({}) \in a)   BECAUSE \A(x <- {});
+h(a,b) => ({} \in a => successor({}) \in a)   BECAUSE TI;
+h(a,b) => successor({}) \in a   BECAUSE KillMiddleHypo;
 ordinalZero   BECAUSE THEOREM;
-{} \in ca /\ IsFiniteOrdinal( {} )   BECAUSE IntroAndRight;
-{} \in cb <=> {} \in ca /\ IsFiniteOrdinal({})   BECAUSE \A(x <- {});
-{} \in cb   BECAUSE MODUS_PONENS;
+IsFiniteOrdinal({}) => IsFiniteOrdinal( successor({}) )   BECAUSE \A(o <- {});
+IsFiniteOrdinal( successor({}) )   BECAUSE MODUS_PONENS;
+successor({}) \in a => successor({}) \in a /\ IsFiniteOrdinal( successor({}) )   BECAUSE IntroAndLeft;
+h(a,b) => successor({}) \in a /\ IsFiniteOrdinal( successor({}) )   BECAUSE TI;
+(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (successor({}) \in b <=> successor({}) \in a /\ IsFiniteOrdinal(successor({})))   BECAUSE \A(x <- successor({}));
+h(a,b) => (successor({}) \in b <=> successor({}) \in a /\ IsFiniteOrdinal(successor({})))   BECAUSE TI;
+killCase(h,a,b) == (h => a) => ((h => (b <=> a)) => (h => b))   PROPO_TAUTO;
+h(a,b) => successor({}) \in b   BECAUSE killCase;
+inSuccessor   BECAUSE THEOREM;
+{} \in successor({})   BECAUSE \A(o <- {});
+h(a,b) => {} \in successor({})   BECAUSE PT1;
+h(a,b) => {} \in successor({}) /\ successor({}) \in b   BECAUSE CIA;
+({} \in successor({}) /\ successor({}) \in b) => {} \in UNION b   BECAUSE \A(a <- {}, b <- successor({}), c <- b);
+h(a,b) => {} \in UNION b   BECAUSE TI;
+emptySetExistsUniquely   BECAUSE THEOREM;
+UNION b = {} <=> \A x : x \notin UNION b   BECAUSE \A(c <- UNION b);
+(\E x : x \in UNION b) <=> ~\A x : x \notin UNION b   BECAUSE Q_SCHEME;
+(\E x : x \in UNION b) => ~\A x : x \notin UNION b   BECAUSE EquivToImpl;
+{} \in UNION b => \E x : x \in UNION b   BECAUSE \E(x <- {});
+h(a,b) => ~\A x : x \notin UNION b   BECAUSE TI2;
+UNION b = {} => \A x : x \notin UNION b   BECAUSE EquivToImpl;
+~(\A x : x \notin UNION b) => UNION b # {}   BECAUSE Contraposition;
+h(a,b) => UNION b # {}   BECAUSE TI;
+h(a,b) => IsOrdinal(UNION b) /\ UNION b # {}   BECAUSE CIA;
+h(a,b) => IsLimitOrdinal(UNION b)   BECAUSE CIA;
 
-\* Any finite ordinal is either in or
-\* contains UNION b by ordinal comparison. But a finite
-\* ordinal cannot contain a limit ordinal so it is in UNION cb.
-\* This means the finite ordinal is in one of the elements of cb
-\* so in cb by ordinal transitivity.
+\* Proof that IsFiniteOrdinal(x) => x \in UNION b
+ordinalComparison   BECAUSE THEOREM;
+IsOrdinal(x) /\ IsOrdinal(UNION b) => x \in UNION b \/ x = UNION b \/ UNION b \in x   BECAUSE \A(o <- x, p <- UNION b);
+IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE S13;
+\A o : IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE GENERALIZATION;
+IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(o <- x);
+h(a,b) /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE S22;
+h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE TI;
+h(a,b) /\ IsFiniteOrdinal(x) => h(a,b)   BECAUSE S12;
+h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(UNION b)   BECAUSE TI;
+h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(x) /\ IsOrdinal(UNION b)   BECAUSE CIA;
+h(a,b) /\ IsFiniteOrdinal(x) => x \in UNION b \/ x = UNION b \/ UNION b \in x   BECAUSE TI;
+\* because UNION b is infinite, only the first case is possible.
+IsFiniteOrdinal(o) => ~IsLimitOrdinal(o)   BECAUSE S23;
+\A o : IsFiniteOrdinal(o) => ~IsLimitOrdinal(o)   BECAUSE GENERALIZATION;
+IsFiniteOrdinal(x) => ~IsLimitOrdinal(x)   BECAUSE \A(o <- x);
+h(a,b) /\ IsFiniteOrdinal(x) => ~IsLimitOrdinal(x)   BECAUSE TI;
+\A x : \A b : x = b => (IsLimitOrdinal(x) <=> IsLimitOrdinal(b))   BECAUSE E_SCHEME;
+x = UNION b => (IsLimitOrdinal(x) <=> IsLimitOrdinal(UNION b))   BECAUSE \A(x <- x, b <- UNION b);
+h(a,b) /\ IsFiniteOrdinal(x) => IsLimitOrdinal(UNION b)   BECAUSE TI;
+killCaseB(h,a,b,c) == (h => ~a) => ((h => c) => (((b => (a <=> c)) => (h => ~b))))   PROPO_TAUTO;
+h(a,b) /\ IsFiniteOrdinal(x) => x # UNION b   BECAUSE killCaseB;
+finiteInFinite   BECAUSE THEOREM;
+IsFiniteOrdinal(x) /\ UNION b \in x => IsFiniteOrdinal(UNION b)   BECAUSE \A(o <- x, x <- UNION b);
+IsFiniteOrdinal(UNION b) => ~IsLimitOrdinal(UNION b)   BECAUSE \A(o <- UNION b);
+IsFiniteOrdinal(x) /\ UNION b \in x => ~IsLimitOrdinal(UNION b)   BECAUSE TI;
+IsFiniteOrdinal(x) => (UNION b \in x => ~IsLimitOrdinal(UNION b))   BECAUSE HypoAndToImpl;
+h(a,b) /\ IsFiniteOrdinal(x) => (UNION b \in x => ~IsLimitOrdinal(UNION b))   BECAUSE TI;
+killCaseD(h,a,b) == (h => (b => ~a)) => ((h => a) => (h => ~b))   PROPO_TAUTO;
+h(a,b) /\ IsFiniteOrdinal(x) => UNION b \notin x   BECAUSE killCaseD;
+killCaseE(h,a,b,c) == (h => a \/ b \/ c) => ((h => ~b) => (((h => ~c) => (h => a))))   PROPO_TAUTO;
+h(a,b) /\ IsFiniteOrdinal(x) => x \in UNION b   BECAUSE killCaseE;
+
+\* Conversely, x \in UNION b is an ordinal as an element of an ordinal.
+\* And x \in t \in b where t is a finite ordinal, so x is finite too.
+
+
+hIntroEquiv(h,a,b) == (h /\ a => b) => ((h /\ b => a) => (h => (b <=> a)))   PROPO_TAUTO;
+h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE hIntroEquiv;
+
+\* Proof that Nat is unique. By extensionality, being in another Nat
+\* is equivalent, it is being a finite ordinal.
 QED
