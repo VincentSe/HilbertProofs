@@ -1525,6 +1525,74 @@ ordinalIsTotalOrder == \A o : \A x : \A y : IsOrdinal(o) /\ x \in o /\ y \in o
    => x \in y \/ x = y \/ y \in x
 THEOREM ordinalIsTotalOrder
 PROOF
+VARIABLES a,b,c,d,m,o,p,x,y,z;
+\* Because o is an ordinal, the pair {x,y} \subseteq o has a minimum m.
+\* This minimum is either x or y.
+h(o,x,y) == IsOrdinal(o) /\ x \in o /\ y \in o;
+h(o,x,y) => IsOrdinal(o)   BECAUSE S13;
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
+(\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p)) => ({x,y} \subseteq o => {x,y} = {} \/ \E m : IsMinimumForIn(m, {x,y}))   BECAUSE \A(p <- {x,y});
+IsOrdinal(o) => ({x,y} \subseteq o => {x,y} = {} \/ \E m : IsMinimumForIn(m, {x,y}))   BECAUSE TI2;
+h(o,x,y) => ({x,y} \subseteq o => {x,y} = {} \/ \E m : IsMinimumForIn(m, {x,y}))   BECAUSE TI;
+pairExists   BECAUSE THEOREM;
+z \in { x, y } <=> (z = x \/ z = y)   BECAUSE \A(c <- x, d <- y, y <- z);
+z \in { x, y } => (z = x \/ z = y)   BECAUSE EquivToImpl;
+h(o,x,y) => (z \in { x, y } => (z = x \/ z = y))   BECAUSE PT1;
+h(o,x,y) /\ z \in { x, y } => (z = x \/ z = y)   BECAUSE HypoImplToAnd;
+\A z : \A x : z = x => (z \in o <=> x \in o)   BECAUSE E_SCHEME;
+z = x => (z \in o <=> x \in o)   BECAUSE \A(z <- z, x <- x);
+h(o,x,y) => x \in o   BECAUSE S23;
+mergeImpl(a,b,c,h) == (a => (b <=> c)) => ((h => c) => (h => (a => b)))   PROPO_TAUTO;
+h(o,x,y) => (z = x => z \in o)   BECAUSE mergeImpl;
+z = y => (z \in o <=> y \in o)   BECAUSE \A(z <- z, x <- y);
+h(o,x,y) => y \in o   BECAUSE S22;
+h(o,x,y) => (z = y => z \in o)   BECAUSE mergeImpl;
+mergeImplB(h,a,b,c) == (h => (a => c)) => ((h => (b => c)) => (h => ((a \/ b) => c)))   PROPO_TAUTO;
+h(o,x,y) => (z = x \/ z = y => z \in o)   BECAUSE mergeImplB;
+h(o,x,y) /\ z \in {x,y} => h(o,x,y)   BECAUSE S12;
+h(o,x,y) /\ z \in {x,y} => (z = x \/ z = y => z \in o)   BECAUSE TI;
+h(o,x,y) /\ z \in {x,y} => z \in o   BECAUSE KillMiddleHypo;
+h(o,x,y) => (z \in {x,y} => z \in o)   BECAUSE HypoAndToImpl;
+\A z : h(o,x,y) => (z \in {x,y} => z \in o)   BECAUSE GENERALIZATION;
+h(o,x,y) => {x,y} \subseteq o   BECAUSE Q_SCHEME;
+h(o,x,y) => {x,y} = {} \/ \E m : IsMinimumForIn(m, {x,y})   BECAUSE KillMiddleHypo;
+emptySetExistsUniquely   BECAUSE THEOREM;
+{a,b} = {} <=> \A x : x \notin {a,b}   BECAUSE \A(c <- {a,b});
+{a,b} = {} => \A x : x \notin {a,b}   BECAUSE EquivToImpl;
+~(\A x : x \notin {a,b}) => {a,b} # {}   BECAUSE Contraposition;
+(\E x : x \in {a,b}) <=> ~(\A x : x \notin {a,b})   BECAUSE Q_SCHEME;
+(\E x : x \in {a,b}) => ~(\A x : x \notin {a,b})   BECAUSE EquivToImpl;
+a \in {a,b} => (\E x : x \in {a,b})   BECAUSE \E(x <- a);
+a \in {a,b} => {a,b} # {}   BECAUSE TI2;
+a \in { a,b } <=> (a = a \/ a = b)   BECAUSE \A(c <- a, d <- b, y <- a);
+(a = a \/ a = b) => a \in { a,b }   BECAUSE EquivToImplReverse;
+equalSelf   BECAUSE THEOREM;
+a = a   BECAUSE \A(a <- a);
+a = a \/ a = b   BECAUSE IntroOrLeft;
+a \in { a,b }   BECAUSE MODUS_PONENS;
+{a,b} # {}   BECAUSE MODUS_PONENS;
+\A a : \A b : {a,b} # {}   BECAUSE GENERALIZATION;
+{x,y} # {}   BECAUSE \A(a <- x, b <- y);
+killCase(a,b,h) == ~a => ((h => a \/ b) => (h => b))   PROPO_TAUTO;
+h(o,x,y) => \E m : IsMinimumForIn(m, {x,y})   BECAUSE killCase;
+\* Prove m is x or y
+hm(o,x,y,m) == h(o,x,y) /\ IsMinimumForIn(m, {x,y});
+hm(o,x,y,m) => IsMinimumForIn(m, {x,y})   BECAUSE S22;
+IsMinimumForIn(m, {x,y}) => m \in {x,y}   BECAUSE S12;
+m \in { x, y } <=> (m = x \/ m = y)   BECAUSE \A(c <- x, d <- y, y <- m);
+m \in { x, y } => (m = x \/ m = y)   BECAUSE EquivToImpl;
+hm(o,x,y,m) => m = x \/ m = y   BECAUSE TI2;
+
+\* TODO IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})
+
+\* Prove the 3 possible cases
+IsMinimumForIn(m, {x,y}) => \A b : b \in {x,y} => (b = m \/ m \in b)   BECAUSE S22;
+(\A b : b \in {x,y} => (b = m \/ m \in b)) => (x \in {x,y} => (x = m \/ m \in x))   BECAUSE \A(b <- x);
+IsMinimumForIn(m, {x,y}) => (x \in {x,y} => (x = m \/ m \in x))   BECAUSE TI;
+
+\* TODO
+
 ordinalIsTotalOrder   BECAUSE GENERALIZATION;
 QED
 
