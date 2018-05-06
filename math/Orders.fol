@@ -1951,9 +1951,90 @@ h(o,p) => o \in p \/ o = p   BECAUSE boolImplB;
 includedOrdinals   BECAUSE GENERALIZATION;
 QED
 
-intersectOrdinalsIsOrdinal == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(o \intersect p)
+intersectOrdinalsIsOrdinal == \A o : \A q : IsOrdinal(o) /\ IsOrdinal(q) => IsOrdinal(o \intersect q)
 THEOREM intersectOrdinalsIsOrdinal
 PROOF
+VARIABLES a,o,p,q,u,v,x,z;
+\* Qroof that o \intersect q is a transitive set
+h(o,q) == IsOrdinal(o) /\ IsOrdinal(q);
+h(o,q) => IsOrdinal(o)   BECAUSE S12;
+h(o,q) => IsOrdinal(q)   BECAUSE S22;
+ht(o,q,a) == h(o,q) /\ a \in (o \intersect q);
+ht(o,q,a) => h(o,q)   BECAUSE S12;
+ht(o,q,a) => a \in (o \intersect q)   BECAUSE S22;
+intersectionExists   BECAUSE THEOREM;
+a \in (o \intersect q) <=> (a \in o /\ a \in q)   BECAUSE \A(u <- o, v <- q, x <- a);
+a \in (o \intersect q) => (a \in o /\ a \in q)   BECAUSE EquivToImpl;
+ht(o,q,a) => a \in o /\ a \in q   BECAUSE TI;
+a \in o /\ a \in q => a \in o   BECAUSE S12;
+a \in o /\ a \in q => a \in q   BECAUSE S22;
+ht(o,q,a) => a \in o   BECAUSE TI;
+ht(o,q,a) => a \in q   BECAUSE TI;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
+IsOrdinal(q) => IsTransitiveSet(q)   BECAUSE S12;
+ht(o,q,a) => IsTransitiveSet(o)   BECAUSE TI2;
+ht(o,q,a) => IsTransitiveSet(q)   BECAUSE TI2;
+IsTransitiveSet(o) => (a \in o => a \subseteq o)   BECAUSE \A(a <- a);
+IsTransitiveSet(q) => (a \in q => a \subseteq q)   BECAUSE \A(a <- a);
+ht(o,q,a) => (a \in o => a \subseteq o)   BECAUSE TI;
+ht(o,q,a) => (a \in q => a \subseteq q)   BECAUSE TI;
+ht(o,q,a) => a \subseteq o   BECAUSE KillMiddleHypo;
+ht(o,q,a) => a \subseteq q   BECAUSE KillMiddleHypo;
+a \subseteq o => (z \in a => z \in o)   BECAUSE \A(z <- z);
+a \subseteq q => (z \in a => z \in q)   BECAUSE \A(z <- z);
+ht(o,q,a) => (z \in a => z \in o)   BECAUSE TI;
+ht(o,q,a) => (z \in a => z \in q)   BECAUSE TI;
+mergeImpl(h,a,b,c) == (h => (a => b)) => ((h => (a => c)) => (h /\ a => b /\ c))   PROPO_TAUTO;
+ht(o,q,a) /\ z \in a => z \in o /\ z \in q   BECAUSE mergeImpl;
+z \in (o \intersect q) <=> (z \in o /\ z \in q)   BECAUSE \A(u <- o, v <- q, x <- z);
+(z \in o /\ z \in q) => z \in (o \intersect q)   BECAUSE EquivToImplReverse;
+ht(o,q,a) /\ z \in a => z \in o \intersect q   BECAUSE TI;
+ht(o,q,a) => (z \in a => z \in o \intersect q)   BECAUSE HypoAndToImpl;
+\A z : ht(o,q,a) => (z \in a => z \in o \intersect q)   BECAUSE GENERALIZATION;
+ht(o,q,a) => a \subseteq (o \intersect q)   BECAUSE Q_SCHEME;
+h(o,q) => (a \in o \intersect q => a \subseteq (o \intersect q))   BECAUSE HypoAndToImpl;
+\A a : h(o,q) => (a \in o \intersect q => a \subseteq (o \intersect q))   BECAUSE GENERALIZATION;
+h(o,q) => IsTransitiveSet(o \intersect q)   BECAUSE Q_SCHEME;
+
+\* Proof that o \intersect q is irreflexive
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => (\A a : a \in o => a \notin a)   BECAUSE S13;
+h(o,q) => (\A a : a \in o => a \notin a)   BECAUSE TI2;
+(\A a : a \in o => a \notin a) => (a \in o => a \notin a)   BECAUSE \A(a <- a);
+ht(o,q,a) => (a \in o => a \notin a)   BECAUSE TI2;
+ht(o,q,a) => a \notin a   BECAUSE KillMiddleHypo;
+h(o,q) => (a \in o \intersect q => a \notin a)   BECAUSE HypoAndToImpl;
+\A a : h(o,q) => (a \in o \intersect q => a \notin a)   BECAUSE GENERALIZATION;
+h(o,q) => (\A a : a \in o \intersect q => a \notin a)   BECAUSE Q_SCHEME;
+
+\* Proof that o \intersect q is transitive for \in
+\* TODO
+
+\* Proof that o \intersect q has all minimums.
+\* p \subseteq o \intersect q and p not empty means p \subseteq o.
+\* There is a minimum m \in p because o is an ordinal.
+hm(o,q,p) == h(o,q) /\ p \subseteq (o \intersect q);
+hm(o,q,p) => h(o,q)   BECAUSE S12;
+hm(o,q,p) => p \subseteq (o \intersect q)   BECAUSE S22;
+p \subseteq (o \intersect q) => (z \in p => z \in o \intersect q)   BECAUSE \A(z <- z);
+hm(o,q,p) => (z \in p => z \in o \intersect q)   BECAUSE TI;
+hm(o,q,p) /\ z \in p => z \in o \intersect q   BECAUSE HypoImplToAnd;
+z \in (o \intersect q) => (z \in o /\ z \in q)   BECAUSE EquivToImpl;
+(z \in o /\ z \in q) => z \in o   BECAUSE S12;
+hm(o,q,p) /\ z \in p => z \in o   BECAUSE TI2;
+hm(o,q,p) => (z \in p => z \in o)   BECAUSE HypoAndToImpl;
+\A z : hm(o,q,p) => (z \in p => z \in o)   BECAUSE GENERALIZATION;
+hm(o,q,p) => p \subseteq o   BECAUSE Q_SCHEME;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
+(\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p)) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE \A(p <- p);
+IsWellOrderedByIn(o) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+h(o,q) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI2;
+hm(o,q,p) => (p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+hm(o,q,p) => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE KillMiddleHypo;
+h(o,q) => (p \subseteq o \intersect q => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+\A p : h(o,q) => (p \subseteq o \intersect q => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+h(o,q) => (\A p : p \subseteq (o \intersect q) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+
 intersectOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
