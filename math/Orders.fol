@@ -2313,11 +2313,21 @@ h(u) /\ p \subseteq (UNION u) /\ p # {} => (z \in p => (\E m : IsMinimumForIn(m,
 \A z : h(u) /\ p \subseteq (UNION u) /\ p # {} => (z \in p => (\E m : IsMinimumForIn(m, p)))   BECAUSE GENERALIZATION;
 h(u) /\ p \subseteq (UNION u) /\ p # {} => (\A z : z \in p => (\E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
 (\A z : z \in p => (\E m : IsMinimumForIn(m, p))) => ((\E z : z \in p) => \E z : (\E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
-h(u) /\ p \subseteq (UNION u) /\ p # {} => ((\E z : z \in p) => (\E z : \E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => ((\E z : z \in p) => (\E z : \E m : IsMinimumForIn(m, p)))   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => p # {}   BECAUSE S22;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => \E z : z \in p   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => (\E z : \E m : IsMinimumForIn(m, p))   BECAUSE KillMiddleHypo;
+(\E z : \E m : IsMinimumForIn(m, p)) => (\E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => \E m : IsMinimumForIn(m, p)   BECAUSE TI;
+pushCase(a,b,c) == (a /\ ~b => c) => (a => b \/ c)   PROPO_TAUTO;
+h(u) /\ p \subseteq (UNION u) => (p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE pushCase;
+h(u) => (p \subseteq (UNION u) => (p = {} \/ \E m : IsMinimumForIn(m, p)))   BECAUSE HypoAndToImpl;
+\A p : h(u) => (p \subseteq (UNION u) => (p = {} \/ \E m : IsMinimumForIn(m, p)))   BECAUSE GENERALIZATION;
+h(u) => (\A p : p \subseteq (UNION u) => (p = {} \/ \E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
 
-\* TODO discharge z and conclude
-
-h(u) => IsOrdinal(UNION u)   BECAUSE TI;
+h(u) => (\A a : a \in UNION u => a \notin a) /\ IsTransitiveIn(UNION u)   BECAUSE CIA;
+h(u) => IsWellOrderedByIn(UNION u)   BECAUSE CIA;
+h(u) => IsOrdinal(UNION u)   BECAUSE CIA;
 unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
