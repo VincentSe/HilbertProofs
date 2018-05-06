@@ -1583,16 +1583,46 @@ IsMinimumForIn(m, {x,y}) => m \in {x,y}   BECAUSE S12;
 m \in { x, y } <=> (m = x \/ m = y)   BECAUSE \A(c <- x, d <- y, y <- m);
 m \in { x, y } => (m = x \/ m = y)   BECAUSE EquivToImpl;
 hm(o,x,y,m) => m = x \/ m = y   BECAUSE TI2;
-
-\* TODO IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})
+\A m : \A a : m = a => (IsMinimumForIn(m, {x,y}) <=> IsMinimumForIn(a, {x,y}))   BECAUSE E_SCHEME;
+m = x => (IsMinimumForIn(m, {x,y}) <=> IsMinimumForIn(x, {x,y}))   BECAUSE \A(m <- m, a <- x);
+m = y => (IsMinimumForIn(m, {x,y}) <=> IsMinimumForIn(y, {x,y}))   BECAUSE \A(m <- m, a <- y);
+mergeImplC(a,b,c,d,e) == (a => (b <=> c)) => ((d => (b <=> e)) => (b /\ (a \/ d) => c \/ e))   PROPO_TAUTO;
+IsMinimumForIn(m, {x,y}) /\ (m = x \/ m = y) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})   BECAUSE mergeImplC;
+hm(o,x,y,m) => IsMinimumForIn(m, {x,y}) /\ (m = x \/ m = y)   BECAUSE CIA;
+hm(o,x,y,m) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})   BECAUSE TI;
+h(o,x,y) => (IsMinimumForIn(m, {x,y}) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}))   BECAUSE HypoAndToImpl;
+\A m : h(o,x,y) => (IsMinimumForIn(m, {x,y}) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}))   BECAUSE GENERALIZATION;
+h(o,x,y) => (\A m : IsMinimumForIn(m, {x,y}) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}))   BECAUSE Q_SCHEME;
+(\A m : IsMinimumForIn(m, {x,y}) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})) => ((\E m : IsMinimumForIn(m, {x,y})) => \E m : IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}))   BECAUSE Q_SCHEME;
+h(o,x,y) => ((\E m : IsMinimumForIn(m, {x,y})) => \E m : IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}))   BECAUSE TI;
+h(o,x,y) => \E m : IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})   BECAUSE KillMiddleHypo;
+(\E m : IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})   BECAUSE Q_SCHEME;
+h(o,x,y) => IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y})   BECAUSE TI;
 
 \* Prove the 3 possible cases
-IsMinimumForIn(m, {x,y}) => \A b : b \in {x,y} => (b = m \/ m \in b)   BECAUSE S22;
-(\A b : b \in {x,y} => (b = m \/ m \in b)) => (x \in {x,y} => (x = m \/ m \in x))   BECAUSE \A(b <- x);
-IsMinimumForIn(m, {x,y}) => (x \in {x,y} => (x = m \/ m \in x))   BECAUSE TI;
-
-\* TODO
-
+IsMinimumForIn(x, {x,y}) => \A b : b \in {x,y} => (b = x \/ x \in b)   BECAUSE S22;
+(\A b : b \in {x,y} => (b = x \/ x \in b)) => (y \in {x,y} => (y = x \/ x \in y))   BECAUSE \A(b <- y);
+IsMinimumForIn(x, {x,y}) => (y \in {x,y} => (y = x \/ x \in y))   BECAUSE TI;
+y \in { x, y } <=> (y = x \/ y = y)   BECAUSE \A(c <- x, d <- y, y <- y);
+y = y   BECAUSE \A(a <- y);
+y = x \/ y = y   BECAUSE IntroOrRight;
+y \in { x, y }   BECAUSE MODUS_PONENS;
+IsMinimumForIn(x, {x,y}) => y \in { x, y }   BECAUSE PT1;
+IsMinimumForIn(x, {x,y}) => (y = x \/ x \in y)   BECAUSE KillMiddleHypo;
+IsMinimumForIn(y, {x,y}) => \A b : b \in {x,y} => (b = y \/ y \in b)   BECAUSE S22;
+(\A b : b \in {x,y} => (b = y \/ y \in b)) => (x \in {x,y} => (x = y \/ y \in x))   BECAUSE \A(b <- x);
+IsMinimumForIn(y, {x,y}) => (x \in {x,y} => (x = y \/ y \in x))   BECAUSE TI;
+x \in { x, y } <=> (x = x \/ x = y)   BECAUSE \A(c <- x, d <- y, y <- x);
+x = x   BECAUSE \A(a <- x);
+x = x \/ x = y   BECAUSE IntroOrLeft;
+x \in { x, y }   BECAUSE MODUS_PONENS;
+IsMinimumForIn(y, {x,y}) => x \in { x, y }   BECAUSE PT1;
+IsMinimumForIn(y, {x,y}) => (x = y \/ y \in x)   BECAUSE KillMiddleHypo;
+IsMinimumForIn(x, {x,y}) \/ IsMinimumForIn(y, {x,y}) => (y = x \/ x \in y) \/ (x = y \/ y \in x)   BECAUSE MergeImplicationsOr;
+y = x => x = y   BECAUSE E_SCHEME;
+shuffleCases(a,b,c,d) == (a => b) => ((a \/ c) \/ (b \/ d) => c \/ b \/ d)   PROPO_TAUTO;
+(y = x \/ x \in y) \/ (x = y \/ y \in x) => x \in y \/ x = y \/ y \in x   BECAUSE shuffleCases;
+h(o,x,y) => x \in y \/ x = y \/ y \in x   BECAUSE TI2;
 ordinalIsTotalOrder   BECAUSE GENERALIZATION;
 QED
 

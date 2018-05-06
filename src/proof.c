@@ -1042,7 +1042,12 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    Choice(a) == CHOOSE x : x \in p
    applied in the separation axiom scheme yields the axiom of choice.
    For this reason we refuse CHOOSE symbols in axiom schemes, we require
-   CHOOSE_UNIQUE instead.
+   CHOOSE_UNIQUE instead. It is conservative to use the new CHOOSE_UNIQUE
+   symbol in an axiom scheme, even when its existence formula is not
+   satisfied : in that case the symbol has no properties, if a proof
+   with the symbol ends with a formula without the symbol, we can replace
+   it in the proof by any value. We will get the proof in the
+   language of the previous theory, ending with the same formula.
 
    Syntactically, T+ proves a formula G involving someNewOp(x,y,z) if
    and only if T proves the formula
