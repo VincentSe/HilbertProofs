@@ -2041,7 +2041,7 @@ QED
 unionOrdinalsIsOrdinal == \A u : (\A x : x \in u => IsOrdinal(x)) => IsOrdinal(UNION u)
 THEOREM unionOrdinalsIsOrdinal
 PROOF
-VARIABLES a,b,c,o,p,q,t,u,v,x,y,z;
+VARIABLES a,b,c,m,o,p,q,t,u,v,x,y,z;
 h(u) == \A x : x \in u => IsOrdinal(x);
 \* Proof that UNION u is transitive
 unionExists   BECAUSE AXIOM;
@@ -2088,21 +2088,20 @@ h(u) => (a \in UNION u => a \subseteq UNION u)   BECAUSE HypoAndToImpl;
 h(u) => IsTransitiveSet(UNION u)   BECAUSE Q_SCHEME;
 
 \* Proof that UNION u is irreflexive
-IsWellOrderedByIn(x) => (\A a : a \in x => a \notin a)   BECAUSE S13;
-(\A a : a \in x => a \notin a) => (a \in x => a \notin a)   BECAUSE \A(a <- a);
-IsWellOrderedByIn(x) => (a \in x => a \notin a)   BECAUSE TI;
-\A x : IsWellOrderedByIn(x) => (a \in x => a \notin a)   BECAUSE GENERALIZATION;
-IsWellOrderedByIn(t) => (a \in t => a \notin a)   BECAUSE \A(x <- t);
-IsOrdinal(t) => IsWellOrderedByIn(t)   BECAUSE S22;
-ht(a,u,t) => (a \in t => a \notin a)   BECAUSE TI2;
-ht(a,u,t) => a \notin a   BECAUSE KillMiddleHypo;
-h(u) => (t \in u /\ a \in t => a \notin a)   BECAUSE pushHypos;
-\A t : h(u) => (t \in u /\ a \in t => a \notin a)   BECAUSE GENERALIZATION;
-h(u) => (\A t : t \in u /\ a \in t => a \notin a)   BECAUSE Q_SCHEME;
-(\A t : t \in u /\ a \in t => a \notin a) => ((\E t : t \in u /\ a \in t) => \E t : a \notin a)   BECAUSE Q_SCHEME;
-h(u) => ((\E t : t \in u /\ a \in t) => \E t : a \notin a)   BECAUSE TI;
-h(u) /\ a \in UNION u => \E t : a \notin a   BECAUSE mergeImpl;
-(\E t : a \notin a) => a \notin a   BECAUSE Q_SCHEME;
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(t) /\ a \in t => IsOrdinal(a)   BECAUSE \A(o <- t, x <- a);
+ht(a,u,t) => IsOrdinal(t) /\ a \in t   BECAUSE CIA;
+ht(a,u,t) => IsOrdinal(a)   BECAUSE TI;
+h(u) => (t \in u /\ a \in t => IsOrdinal(a))   BECAUSE pushHypos;
+\A t : h(u) => (t \in u /\ a \in t => IsOrdinal(a))   BECAUSE GENERALIZATION;
+h(u) => (\A t : t \in u /\ a \in t => IsOrdinal(a))   BECAUSE Q_SCHEME;
+(\A t : t \in u /\ a \in t => IsOrdinal(a)) => ((\E t : t \in u /\ a \in t) => \E t : IsOrdinal(a))   BECAUSE Q_SCHEME;
+h(u) => ((\E t : t \in u /\ a \in t) => \E t : IsOrdinal(a))   BECAUSE TI;
+h(u) /\ a \in UNION u => \E t : IsOrdinal(a)   BECAUSE mergeImpl;
+(\E t : IsOrdinal(a)) => IsOrdinal(a)   BECAUSE Q_SCHEME;
+h(u) /\ a \in UNION u => IsOrdinal(a)   BECAUSE TI;
+ordinalsWellFounded   BECAUSE THEOREM;
+IsOrdinal(a) => a \notin a   BECAUSE \A(o <- a);
 h(u) /\ a \in UNION u => a \notin a   BECAUSE TI;
 h(u) => (a \in UNION u => a \notin a)   BECAUSE HypoAndToImpl;
 \A a : h(u) => (a \in UNION u => a \notin a)   BECAUSE GENERALIZATION;
@@ -2114,7 +2113,6 @@ h(u) => (\A a : a \in UNION u => a \notin a)   BECAUSE Q_SCHEME;
 ht(c,u,t) => IsOrdinal(t)   BECAUSE \A(a <- c);
 \A a : ht(a,u,t) => a \in t   BECAUSE GENERALIZATION;
 ht(c,u,t) => c \in t   BECAUSE \A(a <- c);
-elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
 IsOrdinal(t) /\ c \in t => IsOrdinal(c)   BECAUSE \A(o <- t, x <- c);
 ht(c,u,t) => IsOrdinal(t) /\ c \in t   BECAUSE CIA;
 ht(c,u,t) => IsOrdinal(c)   BECAUSE TI;
@@ -2152,82 +2150,172 @@ h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in 
 \A a : h(u) => (\A b : \A c : a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
 h(u) => IsTransitiveIn(UNION u)   BECAUSE Q_SCHEME;
 
-\* Proof that \in is a total strict order on UNION u
-htot(u,x,y) == h(u) /\ x \in UNION u /\ y \in UNION u;
-\*ordinalComparisonLarge == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
-\*   => o \subseteq p \/ p \subseteq o
-
-htot(u,x,y) => x \in y \/ x = y \/ y \in x   BECAUSE TI;
-
 \* Proof that minimums exist
-hm(p,u) == h(u) /\ p \subseteq (UNION u) /\ p # {};
-hm(p,u) => h(u)   BECAUSE S13;
-hm(p,u) => p # {}   BECAUSE S22;
-hm(p,u) => p \subseteq (UNION u)   BECAUSE S23;
+hm(u,p,z,t) == h(u) /\ p \subseteq (UNION u) /\ p # {} /\ (z \in p /\ t \in u /\ z \in t);
+hm(u,p,z,t) => h(u)   BECAUSE S14;
+hm(u,p,z,t) => p # {}   BECAUSE S23;
+hm(u,p,z,t) => p \subseteq (UNION u)   BECAUSE S24;
+hm(u,p,z,t) => z \in p /\ t \in u /\ z \in t   BECAUSE S22;
 notEmpty   BECAUSE THEOREM;
 p # {} => \E z : z \in p   BECAUSE \A(x <- p);
-cp(p) == CHOOSE z : z \in p; \* it is in one the ordinals of u, which minimum we will take
-(\E z : z \in p) => cp(p) \in p   BECAUSE CHOOSE cp(p);
-hm(p,u) => cp(p) \in p   BECAUSE TI2;
-p \subseteq (UNION u) => (cp(p) \in p => cp(p) \in UNION u)   BECAUSE \A(z <- cp(p));
-hm(p,u) => (cp(p) \in p => cp(p) \in UNION u)   BECAUSE TI;
-hm(p,u) => cp(p) \in UNION u   BECAUSE KillMiddleHypo;
-cp(p) \in UNION u <=> \E t : t \in u /\ cp(p) \in t   BECAUSE \A(b <- u, z <- cp(p));
-cp(p) \in UNION u => \E t : t \in u /\ cp(p) \in t   BECAUSE EquivToImpl;
-(\E t : t \in u /\ cp(p) \in t) => ct(cp(p),u) \in u /\ cp(p) \in ct(cp(p),u)   BECAUSE CHOOSE ct(cp(p),u);
-hm(p,u) => ct(cp(p),u) \in u /\ cp(p) \in ct(cp(p),u)   BECAUSE TI2;
-ct(cp(p),u) \in u /\ cp(p) \in ct(cp(p),u) => ct(cp(p),u) \in u   BECAUSE S12;
-hm(p,u) => ct(cp(p),u) \in u   BECAUSE TI;
-h(u) => (ct(cp(p),u) \in u => IsOrdinal(ct(cp(p),u)))   BECAUSE \A(x <- ct(cp(p),u));
-hm(p,u) => (ct(cp(p),u) \in u => IsOrdinal(ct(cp(p),u)))   BECAUSE TI;
-hm(p,u) => IsOrdinal(ct(cp(p),u))   BECAUSE KillMiddleHypo; \* Take the minimum of p in this ordinal
-IsWellOrderedByIn(ct(cp(z),u)) => (\A p : p \subseteq ct(cp(z),u) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
-(\A p : p \subseteq ct(cp(z),u) => p = {} \/ \E m : IsMinimumForIn(m, p)) => (q \subseteq ct(cp(z),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE \A(p <- q);
-IsWellOrderedByIn(ct(cp(z),u)) => (q \subseteq ct(cp(z),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE TI;
-\A z : IsWellOrderedByIn(ct(cp(z),u)) => (q \subseteq ct(cp(z),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE GENERALIZATION;
-IsWellOrderedByIn(ct(cp(p),u)) => (q \subseteq ct(cp(p),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE \A(z <- p);
-IsOrdinal(ct(cp(p),u)) => IsWellOrderedByIn(ct(cp(p),u))   BECAUSE S22;
-hm(p,u) => (q \subseteq ct(cp(p),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE TI2; \* take q = p \intersect ct(cp(p),u)
-\A q : hm(p,u) => (q \subseteq ct(cp(p),u) => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE GENERALIZATION;
-hm(p,u) => ((p \intersect ct(cp(p),u)) \subseteq ct(cp(p),u) => (p \intersect ct(cp(p),u)) = {} \/ \E m : IsMinimumForIn(m, p \intersect ct(cp(p),u)))   BECAUSE \A(q <- p \intersect ct(cp(p),u));
+\* z is in one the ordinals of u, which minimum we will take
+z \in p /\ t \in u /\ z \in t => z \in p   BECAUSE S13;
+z \in p /\ t \in u /\ z \in t => t \in u   BECAUSE S23;
+z \in p /\ t \in u /\ z \in t => z \in t   BECAUSE S22;
+hm(u,p,z,t) => z \in p   BECAUSE TI;
+p \subseteq (UNION u) => (z \in p => z \in UNION u)   BECAUSE \A(z <- z);
+hm(u,p,z,t) => (z \in p => z \in UNION u)   BECAUSE TI;
+hm(u,p,z,t) => z \in UNION u   BECAUSE KillMiddleHypo;
+z \in UNION u <=> \E t : t \in u /\ z \in t   BECAUSE \A(b <- u, z <- z);
+z \in UNION u => \E t : t \in u /\ z \in t   BECAUSE EquivToImpl;
+hm(u,p,z,t) => t \in u   BECAUSE TI;
+h(u) => (t \in u => IsOrdinal(t))   BECAUSE \A(x <- t);
+hm(u,p,z,t) => (t \in u => IsOrdinal(t))   BECAUSE TI;
+hm(u,p,z,t) => IsOrdinal(t)   BECAUSE KillMiddleHypo; \* Take the minimum of p in this ordinal
+IsWellOrderedByIn(t) => (\A p : p \subseteq t => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
+(\A p : p \subseteq t => p = {} \/ \E m : IsMinimumForIn(m, p)) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE \A(p <- q);
+IsWellOrderedByIn(t) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE TI;
+\A z : IsWellOrderedByIn(t) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE GENERALIZATION;
+IsWellOrderedByIn(t) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE \A(z <- p);
+IsOrdinal(t) => IsWellOrderedByIn(t)   BECAUSE S22;
+hm(u,p,z,t) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE TI2; \* take q = p \intersect t
+\A q : hm(u,p,z,t) => (q \subseteq t => q = {} \/ \E m : IsMinimumForIn(m, q))   BECAUSE GENERALIZATION;
+hm(u,p,z,t) => ((p \intersect t) \subseteq t => (p \intersect t) = {} \/ \E m : IsMinimumForIn(m, p \intersect t))   BECAUSE \A(q <- p \intersect t);
 intersectIncludes   BECAUSE THEOREM;
-(p \intersect ct(cp(p),u)) \subseteq ct(cp(p),u)   BECAUSE \A(a <- p, b <- ct(cp(p),u));
-hm(p,u) => (p \intersect ct(cp(p),u)) \subseteq ct(cp(p),u)   BECAUSE PT1;
-hm(p,u) => (p \intersect ct(cp(p),u)) = {} \/ \E m : IsMinimumForIn(m, p \intersect ct(cp(p),u))   BECAUSE KillMiddleHypo;
+(p \intersect t) \subseteq t   BECAUSE \A(a <- p, b <- t);
+hm(u,p,z,t) => (p \intersect t) \subseteq t   BECAUSE PT1;
+hm(u,p,z,t) => (p \intersect t) = {} \/ \E m : IsMinimumForIn(m, p \intersect t)   BECAUSE KillMiddleHypo;
 emptySetExistsUniquely   BECAUSE THEOREM;
-(p \intersect ct(cp(p),u)) = {} <=> \A x : x \notin (p \intersect ct(cp(p),u))   BECAUSE \A(c <- p \intersect ct(cp(p),u));
-(p \intersect ct(cp(p),u)) = {} => \A x : x \notin (p \intersect ct(cp(p),u))   BECAUSE EquivToImpl;
-(\A x : x \notin (p \intersect ct(cp(p),u))) => cp(p) \notin (p \intersect ct(cp(p),u))   BECAUSE \A(x <- cp(p));
-(p \intersect ct(cp(p),u)) = {} => cp(p) \notin (p \intersect ct(cp(p),u))   BECAUSE TI;
-~(cp(p) \notin (p \intersect ct(cp(p),u))) => (p \intersect ct(cp(p),u)) # {}   BECAUSE Contraposition;
-ct(cp(p),u) \in u /\ cp(p) \in ct(cp(p),u) => cp(p) \in ct(cp(p),u)   BECAUSE S22;
-hm(p,u) => cp(p) \in ct(cp(p),u)   BECAUSE TI;
-hm(p,u) => cp(p) \in p /\ cp(p) \in ct(cp(p),u)   BECAUSE CIA;
+(p \intersect t) = {} <=> \A x : x \notin (p \intersect t)   BECAUSE \A(c <- p \intersect t);
+(p \intersect t) = {} => \A x : x \notin (p \intersect t)   BECAUSE EquivToImpl;
+(\A x : x \notin (p \intersect t)) => z \notin (p \intersect t)   BECAUSE \A(x <- z);
+(p \intersect t) = {} => z \notin (p \intersect t)   BECAUSE TI;
+~(z \notin (p \intersect t)) => (p \intersect t) # {}   BECAUSE Contraposition;
+t \in u /\ z \in t => z \in t   BECAUSE S22;
+hm(u,p,z,t) => z \in t   BECAUSE TI;
+hm(u,p,z,t) => z \in p /\ z \in t   BECAUSE CIA;
 intersectionExists   BECAUSE THEOREM;
-cp(p) \in (p \intersect ct(cp(p),u)) <=> (cp(p) \in p /\ cp(p) \in ct(cp(p),u))   BECAUSE \A(u <- p, v <- ct(cp(p),u), x <- cp(p));
-(cp(p) \in p /\ cp(p) \in ct(cp(p),u)) => cp(p) \in (p \intersect ct(cp(p),u))   BECAUSE EquivToImplReverse;
-cp(p) \in (p \intersect ct(cp(p),u)) => ~(cp(p) \notin (p \intersect ct(cp(p),u)))   BECAUSE IntroNotNot;
-hm(p,u) => ~(cp(p) \notin (p \intersect ct(cp(p),u)))   BECAUSE TI2;
-hm(p,u) => (p \intersect ct(cp(p),u)) # {}   BECAUSE TI;
+z \in (p \intersect t) <=> (z \in p /\ z \in t)   BECAUSE \A(u <- p, v <- t, x <- z);
+(z \in p /\ z \in t) => z \in (p \intersect t)   BECAUSE EquivToImplReverse;
+z \in (p \intersect t) => ~(z \notin (p \intersect t))   BECAUSE IntroNotNot;
+hm(u,p,z,t) => ~(z \notin (p \intersect t))   BECAUSE TI2;
+hm(u,p,z,t) => (p \intersect t) # {}   BECAUSE TI;
 killCase(a,b,h) == (h => ~a) => ((h => a \/ b) => (h => b))   PROPO_TAUTO;
-hm(p,u) => \E m : IsMinimumForIn(m, p \intersect ct(cp(p),u))   BECAUSE killCase; \* Show that this minimum works for all UNION u
-cm(p,u) == CHOOSE m : IsMinimumForIn(m, p \intersect ct(cp(p),u));
-(\E m : IsMinimumForIn(m, p \intersect ct(cp(p),u))) => IsMinimumForIn(cm(p,u), p \intersect ct(cp(p),u))   BECAUSE CHOOSE cm(p,u);
-IsMinimumForIn(cm(p,u), p \intersect ct(cp(p),u)) => cm(p,u) \in (p \intersect ct(cp(p),u))   BECAUSE S12;
-hm(p,u) => cm(p,u) \in (p \intersect ct(cp(p),u))   BECAUSE TI2;
-cm(p,u) \in (p \intersect ct(cp(p),u)) <=> (cm(p,u) \in p /\ cm(p,u) \in ct(cp(p),u))   BECAUSE \A(u <- p, v <- ct(cp(p),u), x <- cm(p,u));
-cm(p,u) \in (p \intersect ct(cp(p),u)) => (cm(p,u) \in p /\ cm(p,u) \in ct(cp(p),u))   BECAUSE EquivToImpl;
-(cm(p,u) \in p /\ cm(p,u) \in ct(cp(p),u)) => cm(p,u) \in ct(cp(p),u)   BECAUSE S22;
-(cm(p,u) \in p /\ cm(p,u) \in ct(cp(p),u)) => cm(p,u) \in p   BECAUSE S12;
-hm(p,u) => cm(p,u) \in p   BECAUSE TI2; \* First condition for IsMinimumForIn(cm(p,u), p)
-hm(p,u) => cm(p,u) \in ct(cp(p),u)   BECAUSE TI2;
+hm(u,p,z,t) => \E m : IsMinimumForIn(m, p \intersect t)   BECAUSE killCase; \* Show that this minimum works for all UNION u
+hmin(u,p,z,t,m) == hm(u,p,z,t) /\ IsMinimumForIn(m, p \intersect t);
+hmin(u,p,z,t,m) => hm(u,p,z,t)   BECAUSE S12;
+hmin(u,p,z,t,m) => IsMinimumForIn(m, p \intersect t)   BECAUSE S22;
+IsMinimumForIn(m, p \intersect t) => m \in (p \intersect t)   BECAUSE S12;
+hmin(u,p,z,t,m) => m \in (p \intersect t)   BECAUSE TI;
+m \in (p \intersect t) <=> (m \in p /\ m \in t)   BECAUSE \A(u <- p, v <- t, x <- m);
+m \in (p \intersect t) => (m \in p /\ m \in t)   BECAUSE EquivToImpl;
+(m \in p /\ m \in t) => m \in t   BECAUSE S22;
+(m \in p /\ m \in t) => m \in p   BECAUSE S12;
+hmin(u,p,z,t,m) => m \in p   BECAUSE TI2; \* First condition for IsMinimumForIn(m, p)
+hmin(u,p,z,t,m) => m \in t   BECAUSE TI2;
+IsOrdinal(t) /\ m \in t => IsOrdinal(m)   BECAUSE \A(o <- t, x <- m);
+hmin(u,p,z,t,m) => IsOrdinal(t)   BECAUSE TI;
+hmin(u,p,z,t,m) => IsOrdinal(t) /\ m \in t   BECAUSE CIA;
+hmin(u,p,z,t,m) => IsOrdinal(m)   BECAUSE TI;
 
-htot(u,x,cm(p,u)) => x \in cm(p,u) \/ x = cm(p,u) \/ cm(p,u) \in x   BECAUSE TI;
-\* TODO first case impossible : if there was an x \in cm(p,u) and \in p,
-\* then x \in ct(cp(p),u) by transitivity of ct(cp(p),u),
-\* that x would be in p \intersect ct(cp(p),u), contradicting the minimality of cm(p,u)
+ordinalComparison   BECAUSE THEOREM;
+IsOrdinal(b) /\ IsOrdinal(m) => b \in m \/ b = m \/ m \in b   BECAUSE \A(o <- b, p <- m);
+\* First case impossible : if there was a b \in m and \in p,
+\* then b \in t by transitivity of t,
+\* that b would be in p \intersect t, contradicting the minimality of m
+hh(u,p,z,t,m,b) == hmin(u,p,z,t,m) /\ b \in p /\ b \in m;
+hh(u,p,z,t,m,b) => hmin(u,p,z,t,m)   BECAUSE S13;
+hh(u,p,z,t,m,b) => b \in p   BECAUSE S23;
+hh(u,p,z,t,m,b) => b \in m   BECAUSE S22;
+IsOrdinal(t) => IsTransitiveSet(t)   BECAUSE S12;
+IsTransitiveSet(t) => (m \in t => m \subseteq t)   BECAUSE \A(a <- m);
+hmin(u,p,z,t,m) => (m \in t => m \subseteq t)   BECAUSE TI2;
+hmin(u,p,z,t,m) => m \subseteq t   BECAUSE KillMiddleHypo;
+m \subseteq t => (b \in m => b \in t)   BECAUSE \A(z <- b);
+hh(u,p,z,t,m,b) => (b \in m => b \in t)   BECAUSE TI2;
+hh(u,p,z,t,m,b) => b \in t   BECAUSE KillMiddleHypo;
+hh(u,p,z,t,m,b) => b \in p /\ b \in t   BECAUSE CIA;
+b \in (p \intersect t) <=> (b \in p /\ b \in t)   BECAUSE \A(u <- p, v <- t, x <- b);
+(b \in p /\ b \in t) => b \in (p \intersect t)   BECAUSE EquivToImplReverse;
+hh(u,p,z,t,m,b) => b \in p \intersect t   BECAUSE TI;
+IsMinimumForIn(m, p \intersect t) => \A b : b \in p \intersect t => (b = m \/ m \in b)   BECAUSE S22;
+(\A b : b \in p \intersect t => (b = m \/ m \in b)) => (b \in p \intersect t => (b = m \/ m \in b))   BECAUSE \A(b <- b);
+IsMinimumForIn(m, p \intersect t) => (b \in p \intersect t => (b = m \/ m \in b))   BECAUSE TI;
+hh(u,p,z,t,m,b) => (b \in p \intersect t => (b = m \/ m \in b))   BECAUSE TI2;
+hh(u,p,z,t,m,b) => b = m \/ m \in b   BECAUSE KillMiddleHypo;
+ordinalComparesWithOwnElements   BECAUSE THEOREM;
+IsOrdinal(m) /\ b \in m => b # m /\ m \notin b   BECAUSE \A(o <- b, p <- m);
+hh(u,p,z,t,m,b) => IsOrdinal(m)   BECAUSE TI;
+hh(u,p,z,t,m,b) => IsOrdinal(m) /\ b \in m   BECAUSE CIA;
+hh(u,p,z,t,m,b) => b # m /\ m \notin b   BECAUSE TI;
+absurd(h,b,c,d) == (h /\ b => c \/ d) => ((h /\ b => ~c /\ ~d) => (h => ~b))   PROPO_TAUTO;
+hmin(u,p,z,t,m) /\ b \in p => b \notin m   BECAUSE absurd;
 
-\* IsMinimumForIn(m, p) == m \in p /\ \A b : b \in p => (b = m \/ m \in b)
+hmin(u,p,z,t,m) => p \subseteq UNION u   BECAUSE TI;
+p \subseteq UNION u => (b \in p => b \in UNION u)   BECAUSE \A(z <- b);
+hmin(u,p,z,t,m) => (b \in p => b \in UNION u)   BECAUSE TI;
+hmin(u,p,z,t,m) /\ b \in p => b \in UNION u   BECAUSE HypoImplToAnd;
+\A a : h(u) /\ a \in UNION u => IsOrdinal(a)   BECAUSE GENERALIZATION;
+h(u) /\ b \in UNION u => IsOrdinal(b)   BECAUSE \A(a <- b);
+hmin(u,p,z,t,m) /\ b \in p => hmin(u,p,z,t,m)   BECAUSE S12;
+hmin(u,p,z,t,m) /\ b \in p => h(u)   BECAUSE TI2;
+hmin(u,p,z,t,m) /\ b \in p => h(u) /\ b \in UNION u   BECAUSE CIA;
+hmin(u,p,z,t,m) /\ b \in p => IsOrdinal(b)   BECAUSE TI;
+hmin(u,p,z,t,m) /\ b \in p => IsOrdinal(m)   BECAUSE TI;
+hmin(u,p,z,t,m) /\ b \in p => IsOrdinal(b) /\ IsOrdinal(m)   BECAUSE CIA;
+hmin(u,p,z,t,m) /\ b \in p => b \in m \/ b = m \/ m \in b   BECAUSE TI;
+
+killCaseB(h,a,b,c) == (h => a \/ b \/ c) => ((h => ~a) => (h => b \/ c))   PROPO_TAUTO;
+hmin(u,p,z,t,m) /\ b \in p => b = m \/ m \in b   BECAUSE killCaseB;
+hmin(u,p,z,t,m) => (b \in p => b = m \/ m \in b)   BECAUSE HypoAndToImpl;
+\A b : hmin(u,p,z,t,m) => (b \in p => b = m \/ m \in b)   BECAUSE GENERALIZATION;
+hmin(u,p,z,t,m) => (\A b : b \in p => b = m \/ m \in b)   BECAUSE Q_SCHEME;
+hmin(u,p,z,t,m) => IsMinimumForIn(m, p)   BECAUSE CIA;
+
+\* Discharge existential hypotheses
+IsMinimumForIn(m, p) => \E m : IsMinimumForIn(m, p)   BECAUSE \E(m <- m);
+hmin(u,p,z,t,m) => \E m : IsMinimumForIn(m, p)   BECAUSE TI;
+hm(u,p,z,t) => (IsMinimumForIn(m, p \intersect t) => \E m : IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+\A m : hm(u,p,z,t) => (IsMinimumForIn(m, p \intersect t) => \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+hm(u,p,z,t) => (\A m : IsMinimumForIn(m, p \intersect t) => \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+(\A m : IsMinimumForIn(m, p \intersect t) => \E m : IsMinimumForIn(m, p)) => ((\E m : IsMinimumForIn(m, p \intersect t)) => \E m : \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+hm(u,p,z,t) => ((\E m : IsMinimumForIn(m, p \intersect t)) => \E m : \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+hm(u,p,z,t) => \E m : \E m : IsMinimumForIn(m, p)   BECAUSE KillMiddleHypo;
+(\E m : \E m : IsMinimumForIn(m, p)) => \E m : IsMinimumForIn(m, p)   BECAUSE Q_SCHEME;
+hm(u,p,z,t) => \E m : IsMinimumForIn(m, p)   BECAUSE TI;
+
+h(u) /\ p \subseteq (UNION u) /\ p # {}
+   => ((z \in p /\ t \in u /\ z \in t) => \E m : IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+pullHypo(a,b,c,d) == (a /\ b /\ c => d) => (a => (b /\ c => d))   PROPO_TAUTO;
+((z \in p /\ t \in u /\ z \in t) => \E m : IsMinimumForIn(m, p)) => (z \in p => (t \in u /\ z \in t => \E m : IsMinimumForIn(m, p)))   BECAUSE pullHypo;
+h(u) /\ p \subseteq (UNION u) /\ p # {}
+   => (z \in p => (t \in u /\ z \in t => \E m : IsMinimumForIn(m, p)))   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p
+   => (t \in u /\ z \in t => \E m : IsMinimumForIn(m, p))   BECAUSE HypoImplToAnd;
+\A t : h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p
+   => (t \in u /\ z \in t => \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p
+   => (\A t : t \in u /\ z \in t => \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+(\A t : t \in u /\ z \in t => \E m : IsMinimumForIn(m, p)) => ((\E t : t \in u /\ z \in t) => \E t : \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p
+   => ((\E t : t \in u /\ z \in t) => \E t : \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => p \subseteq UNION u   BECAUSE S24;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => z \in p   BECAUSE S22;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => p \subseteq (UNION u) /\ z \in p   BECAUSE CIA;
+p \subseteq (UNION u) /\ z \in p => z \in UNION u   BECAUSE HypoImplToAnd;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => z \in UNION u   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => (\E t : t \in u /\ z \in t)   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p
+   => (\E t : \E m : IsMinimumForIn(m, p))   BECAUSE KillMiddleHypo;
+(\E t : \E m : IsMinimumForIn(m, p)) => (\E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+h(u) /\ p \subseteq (UNION u) /\ p # {} /\ z \in p => (\E m : IsMinimumForIn(m, p))   BECAUSE TI;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => (z \in p => (\E m : IsMinimumForIn(m, p)))   BECAUSE HypoAndToImpl;
+\A z : h(u) /\ p \subseteq (UNION u) /\ p # {} => (z \in p => (\E m : IsMinimumForIn(m, p)))   BECAUSE GENERALIZATION;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => (\A z : z \in p => (\E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
+(\A z : z \in p => (\E m : IsMinimumForIn(m, p))) => ((\E z : z \in p) => \E z : (\E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
+h(u) /\ p \subseteq (UNION u) /\ p # {} => ((\E z : z \in p) => (\E z : \E m : IsMinimumForIn(m, p)))   BECAUSE Q_SCHEME;
+
+\* TODO discharge z and conclude
 
 h(u) => IsOrdinal(UNION u)   BECAUSE TI;
 unionOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
