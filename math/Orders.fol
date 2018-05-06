@@ -1951,16 +1951,91 @@ h(o,p) => o \in p \/ o = p   BECAUSE boolImplB;
 includedOrdinals   BECAUSE GENERALIZATION;
 QED
 
+intersectOrdinalsIsOrdinal == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) => IsOrdinal(o \intersect p)
+THEOREM intersectOrdinalsIsOrdinal
+PROOF
+intersectOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
+QED
+
+ordinalComparisonLarge == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
+   => o \subseteq p \/ p \subseteq o
+THEOREM ordinalComparisonLarge
+PROOF
+VARIABLES a,b,c,d,o,p,u,v,x,y,z;
+\* o \intersect p is an ordinal included in both o and p
+\* By the previous theorem, either (o \intersect p) \in o or (o \intersect p) = o
+\* Same (o \intersect p) \in p or (o \intersect p) = p
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p);
+h(o,p) => IsOrdinal(o)   BECAUSE S12;
+h(o,p) => IsOrdinal(p)   BECAUSE S22;
+intersectOrdinalsIsOrdinal   BECAUSE THEOREM;
+h(o,p) => IsOrdinal(o \intersect p)   BECAUSE \A(o <- o, p <- p);
+intersectIncludes   BECAUSE THEOREM;
+(o \intersect p) \subseteq p   BECAUSE \A(a <- o, b <- p);
+(p \intersect o) \subseteq o   BECAUSE \A(a <- p, b <- o);
+intersectSymmetry   BECAUSE THEOREM;
+(p \intersect o) = (o \intersect p)   BECAUSE \A(x <- p, y <- o);
+\A x : \A y : x = y => (x \subseteq o <=> y \subseteq o)   BECAUSE E_SCHEME;
+(p \intersect o) = (o \intersect p) => (p \intersect o \subseteq o <=> o \intersect p \subseteq o)   BECAUSE \A(x <- p \intersect o, y <- o \intersect p);
+(p \intersect o \subseteq o <=> o \intersect p \subseteq o)   BECAUSE MODUS_PONENS;
+o \intersect p \subseteq o   BECAUSE MODUS_PONENS;
+includedOrdinals   BECAUSE THEOREM;
+IsOrdinal(o \intersect p) /\ IsOrdinal(p) /\ (o \intersect p) \subseteq p
+   => (o \intersect p) \in p \/ (o \intersect p) = p   BECAUSE \A(o <- o \intersect p, p <- p);
+IsOrdinal(o \intersect p) /\ IsOrdinal(o) /\ (o \intersect p) \subseteq o
+   => (o \intersect p) \in o \/ (o \intersect p) = o   BECAUSE \A(o <- o \intersect p, p <- o);
+h(o,p) => IsOrdinal(o \intersect p) /\ IsOrdinal(p)   BECAUSE CIA;
+h(o,p) => (o \intersect p) \subseteq p   BECAUSE PT1;
+h(o,p) => IsOrdinal(o \intersect p) /\ IsOrdinal(p) /\ (o \intersect p) \subseteq p   BECAUSE CIA;
+h(o,p) => (o \intersect p) \in p \/ (o \intersect p) = p   BECAUSE TI;
+h(o,p) => IsOrdinal(o \intersect p) /\ IsOrdinal(o)   BECAUSE CIA;
+h(o,p) => (o \intersect p) \subseteq o   BECAUSE PT1;
+h(o,p) => IsOrdinal(o \intersect p) /\ IsOrdinal(o) /\ (o \intersect p) \subseteq o   BECAUSE CIA;
+h(o,p) => (o \intersect p) \in o \/ (o \intersect p) = o   BECAUSE TI;
+h(o,p) => ((o \intersect p) \in o \/ (o \intersect p) = o) /\ ((o \intersect p) \in p \/ (o \intersect p) = p)   BECAUSE CIA;
+
+\* But both \in would yield (o \intersect p) \in (o \intersect p), absurd
+intersectionExists   BECAUSE THEOREM;
+(o \intersect p) \in (o \intersect p) <=> ((o \intersect p) \in o /\ (o \intersect p) \in p)   BECAUSE \A(u <- o, v <- p, x <- o \intersect p);
+ordinalsWellFounded   BECAUSE THEOREM;
+IsOrdinal(o \intersect p) => (o \intersect p) \notin (o \intersect p)   BECAUSE \A(o <- o \intersect p);
+h(o,p) => (o \intersect p) \notin (o \intersect p)   BECAUSE TI;
+((o \intersect p) \in o /\ (o \intersect p) \in p) => (o \intersect p) \in (o \intersect p)   BECAUSE EquivToImplReverse;
+(o \intersect p) \notin (o \intersect p) => ~((o \intersect p) \in o /\ (o \intersect p) \in p)   BECAUSE Contraposition;
+h(o,p) => ~((o \intersect p) \in o /\ (o \intersect p) \in p)   BECAUSE TI;
+h(o,p) => ((o \intersect p) \in o \/ (o \intersect p) = o)
+          /\ ((o \intersect p) \in p \/ (o \intersect p) = p)
+	  /\ ~((o \intersect p) \in o /\ (o \intersect p) \in p)   BECAUSE CIA;
+killCase(a,b,c,d) == (a \/ b) /\ (c \/ d) /\ ~(a /\ c) => b \/ d   PROPO_TAUTO;
+((o \intersect p) \in o \/ (o \intersect p) = o)
+          /\ ((o \intersect p) \in p \/ (o \intersect p) = p)
+	  /\ ~((o \intersect p) \in o /\ (o \intersect p) \in p) => (o \intersect p) = o \/ (o \intersect p) = p   BECAUSE killCase;
+h(o,p) => (o \intersect p) = o \/ (o \intersect p) = p   BECAUSE TI;
+
+\A x : \A y : x = y => (z \in x <=> z \in y)   BECAUSE E_SCHEME;
+o \intersect p = o => (z \in o \intersect p <=> z \in o)   BECAUSE \A(x <- o \intersect p, y <- o);
+z \in (o \intersect p) <=> (z \in o /\ z \in p)   BECAUSE \A(u <- o, v <- p, x <- z);
+mergeEquiv(a,b,c,d) == (a => (b <=> c)) => ((b <=> c /\ d) => (a => (c => d)))   PROPO_TAUTO;
+o \intersect p = o => (z \in o => z \in p)   BECAUSE mergeEquiv;
+\A z : o \intersect p = o => (z \in o => z \in p)   BECAUSE GENERALIZATION;
+o \intersect p = o => o \subseteq p   BECAUSE Q_SCHEME;
+
+o \intersect p = p => (z \in o \intersect p <=> z \in p)   BECAUSE \A(x <- o \intersect p, y <- p);
+mergeEquivB(a,b,c,d) == (a => (b <=> c)) => ((b <=> d /\ c) => (a => (c => d)))   PROPO_TAUTO;
+o \intersect p = p => (z \in p => z \in o)   BECAUSE mergeEquivB;
+\A z : o \intersect p = p => (z \in p => z \in o)   BECAUSE GENERALIZATION;
+o \intersect p = p => p \subseteq o   BECAUSE Q_SCHEME;
+o \intersect p = o \/ o \intersect p = p => o \subseteq p \/ p \subseteq o    BECAUSE MergeImplicationsOr;
+h(o,p) => o \subseteq p \/ p \subseteq o    BECAUSE TI;
+ordinalComparisonLarge   BECAUSE GENERALIZATION;
+QED
+
 ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
    => o \in p \/ o = p \/ p \in o
 THEOREM ordinalComparison
 PROOF
-VARIABLES a,c,d,o,p,u,x,y;
-includedOrdinals   BECAUSE THEOREM;
-\* o \intersect p is an ordinal included in both o and p
-\* By the previous theorem, either (o \intersect p) \in o or (o \intersect p) = o
-\* Same (o \intersect p) \in p or (o \intersect p) = p
-\* But both \in would yield (o \intersect p) \in (o \intersect p), absurd
+\* Combine ordinalComparisonLarge and includedOrdinals
+ordinalComparison   BECAUSE GENERALIZATION;
 QED
 
 unionOrdinalsIsOrdinal == \A u : (\A x : x \in u => IsOrdinal(x)) => IsOrdinal(UNION u)
@@ -2033,25 +2108,40 @@ h(u) => (a \in UNION u => a \notin a)   BECAUSE HypoAndToImpl;
 \A a : h(u) => (a \in UNION u => a \notin a)   BECAUSE GENERALIZATION;
 h(u) => (\A a : a \in UNION u => a \notin a)   BECAUSE Q_SCHEME;
 
-\* Proof that \in is transitive on UNION u
-\A a : ht(a,u) => IsOrdinal(ct(a,u))   BECAUSE GENERALIZATION;
-ht(c,u) => IsOrdinal(ct(c,u))   BECAUSE \A(a <- c);
-\A a : ht(a,u) => a \in ct(a,u)   BECAUSE GENERALIZATION;
-ht(c,u) => c \in ct(c,u)   BECAUSE \A(a <- c);
+\* Proof that \in is transitive on UNION u.
+\* h(u) /\ c \in UNION u /\ b \in c /\ a \in b => a \in c.
+\A a : ht(a,u,t) => IsOrdinal(t)   BECAUSE GENERALIZATION;
+ht(c,u,t) => IsOrdinal(t)   BECAUSE \A(a <- c);
+\A a : ht(a,u,t) => a \in t   BECAUSE GENERALIZATION;
+ht(c,u,t) => c \in t   BECAUSE \A(a <- c);
 elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
-IsOrdinal(ct(c,u)) /\ c \in ct(c,u) => IsOrdinal(c)   BECAUSE \A(o <- ct(c,u), x <- c);
-ht(c,u) => IsOrdinal(ct(c,u)) /\ c \in ct(c,u)   BECAUSE CIA;
-ht(c,u) => IsOrdinal(c)   BECAUSE TI;
+IsOrdinal(t) /\ c \in t => IsOrdinal(c)   BECAUSE \A(o <- t, x <- c);
+ht(c,u,t) => IsOrdinal(t) /\ c \in t   BECAUSE CIA;
+ht(c,u,t) => IsOrdinal(c)   BECAUSE TI;
 IsOrdinal(c) => IsTransitiveSet(c)   BECAUSE S12;
 IsTransitiveSet(c) => (b \in c => b \subseteq c)   BECAUSE \A(a <- b);
-ht(c,u) => (b \in c => b \subseteq c)   BECAUSE TI2;
-ht(c,u) /\ b \in c => b \subseteq c   BECAUSE HypoImplToAnd;
+ht(c,u,t) => (b \in c => b \subseteq c)   BECAUSE TI2;
+ht(c,u,t) /\ b \in c => b \subseteq c   BECAUSE HypoImplToAnd;
 b \subseteq c => (a \in b => a \in c)   BECAUSE \A(z <- a);
-ht(c,u) /\ b \in c => (a \in b => a \in c)  BECAUSE TI;
-ht(c,u) /\ b \in c /\ a \in b => a \in c  BECAUSE HypoImplToAnd;
+ht(c,u,t) /\ b \in c => (a \in b => a \in c)  BECAUSE TI;
+ht(c,u,t) /\ b \in c /\ a \in b => a \in c  BECAUSE HypoImplToAnd;
+ht(c,u,t) => (b \in c /\ a \in b => a \in c)  BECAUSE pushHypos;
+h(u) => ((t \in u /\ c \in t) => (b \in c /\ a \in b => a \in c))  BECAUSE pushHypos;
+\A t : h(u) => ((t \in u /\ c \in t) => (b \in c /\ a \in b => a \in c))  BECAUSE GENERALIZATION;
+h(u) => (\A t : (t \in u /\ c \in t) => (b \in c /\ a \in b => a \in c))  BECAUSE Q_SCHEME;
+(\A t : (t \in u /\ c \in t) => (b \in c /\ a \in b => a \in c)) => ((\E t : t \in u /\ c \in t) => (\E t : b \in c /\ a \in b => a \in c))   BECAUSE Q_SCHEME;
+h(u) => ((\E t : t \in u /\ c \in t) => (\E t : b \in c /\ a \in b => a \in c))  BECAUSE TI;
+(c \in UNION u <=> \E t : t \in u /\ c \in t)   BECAUSE \A(b <- u, z <- c);
+c \in UNION u => \E t : t \in u /\ c \in t   BECAUSE EquivToImpl;
+h(u) /\ c \in UNION u => (\E t : b \in c /\ a \in b => a \in c)  BECAUSE mergeImpl;
+(\E t : b \in c /\ a \in b => a \in c) => (b \in c /\ a \in b => a \in c)   BECAUSE Q_SCHEME;
+h(u) /\ c \in UNION u => (b \in c /\ a \in b => a \in c)  BECAUSE TI;
+pullHypos(a,b,c,d) == (a => (b /\ c => d)) => (a /\ b /\ c => d)   PROPO_TAUTO;
+h(u) /\ c \in UNION u /\ b \in c /\ a \in b => a \in c  BECAUSE pullHypos;
+\* Add quantifiers for IsTransitiveIn
 shuffleHypos(a,c,d,e,h) == h /\ (a /\ c /\ d /\ e) => h /\ c /\ e /\ d   PROPO_TAUTO;
 h(u) /\ (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c)
-   => ht(c,u) /\ b \in c /\ a \in b   BECAUSE shuffleHypos;
+   => h(u) /\ c \in UNION u /\ b \in c /\ a \in b   BECAUSE shuffleHypos;
 h(u) /\ (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c)
    => a \in c   BECAUSE TI;
 h(u) => (a \in UNION u /\ b \in UNION u /\ c \in UNION u /\ a \in b /\ b \in c => a \in c)   BECAUSE HypoAndToImpl;
@@ -2064,6 +2154,8 @@ h(u) => IsTransitiveIn(UNION u)   BECAUSE Q_SCHEME;
 
 \* Proof that \in is a total strict order on UNION u
 htot(u,x,y) == h(u) /\ x \in UNION u /\ y \in UNION u;
+\*ordinalComparisonLarge == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
+\*   => o \subseteq p \/ p \subseteq o
 
 htot(u,x,y) => x \in y \/ x = y \/ y \in x   BECAUSE TI;
 

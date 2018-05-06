@@ -362,6 +362,12 @@ VARIABLES a,b,u,v,x;
 intersectionExists   BECAUSE GENERALIZATION;
 QED
 
+intersectSymmetry == \A x : \A y : (x \intersect y) = (y \intersect x)
+THEOREM intersectSymmetry
+PROOF
+intersectSymmetry   BECAUSE GENERALIZATION;
+QED
+
 intersectSuper == \A a : \A b : a \subseteq b => (a \intersect b) = a
 THEOREM intersectSuper
 PROOF
