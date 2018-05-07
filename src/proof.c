@@ -838,7 +838,8 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
       || shift_quantifiers_axiom_schemes(statement))
     return 1;
 
-  /* axiom scheme : (\E x : p) => p
+  /*
+     axiom scheme : (\E x : p) => p
      when varibale x has no free occurrences in p.
 
      Can be deduced as
@@ -851,8 +852,27 @@ short quantifier_axiom_schemes(const struct FormulaDList* statement)
       && firstF->builtInOp == exists
       && formula_equal(firstFirstF,
 		       secondF,
-		       0,0,0))
+		       0,0,0)
+      && is_bound_variable(firstFirstF, firstF->name))
     return 1;
+
+  /*
+     axiom scheme : (\E x : p) /\ (\A x : p => q) => q
+     when varibale x has no free occurrences in q. This scheme is used
+     to discharge a local existential hypothesis p. p is often introduced
+     by other hypotheses, which imply that \E x : p.
+
+     Can be deduced as
+     (\A x : p => q) => (p => q)   BECAUSE \A(x <- x);
+     (p => q) => (~q => ~p)   BECAUSE Contraposition;
+     (\A x : p => q) => (~q => ~p)   BECAUSE TI;
+     \A x : (\A x : p => q) => (~q => ~p)   BECAUSE GENERALIZATION;
+     (\A x : p => q) => (\A x : ~q => ~p)   BECAUSE Q_SCHEME;
+     (\A x : ~q => ~p) => (~q => \A x : ~p)   BECAUSE Q_SCHEME; (x has no free occurrences in ~q)
+     (~q => \A x : ~p) => ((\E x : p) => q)   BECAUSE Contraposition;
+     (\A x : p => q) => ((\E x : p) => q)   BECAUSE TI2;
+     (\E x : p) /\ (\A x : p => q) => q   BECAUSE PullHypo;
+  */
 
   return 0;
 }

@@ -365,6 +365,7 @@ QED
 intersectSymmetry == \A x : \A y : (x \intersect y) = (y \intersect x)
 THEOREM intersectSymmetry
 PROOF
+\* TODO
 intersectSymmetry   BECAUSE GENERALIZATION;
 QED
 
@@ -1170,7 +1171,7 @@ IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
 Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
-f[x] == CHOOSE y : <<x,y>> \in f
+f[x] == CHOOSE_UNIQUE y : \A z : z = y <=> <<x,z>> \in f
 pre(f,y) == CHOOSE x : <<x,y>> \in f
 
 nodesInUnionUnion == \A x : \A y : \A g : <<x,y>> \in g
@@ -1319,27 +1320,6 @@ y \in Image(g) <=> Reaches(g,y)   BECAUSE \A(g <- g, y <- y);
 <<x,y>> \in g => y \in Image(g)   BECAUSE TI;
 imageInc   BECAUSE GENERALIZATION;
 QED
-
-imageInc2 == \A f : \A x : x \in Domain(f) => f[x] \in Image(f)
-THEOREM imageInc2
-PROOF
-VARIABLES a,f,g,x,y;
-domainExists   BECAUSE THEOREM;
-x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
-x \in Domain(f) => IsDefinedOn(f,x)   BECAUSE EquivToImpl;
-IsDefinedOn(f,x) => <<x,f[x]>> \in f   BECAUSE CHOOSE f[x];
-x \in Domain(f) => <<x,f[x]>> \in f   BECAUSE TI;
-<<a,f[a]>> \in f => Reaches(f,f[a])   BECAUSE \E(x <- a);
-\A a : <<a,f[a]>> \in f => Reaches(f,f[a])   BECAUSE GENERALIZATION;
-<<x,f[x]>> \in f => Reaches(f,f[x])   BECAUSE \A(a <- x);
-x \in Domain(f) => Reaches(f,f[x])   BECAUSE TI;
-imageExists   BECAUSE THEOREM;
-f[x] \in Image(f) <=> Reaches(f,f[x])   BECAUSE \A(g <- f, y <- f[x]);
-Reaches(f,f[x]) => f[x] \in Image(f)   BECAUSE EquivToImplReverse;
-x \in Domain(f) => f[x] \in Image(f)   BECAUSE TI;
-imageInc2   BECAUSE GENERALIZATION;
-QED
-
 
 multiApply(f, multiX) == CHOOSE b : \A x : x \in b <=> \E u : u \in multiX /\ <<u,x>> \in f
 

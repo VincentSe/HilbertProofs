@@ -261,9 +261,10 @@ NAME { // operator or variable as a leaf of this formula
 | funcApply
 ;
 
-funcApply: formula LEFT_BRACKET formula RIGHT_BRACKET {
+// If more than one formula, means tuple.
+funcApply: formula LEFT_BRACKET commaSeparatedFormulas RIGHT_BRACKET {
   $$ = make_formula(funcApply, (char*)0,
-		    make_formula_list($1, make_formula_list($3, 0)),
+		    make_formula_list($1, $3),
 		    ast->file,
 		    @1.first_line); }
 ;

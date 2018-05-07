@@ -208,10 +208,15 @@ unsigned char formula_equal(const formula* f,
 			    unsigned char substituteMore);
 
 variable_substitution* variable_substitution_find(const char* var,
-												  variable_substitution* subst);
+						  variable_substitution* subst);
 formula* formula_clone(const formula* f, variable_substitution* freeSubs);
 
+/**
+   Test that all occurrences of variable v in formula f are bound
+   (which includes the case that v doesn't appear in f).
+*/
 short is_bound_variable(const formula* f, const char* v);
+
 short is_custom_operator(const formula* op);
 
 unsigned char resolve_names(formula* f,

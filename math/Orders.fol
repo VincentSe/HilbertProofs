@@ -49,25 +49,29 @@ orderDomainReflexive == \A o : \A x : IsOrder(o) /\ x \in Domain(o) => <<x,x>> \
 THEOREM orderDomainReflexive
 PROOF
 VARIABLES g,o,x,y;
+h(o,x) == IsOrder(o) /\ x \in Domain(o);
+h(o,x) => IsOrder(o)   BECAUSE S12;
+h(o,x) => x \in Domain(o)   BECAUSE S22;
 domainExists   BECAUSE THEOREM;
 x \in Domain(o) <=> IsDefinedOn(o,x)   BECAUSE \A(g <- o, x <- x);
-x \in Domain(o) => \E y : <<x,y>> \in o   BECAUSE EquivToImpl;
-IsOrder(o) => IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S13;
-IsGraph(o) /\ (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
-   => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S22;
-IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
+x \in Domain(o) => IsDefinedOn(o,x)   BECAUSE EquivToImpl;
+IsOrder(o) => (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE S24;
 (\A x : \A y : <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))
    => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE \A(x <- x, y <- y);
-IsOrder(o) => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI;
-<<x,y>> \in o => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE SwitchHypos;
-IsDefinedOn(o,x) => (\E y : IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE Q_SCHEME;
-(\E y : IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE Q_SCHEME;
-IsDefinedOn(o,x) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
-x \in Domain(o) => (IsOrder(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE TI;
-IsOrder(o) => (x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE SwitchHypos;
-IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o /\ <<y,y>> \in o   BECAUSE HypoImplToAnd;
-<<x,x>> \in o /\ <<y,y>> \in o => <<x,x>> \in o   BECAUSE S12;
-IsOrder(o) /\ x \in Domain(o) => <<x,x>> \in o   BECAUSE TI;
+h(o,x) => (<<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o))   BECAUSE TI2;
+h(o,x) /\ <<x,y>> \in o => (<<x,x>> \in o /\ <<y,y>> \in o)   BECAUSE HypoImplToAnd;
+(<<x,x>> \in o /\ <<y,y>> \in o) => <<x,x>> \in o   BECAUSE S12;
+h(o,x) /\ <<x,y>> \in o => <<x,x>> \in o   BECAUSE TI;
+h(o,x) => (<<x,y>> \in o => <<x,x>> \in o)   BECAUSE HypoAndToImpl;
+\A y : h(o,x) => (<<x,y>> \in o => <<x,x>> \in o)   BECAUSE GENERALIZATION;
+h(o,x) => (\A y : <<x,y>> \in o => <<x,x>> \in o)   BECAUSE Q_SCHEME;
+(\A y : <<x,y>> \in o => <<x,x>> \in o)
+   => (IsDefinedOn(o,x) => \E y : <<x,x>> \in o)   BECAUSE Q_SCHEME;
+h(o,x) => (IsDefinedOn(o,x) => \E y : <<x,x>> \in o)   BECAUSE TI;
+h(o,x) => IsDefinedOn(o,x)   BECAUSE TI;
+h(o,x) => \E y : <<x,x>> \in o   BECAUSE KillMiddleHypo;
+(\E y : <<x,x>> \in o) => <<x,x>> \in o   BECAUSE Q_SCHEME;
+h(o,x) => <<x,x>> \in o   BECAUSE TI;
 orderDomainReflexive   BECAUSE GENERALIZATION;
 QED
 
@@ -1015,7 +1019,7 @@ OrderMultiplication(u,v) == CHOOSE m : \A x : x \in m
 
 orderMultiplicationIsOrder == \A u : \A v : (IsOrder(u) /\ IsOrder(v))
    => IsOrder(OrderMultiplication(u,v))
-THEOREM orderMultiplicationIsOrder
+\* THEOREM orderMultiplicationIsOrder
 
 
 EmptyOrHasMinimum(part, order) == (part = {}) \/ (\E m : IsMinimum(m, part, order))
@@ -1084,7 +1088,7 @@ x \in (a \union b) => (x \in a \/ x \in b)   BECAUSE EquivToImpl;
 (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
    => ma(a,o) \in a   BECAUSE TI;
 unionFirstInc   BECAUSE THEOREM;
-ma(a,o) \in a => ma(a,o) \in (a \union b)   BECAUSE \A(x <- a, y <- b, z <- ma(a,o)); 
+ma(a,o) \in a => ma(a,o) \in (a \union b)   BECAUSE \A(x <- a, y <- b, z <- ma(a,o));
 (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
    => ma(a,o) \in (a \union b)   BECAUSE TI;
 (EmptyOrHasMinimum(a,o) /\ (\A x : \A y : (x \in a /\ y \in b) => <<x,y>> \in o) /\ a # {})
@@ -1151,7 +1155,7 @@ QED
 IsWellOrder(w) == IsOrder(w) /\ (\A p : (p \subseteq Domain(w)) => EmptyOrHasMinimum(p, w))
 
 injectWOIsWO == \A o : \A f : (IsWellOrder(o) /\ IsFunction(f)) => IsWellOrder(injectOrder(o,f))
-THEOREM injectWOIsWO
+\* THEOREM injectWOIsWO
 
 disjointWOAddition == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v) /\ AreDisjoint(u,v))
    => IsWellOrder(u \union v \union (Domain(u) \X Domain(v))) \* this puts v after u
@@ -1954,7 +1958,7 @@ QED
 intersectOrdinalsIsOrdinal == \A o : \A q : IsOrdinal(o) /\ IsOrdinal(q) => IsOrdinal(o \intersect q)
 THEOREM intersectOrdinalsIsOrdinal
 PROOF
-VARIABLES a,o,p,q,u,v,x,z;
+VARIABLES a,b,c,o,p,q,u,v,x,z;
 \* Qroof that o \intersect q is a transitive set
 h(o,q) == IsOrdinal(o) /\ IsOrdinal(q);
 h(o,q) => IsOrdinal(o)   BECAUSE S12;
@@ -1965,11 +1969,11 @@ ht(o,q,a) => a \in (o \intersect q)   BECAUSE S22;
 intersectionExists   BECAUSE THEOREM;
 a \in (o \intersect q) <=> (a \in o /\ a \in q)   BECAUSE \A(u <- o, v <- q, x <- a);
 a \in (o \intersect q) => (a \in o /\ a \in q)   BECAUSE EquivToImpl;
-ht(o,q,a) => a \in o /\ a \in q   BECAUSE TI;
 a \in o /\ a \in q => a \in o   BECAUSE S12;
+a \in (o \intersect q) => a \in o   BECAUSE TI;
 a \in o /\ a \in q => a \in q   BECAUSE S22;
-ht(o,q,a) => a \in o   BECAUSE TI;
-ht(o,q,a) => a \in q   BECAUSE TI;
+ht(o,q,a) => a \in o   BECAUSE TI2;
+ht(o,q,a) => a \in q   BECAUSE TI2;
 IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
 IsOrdinal(q) => IsTransitiveSet(q)   BECAUSE S12;
 ht(o,q,a) => IsTransitiveSet(o)   BECAUSE TI2;
@@ -2008,7 +2012,43 @@ h(o,q) => (a \in o \intersect q => a \notin a)   BECAUSE HypoAndToImpl;
 h(o,q) => (\A a : a \in o \intersect q => a \notin a)   BECAUSE Q_SCHEME;
 
 \* Proof that o \intersect q is transitive for \in
-\* TODO
+htt(o,q,a,b,c) == h(o,q) /\ (a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c);
+htt(o,q,a,b,c) => h(o,q)   BECAUSE S12;
+htt(o,q,a,b,c) => (a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c)   BECAUSE S22;
+\A a : a \in (o \intersect q) => a \in o   BECAUSE GENERALIZATION;
+(a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c)
+   => a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q   BECAUSE S13;
+(a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c) => a \in b   BECAUSE S23;
+(a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c) => b \in c   BECAUSE S22;
+a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q => a \in o \intersect q   BECAUSE S13;
+htt(o,q,a,b,c) => a \in o \intersect q   BECAUSE TI2;
+htt(o,q,a,b,c) => a \in o   BECAUSE TI;
+a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q => b \in o \intersect q   BECAUSE S23;
+htt(o,q,a,b,c) => b \in o \intersect q   BECAUSE TI2;
+b \in (o \intersect q) => b \in o   BECAUSE \A(a <- b);
+htt(o,q,a,b,c) => b \in o   BECAUSE TI;
+a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q => c \in o \intersect q   BECAUSE S22;
+htt(o,q,a,b,c) => c \in o \intersect q   BECAUSE TI2;
+c \in (o \intersect q) => c \in o   BECAUSE \A(a <- c);
+htt(o,q,a,b,c) => c \in o   BECAUSE TI;
+IsWellOrderedByIn(o) => IsTransitiveIn(o)   BECAUSE S23;
+IsTransitiveIn(o) => ((a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)   BECAUSE \A(a <- a, b <- b, c <- c);
+IsOrdinal(o) => ((a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c) => a \in c)   BECAUSE TI2;
+htt(o,q,a,b,c) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI2;
+htt(o,q,a,b,c) => a \in o /\ b \in o   BECAUSE CIA;
+htt(o,q,a,b,c) => a \in o /\ b \in o /\ c \in o   BECAUSE CIA;
+htt(o,q,a,b,c) => a \in b   BECAUSE TI;
+htt(o,q,a,b,c) => a \in o /\ b \in o /\ c \in o /\ a \in b   BECAUSE CIA;
+htt(o,q,a,b,c) => b \in c   BECAUSE TI;
+htt(o,q,a,b,c) => a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c   BECAUSE CIA;
+htt(o,q,a,b,c) => a \in c   BECAUSE KillMiddleHypo;
+h(o,q) => ((a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c) => a \in c)   BECAUSE HypoAndToImpl;
+\A c : h(o,q) => ((a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c) => a \in c)   BECAUSE GENERALIZATION;
+h(o,q) => (\A c : a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A b : h(o,q) => (\A c : a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+h(o,q) => (\A b : \A c : a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A a : h(o,q) => (\A b : \A c : a \in o \intersect q /\ b \in o \intersect q /\ c \in o \intersect q /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+h(o,q) => IsTransitiveIn(o \intersect q)   BECAUSE Q_SCHEME;
 
 \* Proof that o \intersect q has all minimums.
 \* p \subseteq o \intersect q and p not empty means p \subseteq o.
@@ -2035,6 +2075,9 @@ h(o,q) => (p \subseteq o \intersect q => p = {} \/ \E m : IsMinimumForIn(m, p)) 
 \A p : h(o,q) => (p \subseteq o \intersect q => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
 h(o,q) => (\A p : p \subseteq (o \intersect q) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
 
+h(o,q) => (\A a : a \in o \intersect q => a \notin a) /\ IsTransitiveIn(o \intersect q)   BECAUSE CIA;
+h(o,q) => IsWellOrderedByIn(o \intersect q)   BECAUSE CIA;
+h(o,q) => IsOrdinal(o \intersect q)   BECAUSE CIA;
 intersectOrdinalsIsOrdinal   BECAUSE GENERALIZATION;
 QED
 
@@ -2042,7 +2085,7 @@ ordinalComparisonLarge == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
    => o \subseteq p \/ p \subseteq o
 THEOREM ordinalComparisonLarge
 PROOF
-VARIABLES a,b,c,d,o,p,u,v,x,y,z;
+VARIABLES a,b,c,d,o,p,q,u,v,x,y,z;
 \* o \intersect p is an ordinal included in both o and p
 \* By the previous theorem, either (o \intersect p) \in o or (o \intersect p) = o
 \* Same (o \intersect p) \in p or (o \intersect p) = p
@@ -2050,7 +2093,7 @@ h(o,p) == IsOrdinal(o) /\ IsOrdinal(p);
 h(o,p) => IsOrdinal(o)   BECAUSE S12;
 h(o,p) => IsOrdinal(p)   BECAUSE S22;
 intersectOrdinalsIsOrdinal   BECAUSE THEOREM;
-h(o,p) => IsOrdinal(o \intersect p)   BECAUSE \A(o <- o, p <- p);
+h(o,p) => IsOrdinal(o \intersect p)   BECAUSE \A(o <- o, q <- p);
 intersectIncludes   BECAUSE THEOREM;
 (o \intersect p) \subseteq p   BECAUSE \A(a <- o, b <- p);
 (p \intersect o) \subseteq o   BECAUSE \A(a <- p, b <- o);
@@ -2116,6 +2159,24 @@ ordinalComparison == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p)
 THEOREM ordinalComparison
 PROOF
 \* Combine ordinalComparisonLarge and includedOrdinals
+VARIABLES o,p;
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p);
+h(o,p) => IsOrdinal(o)   BECAUSE S12;
+h(o,p) => IsOrdinal(p)   BECAUSE S22;
+ordinalComparisonLarge   BECAUSE THEOREM;
+h(o,p) => o \subseteq p \/ p \subseteq o   BECAUSE \A(o <- o, p <- p);
+includedOrdinals   BECAUSE THEOREM;
+h(o,p) /\ o \subseteq p => o \in p \/ o = p   BECAUSE \A(o <- o, p <- p);
+IsOrdinal(p) /\ IsOrdinal(o) /\ p \subseteq o => p \in o \/ p = o   BECAUSE \A(o <- p, p <- o);
+IsOrdinal(p) /\ IsOrdinal(o) => (p \subseteq o => p \in o \/ p = o)   BECAUSE HypoAndToImpl;
+h(o,p) => IsOrdinal(p) /\ IsOrdinal(o)   BECAUSE CIA;
+h(o,p) => (p \subseteq o => p \in o \/ p = o)   BECAUSE TI;
+mergeImpl(a,b,c,d,h) == (h => a \/ b) => ((h /\ a => c) => (((h => (b => d)) => (h => c \/ d))))   PROPO_TAUTO;
+h(o,p) => (o \in p \/ o = p) \/ (p \in o \/ p = o)   BECAUSE mergeImpl;
+p = o => o = p   BECAUSE E_SCHEME;
+killCase(a,b,c,d) == (a => b) => ((c \/ b) \/ (d \/ a) => c \/ b \/ d)   PROPO_TAUTO;
+(o \in p \/ o = p) \/ (p \in o \/ p = o) => o \in p \/ o = p \/ p \in o   BECAUSE killCase;
+h(o,p) => o \in p \/ o = p \/ p \in o   BECAUSE TI;
 ordinalComparison   BECAUSE GENERALIZATION;
 QED
 
@@ -2796,7 +2857,7 @@ IsOrdinalOfWellOrder(o, w) == IsOrdinal(o) /\ IsWellOrder(w)
 
 uniqueOrdinalOfWellOrder == \A w : \A o : \A p :
    IsOrdinalOfWellOrder(o, w) /\ IsOrdinalOfWellOrder(p, w) => o = p
-THEOREM uniqueOrdinalOfWellOrder
+\* THEOREM uniqueOrdinalOfWellOrder
 \* To prove this, compose the two functions to make an increasing bijection
 \* between o and p, then conclude by the previous theorem.
 
@@ -2812,7 +2873,18 @@ THEOREM uniqueOrdinalOfWellOrder
 OrdinalOfWellOrder(w) == CHOOSE o : IsOrdinalOfWellOrder(o, w)
 ordinalOfWellOrderExists == \A w : IsWellOrder(w)
    => IsOrdinalOfWellOrder(OrdinalOfWellOrder(w), w)
-THEOREM ordinalOfWellOrderExists
+\* THEOREM ordinalOfWellOrderExists
+\* By induction. Suppose by contradiction that there exists a well-order w
+\* without an ordinal. Then we first show that there exists a well-order wmin
+\* without an ordinal and such that all its initial segments has an ordinal.
+\* If w is already in this case, take wmin = w. Otherwise there is an initial
+\* segment x- of w without an ordinal. By well-ordering, take the smallest m \in w
+\* such that m- is without an ordinal. Then take wmin = m-.
+\* wmin is not empty, because the empty set is its own ordinal.
+\* wmin has no maximum, because its ordinal would be the successor of its
+\* maximum's ordinal.
+\* But then the union of the ordinals of the initial segments of wmin is
+\* the ordinal of wmin. Contradiction.
 
 \* The +1 operation on ordinals
 successor(o) == o \union { o }
@@ -2820,6 +2892,16 @@ successor(o) == o \union { o }
 inSuccessor == \A o : o \in successor(o)
 THEOREM inSuccessor
 PROOF
+VARIABLES a,o,x,y,z;
+singletonExists   BECAUSE THEOREM;
+o \in { o } <=> o = o   BECAUSE \A(a <- o, x <- o);
+equalSelf   BECAUSE THEOREM;
+o = o   BECAUSE \A(a <- o);
+o \in { o }   BECAUSE MODUS_PONENS;
+unionInc   BECAUSE THEOREM;
+o \in (o \union {o}) <=> (o \in o \/ o \in {o})   BECAUSE \A(x <- o, y <- {o}, z <- o);
+o \in o \/ o \in {o}   BECAUSE IntroOrRight;
+o \in successor(o)   BECAUSE MODUS_PONENS;
 inSuccessor   BECAUSE GENERALIZATION;
 QED
 
@@ -2828,6 +2910,7 @@ successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
 THEOREM successorIncreasing
 PROOF
 \* o \union { o } \subseteq p then \in succesor(p)
+\* TODO
 successorIncreasing   BECAUSE GENERALIZATION;
 QED
 
@@ -2921,269 +3004,19 @@ QED
 
 ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
+PROOF
+VARIABLES a,o,x,y,z;
+\* Proof that successor(o) is a transitive set
+ht(o,a) == IsOrdinal(o) /\ a \in successor(o);
+unionInc   BECAUSE THEOREM;
+a \in successor(o) <=> a \in o \/ a \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- a);
+
+\* TODO
+ordinalSuccessorStable   BECAUSE GENERALIZATION;
+QED
 
 finiteOrdinalSuccessorStable == \A o : IsFiniteOrdinal(o) => IsFiniteOrdinal( successor(o) )
 THEOREM finiteOrdinalSuccessorStable
 PROOF
 finiteOrdinalSuccessorStable   BECAUSE GENERALIZATION;
-QED
-
-(*
-   Definition of the set of natural numbers. They are the finite ordinals.
-*)
-Nat == CHOOSE_UNIQUE o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))
-
-NatExists == (\A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))
-   /\ IsLimitOrdinal(Nat)
-THEOREM NatExists
-PROOF
-\* By separation in a set given by the axiom of infinity
-VARIABLES a,b,c,o,p,t,u,x,y,z,nat;
-Infinity   BECAUSE AXIOM;
-\A a : \E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE \A(a <- a);
-\* Take a from the axiom of infinity and b from separation of finite ordinals
-h(a,b) == {} \in a /\ (\A x : x \in a => successor(x) \in a)
-   /\ \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x);
-h(a,b) => \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)   BECAUSE S22;
-
-\* Prove UNION b is Nat, ie IsFiniteOrdinal(x) <=> x \in UNION b.
-\* First prove that UNION b is an ordinal.
-unionOrdinalsIsOrdinal   BECAUSE THEOREM;
-(\A x : x \in b => IsOrdinal(x)) => IsOrdinal(UNION b)   BECAUSE \A(u <- b);
-(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (x \in b <=> x \in a /\ IsFiniteOrdinal(x))
-   BECAUSE \A(x <- x);
-(x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE EquivToImpl;
-h(a,b) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE TI2;
-IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE S13;
-\A a : IsFiniteOrdinal(a) => IsOrdinal(a)   BECAUSE GENERALIZATION;
-IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(a <- x);
-extractProp(a,b,c,d) == (a => b) => ((c => d /\ a) => (c => b))   PROPO_TAUTO;
-(x \in b => x \in a /\ IsFiniteOrdinal(x)) => (x \in b => IsOrdinal(x))   BECAUSE extractProp;
-h(a,b) => (x \in b => IsOrdinal(x))   BECAUSE TI;
-\A x : h(a,b) => (x \in b => IsOrdinal(x))   BECAUSE GENERALIZATION;
-h(a,b) => (\A x : x \in b => IsOrdinal(x))   BECAUSE Q_SCHEME;
-h(a,b) => IsOrdinal(UNION b)   BECAUSE TI;
-
-\* Proof that UNION b is a limit ordinal.
-\* If o \in UNION b then successor(o) \in UNION b, so UNION b # successor o.
-unionExists   BECAUSE AXIOM;
-x \in UNION b <=> \E t : t \in b /\ x \in t   BECAUSE \A(b <- b, z <- x);
-x \in UNION b => \E t : t \in b /\ x \in t   BECAUSE EquivToImpl;
-\A x : h(a,b) => (x \in b => x \in a /\ IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
-h(a,b) => (t \in b => t \in a /\ IsFiniteOrdinal(t))   BECAUSE \A(x <- t);
-h(a,b) /\ t \in b /\ x \in t => h(a,b)   BECAUSE S13;
-h(a,b) /\ t \in b /\ x \in t => (t \in b => t \in a /\ IsFiniteOrdinal(t))   BECAUSE TI;
-h(a,b) /\ t \in b /\ x \in t => t \in b   BECAUSE S23;
-h(a,b) /\ t \in b /\ x \in t => t \in a /\ IsFiniteOrdinal(t)   BECAUSE KillMiddleHypo;
-h(a,b) => \A x : x \in a => successor(x) \in a   BECAUSE S23;
-(\A x : x \in a => successor(x) \in a) => (t \in a => successor(t) \in a)   BECAUSE \A(x <- t);
-h(a,b) /\ t \in b /\ x \in t => (t \in a => successor(t) \in a)   BECAUSE TI2;
-t \in a /\ IsFiniteOrdinal(t) => t \in a   BECAUSE S12;
-h(a,b) /\ t \in b /\ x \in t => t \in a   BECAUSE TI;
-h(a,b) /\ t \in b /\ x \in t => successor(t) \in a   BECAUSE KillMiddleHypo;
-\* So successor(t) \in b.
-\* Then successor(x) \in successor(t) \in b implies successor(x) \in UNION b.
-finiteOrdinalSuccessorStable   BECAUSE THEOREM;
-IsFiniteOrdinal(t) => IsFiniteOrdinal( successor(t) )   BECAUSE \A(o <- t);
-(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (successor(t) \in b <=> successor(t) \in a /\ IsFiniteOrdinal(successor(t)))   BECAUSE \A(x <- successor(t));
-(successor(t) \in b <=> successor(t) \in a /\ IsFiniteOrdinal(successor(t))) => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE EquivToImplReverse;
-h(a,b) => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE TI2;
-t \in a /\ IsFiniteOrdinal(t) => IsFiniteOrdinal(t)   BECAUSE S22;
-h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(successor(t))   BECAUSE TI2;
-h(a,b) /\ t \in b /\ x \in t => successor(t) \in a /\ IsFiniteOrdinal(successor(t))   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => (successor(t) \in a /\ IsFiniteOrdinal(successor(t)) => successor(t) \in b)   BECAUSE TI;
-h(a,b) /\ t \in b /\ x \in t => successor(t) \in b   BECAUSE KillMiddleHypo;
-successorIncreasing   BECAUSE THEOREM;
-IsOrdinal(x) /\ IsOrdinal(t) /\ x \in t => successor(x) \in successor(t)   BECAUSE \A(o <- x, p <- t);
-IsFiniteOrdinal(t) => IsOrdinal(t)   BECAUSE S13;
-h(a,b) /\ t \in b /\ x \in t => IsOrdinal(t)   BECAUSE TI2;
-h(a,b) /\ t \in b /\ x \in t => x \in t   BECAUSE S22;
-elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
-IsOrdinal(t) /\ x \in t => IsOrdinal(x)   BECAUSE \A(o <- t, x <- x);
-h(a,b) /\ t \in b /\ x \in t => IsOrdinal(t) /\ x \in t   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x)   BECAUSE TI;
-h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x) /\ IsOrdinal(t)   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => IsOrdinal(x) /\ IsOrdinal(t) /\ x \in t   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => successor(x) \in successor(t)   BECAUSE TI;
-inInUnion   BECAUSE THEOREM;
-(successor(x) \in successor(t) /\ successor(t) \in b) => successor(x) \in UNION b   BECAUSE \A(a <- successor(x), b <- successor(t), c <- b);
-h(a,b) /\ t \in b /\ x \in t => successor(x) \in successor(t) /\ successor(t) \in b   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => successor(x) \in UNION b   BECAUSE TI;
-pushHypos(h,a,b,c) == (h /\ a /\ b => c) => (h => (a /\ b => c))   PROPO_TAUTO;
-h(a,b) => (t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE pushHypos;
-\A t : h(a,b) => (t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE GENERALIZATION;
-h(a,b) => (\A t : t \in b /\ x \in t => successor(x) \in UNION b)   BECAUSE Q_SCHEME;
-(\A t : t \in b /\ x \in t => successor(x) \in UNION b) => ((\E t : t \in b /\ x \in t) => \E t : successor(x) \in UNION b)   BECAUSE Q_SCHEME;
-h(a,b) => ((\E t : t \in b /\ x \in t) => \E t : successor(x) \in UNION b)   BECAUSE TI;
-mergeHypos(h,a,b,c) == (a => b) => ((h => (b => c)) => (h /\ a => c))   PROPO_TAUTO;
-h(a,b) /\ x \in UNION b => \E t : successor(x) \in UNION b   BECAUSE mergeHypos;
-(\E t : successor(x) \in UNION b) => successor(x) \in UNION b   BECAUSE Q_SCHEME;
-h(a,b) /\ x \in UNION b => successor(x) \in UNION b   BECAUSE TI;
-ordinalComparesWithOwnElements   BECAUSE THEOREM;
-IsOrdinal(UNION b) /\ successor(x) \in UNION b => successor(x) # (UNION b) /\ (UNION b) \notin successor(x)   BECAUSE \A(o <- successor(x), p <- UNION b);
-h(a,b) /\ x \in UNION b => h(a,b)   BECAUSE S12;
-h(a,b) /\ x \in UNION b => IsOrdinal(UNION b)   BECAUSE TI2;
-h(a,b) /\ x \in UNION b => IsOrdinal(UNION b) /\ successor(x) \in UNION b   BECAUSE CIA;
-successor(x) # (UNION b) /\ (UNION b) \notin successor(x) => successor(x) # UNION b   BECAUSE S12;
-h(a,b) /\ x \in UNION b => successor(x) # UNION b   BECAUSE TI2;
-UNION b = successor(x) => successor(x) = UNION b   BECAUSE E_SCHEME;
-successor(x) # UNION b => UNION b # successor(x)   BECAUSE Contraposition;
-h(a,b) /\ x \in UNION b => UNION b # successor(x)   BECAUSE TI;
-h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE HypoAndToImpl;
-\A x : h(a,b) => (x \in UNION b => UNION b # successor(x))   BECAUSE GENERALIZATION;
-h(a,b) => (\A x : x \in UNION b => UNION b # successor(x))   BECAUSE Q_SCHEME;
-
-\* {} \in successor({}) \in b, so {} \in UNION b
-h(a,b) => {} \in a   BECAUSE S13;
-(\A x : x \in a => successor(x) \in a) => ({} \in a => successor({}) \in a)   BECAUSE \A(x <- {});
-h(a,b) => ({} \in a => successor({}) \in a)   BECAUSE TI;
-h(a,b) => successor({}) \in a   BECAUSE KillMiddleHypo;
-ordinalZero   BECAUSE THEOREM;
-IsFiniteOrdinal({}) => IsFiniteOrdinal( successor({}) )   BECAUSE \A(o <- {});
-IsFiniteOrdinal( successor({}) )   BECAUSE MODUS_PONENS;
-successor({}) \in a => successor({}) \in a /\ IsFiniteOrdinal( successor({}) )   BECAUSE IntroAndLeft;
-h(a,b) => successor({}) \in a /\ IsFiniteOrdinal( successor({}) )   BECAUSE TI;
-(\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (successor({}) \in b <=> successor({}) \in a /\ IsFiniteOrdinal(successor({})))   BECAUSE \A(x <- successor({}));
-h(a,b) => (successor({}) \in b <=> successor({}) \in a /\ IsFiniteOrdinal(successor({})))   BECAUSE TI;
-killCase(h,a,b) == (h => a) => ((h => (b <=> a)) => (h => b))   PROPO_TAUTO;
-h(a,b) => successor({}) \in b   BECAUSE killCase;
-inSuccessor   BECAUSE THEOREM;
-{} \in successor({})   BECAUSE \A(o <- {});
-h(a,b) => {} \in successor({})   BECAUSE PT1;
-h(a,b) => {} \in successor({}) /\ successor({}) \in b   BECAUSE CIA;
-({} \in successor({}) /\ successor({}) \in b) => {} \in UNION b   BECAUSE \A(a <- {}, b <- successor({}), c <- b);
-h(a,b) => {} \in UNION b   BECAUSE TI;
-emptySetExistsUniquely   BECAUSE THEOREM;
-UNION b = {} <=> \A x : x \notin UNION b   BECAUSE \A(c <- UNION b);
-(\E x : x \in UNION b) <=> ~\A x : x \notin UNION b   BECAUSE Q_SCHEME;
-(\E x : x \in UNION b) => ~\A x : x \notin UNION b   BECAUSE EquivToImpl;
-{} \in UNION b => \E x : x \in UNION b   BECAUSE \E(x <- {});
-h(a,b) => ~\A x : x \notin UNION b   BECAUSE TI2;
-UNION b = {} => \A x : x \notin UNION b   BECAUSE EquivToImpl;
-~(\A x : x \notin UNION b) => UNION b # {}   BECAUSE Contraposition;
-h(a,b) => UNION b # {}   BECAUSE TI;
-h(a,b) => IsOrdinal(UNION b) /\ UNION b # {}   BECAUSE CIA;
-h(a,b) => IsLimitOrdinal(UNION b)   BECAUSE CIA;
-
-\* Proof that IsFiniteOrdinal(x) => x \in UNION b
-ordinalComparison   BECAUSE THEOREM;
-IsOrdinal(x) /\ IsOrdinal(UNION b) => x \in UNION b \/ x = UNION b \/ UNION b \in x   BECAUSE \A(o <- x, p <- UNION b);
-IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE S13;
-\A o : IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE GENERALIZATION;
-IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(o <- x);
-h(a,b) /\ IsFiniteOrdinal(x) => IsFiniteOrdinal(x)   BECAUSE S22;
-h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE TI;
-h(a,b) /\ IsFiniteOrdinal(x) => h(a,b)   BECAUSE S12;
-h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(UNION b)   BECAUSE TI;
-h(a,b) /\ IsFiniteOrdinal(x) => IsOrdinal(x) /\ IsOrdinal(UNION b)   BECAUSE CIA;
-h(a,b) /\ IsFiniteOrdinal(x) => x \in UNION b \/ x = UNION b \/ UNION b \in x   BECAUSE TI;
-\* because UNION b is infinite, only the first case is possible.
-IsFiniteOrdinal(o) => ~IsLimitOrdinal(o)   BECAUSE S23;
-\A o : IsFiniteOrdinal(o) => ~IsLimitOrdinal(o)   BECAUSE GENERALIZATION;
-IsFiniteOrdinal(x) => ~IsLimitOrdinal(x)   BECAUSE \A(o <- x);
-h(a,b) /\ IsFiniteOrdinal(x) => ~IsLimitOrdinal(x)   BECAUSE TI;
-\A x : \A b : x = b => (IsLimitOrdinal(x) <=> IsLimitOrdinal(b))   BECAUSE E_SCHEME;
-x = UNION b => (IsLimitOrdinal(x) <=> IsLimitOrdinal(UNION b))   BECAUSE \A(x <- x, b <- UNION b);
-h(a,b) /\ IsFiniteOrdinal(x) => IsLimitOrdinal(UNION b)   BECAUSE TI;
-killCaseB(h,a,b,c) == (h => ~a) => ((h => c) => (((b => (a <=> c)) => (h => ~b))))   PROPO_TAUTO;
-h(a,b) /\ IsFiniteOrdinal(x) => x # UNION b   BECAUSE killCaseB;
-finiteInFinite   BECAUSE THEOREM;
-IsFiniteOrdinal(x) /\ UNION b \in x => IsFiniteOrdinal(UNION b)   BECAUSE \A(o <- x, x <- UNION b);
-IsFiniteOrdinal(UNION b) => ~IsLimitOrdinal(UNION b)   BECAUSE \A(o <- UNION b);
-IsFiniteOrdinal(x) /\ UNION b \in x => ~IsLimitOrdinal(UNION b)   BECAUSE TI;
-IsFiniteOrdinal(x) => (UNION b \in x => ~IsLimitOrdinal(UNION b))   BECAUSE HypoAndToImpl;
-h(a,b) /\ IsFiniteOrdinal(x) => (UNION b \in x => ~IsLimitOrdinal(UNION b))   BECAUSE TI;
-killCaseD(h,a,b) == (h => (b => ~a)) => ((h => a) => (h => ~b))   PROPO_TAUTO;
-h(a,b) /\ IsFiniteOrdinal(x) => UNION b \notin x   BECAUSE killCaseD;
-killCaseE(h,a,b,c) == (h => a \/ b \/ c) => ((h => ~b) => (((h => ~c) => (h => a))))   PROPO_TAUTO;
-h(a,b) /\ IsFiniteOrdinal(x) => x \in UNION b   BECAUSE killCaseE;
-
-\* Conversely, x \in UNION b is an ordinal as an element of an ordinal.
-\* And x \in t \in b where t is a finite ordinal, so x is finite too.
-IsFiniteOrdinal(t) /\ x \in t => IsFiniteOrdinal(x)   BECAUSE \A(o <- t, x <- x);
-h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(t)   BECAUSE TI;
-h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(t) /\ x \in t   BECAUSE CIA;
-h(a,b) /\ t \in b /\ x \in t => IsFiniteOrdinal(x)   BECAUSE TI;
-h(a,b) => (t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE pushHypos;
-\A t : h(a,b) => (t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
-h(a,b) => (\A t : t \in b /\ x \in t => IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
-(\A t : t \in b /\ x \in t => IsFiniteOrdinal(x)) => ((\E t : t \in b /\ x \in t) => \E t : IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
-h(a,b) /\ x \in UNION b => ((\E t : t \in b /\ x \in t) => \E t : IsFiniteOrdinal(x))   BECAUSE TI2;
-h(a,b) /\ x \in UNION b => x \in UNION b   BECAUSE S22;
-h(a,b) /\ x \in UNION b => (\E t : t \in b /\ x \in t)   BECAUSE TI;
-h(a,b) /\ x \in UNION b => \E t : IsFiniteOrdinal(x)   BECAUSE KillMiddleHypo;
-(\E t : IsFiniteOrdinal(x)) => IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
-h(a,b) /\ x \in UNION b => IsFiniteOrdinal(x)   BECAUSE TI;
-h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE HIE;
-\A x : h(a,b) => (x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE GENERALIZATION;
-h(a,b) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
-
-hA(a) == {} \in a /\ (\A x : x \in a => successor(x) \in a);
-hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE HypoAndToImpl;
-\A b : hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE GENERALIZATION;
-hA(a) => (\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
-(\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\A x : x \in UNION b <=> IsFiniteOrdinal(x)))
-   => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
-hA(a) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)))   BECAUSE TI;
-hA(a) => (\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x))   BECAUSE PT1;
-hA(a) => (\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE KillMiddleHypo;
-(\A x : x \in UNION b <=> IsFiniteOrdinal(x)) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE \E(o <- UNION b);
-(\E b : \A x : x \in UNION b <=> IsFiniteOrdinal(x)) => \E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
-hA(a) => (\E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x))   BECAUSE TI;
-(\E b : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)) => (\E o : \A x : x \in o <=> IsFiniteOrdinal(x))   BECAUSE Q_SCHEME;
-hA(a) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE TI;
-(\E a : hA(a)) => \E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
-\E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE MODUS_PONENS;
-(\E a : \E o : \A x : x \in o <=> IsFiniteOrdinal(x)) => \E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE Q_SCHEME;
-\E o : \A x : x \in o <=> IsFiniteOrdinal(x)   BECAUSE MODUS_PONENS;
-
-\* Proof that Nat is unique. By extensionality, being in another Nat
-\* is equivalent, it is being a finite ordinal.
-ho(o) == \A x : x \in o <=> IsFiniteOrdinal(x);
-\A z : \A o : z = o => ((\A x : x \in z <=> IsFiniteOrdinal(x)) <=> (\A x : x \in o <=> IsFiniteOrdinal(x)))   BECAUSE E_SCHEME;
-z = o => ((\A x : x \in z <=> IsFiniteOrdinal(x)) <=> (\A x : x \in o <=> IsFiniteOrdinal(x)))   BECAUSE \A(z <- z, o <- o);
-killCaseF(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
-ho(o) /\ z = o => (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE killCaseF;
-extensionality   BECAUSE AXIOM;
-(\A x : x \in z <=> x \in o) => z = o   BECAUSE \A(a <- z, b <- o);
-ho(o) => (x \in o <=> IsFiniteOrdinal(x))   BECAUSE \A(x <- x);
-tEquiv(a,b,c,h) == (h => (a <=> b)) => (h => ((c <=> b) => (c <=> a)))   PROPO_TAUTO;
-ho(o) => ((x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE tEquiv;
-\A x : ho(o) => ((x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE GENERALIZATION;
-ho(o) => (\A x : (x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o))   BECAUSE Q_SCHEME;
-(\A x : (x \in z <=> IsFiniteOrdinal(x)) => (x \in z <=> x \in o)) => ((\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o))   BECAUSE Q_SCHEME;
-ho(o) => ((\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o))   BECAUSE TI;
-ho(o) /\ (\A x : x \in z <=> IsFiniteOrdinal(x)) => (\A x : x \in z <=> x \in o)   BECAUSE HypoImplToAnd;
-ho(o) /\ (\A x : x \in z <=> IsFiniteOrdinal(x)) => z = o   BECAUSE TI;
-ho(o) => (z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE HIE;
-\A z : ho(o) => (z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE GENERALIZATION;
-ho(o) => (\A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
-(\E o : ho(o)) => (\E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE Q_SCHEME;
-\E o : \A z : z = o <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE MODUS_PONENS;
-\A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE CHOOSE Nat;
-
-\* Extract the fact that Nat is a limit ordinal
-UNION b = Nat <=> (\A x : x \in UNION b <=> IsFiniteOrdinal(x))   BECAUSE \A(z <- UNION b);
-(\A x : x \in UNION b <=> IsFiniteOrdinal(x)) => UNION b = Nat   BECAUSE EquivToImplReverse;
-h(a,b) => UNION b = Nat   BECAUSE TI;
-\A x : \A y : x = y => (IsLimitOrdinal(x) <=> IsLimitOrdinal(y))   BECAUSE E_SCHEME;
-UNION b = Nat => (IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat))   BECAUSE \A(x <- UNION b, y <- Nat);
-h(a,b) => (IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat))   BECAUSE TI;
-(IsLimitOrdinal(UNION b) <=> IsLimitOrdinal(Nat)) => (IsLimitOrdinal(UNION b) => IsLimitOrdinal(Nat))   BECAUSE EquivToImpl;
-h(a,b) => (IsLimitOrdinal(UNION b) => IsLimitOrdinal(Nat))   BECAUSE TI;
-h(a,b) => IsLimitOrdinal(Nat)   BECAUSE KillMiddleHypo;
-hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE HypoAndToImpl;
-\A b : hA(a) => ((\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE GENERALIZATION;
-hA(a) => (\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat))   BECAUSE Q_SCHEME;
-(\A b : (\A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => IsLimitOrdinal(Nat)) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => \E b : IsLimitOrdinal(Nat))   BECAUSE Q_SCHEME;
-hA(a) => ((\E b : \A x : x \in b <=> x \in a /\ IsFiniteOrdinal(x)) => \E b : IsLimitOrdinal(Nat))   BECAUSE TI;
-hA(a) => \E b : IsLimitOrdinal(Nat)   BECAUSE KillMiddleHypo;
-(\E a : hA(a)) => \E a : \E b : IsLimitOrdinal(Nat)   BECAUSE Q_SCHEME;
-\E a : \E b : IsLimitOrdinal(Nat)   BECAUSE MODUS_PONENS;
-(\E a : \E b : IsLimitOrdinal(Nat)) => (\E b : IsLimitOrdinal(Nat))  BECAUSE Q_SCHEME;
-(\E b : IsLimitOrdinal(Nat))   BECAUSE MODUS_PONENS;
-(\E b : IsLimitOrdinal(Nat)) => IsLimitOrdinal(Nat)   BECAUSE Q_SCHEME;
-IsLimitOrdinal(Nat)   BECAUSE MODUS_PONENS;
-NatExists   BECAUSE IntroAndRight;
 QED

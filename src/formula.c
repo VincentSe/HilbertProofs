@@ -254,6 +254,18 @@ formula* make_formula(enum builtin_operator builtInOp,
       return not;
     }
 
+  if (builtInOp == funcApply)
+    {
+      const int operCount = formula_list_size(f->operands);
+      if (operCount > 2)
+	{
+	  // Convert to a tuple : functions only take one argument.
+	  struct formula_list* args = f->operands->next;
+	  formula* group = make_formula(tuple, (char*)0, args, file, first_line);
+	  f->operands->next = make_formula_list(group, 0);
+	}
+    }
+
   //printf("\n %p MAKE_FORMULA ", f); print_formula(f);
   return f;
 }
@@ -342,10 +354,6 @@ unsigned char free_occurrence(const char* w,
     && !string_list_contains(boundVars, w);
 }
 
-/**
-   Test that all occurrences of variable v in formula f are bound
-   (which includes the case that v doesn't appear in f).
-*/
 short is_bound_variable(const formula* f, const char* v)
 {
   return !find_variable(f, 0, free_occurrence, v);
