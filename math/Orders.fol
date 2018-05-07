@@ -3018,5 +3018,51 @@ QED
 finiteOrdinalSuccessorStable == \A o : IsFiniteOrdinal(o) => IsFiniteOrdinal( successor(o) )
 THEOREM finiteOrdinalSuccessorStable
 PROOF
+VARIABLES a,o,x,y,z;
+ordinalSuccessorStable   BECAUSE THEOREM;
+IsOrdinal(o) => IsOrdinal( successor(o) )   BECAUSE \A(o <- o);
+IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE S13;
+IsFiniteOrdinal(o) => IsOrdinal(successor(o))   BECAUSE TI;
+IsLimitOrdinal(successor(o)) => \A x : x \in successor(o) => successor(o) # successor(x)   BECAUSE S22;
+(\A x : x \in successor(o) => successor(o) # successor(x)) => (o \in successor(o) => successor(o) # successor(o))   BECAUSE \A(x <- o);
+IsLimitOrdinal(successor(o)) => (o \in successor(o) => successor(o) # successor(o))   BECAUSE TI;
+inSuccessor   BECAUSE THEOREM;
+o \in successor(o)   BECAUSE \A(o <- o);
+IsLimitOrdinal(successor(o)) => o \in successor(o)   BECAUSE PT1;
+IsLimitOrdinal(successor(o)) => successor(o) # successor(o)   BECAUSE KillMiddleHypo;
+~(successor(o) # successor(o)) => ~IsLimitOrdinal(successor(o))   BECAUSE Contraposition;
+equalSelf   BECAUSE THEOREM;
+successor(o) = successor(o)   BECAUSE \A(a <- successor(o));
+~(successor(o) # successor(o))   BECAUSE IntroNotNot;
+~IsLimitOrdinal(successor(o))   BECAUSE MODUS_PONENS;
+IsFiniteOrdinal(o) => ~IsLimitOrdinal(successor(o))   BECAUSE PT1;
+
+unionInc   BECAUSE THEOREM;
+x \in (o \union {o}) <=> (x \in o \/ x \in {o})   BECAUSE \A(x <- o, y <- {o}, z <- x);
+x \in successor(o) => x \in o \/ x \in {o}   BECAUSE EquivToImpl;
+IsFiniteOrdinal(o) => (\A x : x \in o => ~IsLimitOrdinal(x))   BECAUSE S22;
+(\A x : x \in o => ~IsLimitOrdinal(x)) => (x \in o => ~IsLimitOrdinal(x))   BECAUSE \A(x <- x);
+IsFiniteOrdinal(o) => (x \in o => ~IsLimitOrdinal(x))   BECAUSE TI;
+IsFiniteOrdinal(o) /\ x \in successor(o) => (x \in o => ~IsLimitOrdinal(x)) /\ (x \in o \/ x \in {o})   BECAUSE MergeImplicationsAnd;
+mp(a,b,c) == (a => b) /\ (a \/ c) => b \/ c   PROPO_TAUTO;
+(x \in o => ~IsLimitOrdinal(x)) /\ (x \in o \/ x \in {o}) => ~IsLimitOrdinal(x) \/ x \in {o}   BECAUSE mp;
+IsFiniteOrdinal(o) /\ x \in successor(o) => ~IsLimitOrdinal(x) \/ x \in {o}   BECAUSE TI;
+singletonExists   BECAUSE THEOREM;
+x \in { o } <=> x = o   BECAUSE \A(a <- o, x <- x);
+x \in { o } => x = o   BECAUSE EquivToImpl;
+IsFiniteOrdinal(o) => ~IsLimitOrdinal(o)   BECAUSE S23;
+IsFiniteOrdinal(o) /\ x \in successor(o) => IsFiniteOrdinal(o)   BECAUSE S12;
+IsFiniteOrdinal(o) /\ x \in successor(o) => ~IsLimitOrdinal(o)   BECAUSE TI;
+\A x : \A o : x = o => (~IsLimitOrdinal(x) <=> ~IsLimitOrdinal(o))   BECAUSE E_SCHEME;
+x = o => (~IsLimitOrdinal(x) <=> ~IsLimitOrdinal(o))   BECAUSE \A(x <- x, o <- o);
+x \in {o} => (~IsLimitOrdinal(x) <=> ~IsLimitOrdinal(o))   BECAUSE TI;
+mergeImpl(h,a,b,c) == (h => a \/ b) => ((h => c) => ((b => (a <=> c)) => (h => a)))   PROPO_TAUTO;
+IsFiniteOrdinal(o) /\ x \in successor(o) => ~IsLimitOrdinal(x)   BECAUSE mergeImpl;
+IsFiniteOrdinal(o) => (x \in successor(o) => ~IsLimitOrdinal(x))   BECAUSE HypoAndToImpl;
+\A x : IsFiniteOrdinal(o) => (x \in successor(o) => ~IsLimitOrdinal(x))   BECAUSE GENERALIZATION;
+IsFiniteOrdinal(o) => (\A x : x \in successor(o) => ~IsLimitOrdinal(x))   BECAUSE Q_SCHEME;
+
+IsFiniteOrdinal(o) => IsOrdinal(successor(o)) /\ ~IsLimitOrdinal(successor(o))   BECAUSE CIA;
+IsFiniteOrdinal(o) => IsFiniteOrdinal(successor(o))   BECAUSE CIA;
 finiteOrdinalSuccessorStable   BECAUSE GENERALIZATION;
 QED
