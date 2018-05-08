@@ -461,20 +461,20 @@ PROOF
 \* By natInduction, show that there is a partial solution
 \* defined on [0,n] for all n.
 \* Then use the replacement axiom scheme on Nat to build
-\*  the complete function.
+\* the complete function.
 VARIABLES a,b,f,g,n,p,x,y,z,init;
-h(f,x,init) == \E g : IsFunction(g) /\ successor(x) \subseteq Domain(g) /\ g[{}] = init
+h(f,x,init) == \E g : IsFunction(g) /\ Domain(g) = successor(x) /\ g[{}] = init
    /\ \A n : n \in successor(x) /\ n # x => g[successor(n)] = f[g[n]];
 \A a : \E b : \A x : x \in b <=> x \in a /\ h(f,x,init)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> x \in Nat /\ h(f,x,init)   BECAUSE \A(a <- Nat);
-hb(f,x,init,b) == \A x : x \in b <=> x \in Nat /\ h(f,x,init);
+hb(f,init,b) == \A x : x \in b <=> x \in Nat /\ h(f,x,init);
 
 natInduction   BECAUSE THEOREM;
 {} \in b /\ (\A n : n \in b => successor(n) \in b) => Nat \subseteq b   BECAUSE \A(p <- b);
 \* Prove h(f, {}, init)
 singletonFuncIsFunction   BECAUSE THEOREM;
-IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = {{}} /\ singletonFunc({},init)[{}] = init
-   BECAUSE \A(a <- {}, b <- init);
+IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = {{}}
+   /\ singletonFunc({},init)[{}] = init   BECAUSE \A(a <- {}, b <- init);
 IsFunction(singletonFunc({},init))   BECAUSE S13;
 Domain(singletonFunc({},init)) = {{}}   BECAUSE S23;
 singletonFunc({},init)[{}] = init   BECAUSE S22;
@@ -503,12 +503,25 @@ n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[single
 \A n : n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE GENERALIZATION;
 IsFunction(singletonFunc({},init)) /\ successor({}) \subseteq Domain(singletonFunc({},init)) /\ singletonFunc({},init)[{}] = init /\ \A n : n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE IntroAndRight;
 h(f, {}, init)   BECAUSE \E(g <- singletonFunc({},init));
-hb(f,{},init,b) => ({} \in b <=> {} \in Nat /\ h(f,{},init))   BECAUSE \A(x <- {});
+hb(f,init,b) => ({} \in b <=> {} \in Nat /\ h(f,{},init))   BECAUSE \A(x <- {});
 zeroInNat   BECAUSE THEOREM;
 {} \in Nat /\ h(f,{},init)   BECAUSE IntroAndRight;
-hb(f,{},init,b) => {} \in b   BECAUSE ImplyEquivTrue;
+hb(f,init,b) => {} \in b   BECAUSE ImplyEquivTrue;
 
-\* TODO b stable by successor
+\* Prove that \A p : p \in b => successor(p) \in b
+hbn(f,init,b,p,g) == hb(f,init,b) /\ p \in b /\ IsFunction(g) /\ Domain(g) = successor(p)
+   /\ g[{}] = init
+   /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]];
+
+\* hb(f,x,init,b) == \A x : x \in b <=> x \in Nat /\ h(f,x,init);
+
+unionFunc   BECAUSE THEOREM;
+IsFunction(g) /\ IsFunction(singletonFunc(successor(p), f[g[p]])) /\ AreDisjoint(Domain(f),Domain(singletonFunc(successor(p), f[g[p]])))
+   => IsFunction(g \union singletonFunc(successor(p), f[g[p]]))
+      /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = Domain(g) \union Domain(singletonFunc(successor(p), f[g[p]]))
+      /\ (\A x : x \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[x] = g[x])
+      /\ (\A x : x \in Domain(singletonFunc(successor(p), f[g[p]])) => (g \union singletonFunc(successor(p), f[g[p]]))[x] = singletonFunc(successor(p), f[g[p]])[x])
+   BECAUSE \A(f <- g, g <- singletonFunc(successor(p), f[g[p]]));
 
 hb(f,x,init,b) => Nat \subseteq b   BECAUSE TI;
 Nat \subseteq b => (p \in Nat => p \in b)   BECAUSE \A(z <- b);

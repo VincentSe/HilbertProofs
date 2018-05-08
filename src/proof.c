@@ -73,8 +73,11 @@ void proof_free(proof* p)
 	      (l->jf->reason->rk == propoTautology && !l->jf->reason->formula))
 	    {
 	      // local operator or propositional tautology
-	      formula_free(l->jf->formula->definingFormula);
-	      l->jf->formula->definingFormula = 0;
+	      if (l->jf->formula)
+		{
+		  formula_free(l->jf->formula->definingFormula);
+		  l->jf->formula->definingFormula = 0;
+		}
 	    }
 	  justified_formula_free(l->jf);
 	  struct FormulaDList* prev = l->previous;

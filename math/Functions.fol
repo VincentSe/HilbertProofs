@@ -732,6 +732,20 @@ PROOF
 singletonFuncIsFunction   BECAUSE GENERALIZATION;
 QED
 
+(*
+   This theorem allows to define functions by cases. For example the absolute
+   value on the real numbers is x when x >= 0 and -x when x < 0.
+*)
+unionFunc == \A f : \A g : IsFunction(f) /\ IsFunction(g) /\ AreDisjoint(Domain(f),Domain(g))
+   => IsFunction(f \union g) /\ Domain(f \union g) = Domain(f) \union Domain(g)
+      /\ (\A x : x \in Domain(f) => (f \union g)[x] = f[x])
+      /\ (\A x : x \in Domain(g) => (f \union g)[x] = g[x])
+THEOREM unionFunc
+PROOF
+\* TODO
+unionFunc   BECAUSE GENERALIZATION;
+QED
+
 funcUniqueImage == \A f : \A x : \A y :
    (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y
 THEOREM funcUniqueImage

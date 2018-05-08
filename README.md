@@ -1,19 +1,17 @@
 # HilbertProofs
 
 HilbertProofs is made of three parts :
-* A language to write formal mathematical proofs, defined as a flex/bison grammar (files fol.l and fol.y). This language expresses first-order predicate calculus and is a lot inspired by TLA+.
+* A language to write formal mathematical proofs, defined as a flex/bison grammar (files fol.l and fol.y). This language expresses first-order predicate calculus and is inspired by TLA+.
 * A proof checker that reads the formal proofs and verifies them.
 * A collection of proofs, building simple mathematics from the ZFC axioms (in the math folder).
 
-## Predicate calculus
+## First-order predicate calculus in the Hilbert style
 
-HilbertProofs writes proofs in the first-order logic framework, hence the FOL extension of the proof files. For more information, please read : [First-order logic](https://en.wikipedia.org/wiki/First-order_logic).
+HilbertProofs writes proofs in the first-order logic framework with equality, hence the FOL extension of the proof files. For more information, please read : [First-order logic](https://en.wikipedia.org/wiki/First-order_logic).
 
-Each proof is written in the Hilbert style, which means as a list of cumulative truths. Hilbert-style formal proofs with minimal axioms and inference rules are much (much !) longer than usual proofs written in English. In comparison to programming languages, Hilbert-style formal proofs would be an assembly language, whereas usual English would be a very high-level language like C++ or Java.
+Each proof is written in the [Hilbert style](https://en.wikipedia.org/wiki/Hilbert_system), which means as a list of cumulative truths. This is different from [natural deduction](https://en.wikipedia.org/wiki/Natural_deduction), where the proofs are structured more like a tree of formulas.
 
-While a minimal set of axioms is practical to prove theoretical properties of mathematics (like Gödel's theorems), more axioms and inference rules make the proofs shorter and easier to write. We introduced such redundant inference rules, saying each time how they could be eliminated to go back to the minimal rules (like a macro expansion in the C programming language).
-
-Propositional tautologies are checked by Boolean affectations of propositional variables, rather than by arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
+HilbertProofs' detailed inference rules are given another section below.
 
 ## Can we trust HilbertProofs ?
 
@@ -23,7 +21,7 @@ Firstly, the rigidity and simplicity of HilbertProofs' language make all proofs'
 
 Secondly, if one does not want to check the formal proofs themselves, HilbertProofs provides an automated checker. This is again possible thanks to the simplicity of the formal proof language. At the moment, there are about 9000 lines of C code in HilbertProofs, 5000 of which coming from the flex/bison transformation of the grammar. Then we have the millions of lines in the source code of GCC, the C compiler HilbertProofs uses. The correctness of the automated checker is the correctness of all those lines of code, the absence of bugs in them.
 
-GCC and bison have been used and tested for 30 years, the risk of bugs in them is fairly small. If one does not trust them, one has the option to read and debug the assembly they produce, which is 45000 lines for HilbertProofs, including the debugging symbols. The remaining 4000 lines of HilbertProofs were tested by careful code reviews, which are possible given their small size. They are also tested by the 7000 lines in the FOL files, that prove basic theorems of mathematics we know are true. Finally, debugging HilbertProofs benefits all its proofs ; whereas correcting an English proof only benefits that particular proof.
+GCC and bison have been used and tested for 30 years, the risk of bugs in them is fairly small. If one does not trust them, one has the option to read and debug the assembly they produce, which is 45000 lines for HilbertProofs, including the debugging symbols. The remaining 4000 lines of HilbertProofs were tested by careful code reviews, which are possible given their small size. They are also tested by the 7000 lines in the FOL files, that prove basic theorems of mathematics we know are true. In the process of writing those 7000 lines, the automated checker found lots of errors. Finally, debugging HilbertProofs benefits all its proofs ; whereas correcting an English proof only benefits that particular proof.
 
 
 ## ASCII notations of formulas
@@ -96,6 +94,8 @@ And finally we have the instances of quantifiers
 where `p(x <- t)` means the free substitution of variable `x` by term `t`. HilbertProofs checks that all variables of `t` remain free in `p(x <- t)`.
 
 The truth tables used in the checking of propositional tautologies are also hardcoded. For example, the truth table of implication is `(0 => 0) = 1, (0 => 1) = 1, (1 => 0) = 0, (1 => 1) = 1`.
+
+Propositional tautologies are checked by Boolean affectations of propositional variables, rather than by arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
 
 ## Conservative extensions, aka definitions
 
