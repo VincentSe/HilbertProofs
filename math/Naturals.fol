@@ -275,7 +275,7 @@ PROOF
 \* minimum m. m is not zero, because zero is in p by hypothesis.
 \* So m is the successor of a natural number p.
 \* This contradicts the hypothesis on p.
-VARIABLES a,c,k,m,o,p,u,v,x,z;
+VARIABLES a,b,c,k,m,n,o,p,u,v,x,z;
 h(p,k) == {} \in p /\ (\A n : n \in p => successor(n) \in p) /\ k \in Nat /\ k \notin p;
 h(p,k) => {} \in p   BECAUSE S14;
 h(p,k) => (\A n : n \in p => successor(n) \in p)   BECAUSE S24;
@@ -313,7 +313,7 @@ hm(p,k,m) == h(p,k) /\ IsMinimumForIn(m, Nat \ p);
 hm(p,k,m) => h(p,k)   BECAUSE S12;
 hm(p,k,m) => IsMinimumForIn(m, Nat \ p)   BECAUSE S22;
 \* Show that m is not empty
-IsMinimumForIn(m, Nat \ p) => m \in Nat \ p   BECAUSE S12; \* /\ \A b : b \in part => (b = m \/ m \in b)
+IsMinimumForIn(m, Nat \ p) => m \in Nat \ p   BECAUSE S12;
 m \in (Nat \ p) <=> (m \in Nat /\ m \notin p)   BECAUSE \A(u <- Nat, v <- p, x <- m);
 m \in (Nat \ p) => m \in Nat /\ m \notin p   BECAUSE EquivToImpl;
 m \in Nat /\ m \notin p => m \notin p    BECAUSE S22;
@@ -351,7 +351,80 @@ hm(p,k,m) => ~\A x : x \in m => m # successor(x)   BECAUSE TI;
 ~(\A x : x \in m => m # successor(x)) => ~(\A x : ~~(x \in m => m # successor(x)))   BECAUSE Contraposition;
 hm(p,k,m) => \E x : ~(x \in m => m # successor(x))   BECAUSE TI2;
 \* Derive a contradiction, because this x is in p
+hmx(p,k,m,x) == hm(p,k,m) /\ ~(x \in m => m # successor(x));
+hmx(p,k,m,x) => hm(p,k,m)   BECAUSE S12;
+hmx(p,k,m,x) => ~(x \in m => m # successor(x))   BECAUSE S22;
+boolImpl(a,b) == ~(a => ~b) => a /\ b   PROPO_TAUTO;
+~(x \in m => m # successor(x)) => x \in m /\ m = successor(x)   BECAUSE boolImpl;
+hmx(p,k,m,x) => x \in m /\ m = successor(x)   BECAUSE TI;
+IsMinimumForIn(m, Nat \ p) => \A b : b \in Nat \ p => (b = m \/ m \in b)   BECAUSE S22;
+(\A b : b \in Nat \ p => (b = m \/ m \in b)) => (x \in Nat \ p => x = m \/ m \in x)   BECAUSE \A(b <- x);
+hm(p,k,m) => (x \in Nat \ p => x = m \/ m \in x)   BECAUSE TI2;
+hmx(p,k,m,x) => (x \in Nat \ p => x = m \/ m \in x)   BECAUSE TI;
+finiteInFinite   BECAUSE THEOREM;
+IsFiniteOrdinal(m) /\ x \in m => IsFiniteOrdinal(x)   BECAUSE \A(o <- m, x <- x);
+hmx(p,k,m,x) => IsFiniteOrdinal(m)   BECAUSE TI;
+x \in m /\ m = successor(x) => x \in m   BECAUSE S12;
+hmx(p,k,m,x) => x \in m   BECAUSE TI;
+hmx(p,k,m,x) => IsFiniteOrdinal(m) /\ x \in m   BECAUSE CIA;
+hmx(p,k,m,x) => IsFiniteOrdinal(x)   BECAUSE TI;
+x \in Nat <=> IsFiniteOrdinal(x)   BECAUSE \A(x <- x);
+IsFiniteOrdinal(x) => x \in Nat   BECAUSE EquivToImplReverse;
+hmx(p,k,m,x) => x \in Nat   BECAUSE TI;
+hmx(p,k,m,x) => x \in Nat /\ (x \in Nat \ p => x = m \/ m \in x)   BECAUSE CIA;
+x \in (Nat \ p) <=> (x \in Nat /\ x \notin p)   BECAUSE \A(u <- Nat, v <- p, x <- x);
+killCasesB(a,b,c,d) == (b <=> a /\ d) => (a /\ (b => c) => (d => c))   PROPO_TAUTO;
+x \in Nat /\ (x \in Nat \ p => x = m \/ m \in x) => (x \notin p => x = m \/ m \in x)   BECAUSE killCasesB;
+hmx(p,k,m,x) => (x \notin p => x = m \/ m \in x)   BECAUSE TI;
+ordinalComparesWithOwnElements   BECAUSE THEOREM;
+IsOrdinal(m) /\ x \in m => x # m /\ m \notin x   BECAUSE \A(o <- x, p <- m);
+hmx(p,k,m,x) => IsOrdinal(m)   BECAUSE TI;
+hmx(p,k,m,x) => IsOrdinal(m) /\ x \in m   BECAUSE CIA;
+x # m /\ m \notin x => ~(x = m \/ m \in x)   BECAUSE FactorNotOr;
+hmx(p,k,m,x) => ~(x = m \/ m \in x)   BECAUSE TI2;
+killCaseB(h,a,b) == (h => ~a) => ((h => (~b => a)) => (h => b))   PROPO_TAUTO;
+hmx(p,k,m,x) => x \in p   BECAUSE killCaseB;
+(\A n : n \in p => successor(n) \in p) => (x \in p => successor(x) \in p)   BECAUSE \A(n <- x);
+hm(p,k,m) => (x \in p => successor(x) \in p)   BECAUSE TI2;
+hmx(p,k,m,x) => (x \in p => successor(x) \in p)   BECAUSE TI;
+hmx(p,k,m,x) => successor(x) \in p   BECAUSE KillMiddleHypo;
+x \in m /\ m = successor(x) => m = successor(x)   BECAUSE S22;
+hmx(p,k,m,x) => m = successor(x)   BECAUSE TI;
+\A m : \A x : m = x => (m \in p <=> x \in p)   BECAUSE E_SCHEME;
+m = successor(x) => (m \in p <=> successor(x) \in p)   BECAUSE \A(m <- m, x <- successor(x));
+hmx(p,k,m,x) => (m \in p <=> successor(x) \in p)   BECAUSE TI;
+implyEquivTrueB(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+hmx(p,k,m,x) => m \in p   BECAUSE implyEquivTrueB; \* contradiction
 
+\* Discharge existential hypotheses
+hm(p,k,m) => (~(x \in m => m # successor(x)) => m \in p)   BECAUSE HypoAndToImpl;
+\A x : hm(p,k,m) => (~(x \in m => m # successor(x)) => m \in p)   BECAUSE GENERALIZATION;
+hm(p,k,m) => (\A x : ~(x \in m => m # successor(x)) => m \in p)   BECAUSE Q_SCHEME;
+(\A x : ~(x \in m => m # successor(x)) => m \in p) => ((\E x : ~(x \in m => m # successor(x))) => \E x : m \in p)   BECAUSE Q_SCHEME;
+hm(p,k,m) => ((\E x : ~(x \in m => m # successor(x))) => \E x : m \in p)   BECAUSE TI;
+hm(p,k,m) => \E x : m \in p   BECAUSE KillMiddleHypo;
+(\E x : m \in p) => m \in p   BECAUSE Q_SCHEME;
+hm(p,k,m) => m \in p   BECAUSE TI; \* contradiction
+hm(p,k,m) => m \in p /\ m \notin p   BECAUSE CIA;
+absurd(h,a,b) == (h /\ a => b /\ ~b) => (h => ~a)   PROPO_TAUTO;
+h(p,k) => ~IsMinimumForIn(m, Nat \ p)   BECAUSE absurd;
+\A m : h(p,k) => ~IsMinimumForIn(m, Nat \ p)   BECAUSE GENERALIZATION;
+h(p,k) => \A m : ~IsMinimumForIn(m, Nat \ p)   BECAUSE Q_SCHEME;
+(\E m : IsMinimumForIn(m, Nat \ p)) <=> ~\A m : ~IsMinimumForIn(m, Nat \ p)   BECAUSE Q_SCHEME;
+(\E m : IsMinimumForIn(m, Nat \ p)) => ~\A m : ~IsMinimumForIn(m, Nat \ p)   BECAUSE EquivToImpl;
+~~(\A m : ~IsMinimumForIn(m, Nat \ p)) => ~(\E m : IsMinimumForIn(m, Nat \ p))   BECAUSE Contraposition;
+(\A m : ~IsMinimumForIn(m, Nat \ p)) => ~~\A m : ~IsMinimumForIn(m, Nat \ p)   BECAUSE IntroNotNot;
+h(p,k) => ~\E m : IsMinimumForIn(m, Nat \ p)   BECAUSE TI2;
+h(p,k) => (\E m : IsMinimumForIn(m, Nat \ p)) /\ ~\E m : IsMinimumForIn(m, Nat \ p)   BECAUSE CIA;
+
+{} \in p /\ (\A n : n \in p => successor(n) \in p) /\ k \in Nat => ~(k \notin p)   BECAUSE absurd;
+~(k \notin p) => k \in p   BECAUSE DropNotNot;
+{} \in p /\ (\A n : n \in p => successor(n) \in p) /\ k \in Nat => k \in p   BECAUSE TI;
+\A k : {} \in p /\ (\A n : n \in p => successor(n) \in p) /\ k \in Nat => k \in p   BECAUSE GENERALIZATION;
+{} \in p /\ (\A n : n \in p => successor(n) \in p) /\ z \in Nat => z \in p   BECAUSE \A(k <- z);
+{} \in p /\ (\A n : n \in p => successor(n) \in p) => (z \in Nat => z \in p)   BECAUSE HypoAndToImpl;
+\A z : {} \in p /\ (\A n : n \in p => successor(n) \in p) => (z \in Nat => z \in p)   BECAUSE GENERALIZATION;
+{} \in p /\ (\A n : n \in p => successor(n) \in p) => Nat \subseteq p   BECAUSE Q_SCHEME;
 natInduction   BECAUSE GENERALIZATION;
 QED
 
