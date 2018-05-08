@@ -598,10 +598,10 @@ elemOfTwo   BECAUSE GENERALIZATION;
 QED
 
 (* Singleton and pair operators *)
-{ a } == CHOOSE b : \A x : x \in b <=> x = a
+{ a } == CHOOSE_UNIQUE b : \A z : z = b <=> (\A x : x \in z <=> x = a)
 
-singletonExists == \A a : \A x : x \in { a } <=> x = a
-THEOREM singletonExists
+singletonExistsUniquely == \A a : \A z : z = { a } <=> (\A x : x \in z <=> x = a)
+THEOREM singletonExistsUniquely
 PROOF
 VARIABLES a,b,c,x,z;
 \* Proof by separation in the powerset of a
@@ -621,15 +621,42 @@ powersetExists   BECAUSE AXIOM;
 a \in SUBSET a <=> a \subseteq a   BECAUSE \A(x <- a, z <- a);
 a \in SUBSET a   BECAUSE MODUS_PONENS;
 x = a => x \in SUBSET a   BECAUSE ImplyEquivTrue;
-x = a => x = a   BECAUSE ImplySelf;
-x = a => (x \in SUBSET a /\ x = a)   BECAUSE CIA;
-x = a <=> (x \in SUBSET a /\ x = a)   BECAUSE IntroEquiv;
+(x \in b <=> (x \in SUBSET a /\ x = a)) => (x \in b <=> x = a)   BECAUSE SeparationTauto;
+h(a,b) == \A x : x \in b <=> x = a;
+(\A x : x \in b <=> (x \in SUBSET a /\ x = a)) => h(a,b)   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)) => \E b : h(a,b)   BECAUSE Q_SCHEME;
+\E b : h(a,b)   BECAUSE MODUS_PONENS;
+\A z : \A b : z = b => (h(a,z) <=> h(a,b))   BECAUSE E_SCHEME;
+z = b => (h(a,z) <=> h(a,b))   BECAUSE \A(z <- z, b <- b);
+cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+h(a,b) /\ z = b => h(a,z)   BECAUSE cycleHypos;
+h(a,z) => (x \in z <=> x = a)   BECAUSE \A(x <- x);
+h(a,b) => (x \in b <=> x = a)   BECAUSE \A(x <- x);
+mergeImpl(h,i,a,b,c) == (h => (a <=> c)) => ((i => (b <=> c)) => (i /\ h => (a <=> b)))   PROPO_TAUTO;
+h(a,b) /\ h(a,z) => (x \in z <=> x \in b)   BECAUSE mergeImpl;
+\A x : h(a,b) /\ h(a,z) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(a,b) /\ h(a,z) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+h(a,b) /\ h(a,z) => z = b   BECAUSE TI;
+h(a,b) => (z = b <=> h(a,z))   BECAUSE HIE;
+\A z : h(a,b) => (z = b <=> h(a,z))   BECAUSE GENERALIZATION;
+h(a,b) => (\A z : z = b <=> h(a,z))   BECAUSE Q_SCHEME;
+(\E b : h(a,b)) => (\E b : \A z : z = b <=> h(a,z))   BECAUSE Q_SCHEME;
+\E b : \A z : z = b <=> h(a,z)   BECAUSE MODUS_PONENS;
+\A z : z = { a } <=> (\A x : x \in z <=> x = a)   BECAUSE CHOOSE { a };
+singletonExistsUniquely   BECAUSE GENERALIZATION;
+QED
 
-(x \in b <=> (x \in SUBSET a /\ x = a)) => (x \in b <=> x = a)   BECAUSE TransitEquiv2;
-(\A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> (x \in SUBSET a /\ x = a)) => (\E b : \A x : x \in b <=> x = a)   BECAUSE Q_SCHEME;
-(\E b : \A x : x \in b <=> x = a)   BECAUSE MODUS_PONENS;
-(\A x : x \in { a } <=> x = a)   BECAUSE CHOOSE { a };
+singletonExists == \A a : \A x : x \in { a } <=> x = a
+THEOREM singletonExists
+PROOF
+VARIABLES a,z;
+singletonExistsUniquely   BECAUSE THEOREM;
+{a} = { a } <=> (\A x : x \in {a} <=> x = a)   BECAUSE \A(a <- a, z <- {a});
+equalSelf   BECAUSE THEOREM;
+{a} = { a }   BECAUSE \A(a <- {a});
+\A x : x \in {a} <=> x = a   BECAUSE MODUS_PONENS;
 singletonExists   BECAUSE GENERALIZATION;
 QED
 
