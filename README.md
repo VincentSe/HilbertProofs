@@ -15,6 +15,17 @@ While a minimal set of axioms is practical to prove theoretical properties of ma
 
 Propositional tautologies are checked by Boolean affectations of propositional variables, rather than by arbitrarily chosing a small subset of them as axioms. Then, any propositional tautology can serve as an axiom scheme in the first-order formal proofs. This allows for quicker propositional (ie Boolean) reasoning. See file math/Tautologies.fol.
 
+## Can we trust HilbertProofs ?
+
+HilbertProofs' sole purpose is to increase the confidence we have in mathematical proofs. To this end, the proofs in its formal language are a lot more tedious to write than in usual mathematical English. Is is worth the effort ?
+
+Firstly, the rigidity and simplicity of HilbertProofs' language make all proofs' statements absolutely clear. Abuse of notations and shortcuts by ambiguous sentences are impossible, by lack of grammar. In contrast, we can think of the many questions posted on the Internet, concerning whether the axiom of choice was used in a particular proof. In HilbertProofs there is no doubt : an axiom is used when a proof statement ends with "BECAUSE AXIOM". English also permits to be lazy, by saying only that a function is continuous, or that an object is a group. But for which topologies ? Which operations ? HilbertProofs' syntax forces us to make all parts of a structure explicit, every time we claim an object has it.
+
+Secondly, if one does not want to check the formal proofs themselves, HilbertProofs provides an automated checker. This is again possible thanks to the simplicity of the formal proof language. At the moment, there are about 9000 lines of C code in HilbertProofs, 5000 of which coming from the flex/bison transformation of the grammar. Then we have the millions of lines in the source code of GCC, the C compiler HilbertProofs uses. The correctness of the automated checker is the correctness of all those lines of code, the absence of bugs in them.
+
+GCC and bison have been used and tested for 30 years, the risk of bugs in them is fairly small. If one does not trust them, one has the option to read and debug the assembly they produce, which is 45000 lines for HilbertProofs, including the debugging symbols. The remaining 4000 lines of HilbertProofs were tested by careful code reviews, which are possible given their small size. They are also tested by the 7000 lines in the FOL files, that prove basic theorems of mathematics we know are true. Finally, debugging HilbertProofs benefits all its proofs ; whereas correcting an English proof only benefits that particular proof.
+
+
 ## ASCII notations of formulas
 
 For compatibility with most editors and tools, the charset of HilbertProofs is ASCII. Here is how logical connectors are written

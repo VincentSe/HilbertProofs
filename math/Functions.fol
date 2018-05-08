@@ -722,6 +722,16 @@ IsFunction({})   BECAUSE IntroAndRight;
 emptyFunction   BECAUSE IntroAndRight;
 QED
 
+singletonFunc(a,b) == { <<a,b>> }
+singletonFuncIsFunction == \A a : \A b :
+   IsFunction(singletonFunc(a,b)) /\ Domain(singletonFunc(a,b)) = {a}
+   /\ singletonFunc(a,b)[a] = b
+THEOREM singletonFuncIsFunction
+PROOF
+\* TODO
+singletonFuncIsFunction   BECAUSE GENERALIZATION;
+QED
+
 funcUniqueImage == \A f : \A x : \A y :
    (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y
 THEOREM funcUniqueImage
