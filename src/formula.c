@@ -215,7 +215,9 @@ formula* check_operator_definition(formula* def, formula* right)
     {
       if (operand->formula_elem->builtInOp != lnone)
 	{
-	  printf("An operator definition must have depth 1");
+	  printf("%s:%d: An operator definition must have depth 1\n",
+		 def->file,
+		 def->first_line);	  
 	  return 0;
 	}
       operand->formula_elem->builtInOp = variable;
