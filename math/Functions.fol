@@ -321,7 +321,7 @@ QED
 identityVal == \A d : \A x : x \in d => (identity(d)[x] = x /\ pre(identity(d),x) = x)
 THEOREM identityVal
 PROOF
-VARIABLES a,b,d,x,y;
+VARIABLES a,b,d,x,y,z;
 \* Proof that \A x : x \in d => <<x,x>> \in identity(d)
 identityExists   BECAUSE THEOREM;
 <<x,x>> \in identity(d) <=> <<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>)
@@ -344,33 +344,49 @@ x \in d => <<x,x>> \in d \X d   BECAUSE TI;
 x \in d => <<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE TI;
 x \in d => <<x,x>> \in identity(d)   BECAUSE TI;
 
-\* Proof that x = identity(d)[x]
+\* Proof that x \in d => x = identity(d)[x]
 <<x,x>> \in identity(d) => \E y : <<x,y>> \in identity(d)   BECAUSE \E(y <- x);
 x \in d => \E y : <<x,y>> \in identity(d)   BECAUSE TI;
-(\E y : <<x,y>> \in identity(d)) => <<x,identity(d)[x]>> \in identity(d)   BECAUSE CHOOSE identity(d)[x];
-x \in d => <<x,identity(d)[x]>> \in identity(d)   BECAUSE TI;
-<<x,identity(d)[x]>> \in identity(d) <=> <<x,identity(d)[x]>> \in d \X d /\ fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)
-   BECAUSE \A(d <- d, x <- <<x,identity(d)[x]>>);
-<<x,identity(d)[x]>> \in identity(d) => <<x,identity(d)[x]>> \in d \X d /\ fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)
+(\E y : \A z : z = y <=> <<x,z>> \in identity(d))
+   => \A z : z = identity(d)[x] <=> <<x,z>> \in identity(d)   BECAUSE CHOOSE identity(d)[x];
+\A a : \A b : a = b => (<<x,a>> \in identity(d) <=> <<x,b>> \in identity(d))   BECAUSE E_SCHEME;
+z = x => (<<x,z>> \in identity(d) <=> <<x,x>> \in identity(d))   BECAUSE \A(a <- z, b <- x);
+mergeImpl(h,a,b,c) == (h => a) => ((b => (c <=> a)) => (h /\ b => c))   PROPO_TAUTO;
+x \in d /\ z = x => <<x,z>> \in identity(d)   BECAUSE mergeImpl;
+
+<<x,z>> \in identity(d) <=> <<x,z>> \in d \X d /\ fst(<<x,z>>) = snd(<<x,z>>)
+   BECAUSE \A(d <- d, x <- <<x,z>>);
+<<x,z>> \in identity(d) => <<x,z>> \in d \X d /\ fst(<<x,z>>) = snd(<<x,z>>)
    BECAUSE EquivToImpl;
-<<x,identity(d)[x]>> \in d \X d /\ fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)
- => fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)   BECAUSE S22;
-<<x,identity(d)[x]>> \in identity(d) => fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)   BECAUSE TI;
-x \in d => fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)   BECAUSE TI;
-x = fst(<<x,identity(d)[x]>>)   BECAUSE \A(a <- x, b <- identity(d)[x]);
-identity(d)[x] = snd(<<x,identity(d)[x]>>)   BECAUSE \A(a <- x, b <- identity(d)[x]);
+<<x,z>> \in d \X d /\ fst(<<x,z>>) = snd(<<x,z>>)
+ => fst(<<x,z>>) = snd(<<x,z>>)   BECAUSE S22;
+<<x,z>> \in identity(d) => fst(<<x,z>>) = snd(<<x,z>>)   BECAUSE TI;
+x = fst(<<x,z>>)   BECAUSE \A(a <- x, b <- z);
+z = snd(<<x,z>>)   BECAUSE \A(a <- x, b <- z);
 \A x : \A y : \A a : \A b : (x = y /\ a = b) => (x = a <=> y = b)   BECAUSE E_SCHEME;
-(x = fst(<<x,identity(d)[x]>>) /\ identity(d)[x] = snd(<<x,identity(d)[x]>>))
-   => (x = identity(d)[x] <=> fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>))
-   BECAUSE \A(x <- x, y <- fst(<<x,identity(d)[x]>>), a <- identity(d)[x], b <- snd(<<x,identity(d)[x]>>));
-x = fst(<<x,identity(d)[x]>>) /\ identity(d)[x] = snd(<<x,identity(d)[x]>>)   BECAUSE IntroAndRight;
-x = identity(d)[x] <=> fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>)   BECAUSE MODUS_PONENS;
-fst(<<x,identity(d)[x]>>) = snd(<<x,identity(d)[x]>>) => x = identity(d)[x]   BECAUSE EquivToImplReverse;
-x \in d => x = identity(d)[x]   BECAUSE TI;
+(x = fst(<<x,z>>) /\ z = snd(<<x,z>>))
+   => (x = z <=> fst(<<x,z>>) = snd(<<x,z>>))
+   BECAUSE \A(x <- x, y <- fst(<<x,z>>), a <- z, b <- snd(<<x,z>>));
+x = fst(<<x,z>>) /\ z = snd(<<x,z>>)   BECAUSE IntroAndRight;
+x = z <=> fst(<<x,z>>) = snd(<<x,z>>)   BECAUSE MODUS_PONENS;
+fst(<<x,z>>) = snd(<<x,z>>) => x = z   BECAUSE EquivToImplReverse;
+x = z => z = x   BECAUSE E_SCHEME;
+<<x,z>> \in identity(d) => z = x   BECAUSE TI2;
+x \in d => (<<x,z>> \in identity(d) => z = x)   BECAUSE PT1;
+x \in d /\ <<x,z>> \in identity(d) => z = x   BECAUSE HypoImplToAnd;
+x \in d => (z = x <=> <<x,z>> \in identity(d))   BECAUSE HIE;
+\A z : x \in d => (z = x <=> <<x,z>> \in identity(d))   BECAUSE GENERALIZATION;
+x \in d => (\A z : z = x <=> <<x,z>> \in identity(d))   BECAUSE Q_SCHEME;
+(\A z : z = x <=> <<x,z>> \in identity(d)) => (\E y : \A z : z = y <=> <<x,z>> \in identity(d))   BECAUSE \E(y <- x);
+x \in d => \A z : z = identity(d)[x] <=> <<x,z>> \in identity(d)   BECAUSE TI2;
+(\A z : z = identity(d)[x] <=> <<x,z>> \in identity(d)) => (x = identity(d)[x] <=> <<x,x>> \in identity(d))   BECAUSE \A(z <- x);
+x \in d => (x = identity(d)[x] <=> <<x,x>> \in identity(d))   BECAUSE TI;
+implyEquivTrue(h,a,t) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+x \in d => x = identity(d)[x]   BECAUSE implyEquivTrue;
 x = identity(d)[x] => identity(d)[x] = x   BECAUSE E_SCHEME;
 x \in d => identity(d)[x] = x   BECAUSE TI;
 
-\* Proof that x = pre(identity(d),x)
+\* Proof that x \in d => x = pre(identity(d),x)
 <<y,y>> \in identity(d) => \E x : <<x,y>> \in identity(d)   BECAUSE \E(x <- y);
 \A x : x \in d => <<x,x>> \in identity(d)   BECAUSE GENERALIZATION;
 y \in d => <<y,y>> \in identity(d)   BECAUSE \A(x <- y);

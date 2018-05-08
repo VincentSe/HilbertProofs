@@ -428,6 +428,7 @@ h(p,k) => (\E m : IsMinimumForIn(m, Nat \ p)) /\ ~\E m : IsMinimumForIn(m, Nat \
 natInduction   BECAUSE GENERALIZATION;
 QED
 
+\* Restriction of the successor operator to Nat
 natSucc == CHOOSE_UNIQUE f : \A z : z = f <=>
    IsFunction(z) /\ Domain(z) = Nat /\ \A n : n \in Nat => natSucc[n] = successor(n)
 

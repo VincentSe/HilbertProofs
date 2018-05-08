@@ -365,7 +365,22 @@ QED
 intersectSymmetry == \A x : \A y : (x \intersect y) = (y \intersect x)
 THEOREM intersectSymmetry
 PROOF
-\* TODO
+VARIABLES a,b,x,y,u,v;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in a \intersect b <=> x \in b \intersect a) => a \intersect b = b \intersect a
+   BECAUSE \A(a <- a \intersect b, b <- b \intersect a);
+intersectionExists   BECAUSE THEOREM;
+x \in (a \intersect b) <=> (x \in a /\ x \in b)   BECAUSE \A(u <- a, v <- b, x <- x);
+x \in (b \intersect a) <=> (x \in b /\ x \in a)   BECAUSE \A(u <- b, v <- a, x <- x);
+x \in a /\ x \in b => x \in b /\ x \in a   BECAUSE AndSymmetry;
+x \in b /\ x \in a => x \in a /\ x \in b   BECAUSE AndSymmetry;
+x \in a /\ x \in b <=> x \in b /\ x \in a   BECAUSE IntroEquiv;
+x \in (a \intersect b) <=> x \in b /\ x \in a   BECAUSE TransitEquiv;
+x \in a \intersect b <=> x \in b \intersect a   BECAUSE TransitEquiv2;
+\A x : x \in a \intersect b <=> x \in b \intersect a   BECAUSE GENERALIZATION;
+a \intersect b = b \intersect a   BECAUSE MODUS_PONENS;
+\A a : \A b : a \intersect b = b \intersect a   BECAUSE GENERALIZATION;
+x \intersect y = y \intersect x   BECAUSE \A(a <- x, b <- y);
 intersectSymmetry   BECAUSE GENERALIZATION;
 QED
 
