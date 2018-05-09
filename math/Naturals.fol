@@ -471,7 +471,7 @@ PROOF
 \* the complete function.
 VARIABLES a,b,c,f,g,n,o,p,x,y,z,init;
 h(f,x,init) == \E g : IsFunction(g) /\ Domain(g) = successor(x) /\ g[{}] = init
-   /\ \A n : n \in successor(x) /\ n # x => g[successor(n)] = f[g[n]];
+   /\ \A n : n \in x => g[successor(n)] = f[g[n]];
 \A a : \E b : \A x : x \in b <=> x \in a /\ h(f,x,init)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> x \in Nat /\ h(f,x,init)   BECAUSE \A(a <- Nat);
 hb(f,init,b) == \A x : x \in b <=> x \in Nat /\ h(f,x,init);
@@ -495,7 +495,6 @@ x \in successor({}) <=> x \in {{}}   BECAUSE equivFalseOr;
 extensionality   BECAUSE AXIOM;
 (\A x : x \in successor({}) <=> x \in {{}}) => successor({}) = {{}}   BECAUSE \A(a <- successor({}), b <- {{}});
 successor({}) = {{}}   BECAUSE MODUS_PONENS;
-
 Domain(singletonFunc({},init)) = {{}} /\ successor({}) = {{}}
    => Domain(singletonFunc({},init)) = successor({})   BECAUSE E_SCHEME;
 Domain(singletonFunc({},init)) = {{}} /\ successor({}) = {{}}   BECAUSE IntroAndRight;
@@ -503,18 +502,10 @@ Domain(singletonFunc({},init)) = successor({})   BECAUSE MODUS_PONENS;
 IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = successor({})   BECAUSE IntroAndRight;
 IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = successor({})
    /\ singletonFunc({},init)[{}] = init   BECAUSE IntroAndRight;
-\A x : x \in successor({}) <=> x \in {{}}   BECAUSE GENERALIZATION;
-n \in successor({}) <=> n \in {{}}   BECAUSE \A(x <- n);
-n \in successor({}) => n \in {{}}   BECAUSE EquivToImpl;
-singletonExists   BECAUSE THEOREM;
-n \in { {} } <=> n = {}   BECAUSE \A(a <- {}, x <- n);
-n \in { {} } => n = {}   BECAUSE EquivToImpl;
-n \in successor({}) => n = {}   BECAUSE TI;
-boolImpl(a,b) == (a => b) => ~(a /\ ~b)   PROPO_TAUTO;
-~(n \in successor({}) /\ n # {})   BECAUSE boolImpl;
-n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE Explosion;
-\A n : n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE GENERALIZATION;
-IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = successor({}) /\ singletonFunc({},init)[{}] = init /\ \A n : n \in successor({}) /\ n # {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE IntroAndRight;
+n \notin {}   BECAUSE \A(x <- n);
+n \in {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE Explosion;
+\A n : n \in {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE GENERALIZATION;
+IsFunction(singletonFunc({},init)) /\ Domain(singletonFunc({},init)) = successor({}) /\ singletonFunc({},init)[{}] = init /\ \A n : n \in {} => singletonFunc({},init)[successor(n)] = f[singletonFunc({},init)[n]]   BECAUSE IntroAndRight;
 h(f, {}, init)   BECAUSE \E(g <- singletonFunc({},init));
 hb(f,init,b) => ({} \in b <=> {} \in Nat /\ h(f,{},init))   BECAUSE \A(x <- {});
 zeroInNat   BECAUSE THEOREM;
@@ -524,20 +515,23 @@ hb(f,init,b) => {} \in b   BECAUSE ImplyEquivTrue;
 \* Prove that \A p : p \in b => successor(p) \in b
 hbn(f,init,b,p,g) == hb(f,init,b) /\ p \in b
    /\ (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
-       /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]]);
+       /\ \A n : n \in p => g[successor(n)] = f[g[n]]);
 hbn(f,init,b,p,g) => hb(f,init,b)   BECAUSE S13;
 hbn(f,init,b,p,g) => p \in b   BECAUSE S23;
 hbn(f,init,b,p,g) => (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
-  /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]])   BECAUSE S22;
+  /\ \A n : n \in p => g[successor(n)] = f[g[n]])   BECAUSE S22;
 (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
-  /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]]) => IsFunction(g)   BECAUSE S14;
+  /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => IsFunction(g)   BECAUSE S14;
 (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
-  /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]]) => Domain(g) = successor(p)   BECAUSE S24;
+  /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => Domain(g) = successor(p)   BECAUSE S24;
 (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
-  /\ \A n : n \in successor(p) /\ n # p => g[successor(n)] = f[g[n]]) => g[{}] = init   BECAUSE S23;
+  /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => g[{}] = init   BECAUSE S23;
+(IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init
+  /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => \A n : n \in p => g[successor(n)] = f[g[n]]   BECAUSE S22;
 hbn(f,init,b,p,g) => IsFunction(g)   BECAUSE TI;
 hbn(f,init,b,p,g) => Domain(g) = successor(p)   BECAUSE TI;
 hbn(f,init,b,p,g) => g[{}] = init   BECAUSE TI;
+hbn(f,init,b,p,g) => \A n : n \in p => g[successor(n)] = f[g[n]]   BECAUSE TI;
 
 unionFunc   BECAUSE THEOREM;
 IsFunction(g) /\ IsFunction(singletonFunc(successor(p), f[g[p]])) /\ AreDisjoint(Domain(g),Domain(singletonFunc(successor(p), f[g[p]])))
@@ -588,6 +582,7 @@ hbn(f,init,b,p,g) => p \in Nat   BECAUSE TI;
 noCommonElements   BECAUSE THEOREM;
 AreDisjoint(successor(p), {successor(p)}) <=> \A z : ~(z \in successor(p) /\ z \in {successor(p)})
    BECAUSE \A(x <- successor(p), y <- {successor(p)});
+singletonExists   BECAUSE THEOREM;
 z \in {successor(p)} <=> z = successor(p)   BECAUSE \A(a <- successor(p), x <- z);
 z \in {successor(p)} => z = successor(p)   BECAUSE EquivToImpl;
 \A z : \A x : z = x => (z \in successor(p) <=> x \in successor(p))   BECAUSE E_SCHEME;
@@ -713,14 +708,77 @@ f[(g \union singletonFunc(successor(p), f[g[p]]))[p]] = (g \union singletonFunc(
 hbn(f,init,b,p,g) => (g \union singletonFunc(successor(p), f[g[p]]))[successor(p)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[p]]   BECAUSE TI;
 
 \* Previous values
+(\A n : n \in p => g[successor(n)] = f[g[n]]) => (n \in p => g[successor(n)] = f[g[n]])   BECAUSE \A(n <- n);
+hbn(f,init,b,p,g) => (n \in p => g[successor(n)] = f[g[n]])   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => g[successor(n)] = f[g[n]]   BECAUSE HypoImplToAnd;
+n \in successor(p) <=> (n \in p \/ n \in {p})   BECAUSE \A(x <- p, y <- {p}, z <- n);
+n \in successor(p) => (n \in p \/ n \in {p})   BECAUSE EquivToImpl;
+n \in p \/ n \in {p} => n \in successor(p)   BECAUSE EquivToImplReverse;
+n \in p => n \in p \/ n \in {p}   BECAUSE IntroOrLeft;
+n \in p => n \in successor(p)   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => hbn(f,init,b,p,g)   BECAUSE S12;
+hbn(f,init,b,p,g) /\ n \in p => n \in p   BECAUSE S22;
+hbn(f,init,b,p,g) /\ n \in p => n \in successor(p)   BECAUSE TI;
+(\A x : x \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[x] = g[x]) => (n \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n])   BECAUSE \A(x <- n);
+hbn(f,init,b,p,g) => (n \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n])   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => (n \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n])   BECAUSE TI;
+\A x : \A y : x = y => (n \in x <=> n \in y)   BECAUSE E_SCHEME;
+Domain(g) = successor(p) => (n \in Domain(g) <=> n \in successor(p))   BECAUSE \A(x <- Domain(g), y <- successor(p));
+hbn(f,init,b,p,g) => (n \in Domain(g) <=> n \in successor(p))   BECAUSE TI;
+(n \in Domain(g) <=> n \in successor(p)) => (n \in successor(p) => n \in Domain(g))   BECAUSE EquivToImplReverse;
+hbn(f,init,b,p,g) => (n \in successor(p) => n \in Domain(g))   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => (n \in successor(p) => n \in Domain(g))   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => n \in Domain(g)   BECAUSE KillMiddleHypo;
+hbn(f,init,b,p,g) /\ n \in p => (g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n]   BECAUSE KillMiddleHypo;
+(g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n] => f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = f[g[n]]
+   BECAUSE \A(x <- (g \union singletonFunc(successor(p), f[g[p]]))[n], y <- g[n]);
+hbn(f,init,b,p,g) /\ n \in p => f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = f[g[n]]   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = f[g[n]] /\ g[successor(n)] = f[g[n]]   BECAUSE CIA;
+f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = f[g[n]] /\ g[successor(n)] = f[g[n]] => f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = g[successor(n)]  BECAUSE E_SCHEME;
+hbn(f,init,b,p,g) /\ n \in p => f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = g[successor(n)]   BECAUSE TI;
+successorIncreasing   BECAUSE THEOREM;
+IsOrdinal(n) /\ IsOrdinal(p) /\ n \in p => successor(n) \in successor(p)   BECAUSE \A(o <- n, p <- p);
+elemOfOrdinalIsOrdinal   BECAUSE THEOREM;
+IsOrdinal(p) /\ n \in p => IsOrdinal(n)   BECAUSE \A(o <- p, x <- n);
+hbn(f,init,b,p,g) /\ n \in p => IsOrdinal(p)   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => IsOrdinal(p) /\ n \in p   BECAUSE CIA;
+hbn(f,init,b,p,g) /\ n \in p => IsOrdinal(n)   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => IsOrdinal(n) /\ IsOrdinal(p)   BECAUSE CIA;
+hbn(f,init,b,p,g) /\ n \in p => IsOrdinal(n) /\ IsOrdinal(p) /\ n \in p  BECAUSE CIA;
+hbn(f,init,b,p,g) /\ n \in p => successor(n) \in successor(p)   BECAUSE TI;
+\A n : hbn(f,init,b,p,g)  => (n \in successor(p) => n \in Domain(g))   BECAUSE GENERALIZATION;
+hbn(f,init,b,p,g) => (successor(n) \in successor(p) => successor(n) \in Domain(g))   BECAUSE \A(n <- successor(n));
+hbn(f,init,b,p,g) /\ n \in p => (successor(n) \in successor(p) => successor(n) \in Domain(g))   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => successor(n) \in Domain(g)   BECAUSE KillMiddleHypo;
+\A n : hbn(f,init,b,p,g) => (n \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[n] = g[n])   BECAUSE GENERALIZATION;
+hbn(f,init,b,p,g) => (successor(n) \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = g[successor(n)])   BECAUSE \A(n <- successor(n));
+hbn(f,init,b,p,g) /\ n \in p => (successor(n) \in Domain(g) => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = g[successor(n)])   BECAUSE TI;
+hbn(f,init,b,p,g) /\ n \in p => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = g[successor(n)]   BECAUSE KillMiddleHypo;
+hbn(f,init,b,p,g) /\ n \in p => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = g[successor(n)] /\ f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = g[successor(n)]   BECAUSE CIA;
+(g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = g[successor(n)] /\ f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] = g[successor(n)] => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]]  BECAUSE E_SCHEME;
+hbn(f,init,b,p,g) /\ n \in p => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]]  BECAUSE TI;
+hbn(f,init,b,p,g) => (n \in p => (g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]])  BECAUSE HypoAndToImpl;
 
-n \in successor(successor(p)) <=> (n \in successor(p) \/ n \in {successor(p)})   BECAUSE \A(x <- successor(p), y <- {successor(p)}, z <- n);
-n \in successor(successor(p)) /\ n # successor(p) => n \in successor(p)   BECAUSE TI; 
-
+\* TODO merge cases
+\A x : \A y : x = y => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(x)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[x]] <=> (g \union singletonFunc(successor(p), f[g[p]]))[successor(y)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[y]])   BECAUSE E_SCHEME;
+n = p => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] <=> (g \union singletonFunc(successor(p), f[g[p]]))[successor(p)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[p]])   BECAUSE \A(x <- n, y <- p);
+n \in {p} <=> n = p   BECAUSE \A(a <- p, x <- n);
+n \in {p} => n = p   BECAUSE EquivToImpl;
+n \in {p} => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] <=> (g \union singletonFunc(successor(p), f[g[p]]))[successor(p)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[p]])   BECAUSE TI;
+implyEquivTrueB(h,t,a,b) == (h => t) => ((a => (b <=> t)) => (h => (a => b)))   PROPO_TAUTO;
+hbn(f,init,b,p,g) => (n \in {p} => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE implyEquivTrueB;
+mergeCases(h,a,b,c) == (h => (a => c)) => ((h => (b => c)) => (h => (a \/ b => c)))   PROPO_TAUTO;
+hbn(f,init,b,p,g) => (n \in p \/ n \in {p} => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE mergeCases;
+injectHypo(h,a,b,c) == (a => b) => ((h => (b => c)) => (h => (a => c)))   PROPO_TAUTO;
+hbn(f,init,b,p,g) => (n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE injectHypo;
+\A n : hbn(f,init,b,p,g) => (n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE GENERALIZATION;
+hbn(f,init,b,p,g) => (\A n : n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE Q_SCHEME;
 
 hbn(f,init,b,p,g) => IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p))   BECAUSE CIA;
 hbn(f,init,b,p,g) => IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p)) /\ (g \union singletonFunc(successor(p), f[g[p]]))[{}] = init   BECAUSE CIA;
-hbn(f,init,b,p,g) => h(f,successor(p),init)   BECAUSE \E(g <- g \union singletonFunc(successor(p), f[g[p]]));
+hbn(f,init,b,p,g) => IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p)) /\ (g \union singletonFunc(successor(p), f[g[p]]))[{}] = init /\ (\A n : n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE CIA;
+IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p)) /\ (g \union singletonFunc(successor(p), f[g[p]]))[{}] = init /\ (\A n : n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] )) => h(f,successor(p),init)   BECAUSE \E(g <- g \union singletonFunc(successor(p), f[g[p]]));
+hbn(f,init,b,p,g) => h(f,successor(p),init)   BECAUSE TI;
 \* Discharge g
    
 hb(f,x,init,b) => Nat \subseteq b   BECAUSE TI;
