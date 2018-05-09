@@ -779,14 +779,65 @@ hbn(f,init,b,p,g) => IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /
 hbn(f,init,b,p,g) => IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p)) /\ (g \union singletonFunc(successor(p), f[g[p]]))[{}] = init /\ (\A n : n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] ))   BECAUSE CIA;
 IsFunction(g \union singletonFunc(successor(p), f[g[p]])) /\ Domain(g \union singletonFunc(successor(p), f[g[p]])) = successor(successor(p)) /\ (g \union singletonFunc(successor(p), f[g[p]]))[{}] = init /\ (\A n : n \in successor(p) => ((g \union singletonFunc(successor(p), f[g[p]]))[successor(n)] = f[(g \union singletonFunc(successor(p), f[g[p]]))[n]] )) => h(f,successor(p),init)   BECAUSE \E(g <- g \union singletonFunc(successor(p), f[g[p]]));
 hbn(f,init,b,p,g) => h(f,successor(p),init)   BECAUSE TI;
-\* Discharge g
-   
-hb(f,x,init,b) => Nat \subseteq b   BECAUSE TI;
-Nat \subseteq b => (p \in Nat => p \in b)   BECAUSE \A(z <- b);
-hb(f,x,init,b) => \A p : p \in Nat => h(f,p,init)   BECAUSE TI;
-\* Discharge b
 
-\A p : p \in Nat => h(f,p,init)   BECAUSE TI;
+\* Discharge g
+hb(f,init,b) /\ p \in b => ((IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => h(f,successor(p),init))   BECAUSE HypoAndToImpl;
+\A g : hb(f,init,b) /\ p \in b => ((IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => h(f,successor(p),init))   BECAUSE GENERALIZATION;
+hb(f,init,b) /\ p \in b => (\A g : (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => h(f,successor(p),init))   BECAUSE Q_SCHEME;
+(\A g : (IsFunction(g) /\ Domain(g) = successor(p) /\ g[{}] = init /\ \A n : n \in p => g[successor(n)] = f[g[n]]) => h(f,successor(p),init)) => (h(f,p,init) => \E g : h(f,successor(p),init))   BECAUSE Q_SCHEME;
+hb(f,init,b) /\ p \in b => (h(f,p,init) => \E g : h(f,successor(p),init))   BECAUSE TI;
+hb(f,init,b) => (p \in b <=> p \in Nat /\ h(f,p,init))   BECAUSE \A(x <- p);
+(p \in b <=> p \in Nat /\ h(f,p,init)) => (p \in b => p \in Nat /\ h(f,p,init))   BECAUSE EquivToImpl;
+hb(f,init,b) => (p \in b => p \in Nat /\ h(f,p,init))   BECAUSE TI;
+hb(f,init,b) /\ p \in b => p \in Nat /\ h(f,p,init)   BECAUSE HypoImplToAnd;
+p \in Nat /\ h(f,p,init) => p \in Nat   BECAUSE S12;
+p \in Nat /\ h(f,p,init) => h(f,p,init)   BECAUSE S22;
+hb(f,init,b) /\ p \in b => h(f,p,init)   BECAUSE TI;
+hb(f,init,b) /\ p \in b => \E g : h(f,successor(p),init)   BECAUSE KillMiddleHypo;
+(\E g : h(f,successor(p),init)) => h(f,successor(p),init)   BECAUSE Q_SCHEME;
+hb(f,init,b) /\ p \in b => h(f,successor(p),init)   BECAUSE TI;
+hb(f,init,b) => (successor(p) \in b <=> successor(p) \in Nat /\ h(f,successor(p),init))
+   BECAUSE \A(x <- successor(p));
+hb(f,init,b) /\ p \in b => hb(f,init,b)   BECAUSE S12;
+hb(f,init,b) /\ p \in b => (successor(p) \in b <=> successor(p) \in Nat /\ h(f,successor(p),init))   BECAUSE TI;
+(successor(p) \in b <=> successor(p) \in Nat /\ h(f,successor(p),init)) => (successor(p) \in Nat /\ h(f,successor(p),init) => successor(p) \in b)   BECAUSE EquivToImplReverse;
+hb(f,init,b) /\ p \in b => (successor(p) \in Nat /\ h(f,successor(p),init) => successor(p) \in b)   BECAUSE TI;
+hb(f,init,b) /\ p \in b => p \in Nat   BECAUSE TI;
+successor(p) \in Nat <=> IsFiniteOrdinal(successor(p))   BECAUSE \A(x <- successor(p));
+IsFiniteOrdinal(successor(p)) => successor(p) \in Nat   BECAUSE EquivToImplReverse;
+finiteOrdinalSuccessorStable   BECAUSE THEOREM;
+IsFiniteOrdinal(p) => IsFiniteOrdinal( successor(p) )   BECAUSE \A(o <- p);
+hb(f,init,b) /\ p \in b => IsFiniteOrdinal(successor(p))   BECAUSE TI2;
+hb(f,init,b) /\ p \in b => successor(p) \in Nat   BECAUSE TI;
+hb(f,init,b) /\ p \in b => successor(p) \in Nat /\ h(f,successor(p),init)   BECAUSE CIA;
+hb(f,init,b) /\ p \in b => successor(p) \in b   BECAUSE KillMiddleHypo;
+hb(f,init,b) /\ p \in b => p \in Nat /\ successor(p) \in b   BECAUSE CIA;
+shuffleHypos(h,a,b,c) == (h /\ a => b /\ c) => (h => (b /\ a => c))   PROPO_TAUTO;
+hb(f,init,b) => (p \in Nat /\ p \in b => successor(p) \in b)   BECAUSE shuffleHypos;
+\A p : hb(f,init,b) => (p \in Nat /\ p \in b => successor(p) \in b)   BECAUSE GENERALIZATION;
+hb(f,init,b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE \A(p <- n);
+\A n : hb(f,init,b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE GENERALIZATION;
+hb(f,init,b) => (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE Q_SCHEME;
+hb(f,init,b) => {} \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE CIA;
+hb(f,init,b) => Nat \subseteq b   BECAUSE TI;
+
+\* Discharge b
+Nat \subseteq b => (p \in Nat => p \in b)   BECAUSE \A(z <- p);
+hb(f,init,b) => (p \in Nat => p \in b)   BECAUSE TI;
+hb(f,init,b) /\ p \in Nat => p \in b   BECAUSE HypoImplToAnd;
+hb(f,init,b) /\ p \in Nat => hb(f,init,b)   BECAUSE S12;
+hb(f,init,b) /\ p \in Nat => (p \in b => p \in Nat /\ h(f,p,init))   BECAUSE TI;
+hb(f,init,b) /\ p \in Nat => p \in Nat /\ h(f,p,init)   BECAUSE KillMiddleHypo;
+shuffleHyposB(a,b,c) == (a /\ b => b /\ c) => (b => (a => c))   PROPO_TAUTO;
+p \in Nat => (hb(f,init,b) => h(f,p,init))   BECAUSE shuffleHyposB;
+\A b : p \in Nat => (hb(f,init,b) => h(f,p,init))   BECAUSE GENERALIZATION;
+p \in Nat => (\A b : hb(f,init,b) => h(f,p,init))   BECAUSE Q_SCHEME;
+(\A b : hb(f,init,b) => h(f,p,init)) => ((\E b : hb(f,init,b)) => \E b : h(f,p,init))   BECAUSE Q_SCHEME;
+p \in Nat => ((\E b : hb(f,init,b)) => \E b : h(f,p,init))   BECAUSE TI;
+p \in Nat => (\E b : hb(f,init,b))   BECAUSE PT1;
+p \in Nat => \E b : h(f,p,init)   BECAUSE KillMiddleHypo;
+(\E b : h(f,p,init)) => h(f,p,init)   BECAUSE Q_SCHEME;
+p \in Nat => h(f,p,init)   BECAUSE TI;
 
 \* Then show this relation is functional in y (unicity) :
 F(x,y,f,init) == x \in Nat /\ (\E g : IsFunction(g) /\ Domain(g) = successor(x) /\ g[{}] = init
