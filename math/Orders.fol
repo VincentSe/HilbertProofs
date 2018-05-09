@@ -2905,15 +2905,6 @@ o \in successor(o)   BECAUSE MODUS_PONENS;
 inSuccessor   BECAUSE GENERALIZATION;
 QED
 
-successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
-   => successor(o) \in successor(p)
-THEOREM successorIncreasing
-PROOF
-\* o \union { o } \subseteq p then \in succesor(p)
-\* TODO
-successorIncreasing   BECAUSE GENERALIZATION;
-QED
-
 IsLimitOrdinal(o) == IsOrdinal(o) /\ o # {} /\ \A x : x \in o => o # successor(x)
 IsFiniteOrdinal(o) == IsOrdinal(o) /\ ~IsLimitOrdinal(o)
    /\ \A x : x \in o => ~IsLimitOrdinal(x)
@@ -3005,14 +2996,126 @@ QED
 ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
 PROOF
-VARIABLES a,o,x,y,z;
-\* Proof that successor(o) is a transitive set
+VARIABLES a,b,c,o,x,y,z;
+\* Proof that IsOrdinal(o) => IsTransitiveSet(successor(o))
 ht(o,a) == IsOrdinal(o) /\ a \in successor(o);
+ht(o,a) => IsOrdinal(o)   BECAUSE S12;
+ht(o,a) => a \in successor(o)   BECAUSE S22;
 unionInc   BECAUSE THEOREM;
 a \in successor(o) <=> a \in o \/ a \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- a);
+a \in successor(o) => a \in o \/ a \in {o}   BECAUSE EquivToImpl;
+ht(o,a) => a \in o \/ a \in {o}   BECAUSE TI;
+IsOrdinal(o) => IsTransitiveSet(o)   BECAUSE S12;
+IsTransitiveSet(o) => (a \in o => a \subseteq o)   BECAUSE \A(a <- a);
+ht(o,a) => (a \in o => a \subseteq o)   BECAUSE TI2;
+z \in successor(o) <=> z \in o \/ z \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- z);
+z \in o \/ z \in {o} => z \in successor(o)   BECAUSE EquivToImplReverse;
+z \in o => z \in o \/ z \in {o}   BECAUSE IntroOrLeft;
+z \in o => z \in successor(o)   BECAUSE TI;
+o \subseteq successor(o)   BECAUSE GENERALIZATION;
+transitInclusion   BECAUSE THEOREM;
+(a \subseteq o) /\ (o \subseteq successor(o)) => a \subseteq successor(o)
+   BECAUSE \A(a <- a, b <- o, c <- successor(o));
+a \subseteq o => (o \subseteq successor(o) => a \subseteq successor(o))   BECAUSE HypoAndToImpl;
+a \subseteq o => o \subseteq successor(o)   BECAUSE PT1;
+a \subseteq o => a \subseteq successor(o)   BECAUSE KillMiddleHypo;
+hti(h,a,b,c) == (h => (a => b)) => ((b => c) => (h => (a => c)))   PROPO_TAUTO;
+ht(o,a) => (a \in o => a \subseteq successor(o))   BECAUSE hti;
+\A a : \A b : a = b => (a \subseteq successor(o) <=> b \subseteq successor(o))   BECAUSE E_SCHEME;
+a = o => (a \subseteq successor(o) <=> o \subseteq successor(o))   BECAUSE \A(a <- a, b <- o);
+a = o => a \subseteq successor(o)   BECAUSE ImplyEquivTrue;
+singletonExists   BECAUSE THEOREM;
+a \in { o } <=> a = o   BECAUSE \A(a <- o, x <- a);
+a \in { o } => a = o   BECAUSE EquivToImpl;
+a \in {o} => a \subseteq successor(o)   BECAUSE TI;
+mergeImpl(h,a,b,c) == (h => (a => c)) => ((b => c) => (h => (a \/ b => c)))   PROPO_TAUTO;
+ht(o,a) => (a \in o \/ a \in {o} => a \subseteq successor(o))   BECAUSE mergeImpl;
+ht(o,a) => a \subseteq successor(o)   BECAUSE KillMiddleHypo;
+IsOrdinal(o) => (a \in successor(o) => a \subseteq successor(o))   BECAUSE HypoAndToImpl;
+\A a : IsOrdinal(o) => (a \in successor(o) => a \subseteq successor(o))   BECAUSE GENERALIZATION;
+IsOrdinal(o) => IsTransitiveSet(successor(o))   BECAUSE Q_SCHEME;
+\* Prove that successor(o) is irreflexive
+IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => \A a : a \in o => a \notin a   BECAUSE S13;
+(\A a : a \in o => a \notin a) => (a \in o => a \notin a)   BECAUSE \A(a <- a);
+IsOrdinal(o) => (a \in o => a \notin a)   BECAUSE TI2;
+ordinalsWellFounded   BECAUSE THEOREM;
+IsOrdinal(o) => o \notin o   BECAUSE \A(o <- o);
+\A a : \A b : a = b => (a \notin a <=> b \notin b)   BECAUSE E_SCHEME;
+a = o => (a \notin a <=> o \notin o)   BECAUSE \A(a <- a, b <- o);
+a \in {o} => (a \notin a <=> o \notin o)   BECAUSE TI;
+implyEquivTrue(a,b,h,t) == (h => t) => ((b => (a <=> t)) => (h => (b => a)))   PROPO_TAUTO;
+IsOrdinal(o) => (a \in {o} => a \notin a)   BECAUSE implyEquivTrue;
+mergeImplB(h,a,b,c) == (h => (a => c)) => ((h => (b => c)) => (h => (a \/ b => c)))   PROPO_TAUTO;
+IsOrdinal(o) => (a \in o \/ a \in {o} => a \notin a)   BECAUSE mergeImplB;
+IsOrdinal(o) /\ a \in successor(o) => (a \in o \/ a \in {o} => a \notin a)   BECAUSE TI;
+IsOrdinal(o) /\ a \in successor(o) => a \notin a   BECAUSE KillMiddleHypo;
+IsOrdinal(o) => (a \in successor(o) => a \notin a)   BECAUSE HypoAndToImpl;
+\A a : IsOrdinal(o) => (a \in successor(o) => a \notin a)   BECAUSE GENERALIZATION;
+IsOrdinal(o) => (\A a : a \in successor(o) => a \notin a)   BECAUSE Q_SCHEME;
 
-\* TODO
+\* TODO transitive for \in.
+\* Let a \in b \in c \in successor(o). If c = o then a \in b \in o and
+\* a \in o by transitivity of the ordinal o. Otherwise a \in c by
+\* transitity of \in in the ordinal o.
+
+\* TODO minimums.
+\* Let p \subseteq successor(o). If p = {o} then its minimum is o.
+\* Otherwise p touches o and has a minimum because o is an ordinal.
+
 ordinalSuccessorStable   BECAUSE GENERALIZATION;
+QED
+
+successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
+   => successor(o) \in successor(p)
+THEOREM successorIncreasing
+PROOF
+VARIABLES a,o,p,x,y,z;
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p;
+h(o,p) => IsOrdinal(o)   BECAUSE S13;
+h(o,p) => IsOrdinal(p)   BECAUSE S23;
+h(o,p) => o \in p   BECAUSE S22;
+ordinalSuccessorStable   BECAUSE THEOREM;
+IsOrdinal(o) => IsOrdinal( successor(o) )   BECAUSE \A(o <- o);
+IsOrdinal(p) => IsOrdinal( successor(p) )   BECAUSE \A(o <- p);
+h(o,p) => IsOrdinal( successor(o) )   BECAUSE TI;
+h(o,p) => IsOrdinal( successor(p) )   BECAUSE TI;
+\* Prove successor(o) \subseteq p
+unionInc   BECAUSE THEOREM;
+z \in successor(o) <=> (z \in o \/ z \in {o})   BECAUSE \A(x <- o, y <- {o}, z <- z);
+z \in successor(o) => (z \in o \/ z \in {o})   BECAUSE EquivToImpl;
+singletonExists   BECAUSE THEOREM;
+z \in { o } <=> z = o   BECAUSE \A(a <- o, x <- z);
+\A z : \A o : z = o => (z \in p <=> o \in p)   BECAUSE E_SCHEME;
+z = o => (z \in p <=> o \in p)   BECAUSE \A(z <- z, o <- o);
+cycleHypos(a,b,c,d) == (d <=> a) => ((a => (b <=> c)) => (c => (d => b)))   PROPO_TAUTO;
+o \in p => (z \in {o} => z \in p)   BECAUSE cycleHypos;
+h(o,p) => (z \in {o} => z \in p)   BECAUSE TI;
+IsOrdinal(p) => IsTransitiveSet(p)   BECAUSE S12;
+IsTransitiveSet(p) => (o \in p => o \subseteq p)   BECAUSE \A(a <- o);
+h(o,p) => (o \in p => o \subseteq p)   BECAUSE TI2;
+h(o,p) => o \subseteq p   BECAUSE KillMiddleHypo;
+o \subseteq p => (z \in o => z \in p)   BECAUSE \A(z <- z);
+h(o,p) => (z \in o => z \in p)   BECAUSE TI;
+mergeImpl(a,b,c,d,h) == (d => a \/ b) => ((h => (a => c)) => (((h => (b => c)) => (h => (d => c)))))   PROPO_TAUTO;
+h(o,p) => (z \in successor(o) => z \in p)   BECAUSE mergeImpl;
+\A z : h(o,p) => (z \in successor(o) => z \in p)   BECAUSE GENERALIZATION;
+h(o,p) => successor(o) \subseteq p   BECAUSE Q_SCHEME;
+\* Conclude successor(o) \in succesor(p)
+includedOrdinals   BECAUSE THEOREM;
+IsOrdinal(successor(o)) /\ IsOrdinal(p) /\ successor(o) \subseteq p
+   => successor(o) \in p \/ successor(o) = p   BECAUSE \A(o <- successor(o), p <- p);
+h(o,p) => IsOrdinal(successor(o)) /\ IsOrdinal(p)   BECAUSE CIA;
+h(o,p) => IsOrdinal(successor(o)) /\ IsOrdinal(p) /\ successor(o) \subseteq p   BECAUSE CIA;
+h(o,p) => successor(o) \in p \/ successor(o) = p   BECAUSE TI;
+successor(o) \in successor(p) <=> (successor(o) \in p \/ successor(o) \in {p})   BECAUSE \A(x <- p, y <- {p}, z <- successor(o));
+successor(o) \in p \/ successor(o) \in {p} => successor(o) \in successor(p)   BECAUSE EquivToImplReverse;
+successor(o) \in {p} <=> successor(o) = p   BECAUSE \A(a <- p, x <- successor(o));
+successor(o) = p => successor(o) \in {p}   BECAUSE EquivToImplReverse;
+successor(o) \in p => successor(o) \in p   BECAUSE ImplySelf;
+successor(o) \in p \/ successor(o) = p =>  successor(o) \in p \/ successor(o) \in {p}   BECAUSE MergeImplicationsOr;
+h(o,p) => successor(o) \in successor(p)   BECAUSE TI2;
+successorIncreasing   BECAUSE GENERALIZATION;
 QED
 
 finiteOrdinalSuccessorStable == \A o : IsFiniteOrdinal(o) => IsFiniteOrdinal( successor(o) )
