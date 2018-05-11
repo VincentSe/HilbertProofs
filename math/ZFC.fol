@@ -342,6 +342,18 @@ a \in UNION c <=> \E t : (t \in c /\ a \in t)   BECAUSE \A(b <- c, z <- a);
 inInUnion   BECAUSE GENERALIZATION;
 QED
 
+\* The intersection of a set is the set of common elements
+INTERSECT(u) == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A x : x \in z <=> \A y : y \in u => x \in y
+
+bigIntersectExists == \A u : u # {} => 
+   \A x : x \in INTERSECT(u) <=> \A y : y \in u => x \in y
+THEOREM bigIntersectExists
+PROOF
+bigIntersectExists   BECAUSE GENERALIZATION;
+QED
+
+
 \* The intersection of two sets is the set of common elements
 u \intersect v == CHOOSE b : \A x : x \in b <=> (x \in u /\ x \in v)
 
