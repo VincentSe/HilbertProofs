@@ -3066,6 +3066,13 @@ IsOrdinal(o) => (\A a : a \in successor(o) => a \notin a)   BECAUSE Q_SCHEME;
 ordinalSuccessorStable   BECAUSE GENERALIZATION;
 QED
 
+ordinalSuccessorRegular == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ successor(o) = successor(p)
+   => o = p
+THEOREM ordinalSuccessorRegular
+PROOF
+ordinalSuccessorRegular   BECAUSE GENERALIZATION;
+QED
+
 successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
    => successor(o) \in successor(p)
 THEOREM successorIncreasing

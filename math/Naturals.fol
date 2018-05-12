@@ -903,6 +903,177 @@ hf(f,init,b) => {} \in Nat /\ (\A j : <<{}, j>> \in IterateFunc(f,init) => j = I
 hf(f,init,b) => {} \in b   BECAUSE KillMiddleHypo;
 
 \* TODO induction step for b
+hfn(f,init,b,n,j) == hf(f,init,b)
+   /\ n \in b
+   /\ <<successor(n),j>> \in IterateFunc(f,init)
+   /\ j # f[IterateFunc(f,init)[n]]; \* Hypothesis leading to a contradiction
+hfn(f,init,b,n,j) => hf(f,init,b)   BECAUSE S14;
+hfn(f,init,b,n,j) => n \in b   BECAUSE S24;
+hfn(f,init,b,n,j) => <<successor(n),j>> \in IterateFunc(f,init)   BECAUSE S23;
+hfn(f,init,b,n,j) => j # f[IterateFunc(f,init)[n]]   BECAUSE S22;
+\* Prove that hf(f,init,b) => ContainsIterateFunc(IterateFunc(f,init) \ {<<successor(n),j>>} ,f,init)
+\* which is a contradiction.
+{} # successor(n)   BECAUSE \A(p <- n);
+<<{}, init>> = <<successor(n), j>>  =>  {} = successor(n) /\ init = j    BECAUSE \A(a <- {}, b <- init, c <- successor(n), d <- j);
+{} = successor(n) /\ init = j => {} = successor(n)   BECAUSE S12;
+<<{}, init>> = <<successor(n), j>> => {} = successor(n)   BECAUSE TI;
+{} # successor(n) => <<{}, init>> # <<successor(n), j>>   BECAUSE Contraposition;
+<<{}, init>> # <<successor(n), j>>   BECAUSE MODUS_PONENS;
+<<{},init>> \in {<<successor(n),j>>} <=> <<{},init>> = <<successor(n),j>>   BECAUSE \A(a <- <<successor(n),j>>, x <- <<{},init>>);
+<<{},init>> \in {<<successor(n),j>>} => <<{},init>> = <<successor(n),j>>   BECAUSE EquivToImpl;
+<<{},init>> # <<successor(n),j>> => <<{},init>> \notin {<<successor(n),j>>}  BECAUSE Contraposition;
+<<{},init>> \notin {<<successor(n),j>>}  BECAUSE MODUS_PONENS;
+hfn(f,init,b,n,j) => <<{},init>> \notin {<<successor(n),j>>}  BECAUSE PT1;
+<<{}, init>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})
+   <=> (<<{},init>> \in IterateFunc(f,init) /\ <<{},init>> \notin {<<successor(n),j>>})
+   BECAUSE \A(u <- IterateFunc(f,init), v <- {<<successor(n),j>>}, x <- <<{},init>>);
+(<<{},init>> \in IterateFunc(f,init) /\ <<{},init>> \notin {<<successor(n),j>>}) => <<{}, init>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE EquivToImplReverse;
+hfn(f,init,b,n,j) => <<{},init>> \in IterateFunc(f,init)   BECAUSE TI2;
+hfn(f,init,b,n,j) => (<<{},init>> \in IterateFunc(f,init) /\ <<{},init>> \notin {<<successor(n),j>>})   BECAUSE CIA;
+hfn(f,init,b,n,j) => <<{}, init>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE TI;
+
+\* Now the inductive property of (IterateFunc(f,init) \ {<<successor(n),j>>})
+\* \A x : \A y : <<x,y>> \in a => <<successor(x), f[y]>> \in a
+hfnx(f,init,b,n,j,x,y) == hfn(f,init,b,n,j) /\ <<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>});
+hfnx(f,init,b,n,j,x,y) => hfn(f,init,b,n,j)   BECAUSE S12;
+hfnx(f,init,b,n,j,x,y) => <<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE S22;
+<<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})
+   <=> (<<x,y>> \in IterateFunc(f,init) /\ <<x,y>> \notin {<<successor(n),j>>})
+   BECAUSE \A(u <- IterateFunc(f,init), v <- {<<successor(n),j>>}, x <- <<x,y>>);
+<<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => (<<x,y>> \in IterateFunc(f,init) /\ <<x,y>> \notin {<<successor(n),j>>})   BECAUSE EquivToImpl;
+(<<x,y>> \in IterateFunc(f,init) /\ <<x,y>> \notin {<<successor(n),j>>}) => <<x,y>> \in IterateFunc(f,init)   BECAUSE S12;
+hfnx(f,init,b,n,j,x,y) => <<x,y>> \in IterateFunc(f,init)   BECAUSE TI2;
+hfnx(f,init,b,n,j,x,y) => h(f,init)   BECAUSE TI2;
+hfnx(f,init,b,n,j,x,y) => h(f,init) /\ <<x,y>> \in IterateFunc(f,init)   BECAUSE CIA;
+hfnx(f,init,b,n,j,x,y) => <<successor(x),f[y]>> \in IterateFunc(f,init)   BECAUSE TI;
+<<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})
+   <=> (<<successor(x),f[y]>> \in IterateFunc(f,init) /\ <<successor(x),f[y]>> \notin {<<successor(n),j>>})
+   BECAUSE \A(u <- IterateFunc(f,init), v <- {<<successor(n),j>>}, x <- <<successor(x),f[y]>>);
+(<<successor(x),f[y]>> \in IterateFunc(f,init) /\ <<successor(x),f[y]>> \notin {<<successor(n),j>>})
+   => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE EquivToImplReverse;
+<<successor(x),f[y]>> \in {<<successor(n),j>>} <=> <<successor(x),f[y]>> = <<successor(n),j>>
+   BECAUSE \A(a <- <<successor(n),j>>, x <- <<successor(x),f[y]>>);
+<<successor(x),f[y]>> \in {<<successor(n),j>>} => <<successor(x),f[y]>> = <<successor(n),j>>   BECAUSE EquivToImpl;
+<<successor(x), f[y]>> = <<successor(n), j>> => successor(x) = successor(n) /\ f[y] = j    BECAUSE \A(a <- successor(x), b <- f[y], c <- successor(n), d <- j);
+hfnxy(f,init,b,n,j,x,y) == hfnx(f,init,b,n,j,x,y) /\ <<successor(x),f[y]>> \in {<<successor(n),j>>};
+hfnxy(f,init,b,n,j,x,y) => hfnx(f,init,b,n,j,x,y)   BECAUSE S12;
+hfnxy(f,init,b,n,j,x,y) => <<successor(x),f[y]>> \in {<<successor(n),j>>}   BECAUSE S22;
+hfnxy(f,init,b,n,j,x,y) => successor(x) = successor(n) /\ f[y] = j   BECAUSE TI2;
+successor(x) = successor(n) /\ f[y] = j => successor(x) = successor(n)   BECAUSE S12;
+successor(x) = successor(n) /\ f[y] = j => f[y] = j   BECAUSE S22;
+hfnxy(f,init,b,n,j,x,y) => successor(x) = successor(n)   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => f[y] = j   BECAUSE TI;
+\* Then x = n /\ f[y] = j. So <<n,y>> \in IterateFunc(f,init). So y = IterateFunc(f,init)[n].
+ordinalSuccessorRegular   BECAUSE THEOREM;
+IsOrdinal(x) /\ IsOrdinal(n) /\ successor(x) = successor(n) => x = n   BECAUSE \A(o <- x, p <- n);
+\A z : h(f,init) /\ <<z,y>> \in IterateFunc(f,init) => z \in Nat   BECAUSE GENERALIZATION;
+h(f,init) /\ <<x,y>> \in IterateFunc(f,init) => x \in Nat   BECAUSE \A(z <- x);
+hfnxy(f,init,b,n,j,x,y) => h(f,init)   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => <<x,y>> \in IterateFunc(f,init)   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => h(f,init) /\ <<x,y>> \in IterateFunc(f,init)   BECAUSE CIA;
+hfnxy(f,init,b,n,j,x,y) => x \in Nat   BECAUSE TI;
+NatExists   BECAUSE THEOREM;
+(\A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x)))   BECAUSE S12;
+Nat = Nat <=> (\A x : x \in Nat <=> IsFiniteOrdinal(x))   BECAUSE \A(z <- Nat);
+equalSelf   BECAUSE THEOREM;
+Nat = Nat   BECAUSE \A(a <- Nat);
+(\A x : x \in Nat <=> IsFiniteOrdinal(x))   BECAUSE MODUS_PONENS;
+x \in Nat <=> IsFiniteOrdinal(x)   BECAUSE \A(x <- x);
+x \in Nat => IsFiniteOrdinal(x)   BECAUSE EquivToImpl;
+IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE S13;
+\A o : IsFiniteOrdinal(o) => IsOrdinal(o)   BECAUSE GENERALIZATION;
+IsFiniteOrdinal(x) => IsOrdinal(x)   BECAUSE \A(o <- x);
+x \in Nat => IsOrdinal(x)   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => IsOrdinal(x)   BECAUSE TI;
+(\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x])
+   => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE \A(x <- n);
+hfn(f,init,b,n,j) => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI2;
+(n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE EquivToImpl;
+hfn(f,init,b,n,j) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
+hfn(f,init,b,n,j) => (n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE KillMiddleHypo;
+(n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => n \in Nat   BECAUSE S12;
+hfnx(f,init,b,n,j,x,y) => n \in Nat   BECAUSE TI2;
+hfnxy(f,init,b,n,j,x,y) => n \in Nat   BECAUSE TI;
+\A x : x \in Nat => IsOrdinal(x)   BECAUSE GENERALIZATION;
+n \in Nat => IsOrdinal(n)   BECAUSE \A(x <- n);
+hfnxy(f,init,b,n,j,x,y) => IsOrdinal(n)   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => IsOrdinal(x) /\ IsOrdinal(n)   BECAUSE CIA;
+hfnxy(f,init,b,n,j,x,y) => IsOrdinal(x) /\ IsOrdinal(n) /\ successor(x) = successor(n)   BECAUSE CIA;
+hfnxy(f,init,b,n,j,x,y) => x = n   BECAUSE TI;
+\A x : \A n : x = n => (<<x,y>> \in IterateFunc(f,init) <=> <<n,y>> \in IterateFunc(f,init))   BECAUSE E_SCHEME;
+x = n => (<<x,y>> \in IterateFunc(f,init) <=> <<n,y>> \in IterateFunc(f,init))   BECAUSE \A(x <- x, n <- n);
+hfnxy(f,init,b,n,j,x,y) => (<<x,y>> \in IterateFunc(f,init) <=> <<n,y>> \in IterateFunc(f,init))   BECAUSE TI;
+implyTrueEquiv(h,t,a,b) == (h => t) => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO; 
+hfnxy(f,init,b,n,j,x,y) => <<n,y>> \in IterateFunc(f,init)   BECAUSE implyTrueEquiv;
+(n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]   BECAUSE S22;
+(\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (<<n,y>> \in IterateFunc(f,init) => y = IterateFunc(f,init)[n])   BECAUSE \A(j <- y);
+hfn(f,init,b,n,j) => (<<n,y>> \in IterateFunc(f,init) => y = IterateFunc(f,init)[n])   BECAUSE TI2;
+hfnxy(f,init,b,n,j,x,y) => (<<n,y>> \in IterateFunc(f,init) => y = IterateFunc(f,init)[n])   BECAUSE TI2;
+hfnxy(f,init,b,n,j,x,y) => y = IterateFunc(f,init)[n]   BECAUSE KillMiddleHypo;
+\* Then j = f[IterateFunc(f,init)[n]
+\A x : \A n : x = n => (f[x] = f[n])   BECAUSE E_SCHEME;
+y = IterateFunc(f,init)[n] => f[y] = f[IterateFunc(f,init)[n]]   BECAUSE \A(x <- y, n <- IterateFunc(f,init)[n]);
+hfnxy(f,init,b,n,j,x,y) => f[y] = f[IterateFunc(f,init)[n]]   BECAUSE TI;
+f[y] = j /\ f[y] = f[IterateFunc(f,init)[n]] => j = f[IterateFunc(f,init)[n]]   BECAUSE E_SCHEME;
+hfnxy(f,init,b,n,j,x,y) => f[y] = j /\ f[y] = f[IterateFunc(f,init)[n]]   BECAUSE CIA;
+hfnxy(f,init,b,n,j,x,y) => j = f[IterateFunc(f,init)[n]]   BECAUSE TI;
+hfnxy(f,init,b,n,j,x,y) => j # f[IterateFunc(f,init)[n]]   BECAUSE TI2;
+hfnxy(f,init,b,n,j,x,y) => j = f[IterateFunc(f,init)[n]] /\ j # f[IterateFunc(f,init)[n]]   BECAUSE CIA;
+absurdB(h,a,b) == (h /\ a => b /\ ~b) => (h => ~a)   PROPO_TAUTO;
+hfnx(f,init,b,n,j,x,y) => <<successor(x),f[y]>> \notin {<<successor(n),j>>}   BECAUSE absurdB;
+hfnx(f,init,b,n,j,x,y) => <<successor(x),f[y]>> \in IterateFunc(f,init) /\ <<successor(x),f[y]>> \notin {<<successor(n),j>>}   BECAUSE CIA;
+hfnx(f,init,b,n,j,x,y) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE TI;
+
+\* Discharge x,y
+hfn(f,init,b,n,j) => (<<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}))   BECAUSE HypoAndToImpl;
+\A y : hfn(f,init,b,n,j) => (<<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}))   BECAUSE GENERALIZATION;
+hfn(f,init,b,n,j) => (\A y : <<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}))   BECAUSE Q_SCHEME;
+\A x : hfn(f,init,b,n,j) => (\A y : <<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}))   BECAUSE GENERALIZATION;
+hfn(f,init,b,n,j) => (\A x : \A y : <<x,y>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => <<successor(x),f[y]>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}))   BECAUSE Q_SCHEME;
+hfn(f,init,b,n,j) => ContainsIterateFunc(IterateFunc(f,init) \ {<<successor(n),j>>}, f, init)   BECAUSE CIA;
+
+\* Discharge j : <<successor(n),j>> \notin IterateFunc(f,init)
+h(f,init) /\ <<successor(n),j>> \in IterateFunc(f,init) => \A y : y \in IterateFuncShell(f,init) => <<successor(n),j>> \in y   BECAUSE \A(x <- <<successor(n),j>>);
+hfn(f,init,b,n,j) => h(f,init)   BECAUSE TI;
+hfn(f,init,b,n,j) => h(f,init) /\ <<successor(n),j>> \in IterateFunc(f,init)   BECAUSE CIA;
+hfn(f,init,b,n,j) => \A y : y \in IterateFuncShell(f,init) => <<successor(n),j>> \in y   BECAUSE TI;
+(\A y : y \in IterateFuncShell(f,init) => <<successor(n),j>> \in y) => (IterateFunc(f,init) \ {<<successor(n),j>>} \in IterateFuncShell(f,init) => <<successor(n),j>> \in IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE \A(y <- (IterateFunc(f,init) \ {<<successor(n),j>>}));
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>} \in IterateFuncShell(f,init) => <<successor(n),j>> \in IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE TI;
+(IterateFunc(f,init) \ {<<successor(n),j>>}) \in IterateFuncShell(f,init)
+   <=> (IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f)) /\ ContainsIterateFunc(IterateFunc(f,init) \ {<<successor(n),j>>} ,f,init)   BECAUSE \A(x <- IterateFunc(f,init) \ {<<successor(n),j>>} );
+(IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f)) /\ ContainsIterateFunc(IterateFunc(f,init) \ {<<successor(n),j>>} ,f,init) => (IterateFunc(f,init) \ {<<successor(n),j>>}) \in IterateFuncShell(f,init)   BECAUSE EquivToImplReverse;
+
+hfn(f,init,b,n,j) => IterateFunc(f,init) \subseteq (Nat \X Domain(f))   BECAUSE TI2;
+z \in (IterateFunc(f,init) \ {<<successor(n),j>>}) <=> (z \in IterateFunc(f,init) /\ z \notin {<<successor(n),j>>})
+   BECAUSE \A(u <- IterateFunc(f,init), v <- {<<successor(n),j>>}, x <- z);
+z \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => (z \in IterateFunc(f,init) /\ z \notin {<<successor(n),j>>})   BECAUSE EquivToImpl;
+(z \in IterateFunc(f,init) /\ z \notin {<<successor(n),j>>}) => z \in IterateFunc(f,init)   BECAUSE S12;
+z \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => z \in IterateFunc(f,init)   BECAUSE TI;
+IterateFunc(f,init) \ {<<successor(n),j>>} \subseteq IterateFunc(f,init)   BECAUSE GENERALIZATION;
+(IterateFunc(f,init) \ {<<successor(n),j>>} \subseteq IterateFunc(f,init) /\ (IterateFunc(f,init) \subseteq Nat \X Domain(f))) => (IterateFunc(f,init) \ {<<successor(n),j>>} \subseteq Nat \X Domain(f))   BECAUSE \A(a <- IterateFunc(f,init) \ {<<successor(n),j>>}, b <- IterateFunc(f,init), c <- Nat \X Domain(f));
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>}) \subseteq IterateFunc(f,init)   BECAUSE PT1;
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>} \subseteq IterateFunc(f,init) /\ (IterateFunc(f,init) \subseteq Nat \X Domain(f)))   BECAUSE CIA;
+hfn(f,init,b,n,j) => IterateFunc(f,init) \ {<<successor(n),j>>} \subseteq Nat \X Domain(f)   BECAUSE TI;
+(IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f)) <=> (IterateFunc(f,init) \ {<<successor(n),j>>} ) \subseteq (Nat \X Domain(f))   BECAUSE \A(x <- Nat \X Domain(f), z <- (IterateFunc(f,init) \ {<<successor(n),j>>} ));
+(IterateFunc(f,init) \ {<<successor(n),j>>} ) \subseteq (Nat \X Domain(f)) => (IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f))   BECAUSE EquivToImplReverse;
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f))   BECAUSE TI;
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>} ) \in SUBSET (Nat \X Domain(f)) /\ ContainsIterateFunc(IterateFunc(f,init) \ {<<successor(n),j>>} ,f,init)   BECAUSE CIA;
+hfn(f,init,b,n,j) => (IterateFunc(f,init) \ {<<successor(n),j>>}) \in IterateFuncShell(f,init)   BECAUSE TI;
+hfn(f,init,b,n,j) => <<successor(n),j>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})   BECAUSE KillMiddleHypo;
+<<successor(n),j>> \in (IterateFunc(f,init) \ {<<successor(n),j>>})
+   <=> (<<successor(n),j>> \in IterateFunc(f,init) /\ <<successor(n),j>> \notin {<<successor(n),j>>})
+   BECAUSE \A(u <- IterateFunc(f,init), v <- {<<successor(n),j>>}, x <- <<successor(n),j>>);
+<<successor(n),j>> \in (IterateFunc(f,init) \ {<<successor(n),j>>}) => (<<successor(n),j>> \in IterateFunc(f,init) /\ <<successor(n),j>> \notin {<<successor(n),j>>})   BECAUSE EquivToImpl;
+(<<successor(n),j>> \in IterateFunc(f,init) /\ <<successor(n),j>> \notin {<<successor(n),j>>}) => <<successor(n),j>> \notin {<<successor(n),j>>}   BECAUSE S22;
+hfn(f,init,b,n,j) => <<successor(n),j>> \notin {<<successor(n),j>>}   BECAUSE TI2;
+<<successor(n),j>> \in {<<successor(n),j>>} <=> <<successor(n),j>> = <<successor(n),j>>   BECAUSE \A(a <- <<successor(n),j>>, x <- <<successor(n),j>>);
+<<successor(n),j>> = <<successor(n),j>>   BECAUSE \A(a <- <<successor(n),j>>);
+<<successor(n),j>> \in {<<successor(n),j>>}   BECAUSE MODUS_PONENS;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init)
+   => j = f[IterateFunc(f,init)[n]]   BECAUSE absurd;
+
+\* Prove successor(n) \in b
+\* TODO
 
 h(f,init) => Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
 iterateFuncExists   BECAUSE GENERALIZATION;
