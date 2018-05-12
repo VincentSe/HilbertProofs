@@ -1099,6 +1099,26 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    ((\E t : P(t,x,y,z)) /\ (\A t : P(t,x,y,z) => G(someNewOp(x,y,z) <- t)))
       => G   BECAUSE TI;
    G   BECAUSE CombineImplicationsStart + MODUS_PONENS;   
+
+   Regarding the CHOOSE_UNIQUE case, take for example
+   s == CHOOSE_UNIQUE b : \A z : z = b <=> P(z)
+
+   Then prove that : ( \E b : (\A z : z = b <=> P(z)) /\ Q(b) ) => Q(s)
+   
+   h(b) == (\A z : z = b <=> P(z)) /\ Q(b);
+   h(b) => (\A z : z = b <=> P(z))   BECAUSE S12;
+   h(b) => (\E b : \A z : z = b <=> P(z))   BECAUSE \E(b <- b);
+   h(b) => (\A z : z = s <=> P(z))   BECAUSE CHOOSE s;
+   h(b) => P(s)   BECAUSE \A(z <- s);
+   h(b) => Q(b)   BECAUSE S22;
+   h(b) => (s = b <=> P(s))   BECAUSE \A(z <- s);
+   h(b) => s = b   BECAUSE ImplyEquivTrue;
+   s = b => (Q(s) <=> Q(b))   BECAUSE E_SCHEME;
+   h(b) => Q(b) /\ (Q(s) <=> Q(b))   BECAUSE CIA;
+   h(b) => Q(s)
+   (\E b : h(b)) => \E b : Q(s)   BECAUSE Q_SCHEME;
+   (\E b : h(b)) => Q(s)   BECAUSE Q_SCHEME;
+
 */
 short check_choose_statement(const struct FormulaDList* statement,
 			     const formula* chooseReason)

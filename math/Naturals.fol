@@ -479,7 +479,9 @@ IterateFuncShell(f,init) == CHOOSE_UNIQUE b : \A z : z = b <=>
 IterateFunc(f,init) == INTERSECT(IterateFuncShell(f,init))
 
 iterateFuncExists == \A f : \A init : IsFunction(f) /\ Image(f) \subseteq Domain(f) /\ init \in Domain(f)
-   => ( IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[ {} ] = init
+   => ( IsFunction(IterateFunc(f,init))
+        /\ Domain(IterateFunc(f,init)) = Nat
+        /\ IterateFunc(f,init)[ {} ] = init
         /\ \A n : n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   )
 THEOREM iterateFuncExists
 PROOF
@@ -706,11 +708,41 @@ h(f,init) => (\A n : n \in Nat /\ n \in Domain(IterateFunc(f,init)) => successor
 h(f,init) => {} \in Domain(IterateFunc(f,init)) /\ (\A n : n \in Nat /\ n \in Domain(IterateFunc(f,init)) => successor(n) \in Domain(IterateFunc(f,init)))   BECAUSE CIA;
 h(f,init) => Nat \subseteq Domain(IterateFunc(f,init))   BECAUSE TI;
 
-\* TODO
-
+z \in Domain(IterateFunc(f,init)) <=> IsDefinedOn(IterateFunc(f,init), z)   BECAUSE \A(g <- IterateFunc(f,init), x <- z);
+z \in Domain(IterateFunc(f,init)) => IsDefinedOn(IterateFunc(f,init), z)   BECAUSE EquivToImpl;
+\A x : h(f,init) /\ x \in IterateFunc(f,init) => x \in Nat \X Domain(f)   BECAUSE GENERALIZATION;
+h(f,init) /\ <<z,y>> \in IterateFunc(f,init) => <<z,y>> \in Nat \X Domain(f)   BECAUSE \A(x <- <<z,y>>);
+z \in Nat /\ y \in Domain(f) <=> <<z,y>> \in Nat \X Domain(f)
+   BECAUSE \A(x <- Nat, y <- Domain(f), a <- z, b <- y);
+<<z,y>> \in Nat \X Domain(f) => z \in Nat /\ y \in Domain(f)   BECAUSE EquivToImplReverse;
+z \in Nat /\ y \in Domain(f) => z \in Nat   BECAUSE S12;
+h(f,init) /\ <<z,y>> \in IterateFunc(f,init) => z \in Nat   BECAUSE TI2;
+h(f,init) => (<<z,y>> \in IterateFunc(f,init) => z \in Nat)   BECAUSE HypoAndToImpl;
+\A y : h(f,init) => (<<z,y>> \in IterateFunc(f,init) => z \in Nat)   BECAUSE GENERALIZATION;
+h(f,init) => (\A y : <<z,y>> \in IterateFunc(f,init) => z \in Nat)   BECAUSE Q_SCHEME;
+(\A y : <<z,y>> \in IterateFunc(f,init) => z \in Nat) => ((\E y : <<z,y>> \in IterateFunc(f,init)) => \E y : z \in Nat)   BECAUSE Q_SCHEME;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => h(f,init)   BECAUSE S12;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => ((\E y : <<z,y>> \in IterateFunc(f,init)) => \E y : z \in Nat)   BECAUSE TI2;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => z \in Domain(IterateFunc(f,init))   BECAUSE S22;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => IsDefinedOn(IterateFunc(f,init),z)   BECAUSE TI;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => (\E y : z \in Nat)   BECAUSE KillMiddleHypo;
+(\E y : z \in Nat) => z \in Nat   BECAUSE Q_SCHEME;
+h(f,init) /\ z \in Domain(IterateFunc(f,init)) => z \in Nat   BECAUSE TI;
+h(f,init) => (z \in Domain(IterateFunc(f,init)) => z \in Nat)   BECAUSE HypoAndToImpl;
+\A z : h(f,init) => (z \in Domain(IterateFunc(f,init)) => z \in Nat)   BECAUSE GENERALIZATION;
+h(f,init) => Domain(IterateFunc(f,init)) \subseteq Nat   BECAUSE Q_SCHEME;
+bothInclusions   BECAUSE THEOREM;
+(Domain(IterateFunc(f,init)) \subseteq Nat /\ Nat \subseteq Domain(IterateFunc(f,init)))
+   => Domain(IterateFunc(f,init)) = Nat   BECAUSE \A(a <- Domain(IterateFunc(f,init)), b <- Nat);
+h(f,init) => (Domain(IterateFunc(f,init)) \subseteq Nat /\ Nat \subseteq Domain(IterateFunc(f,init)))   BECAUSE CIA;
 h(f,init) => Domain(IterateFunc(f,init)) = Nat   BECAUSE TI;
 
 \* Prove that IterateFunc(f,init) is a function, by induction.
+\A a : \E b : \A x : x \in b <=> x \in a /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]   BECAUSE \A(a <- Nat);
+hf(f,init,b) == h(f,init) /\ \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x];
+hf(f,init,b) => h(f,init)   BECAUSE S12;
+hf(f,init,b) => \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]   BECAUSE S22;
 
 \* Assume by contradiction that <<{}, z>> \in IterateFunc(f,init) and init # z.
 \* Then show that IterateFunc(f,init) \ {<<{}, z>>} still satisfies ContainsIterateFunc, absurd.
@@ -832,7 +864,47 @@ hu(f,init,z) => <<{},z>> \notin {<<{},z>>}   BECAUSE TI2;
 <<{},z>> \in {<<{},z>>}   BECAUSE MODUS_PONENS;
 absurd(h,a,t) == t => ((h /\ ~a => ~t) => (h => a))   PROPO_TAUTO;
 h(f,init) /\ <<{}, z>> \in IterateFunc(f,init) => init = z   BECAUSE absurd;
+init = z => z = init   BECAUSE E_SCHEME;
+h(f,init) /\ <<{}, z>> \in IterateFunc(f,init) => z = init   BECAUSE TI;
+\A z : \A j : z = j => (<<{}, z>> \in IterateFunc(f,init) <=> <<{}, j>> \in IterateFunc(f,init))   BECAUSE E_SCHEME;
+z = init => (<<{}, z>> \in IterateFunc(f,init) <=> <<{}, init>> \in IterateFunc(f,init))   BECAUSE \A(z <- z, j <- init);
+implyEquivTrue(h,t,a,b) == (h => t) => ((b => (a <=> t)) => (h /\ b => a))   PROPO_TAUTO; 
+h(f,init) /\ z = init => <<{}, z>> \in IterateFunc(f,init)   BECAUSE implyEquivTrue;
+h(f,init) => (z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE HIE;
+\A z : h(f,init) => (z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE GENERALIZATION;
+h(f,init) => (\A z : z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
+(\A z : z = init <=> <<{}, z>> \in IterateFunc(f,init)) => \E y : \A z : z = y <=> <<{}, z>> \in IterateFunc(f,init)   BECAUSE \E(y <- init);
+(\E y : \A z : z = y <=> <<{}, z>> \in IterateFunc(f,init)) => \A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init)   BECAUSE CHOOSE IterateFunc(f,init)[{}];
+h(f,init) => (\A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE TI2;
+(\A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init)) => (init = IterateFunc(f,init)[{}] <=> <<{}, init>> \in IterateFunc(f,init))   BECAUSE \A(z <- init);
+h(f,init) => (init = IterateFunc(f,init)[{}] <=> <<{}, init>> \in IterateFunc(f,init))   BECAUSE TI;
+implyEquivTrueB(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+h(f,init) => init = IterateFunc(f,init)[{}]   BECAUSE implyEquivTrueB;
+init = IterateFunc(f,init)[{}] => IterateFunc(f,init)[{}] = init   BECAUSE E_SCHEME;
+h(f,init) => IterateFunc(f,init)[{}] = init   BECAUSE TI;
 
+(\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => ({} \in b <=> {} \in Nat /\ \A j : <<{},j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE \A(x <- {});
+hf(f,init,b) => ({} \in b <=> {} \in Nat /\ \A j : <<{},j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE TI;
+({} \in b <=> {} \in Nat /\ \A j : <<{},j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}]) => (({} \in Nat /\ \A j : <<{},j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}]) => {} \in b)   BECAUSE EquivToImplReverse;
+hf(f,init,b) => (({} \in Nat /\ \A j : <<{},j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}]) => {} \in b)   BECAUSE TI;
+hf(f,init,b) => {} \in Nat   BECAUSE PT1;
+\A z : h(f,init) /\ <<{}, z>> \in IterateFunc(f,init) => z = init   BECAUSE GENERALIZATION;
+h(f,init) /\ <<{}, j>> \in IterateFunc(f,init) => j = init   BECAUSE \A(z <- j);
+j = init /\ IterateFunc(f,init)[{}] = init => j = IterateFunc(f,init)[{}]   BECAUSE E_SCHEME;
+h(f,init) /\ <<{}, j>> \in IterateFunc(f,init) => h(f,init)   BECAUSE S12;
+h(f,init) /\ <<{}, j>> \in IterateFunc(f,init) => IterateFunc(f,init)[{}] = init   BECAUSE TI;
+h(f,init) /\ <<{}, j>> \in IterateFunc(f,init) => j = init /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
+h(f,init) /\ <<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}]   BECAUSE TI;
+h(f,init) => (<<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE HypoAndToImpl;
+\A j : h(f,init) => (<<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE GENERALIZATION;
+h(f,init) => (\A j : <<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE Q_SCHEME;
+h(f,init) => {} \in Nat /\ (\A j : <<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE CIA;
+hf(f,init,b) => {} \in Nat /\ (\A j : <<{}, j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[{}])   BECAUSE TI;
+hf(f,init,b) => {} \in b   BECAUSE KillMiddleHypo;
+
+\* TODO induction step for b
+
+h(f,init) => Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
 iterateFuncExists   BECAUSE GENERALIZATION;
 QED
 
