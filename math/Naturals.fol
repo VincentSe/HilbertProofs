@@ -987,8 +987,9 @@ x \in Nat => IsOrdinal(x)   BECAUSE TI;
 hfnxy(f,init,b,n,j,x,y) => IsOrdinal(x)   BECAUSE TI;
 (\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x])
    => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE \A(x <- n);
-hfn(f,init,b,n,j) => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI2;
+hf(f,init,b) => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
 (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE EquivToImpl;
+hf(f,init,b) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
 hfn(f,init,b,n,j) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
 hfn(f,init,b,n,j) => (n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE KillMiddleHypo;
 (n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => n \in Nat   BECAUSE S12;
@@ -1072,10 +1073,155 @@ hfn(f,init,b,n,j) => <<successor(n),j>> \notin {<<successor(n),j>>}   BECAUSE TI
 hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init)
    => j = f[IterateFunc(f,init)[n]]   BECAUSE absurd;
 
-\* Prove successor(n) \in b
-\* TODO
+\* Prove successor(n) \in b,
+\* show that <<successor(n), f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init)
+hf(f,init,b) /\ n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]   BECAUSE HypoImplToAnd;
+Nat \subseteq Domain(IterateFunc(f,init)) => (n \in Nat => n \in Domain(IterateFunc(f,init)))   BECAUSE \A(z <- n);
+hf(f,init,b) => (n \in Nat => n \in Domain(IterateFunc(f,init)))   BECAUSE TI2;
+hf(f,init,b) /\ n \in Nat => n \in Domain(IterateFunc(f,init))   BECAUSE HypoImplToAnd;
+hf(f,init,b) /\ n \in Nat => IsDefinedOn(IterateFunc(f,init), n)   BECAUSE TI;
+hdefn(f,init,b,n,y) == hf(f,init,b) /\ n \in b /\ <<n,y>> \in IterateFunc(f,init);
+hdefn(f,init,b,n,y) => hf(f,init,b)   BECAUSE S13;
+hdefn(f,init,b,n,y) => n \in b   BECAUSE S23;
+hdefn(f,init,b,n,y) => <<n,y>> \in IterateFunc(f,init)   BECAUSE S22;
+n \in Nat /\ (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE ImplySelf;
+(\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (<<n,y>> \in IterateFunc(f,init) => y = IterateFunc(f,init)[n])  BECAUSE \A(j <- y);
+hdefn(f,init,b,n,y) => hf(f,init,b) /\ n \in b   BECAUSE CIA;
+hdefn(f,init,b,n,y) => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]   BECAUSE TI;
+hdefn(f,init,b,n,y) => (<<n,y>> \in IterateFunc(f,init) => y = IterateFunc(f,init)[n])  BECAUSE TI2;
+hdefn(f,init,b,n,y) => y = IterateFunc(f,init)[n]  BECAUSE KillMiddleHypo;
+\A y : \A z : y = z => (<<n,y>> \in IterateFunc(f,init) <=> <<n,z>> \in IterateFunc(f,init))   BECAUSE E_SCHEME;
+y = IterateFunc(f,init)[n] => (<<n,y>> \in IterateFunc(f,init) <=> <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE \A(y <- y, z <- IterateFunc(f,init)[n]);
+hdefn(f,init,b,n,y) => (<<n,y>> \in IterateFunc(f,init) <=> <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE TI;
+hdefn(f,init,b,n,y) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)   BECAUSE implyTrueEquiv;
+\* Discharge y
+hf(f,init,b) /\ n \in b => (<<n,y>> \in IterateFunc(f,init) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE HypoAndToImpl;
+\A y : hf(f,init,b) /\ n \in b => (<<n,y>> \in IterateFunc(f,init) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE GENERALIZATION;
+hf(f,init,b) /\ n \in b => (\A y : <<n,y>> \in IterateFunc(f,init) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
+(\A y : <<n,y>> \in IterateFunc(f,init) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)) => ((\E y : <<n,y>> \in IterateFunc(f,init)) => \E y : <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
+hf(f,init,b) /\ n \in b => ((\E y : <<n,y>> \in IterateFunc(f,init)) => \E y : <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init))   BECAUSE TI;
+hf(f,init,b) /\ n \in b => n \in Nat   BECAUSE TI;
+hf(f,init,b) /\ n \in b => hf(f,init,b)   BECAUSE S12;
+hf(f,init,b) /\ n \in b => hf(f,init,b) /\ n \in Nat   BECAUSE CIA;
+hf(f,init,b) /\ n \in b => IsDefinedOn(IterateFunc(f,init), n)   BECAUSE TI;
+hf(f,init,b) /\ n \in b => \E y : <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)   BECAUSE KillMiddleHypo;
+(\E y : <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)) => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)   BECAUSE Q_SCHEME;
+hf(f,init,b) /\ n \in b => <<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init)   BECAUSE TI;
 
-h(f,init) => Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
+hf(f,init,b) /\ n \in b => \A x : \A y : <<x,y>> \in IterateFunc(f,init) => <<successor(x), f[y]>> \in IterateFunc(f,init)   BECAUSE TI2;
+(\A x : \A y : <<x,y>> \in IterateFunc(f,init) => <<successor(x), f[y]>> \in IterateFunc(f,init))
+   => (<<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init) => <<successor(n), f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE \A(x <- n, y <- IterateFunc(f,init)[n]);
+hf(f,init,b) /\ n \in b => (<<n,IterateFunc(f,init)[n]>> \in IterateFunc(f,init) => <<successor(n), f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE TI;
+hf(f,init,b) /\ n \in b => <<successor(n), f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init)   BECAUSE KillMiddleHypo;
+\A z : \A x : z = x => (<<successor(n),z>> \in IterateFunc(f,init) <=> <<successor(n),x>> \in IterateFunc(f,init))   BECAUSE E_SCHEME;
+z = f[IterateFunc(f,init)[n]] => (<<successor(n),z>> \in IterateFunc(f,init) <=> <<successor(n),f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE \A(z <- z, x <- f[IterateFunc(f,init)[n]]);
+hf(f,init,b) /\ n \in b /\ z = f[IterateFunc(f,init)[n]] => <<successor(n),z>> \in IterateFunc(f,init)   BECAUSE implyEquivTrue;
+\A j : hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init) => j = f[IterateFunc(f,init)[n]]   BECAUSE GENERALIZATION;
+hf(f,init,b) /\ n \in b /\ <<successor(n),z>> \in IterateFunc(f,init) => z = f[IterateFunc(f,init)[n]]   BECAUSE \A(j <- z);
+hf(f,init,b) /\ n \in b => (z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE HIE;
+\A z : hf(f,init,b) /\ n \in b => (z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE GENERALIZATION;
+hf(f,init,b) /\ n \in b => (\A z : z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
+(\A z : z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init)) => (\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE \E(y <- f[IterateFunc(f,init)[n]]);
+hf(f,init,b) /\ n \in b => (\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE TI;
+(\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init)) => (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE CHOOSE IterateFunc(f,init)[successor(n)];
+hf(f,init,b) /\ n \in b => (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE TI;
+(\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))
+   => (f[IterateFunc(f,init)[n]] = IterateFunc(f,init)[successor(n)] <=> <<successor(n),f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE \A(z <- f[IterateFunc(f,init)[n]]);
+hf(f,init,b) /\ n \in b => (f[IterateFunc(f,init)[n]] = IterateFunc(f,init)[successor(n)] <=> <<successor(n),f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE TI;
+hf(f,init,b) /\ n \in b => f[IterateFunc(f,init)[n]] = IterateFunc(f,init)[successor(n)]   BECAUSE implyEquivTrueB;
+f[IterateFunc(f,init)[n]] = IterateFunc(f,init)[successor(n)] => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   BECAUSE E_SCHEME;
+hf(f,init,b) /\ n \in b => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   BECAUSE TI;
+
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init) => hf(f,init,b)   BECAUSE S13;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init) => n \in b   BECAUSE S23;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init) => hf(f,init,b) /\ n \in b  BECAUSE CIA;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init)
+   => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   BECAUSE TI;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init)
+   => j = f[IterateFunc(f,init)[n]] /\ IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   BECAUSE CIA;
+j = f[IterateFunc(f,init)[n]] /\ IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]
+   => j = IterateFunc(f,init)[successor(n)]   BECAUSE E_SCHEME;
+hf(f,init,b) /\ n \in b /\ <<successor(n),j>> \in IterateFunc(f,init)
+   => j = IterateFunc(f,init)[successor(n)]   BECAUSE TI;
+hf(f,init,b) /\ n \in b => (<<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE HypoAndToImpl;
+\A j : hf(f,init,b) /\ n \in b => (<<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE GENERALIZATION;
+hf(f,init,b) /\ n \in b => (\A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE Q_SCHEME;
+n \in Nat => successor(n) \in Nat   BECAUSE \A(n <- n);
+hf(f,init,b) /\ n \in b => successor(n) \in Nat   BECAUSE TI;
+hf(f,init,b) /\ n \in b => successor(n) \in Nat /\ (\A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE CIA;
+
+(\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x])
+   => (successor(n) \in b <=> successor(n) \in Nat /\ \A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE \A(x <- successor(n));
+hf(f,init,b) /\ n \in b => (successor(n) \in b <=> successor(n) \in Nat /\ \A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)])   BECAUSE TI2;
+(successor(n) \in b <=> successor(n) \in Nat /\ \A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)]) => (successor(n) \in Nat /\ (\A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)]) => successor(n) \in b)   BECAUSE EquivToImplReverse;
+hf(f,init,b) /\ n \in b => (successor(n) \in Nat /\ (\A j : <<successor(n),j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[successor(n)]) => successor(n) \in b)   BECAUSE TI;
+hf(f,init,b) /\ n \in b => successor(n) \in b   BECAUSE KillMiddleHypo;
+hf(f,init,b) /\ n \in b => n \in Nat /\ successor(n) \in b   BECAUSE CIA;
+shuffleHypos(a,b,c,d) == (a /\ b => c /\ d) => (a => (c /\ b => d))   PROPO_TAUTO;
+hf(f,init,b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE shuffleHypos;
+\A n : hf(f,init,b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE GENERALIZATION;
+hf(f,init,b) => (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE Q_SCHEME;
+hf(f,init,b) => {} \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE CIA;
+{} \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b) => Nat \subseteq b   BECAUSE \A(p <- b);
+hf(f,init,b) => ({} \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b) => Nat \subseteq b)   BECAUSE PT1;
+hf(f,init,b) => Nat \subseteq b   BECAUSE KillMiddleHypo; \* End of induction
+
+Nat \subseteq b => (n \in Nat => n \in b)   BECAUSE \A(z <- n);
+hf(f,init,b) => (n \in Nat => n \in b)   BECAUSE TI;
+hf(f,init,b) /\ n \in Nat => n \in b   BECAUSE HypoImplToAnd;
+hf(f,init,b) /\ n \in Nat => hf(f,init,b)   BECAUSE S12;
+hf(f,init,b) /\ n \in Nat => hf(f,init,b) /\ n \in b   BECAUSE CIA;
+(\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x])
+   => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE \A(x <- n);
+hf(f,init,b) => (n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
+(n \in b <=> n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])
+   => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE EquivToImpl;
+hf(f,init,b) => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
+hf(f,init,b) /\ n \in Nat => (n \in b => n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE TI;
+hf(f,init,b) /\ n \in Nat => (n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE KillMiddleHypo;
+(n \in Nat /\ \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]) => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])   BECAUSE S22;
+hf(f,init,b) /\ n \in Nat => \A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]   BECAUSE TI;
+
+\* Discharge b
+hf(f,init,b) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]))   BECAUSE HypoAndToImpl;
+
+h(f,init) => ((\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE HypoAndToImpl;
+\A b : h(f,init) => ((\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE GENERALIZATION;
+h(f,init) => (\A b : (\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]))) => ((\E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => \E b : (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE Q_SCHEME;
+h(f,init) => ((\E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => \E b : (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE TI;
+h(f,init) => \E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]   BECAUSE PT1;
+h(f,init) => (\E b : (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE KillMiddleHypo;
+(\E b : (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]))) => ((n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n])))   BECAUSE Q_SCHEME;
+h(f,init) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]))   BECAUSE TI;
+\A n : h(f,init) => (n \in Nat => (\A j : <<n,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[n]))   BECAUSE GENERALIZATION;
+h(f,init) => (a \in Nat => (\A j : <<a,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[a]))   BECAUSE \A(n <- a);
+h(f,init) /\ a \in Nat => (\A j : <<a,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[a])   BECAUSE HypoImplToAnd;
+(\A j : <<a,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[a]) => (<<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a])   BECAUSE \A(j <- b);
+h(f,init) /\ a \in Nat => (<<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a])   BECAUSE TI;
+shuffleHyposB(a,b,c,d) == (a /\ b => (c => d)) => (a /\ c => (b => d))   PROPO_TAUTO;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => (a \in Nat => b = IterateFunc(f,init)[a])   BECAUSE shuffleHyposB;
+<<a,b>> \in IterateFunc(f,init) => IsDefinedOn(IterateFunc(f,init),a)   BECAUSE \E(y <- b);
+a \in Domain(IterateFunc(f,init)) <=> IsDefinedOn(IterateFunc(f,init), a)   BECAUSE \A(g <- IterateFunc(f,init), x <- a);
+IsDefinedOn(IterateFunc(f,init), a) => a \in Domain(IterateFunc(f,init))   BECAUSE EquivToImplReverse;
+<<a,b>> \in IterateFunc(f,init) => a \in Domain(IterateFunc(f,init))   BECAUSE TI;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => <<a,b>> \in IterateFunc(f,init)   BECAUSE S22;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => a \in Domain(IterateFunc(f,init))   BECAUSE TI;
+\A x : \A y : x = y => (a \in x <=> a \in y)   BECAUSE E_SCHEME;
+Domain(IterateFunc(f,init)) = Nat => (a \in Domain(IterateFunc(f,init)) <=> a \in Nat)   BECAUSE \A(x <- Domain(IterateFunc(f,init)), y <- Nat);
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => h(f,init)   BECAUSE S12;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => (a \in Domain(IterateFunc(f,init)) <=> a \in Nat)   BECAUSE TI2;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => a \in Nat   BECAUSE implyTrueEquiv;
+h(f,init) /\ <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a]   BECAUSE KillMiddleHypo;
+h(f,init) => (<<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a])   BECAUSE HypoAndToImpl;
+\A b : h(f,init) => (<<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a])   BECAUSE GENERALIZATION;
+h(f,init) => \A b : <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a]   BECAUSE Q_SCHEME;
+\A a : h(f,init) => (\A b : <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a])   BECAUSE GENERALIZATION;
+h(f,init) => \A a : \A b : <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a]   BECAUSE Q_SCHEME;
+h(f,init) => IsFunction(IterateFunc(f,init))   BECAUSE CIA;
+
+h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat   BECAUSE CIA;
+h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
 iterateFuncExists   BECAUSE GENERALIZATION;
 QED
 
