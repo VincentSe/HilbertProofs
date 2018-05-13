@@ -563,11 +563,23 @@ unsigned char rename_free_variables_scheme(const formula* f)
   variable_substitution subs[8];
   const formula* equiv = parse_equalities(f, /*out*/subs);
   const formula* start = get_first_operand(equiv);
-  return equiv
-    && formula_equal(get_second_operand(equiv),
-		     start,
-		     0, subs, 0)
-    && !find_variable(start, (struct string_list*)0, is_substituted_free_var, subs);
+  if (!equiv
+      || !formula_equal(get_second_operand(equiv),
+			start,
+			0, subs, 0)
+      // Check that start has no free occurrences of substituted variables
+      || find_variable(start, (struct string_list*)0, is_substituted_free_var, subs))
+    return 0;
+
+  // Check unicity of equal variables
+  for (variable_substitution* i = subs; i->variable; i++)
+    for (variable_substitution* j = i+1; j->variable; j++)
+      if (strcmp(i->variable, j->variable) == 0
+	  || strcmp(i->variable, j->subst->name) == 0
+	  || strcmp(i->subst->name, j->variable) == 0
+	  || strcmp(i->subst->name, j->subst->name) == 0)
+	return 0;
+  return 1;
 }
 
 short equality_axiom(const formula* f)
@@ -1048,6 +1060,11 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    formula P starts with an equivalent equality, as in
    someNewOp(x,y,z) == CHOOSE t : \A s : s = t <=> Q(s,x,y,z)
 
+   where variable t has no free occurrences in formula Q,
+   otherwise we could have
+   CHOOSE t : \A s : s = t <=> s = t
+   which does not give a unique t (any t works in this case).
+
    By Gödel's completeness theorem, if T+ has a contradiction then so does T
    (neither has models). Put differently, the introduction of operator 
    someNewOp does not introduce contradictions.
@@ -1316,12 +1333,21 @@ short semantic_check_operator_definition(formula* op,
 	  || !eq || eq->builtInOp != equal
 	  || !genvar || genvar->builtInOp != variable
 	  || !cvar || cvar->builtInOp != variable
-	  || strcmp(cvar->name, op->definingFormula->name) != 0
-	  || find_variable(get_second_operand(equiv), (struct string_list*)0, is_free_var, cvar->name))
+	  || strcmp(cvar->name, op->definingFormula->name) != 0)
+
 	{
-	  printf("%s:%d: the choosing formula does not imply unicity\n", op->file, op->first_line);
+	  printf("%s:%d: the choosing formula does not imply unicity. Please start with a universal quantifier, then an equality, then an equivalence.\n",
+		 op->file, op->first_line);
 	  return 0;
 	}
+      if (find_variable(get_second_operand(equiv), (struct string_list*)0, is_free_var, cvar->name))
+	{
+	  // This could break the unicity, as in
+	  // CHOOSE_UNIQUE b : \A z : z = b <=> z = b
+	  printf("%s:%d: in CHOOSE_UNIQUE, the property after the equality cannot have free occurrences of chosen variable %s\n",
+		 op->file, op->first_line, cvar->name);
+	  return 0;
+	}	
     }
   return 1;
 

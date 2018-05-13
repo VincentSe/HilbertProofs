@@ -672,6 +672,12 @@ equalSelf   BECAUSE THEOREM;
 singletonExists   BECAUSE GENERALIZATION;
 QED
 
+subsetSingleton == \A a : \A p : p \subseteq {a} => p = {} \/ p = {a}
+THEOREM subsetSingleton
+PROOF
+subsetSingleton   BECAUSE GENERALIZATION;
+QED
+
 { c, d } == CHOOSE b : \A y : y \in b <=> (y = c \/ y = d)
 
 pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)

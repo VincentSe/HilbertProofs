@@ -2993,10 +2993,16 @@ x \in {} => ~IsLimitOrdinal(x)   BECAUSE \A(a <- x);
 ordinalZero   BECAUSE IntroAndRight;
 QED
 
+minInSingleton == \A a : IsMinimumForIn(a, {a})
+THEOREM minInSingleton
+PROOF
+minInSingleton   BECAUSE GENERALIZATION;
+QED
+
 ordinalSuccessorStable == \A o : IsOrdinal(o) => IsOrdinal( successor(o) )
 THEOREM ordinalSuccessorStable
 PROOF
-VARIABLES a,b,c,o,x,y,z;
+VARIABLES a,b,c,m,o,p,u,v,x,y,z;
 \* Proof that IsOrdinal(o) => IsTransitiveSet(successor(o))
 ht(o,a) == IsOrdinal(o) /\ a \in successor(o);
 ht(o,a) => IsOrdinal(o)   BECAUSE S12;
@@ -3127,9 +3133,105 @@ IsOrdinal(o) => (\A b : \A c : a \in successor(o) /\ b \in successor(o) /\ c \in
 \A a : IsOrdinal(o) => (\A b : \A c : a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
 IsOrdinal(o) => IsTransitiveIn(successor(o))   BECAUSE Q_SCHEME;
 
-\* TODO minimums.
+\* Prove successor(o) has all minimums.
 \* Let p \subseteq successor(o). If p = {o} then its minimum is o.
 \* Otherwise p touches o and has a minimum because o is an ordinal.
+hmin(o,p) == IsOrdinal(o) /\ p \subseteq successor(o);
+hmin(o,p) => IsOrdinal(o)   BECAUSE S12;
+hmin(o,p) => p \subseteq successor(o)   BECAUSE S22;
+IsWellOrderedByIn(o) => (\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE S22;
+(\A p : p \subseteq o => p = {} \/ \E m : IsMinimumForIn(m, p)) => ((p \intersect o) \subseteq o => (p \intersect o) = {} \/ \E m : IsMinimumForIn(m, p \intersect o))   BECAUSE \A(p <- p \intersect o);
+hmin(o,p) => IsWellOrderedByIn(o)   BECAUSE TI;
+hmin(o,p) => ((p \intersect o) \subseteq o => (p \intersect o) = {} \/ \E m : IsMinimumForIn(m, p \intersect o))   BECAUSE TI2;
+intersectIncludes   BECAUSE THEOREM;
+(p \intersect o) \subseteq o   BECAUSE \A(a <- p, b <- o);
+hmin(o,p) => (p \intersect o) \subseteq o   BECAUSE PT1;
+\* Those are the 2 cases :
+hmin(o,p) => (p \intersect o) = {} \/ \E m : IsMinimumForIn(m, p \intersect o)   BECAUSE KillMiddleHypo;
+hminm(o,p,m) == hmin(o,p) /\ IsMinimumForIn(m, p \intersect o);
+hminm(o,p,m) => hmin(o,p)   BECAUSE S12;
+hminm(o,p,m) => IsMinimumForIn(m, p \intersect o)   BECAUSE S22;
+IsMinimumForIn(m, p \intersect o) => m \in (p \intersect o)   BECAUSE S12;
+hminm(o,p,m) => m \in (p \intersect o)   BECAUSE TI;
+intersectionExists   BECAUSE THEOREM;
+m \in (p \intersect o) <=> (m \in p /\ m \in o)   BECAUSE \A(u <- p, v <- o, x <- m);
+m \in (p \intersect o) => (m \in p /\ m \in o)   BECAUSE EquivToImpl;
+(m \in p /\ m \in o) => m \in o   BECAUSE S22;
+hminm(o,p,m) => m \in o   BECAUSE TI2; \* means m lower than o
+p \subseteq successor(o) => (b \in p => b \in successor(o))   BECAUSE \A(z <- b);
+hminm(o,p,m) => (b \in p => b \in successor(o))   BECAUSE TI2;
+hminm(o,p,m) /\ b \in p => b \in successor(o)   BECAUSE HypoImplToAnd;
+b \in successor(o) <=> b \in o \/ b \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- b);
+b \in successor(o) => b \in o \/ b \in {o}   BECAUSE EquivToImpl;
+hminm(o,p,m) /\ b \in p => b \in o \/ b \in {o}   BECAUSE TI;
+b \in { o } <=> b = o   BECAUSE \A(a <- o, x <- b);
+b \in { o } => b = o   BECAUSE EquivToImpl;
+hminm(o,p,m) /\ b \in p /\ b \in {o} => hminm(o,p,m)   BECAUSE S13;
+hminm(o,p,m) /\ b \in p /\ b \in {o} => b \in {o}   BECAUSE S22;
+\A b : \A o : b = o => (m \in b <=> m \in o)   BECAUSE E_SCHEME;
+b = o => (m \in b <=> m \in o)   BECAUSE \A(b <- b, o <- o);
+hminm(o,p,m) /\ b \in p /\ b \in {o} => (m \in b <=> m \in o)   BECAUSE TI2;
+hminm(o,p,m) /\ b \in p /\ b \in {o} => m \in o   BECAUSE TI;
+hminm(o,p,m) /\ b \in p /\ b \in {o} => m \in b   BECAUSE implyEquivTrueB;
+m \in b => b = m \/ m \in b   BECAUSE IntroOrRight;
+hminm(o,p,m) /\ b \in p /\ b \in {o} => b = m \/ m \in b   BECAUSE TI;
+b \in (p \intersect o) <=> (b \in p /\ b \in o)   BECAUSE \A(u <- p, v <- o, x <- b);
+(b \in p /\ b \in o) => b \in (p \intersect o)   BECAUSE EquivToImplReverse;
+hminm(o,p,m) /\ b \in p /\ b \in o => hminm(o,p,m)   BECAUSE S13;
+hminm(o,p,m) /\ b \in p /\ b \in o => b \in p   BECAUSE S23;
+hminm(o,p,m) /\ b \in p /\ b \in o => b \in o   BECAUSE S22;
+hminm(o,p,m) /\ b \in p /\ b \in o => b \in p /\ b \in o  BECAUSE CIA;
+hminm(o,p,m) /\ b \in p /\ b \in o => b \in (p \intersect o)  BECAUSE TI;
+IsMinimumForIn(m, p \intersect o) => \A b : b \in (p \intersect o) => (b = m \/ m \in b)   BECAUSE S22;
+(\A b : b \in (p \intersect o) => (b = m \/ m \in b)) => (b \in (p \intersect o) => (b = m \/ m \in b))   BECAUSE \A(b <- b);
+hminm(o,p,m) => (b \in (p \intersect o) => (b = m \/ m \in b))   BECAUSE TI2;
+hminm(o,p,m) /\ b \in p /\ b \in o => (b \in (p \intersect o) => (b = m \/ m \in b))   BECAUSE TI;
+hminm(o,p,m) /\ b \in p /\ b \in o => (b = m \/ m \in b)   BECAUSE KillMiddleHypo;
+hminm(o,p,m) /\ b \in p => ((b \in o \/ b \in {o}) => (b = m \/ m \in b))   BECAUSE mergeImplC;
+hminm(o,p,m) /\ b \in p => (b = m \/ m \in b)   BECAUSE KillMiddleHypo;
+hminm(o,p,m) => (b \in p => b = m \/ m \in b)   BECAUSE HypoAndToImpl;
+\A b : hminm(o,p,m) => (b \in p => b = m \/ m \in b)   BECAUSE GENERALIZATION;
+hminm(o,p,m) => (\A b : b \in p => b = m \/ m \in b)   BECAUSE Q_SCHEME;
+(m \in p /\ m \in o) => m \in p   BECAUSE S12;
+hminm(o,p,m) => m \in p   BECAUSE TI2;
+hminm(o,p,m) => IsMinimumForIn(m, p)   BECAUSE CIA;
+hmin(o,p) => (IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+\A m : hmin(o,p) => (IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+hmin(o,p) => (\A m : IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+(\A m : IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p)) => ((\E m : IsMinimumForIn(m, p \intersect o)) => \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+hmin(o,p) => ((\E m : IsMinimumForIn(m, p \intersect o)) => \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+
+\* Other case : p \intersect o = {}
+emptySetExistsUniquely   BECAUSE THEOREM;
+p \intersect o = {} <=> \A x : x \notin (p \intersect o)   BECAUSE \A(c <- p \intersect o);
+p \intersect o = {} => \A x : x \notin (p \intersect o)   BECAUSE EquivToImpl;
+(\A x : x \notin (p \intersect o)) => z \notin (p \intersect o)   BECAUSE \A(x <- z);
+p \subseteq successor(o) => (z \in p => z \in successor(o))   BECAUSE \A(z <- z);
+hmin(o,p) /\ (p \intersect o) = {} => hmin(o,p)   BECAUSE S12;
+hmin(o,p) /\ (p \intersect o) = {} => (p \intersect o) = {}   BECAUSE S22;
+hmin(o,p) /\ (p \intersect o) = {} => z \notin (p \intersect o)   BECAUSE TI2;
+z \in (p \intersect o) <=> (z \in p /\ z \in o)   BECAUSE \A(u <- p, v <- o, x <- z);
+(z \in p /\ z \in o) => z \in (p \intersect o)   BECAUSE EquivToImplReverse;
+z \notin (p \intersect o) => ~(z \in p /\ z \in o)   BECAUSE Contraposition;
+~(z \in p /\ z \in o) => z \notin p \/ z \notin o   BECAUSE DistribNotAnd;
+hmin(o,p) /\ (p \intersect o) = {} => z \notin p \/ z \notin o   BECAUSE TI2;
+hmin(o,p) /\ (p \intersect o) = {} => (z \in p => z \in successor(o))   BECAUSE TI2;
+z \in successor(o) <=> z \in o \/ z \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- z);
+z \in successor(o) => z \in o \/ z \in {o}   BECAUSE EquivToImpl;
+mergeImplD(a,o,p,h,s) == (h => ~p \/ ~o) => ((h => (p => s)) => (((s => o \/ a) => (h => (p => a)))))   PROPO_TAUTO;
+hmin(o,p) /\ (p \intersect o) = {} => (z \in p => z \in {o})   BECAUSE mergeImplD;
+\A z : hmin(o,p) /\ (p \intersect o) = {} => (z \in p => z \in {o})   BECAUSE GENERALIZATION;
+hmin(o,p) /\ (p \intersect o) = {} => p \subseteq {o}   BECAUSE Q_SCHEME;
+subsetSingleton   BECAUSE THEOREM;
+p \subseteq {o} => p = {} \/ p = {o}   BECAUSE \A(a <- o, p <- p);
+hmin(o,p) /\ (p \intersect o) = {} => p = {} \/ p = {o}   BECAUSE TI;
+minInSingleton   BECAUSE THEOREM;
+IsMinimumForIn(o, {o})   BECAUSE \A(a <- o);
+\E m : IsMinimumForIn(m, {o})   BECAUSE \E(m <- o);
+\A p : \A o : p = o => ((\E m : IsMinimumForIn(m, p)) <=> (\E m : IsMinimumForIn(m, o)))   BECAUSE E_SCHEME;
+p = {o} => ((\E m : IsMinimumForIn(m, p)) <=> (\E m : IsMinimumForIn(m, {o})))   BECAUSE \A(p <- p, o <- {o});
+
+\* TODO when p = {o}, conclude \E m : IsMinimumForIn(m,p) and merge cases
 
 ordinalSuccessorStable   BECAUSE GENERALIZATION;
 QED
