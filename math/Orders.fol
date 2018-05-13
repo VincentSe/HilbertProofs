@@ -3034,6 +3034,7 @@ ht(o,a) => a \subseteq successor(o)   BECAUSE KillMiddleHypo;
 IsOrdinal(o) => (a \in successor(o) => a \subseteq successor(o))   BECAUSE HypoAndToImpl;
 \A a : IsOrdinal(o) => (a \in successor(o) => a \subseteq successor(o))   BECAUSE GENERALIZATION;
 IsOrdinal(o) => IsTransitiveSet(successor(o))   BECAUSE Q_SCHEME;
+
 \* Prove that successor(o) is irreflexive
 IsOrdinal(o) => IsWellOrderedByIn(o)   BECAUSE S22;
 IsWellOrderedByIn(o) => \A a : a \in o => a \notin a   BECAUSE S13;
@@ -3054,10 +3055,77 @@ IsOrdinal(o) => (a \in successor(o) => a \notin a)   BECAUSE HypoAndToImpl;
 \A a : IsOrdinal(o) => (a \in successor(o) => a \notin a)   BECAUSE GENERALIZATION;
 IsOrdinal(o) => (\A a : a \in successor(o) => a \notin a)   BECAUSE Q_SCHEME;
 
-\* TODO transitive for \in.
+\* Prove that successor(o) is transitive for \in.
 \* Let a \in b \in c \in successor(o). If c = o then a \in b \in o and
 \* a \in o by transitivity of the ordinal o. Otherwise a \in c by
 \* transitity of \in in the ordinal o.
+htt(o,a,b,c) == IsOrdinal(o) /\ (a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c);
+htt(o,a,b,c) => IsOrdinal(o)   BECAUSE S12;
+htt(o,a,b,c) => (a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c)   BECAUSE S22;
+(a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c) => c \in successor(o)   BECAUSE S24;
+(a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c) => a \in b   BECAUSE S23;
+(a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c) => b \in c   BECAUSE S22;
+\A c : \A o : c = o => (IsTransitiveSet(c) <=> IsTransitiveSet(o))   BECAUSE E_SCHEME;
+c = o => (IsTransitiveSet(c) <=> IsTransitiveSet(o))   BECAUSE \A(c <- c, o <- o);
+c \in { o } <=> c = o   BECAUSE \A(a <- o, x <- c);
+c \in { o } => c = o   BECAUSE EquivToImpl;
+htt(o,a,b,c) /\ c \in {o} => htt(o,a,b,c)   BECAUSE S12;
+htt(o,a,b,c) /\ c \in {o} => c \in {o}   BECAUSE S22;
+htt(o,a,b,c) /\ c \in {o} => c = o   BECAUSE TI;
+htt(o,a,b,c) /\ c \in {o} => (IsTransitiveSet(c) <=> IsTransitiveSet(o))   BECAUSE TI;
+htt(o,a,b,c) /\ c \in {o} => IsTransitiveSet(o)   BECAUSE TI2;
+implyEquivTrueB(h,a,t) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+htt(o,a,b,c) /\ c \in {o} => IsTransitiveSet(c)   BECAUSE implyEquivTrueB;
+IsTransitiveSet(c) => (b \in c => b \subseteq c)   BECAUSE \A(a <- b);
+htt(o,a,b,c) /\ c \in {o} => (b \in c => b \subseteq c)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in {o} => b \in c   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in {o} => b \subseteq c   BECAUSE KillMiddleHypo;
+b \subseteq c => (a \in b => a \in c)   BECAUSE \A(z <- a);
+htt(o,a,b,c) /\ c \in {o} => (a \in b => a \in c)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in {o} => a \in b   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in {o} => a \in c   BECAUSE KillMiddleHypo;
+\* Now when c \in o
+IsTransitiveSet(o) => (c \in o => c \subseteq o)   BECAUSE \A(a <- c);
+htt(o,a,b,c) => (c \in o => c \subseteq o)   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in o => c \subseteq o   BECAUSE HypoImplToAnd;
+c \subseteq o => (b \in c => b \in o)   BECAUSE \A(z <- b);
+htt(o,a,b,c) /\ c \in o => (b \in c => b \in o)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in o => htt(o,a,b,c)   BECAUSE S12;
+htt(o,a,b,c) /\ c \in o => b \in c   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in o => b \in o   BECAUSE KillMiddleHypo;
+IsTransitiveSet(o) => (b \in o => b \subseteq o)   BECAUSE \A(a <- b);
+htt(o,a,b,c) /\ c \in o => IsOrdinal(o)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in o => (b \in o => b \subseteq o)   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in o => b \subseteq o   BECAUSE KillMiddleHypo;
+b \subseteq o => (a \in b => a \in o)   BECAUSE \A(z <- a);
+htt(o,a,b,c) /\ c \in o => (a \in b => a \in o)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in o => a \in b   BECAUSE TI2;
+htt(o,a,b,c) /\ c \in o => a \in o   BECAUSE KillMiddleHypo;
+IsWellOrderedByIn(o) => IsTransitiveIn(o)   BECAUSE S23;
+htt(o,a,b,c) /\ c \in o => IsTransitiveIn(o)   BECAUSE TI2;
+IsTransitiveIn(o) => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE \A(a <- a, b <- b, c <- c);
+htt(o,a,b,c) /\ c \in o => (a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c => a \in c)   BECAUSE TI;
+htt(o,a,b,c) /\ c \in o => a \in o /\ b \in o   BECAUSE CIA;
+htt(o,a,b,c) /\ c \in o => c \in o   BECAUSE S22;
+htt(o,a,b,c) /\ c \in o => a \in o /\ b \in o /\ c \in o  BECAUSE CIA;
+htt(o,a,b,c) /\ c \in o => a \in o /\ b \in o /\ c \in o /\ a \in b BECAUSE CIA;
+htt(o,a,b,c) /\ c \in o => a \in o /\ b \in o /\ c \in o /\ a \in b /\ b \in c BECAUSE CIA;
+htt(o,a,b,c) /\ c \in o => a \in c   BECAUSE KillMiddleHypo;
+mergeImplC(h,a,b,c) == (h /\ a => c) => ((h /\ b => c) => (h => (a \/ b => c)))   PROPO_TAUTO;
+htt(o,a,b,c) => (c \in o \/ c \in {o} => a \in c)   BECAUSE mergeImplC;
+c \in successor(o) <=> c \in o \/ c \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- c);
+c \in successor(o) => c \in o \/ c \in {o}   BECAUSE EquivToImpl;
+injectHypo(i,a,b,c) == (i => b) => ((a => (b => c)) => (a => (i => c)))   PROPO_TAUTO;
+htt(o,a,b,c) => (c \in successor(o) => a \in c)   BECAUSE injectHypo;
+htt(o,a,b,c) => c \in successor(o)   BECAUSE TI;
+htt(o,a,b,c) => a \in c   BECAUSE KillMiddleHypo;
+IsOrdinal(o) => (a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE HypoAndToImpl;
+\A c : IsOrdinal(o) => (a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+IsOrdinal(o) => (\A c : a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A b : IsOrdinal(o) => (\A c : a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+IsOrdinal(o) => (\A b : \A c : a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE Q_SCHEME;
+\A a : IsOrdinal(o) => (\A b : \A c : a \in successor(o) /\ b \in successor(o) /\ c \in successor(o) /\ a \in b /\ b \in c => a \in c)   BECAUSE GENERALIZATION;
+IsOrdinal(o) => IsTransitiveIn(successor(o))   BECAUSE Q_SCHEME;
 
 \* TODO minimums.
 \* Let p \subseteq successor(o). If p = {o} then its minimum is o.
