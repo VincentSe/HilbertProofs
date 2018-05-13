@@ -1220,8 +1220,24 @@ h(f,init) => \A b : <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a
 h(f,init) => \A a : \A b : <<a,b>> \in IterateFunc(f,init) => b = IterateFunc(f,init)[a]   BECAUSE Q_SCHEME;
 h(f,init) => IsFunction(IterateFunc(f,init))   BECAUSE CIA;
 
+\* Extract inductive equality on images
+hf(f,init,b) /\ n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]   BECAUSE TI;
+hf(f,init,b) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE HypoAndToImpl;
+\* Discharge b
+h(f,init) => ((\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]))   BECAUSE HypoAndToImpl;
+\A b : h(f,init) => ((\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]))   BECAUSE GENERALIZATION;
+h(f,init) => (\A b : (\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])) => ((\E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => \E b : (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]))   BECAUSE Q_SCHEME;
+h(f,init) => ((\E b : \A x : x \in b <=> x \in Nat /\ \A j : <<x,j>> \in IterateFunc(f,init) => j = IterateFunc(f,init)[x]) => \E b : (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]))   BECAUSE TI;
+h(f,init) => \E b : (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE KillMiddleHypo;
+(\E b : n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]]) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE Q_SCHEME;
+h(f,init) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE TI;
+
+\A n : h(f,init) => (n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE GENERALIZATION;
+h(f,init) => (\A n : n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE Q_SCHEME;
 h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat   BECAUSE CIA;
 h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init   BECAUSE CIA;
+h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Nat /\ IterateFunc(f,init)[{}] = init /\ (\A n : n \in Nat => IterateFunc(f,init)[successor(n)] = f[IterateFunc(f,init)[n]])   BECAUSE CIA;
 iterateFuncExists   BECAUSE GENERALIZATION;
 QED
 
