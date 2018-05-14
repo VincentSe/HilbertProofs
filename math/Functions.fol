@@ -722,6 +722,7 @@ IsFunction({})   BECAUSE IntroAndRight;
 emptyFunction   BECAUSE IntroAndRight;
 QED
 
+(*
 singletonFunc(a,b) == { <<a,b>> }
 singletonFuncIsFunction == \A a : \A b :
    IsFunction(singletonFunc(a,b)) /\ Domain(singletonFunc(a,b)) = {a}
@@ -735,7 +736,7 @@ QED
 (*
    This theorem allows to define functions by cases. For example the absolute
    value on the real numbers is x when x >= 0 and -x when x < 0.
-*)
+* )
 unionFunc == \A f : \A g : IsFunction(f) /\ IsFunction(g) /\ AreDisjoint(Domain(f),Domain(g))
    => IsFunction(f \union g) /\ Domain(f \union g) = Domain(f) \union Domain(g)
       /\ (\A x : x \in Domain(f) => (f \union g)[x] = f[x])
@@ -745,6 +746,7 @@ PROOF
 \* TODO
 unionFunc   BECAUSE GENERALIZATION;
 QED
+*)
 
 funcUniqueImage == \A f : \A x : \A y :
    (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y) /\ IsFunction(f)) => x = y
@@ -1064,12 +1066,13 @@ parallelFuncExists   BECAUSE GENERALIZATION;
 QED
 
 
+\* The function x \in d |-> <<x, x>>
 clone(d) == CHOOSE f : IsFunction(f) /\ \A x : \A y : <<x,y>> \in f <=> (x \in d /\ y = <<x,x>>)
 cloneExists == \A d : IsFunction(clone(d)) /\ \A x : \A y : <<x,y>> \in clone(d) <=> (x \in d /\ y = <<x,x>>)
 THEOREM cloneExists
 PROOF
 \* By separation in d \X (d \X d)
-VARIABLES a,b,c,d,f,i,j,x,y;
+VARIABLES a,b,c,d,f,i,j,x,y,z;
 \A a : \E b : \A x : x \in b <=> (x \in a /\ (fst(x) = fst(snd(x)) /\ fst(x) = snd(snd(x))))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in (d \X (d \X d)) /\ (fst(x) = fst(snd(x)) /\ fst(x) = snd(snd(x))))   BECAUSE \A(a <- (d \X (d \X d)));
 cloneGraph(d) == CHOOSE b : \A x : x \in b <=> (x \in (d \X (d \X d)) /\ (fst(x) = fst(snd(x)) /\ fst(x) = snd(snd(x))));
@@ -1150,9 +1153,34 @@ fst(<<x,y>>) \in d => x \in d   BECAUSE EquivToImplReverse;
 \* Prove that IsFunction(cloneGraph(d))
 \A y : <<x,y>> \in cloneGraph(d) => y = <<x,x>>   BECAUSE GENERALIZATION;
 <<x,cloneGraph(d)[x]>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE \A(y <- cloneGraph(d)[x]);
-(\E y : <<x,y>> \in cloneGraph(d)) => <<x,cloneGraph(d)[x]>> \in cloneGraph(d)   BECAUSE CHOOSE cloneGraph(d)[x];
-<<x,y>> \in cloneGraph(d) => \E y : <<x,y>> \in cloneGraph(d)   BECAUSE \E(y <- y);
-<<x,y>> \in cloneGraph(d) => <<x,cloneGraph(d)[x]>> \in cloneGraph(d)   BECAUSE TI;
+(\E y : \A z : z = y <=> <<x,z>> \in cloneGraph(d)) => \A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d)
+   BECAUSE CHOOSE cloneGraph(d)[x];
+\A z : \A y : z = y => (<<x,z>> \in cloneGraph(d) <=> <<x,y>> \in cloneGraph(d))   BECAUSE E_SCHEME;
+z = y => (<<x,z>> \in cloneGraph(d) <=> <<x,y>> \in cloneGraph(d))   BECAUSE \A(z <- z, y <- y);
+cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+<<x,y>> \in cloneGraph(d) /\ z = y => <<x,z>> \in cloneGraph(d)   BECAUSE cycleHypos;
+\A y : <<x,y>> \in cloneGraph(d) => (x \in d /\ y = <<x,x>>)  BECAUSE GENERALIZATION;
+<<x,z>> \in cloneGraph(d) => (x \in d /\ z = <<x,x>>)  BECAUSE \A(y <- z);
+(x \in d /\ z = <<x,x>>) => z = <<x,x>>   BECAUSE S22;
+<<x,z>> \in cloneGraph(d) => z = <<x,x>>  BECAUSE TI;
+\A z : <<x,z>> \in cloneGraph(d) => z = <<x,x>>  BECAUSE GENERALIZATION;
+<<x,y>> \in cloneGraph(d) => y = <<x,x>>  BECAUSE \A(z <- y);
+<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => y = <<x,x>> /\ z = <<x,x>>  BECAUSE MergeImplicationsAnd;
+y = <<x,x>> /\ z = <<x,x>> => y = z   BECAUSE E_SCHEME;
+y = z => z = y   BECAUSE E_SCHEME;
+<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => z = y   BECAUSE TI2;
+<<x,y>> \in cloneGraph(d) => (z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE HIE;
+\A z : <<x,y>> \in cloneGraph(d) => (z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE GENERALIZATION;
+<<x,y>> \in cloneGraph(d) => (\A z : z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE Q_SCHEME;
+(\A z : z = y <=> <<x,z>> \in cloneGraph(d)) => \E y : \A z : z = y <=> <<x,z>> \in cloneGraph(d)   BECAUSE \E(y <- y);
+<<x,y>> \in cloneGraph(d) => \A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d)   BECAUSE TI2;
+(\A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d))
+   => (cloneGraph(d)[x] = cloneGraph(d)[x] <=> <<x,cloneGraph(d)[x]>> \in cloneGraph(d))   BECAUSE \A(z <- cloneGraph(d)[x]);
+<<x,y>> \in cloneGraph(d) => (cloneGraph(d)[x] = cloneGraph(d)[x] <=> <<x,cloneGraph(d)[x]>> \in cloneGraph(d))   BECAUSE TI;
+equalSelf   BECAUSE THEOREM;
+cloneGraph(d)[x] = cloneGraph(d)[x]   BECAUSE \A(a <- cloneGraph(d)[x]);
+implyTrueEquiv(t,h,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+<<x,y>> \in cloneGraph(d) => <<x,cloneGraph(d)[x]>> \in cloneGraph(d)   BECAUSE implyTrueEquiv;
 <<x,y>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE TI;
 <<x,y>> \in cloneGraph(d) => (y = <<x,x>> /\ cloneGraph(d)[x] = <<x,x>>)   BECAUSE CIA;
 (y = <<x,x>> /\ cloneGraph(d)[x] = <<x,x>>) => y = cloneGraph(d)[x]   BECAUSE E_SCHEME;

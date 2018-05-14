@@ -343,13 +343,88 @@ inInUnion   BECAUSE GENERALIZATION;
 QED
 
 \* The intersection of a set is the set of common elements
-INTERSECT(u) == CHOOSE_UNIQUE b : \A z : z = b <=>
-   \A x : x \in z <=> \A y : y \in u => x \in y
+INTERSECT(u) == CHOOSE_UNIQUE b : \A i : i = b <=>
+   \A x : x \in i <=> \A y : y \in u => x \in y
 
-bigIntersectExists == \A u : u # {} => 
+bigIntersectExistsUniquely == \A u : u # {} => \A i : i = INTERSECT(u) <=>
+   \A x : x \in i <=> \A y : y \in u => x \in y
+THEOREM bigIntersectExistsUniquely
+PROOF
+\* By separation in any element z \in u (which is not empty)
+VARIABLES a,b,i,u,x,y,z;
+notEmpty   BECAUSE THEOREM;
+u # {} => \E z : z \in u   BECAUSE \A(x <- u);
+\A a : \E b : \A x : x \in b <=> x \in a /\ \A y : y \in u => x \in y   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y   BECAUSE \A(a <- z);
+h(u,z,b) == u # {} /\ z \in u /\ \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y;
+h(u,z,b) => z \in u   BECAUSE S23;
+h(u,z,b) => \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y   BECAUSE S22;
+(\A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (x \in b <=> x \in z /\ \A y : y \in u => x \in y)   BECAUSE \A(x <- x);
+h(u,z,b) => (x \in b <=> x \in z /\ \A y : y \in u => x \in y)   BECAUSE TI;
+(\A y : y \in u => x \in y) => (z \in u => x \in z)   BECAUSE \A(y <- z);
+z \in u => ((\A y : y \in u => x \in y) => x \in z)   BECAUSE SwitchHypos;
+h(u,z,b) => ((\A y : y \in u => x \in y) => x \in z)   BECAUSE TI;
+sepTauto(h,a,b,c) == (h => (a => b)) => ((h => (c <=> (b /\ a))) => (h => (c <=> a)))   PROPO_TAUTO;
+h(u,z,b) => (x \in b <=> \A y : y \in u => x \in y)   BECAUSE sepTauto;
+\A x : h(u,z,b) => (x \in b <=> \A y : y \in u => x \in y)   BECAUSE GENERALIZATION;
+h(u,z,b) => (\A x : x \in b <=> \A y : y \in u => x \in y)   BECAUSE Q_SCHEME;
+\A i : \A b : i = b => ((\A x : x \in i <=> \A y : y \in u => x \in y) <=> (\A x : x \in b <=> \A y : y \in u => x \in y))   BECAUSE E_SCHEME;
+i = b => ((\A x : x \in i <=> \A y : y \in u => x \in y) <=> (\A x : x \in b <=> \A y : y \in u => x \in y))   BECAUSE \A(i <- i, b <- b);
+implyEquivTrue(h,i,a,t) == (h => t) => ((i => (a <=> t) => (h /\ i => a)))   PROPO_TAUTO;
+h(u,z,b) /\ i = b => (\A x : x \in i <=> \A y : y \in u => x \in y)   BECAUSE implyEquivTrue;
+
+extensionality   BECAUSE AXIOM;
+(\A x : x \in i <=> x \in b) => i = b   BECAUSE \A(a <- i, b <- b);
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => h(u,z,b)   BECAUSE S12;
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (x \in b <=> \A y : y \in u => x \in y)   BECAUSE TI;
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (\A x : x \in i <=> \A y : y \in u => x \in y)   BECAUSE S22;
+(\A x : x \in i <=> \A y : y \in u => x \in y) => (x \in i <=> \A y : y \in u => x \in y)   BECAUSE \A(x <- x);
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (x \in i <=> \A y : y \in u => x \in y)   BECAUSE TI;
+transitEquiv(h,b,i,y) == (h => (b <=> y)) => ((h => (i <=> y)) => (h => (i <=> b)))   PROPO_TAUTO;
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (x \in i <=> x \in b)   BECAUSE transitEquiv;
+\A x : h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (x \in i <=> x \in b)   BECAUSE GENERALIZATION;
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => (\A x : x \in i <=> x \in b)   BECAUSE Q_SCHEME;
+h(u,z,b) /\ (\A x : x \in i <=> \A y : y \in u => x \in y) => i = b   BECAUSE TI;
+h(u,z,b) => (i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE HIE;
+\A i : h(u,z,b) => (i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE GENERALIZATION;
+h(u,z,b) => (\A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE Q_SCHEME;
+
+\* Discharge b
+u # {} /\ z \in u => ((\A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE HypoAndToImpl;
+\A b : u # {} /\ z \in u => ((\A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE GENERALIZATION;
+u # {} /\ z \in u => (\A b : (\A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y))) => ((\E b : \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\E b : \A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE Q_SCHEME;
+u # {} /\ z \in u => ((\E b : \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y) => (\E b : \A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE TI;
+u # {} /\ z \in u => (\E b : \A x : x \in b <=> x \in z /\ \A y : y \in u => x \in y)   BECAUSE PT1;
+u # {} /\ z \in u => (\E b : \A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE KillMiddleHypo;
+(\E b : \A i : i = b <=> (\A x : x \in i <=> \A y : y \in u => x \in y)) => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE CHOOSE INTERSECT(u);
+u # {} /\ z \in u => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y))   BECAUSE TI;
+
+\* Discharge z
+u # {} => (z \in u => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE HypoAndToImpl;
+\A z : u # {} => (z \in u => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE GENERALIZATION;
+u # {} => (\A z : z \in u => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE Q_SCHEME;
+(\A z : z \in u => (\A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y))) => ((\E z : z \in u) => (\E z : \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE Q_SCHEME;
+u # {} => ((\E z : z \in u) => (\E z : \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)))   BECAUSE TI;
+u # {} => \E z : \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)   BECAUSE KillMiddleHypo;
+(\E z : \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)) => \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)   BECAUSE Q_SCHEME;
+u # {} => \A i : i = INTERSECT(u) <=> (\A x : x \in i <=> \A y : y \in u => x \in y)   BECAUSE TI;
+bigIntersectExistsUniquely   BECAUSE GENERALIZATION;
+QED
+
+bigIntersectExists == \A u : u # {} =>
    \A x : x \in INTERSECT(u) <=> \A y : y \in u => x \in y
 THEOREM bigIntersectExists
 PROOF
+VARIABLES a,i,u;
+bigIntersectExistsUniquely   BECAUSE THEOREM;
+u # {} => \A i : i = INTERSECT(u) <=> \A x : x \in i <=> \A y : y \in u => x \in y   BECAUSE \A(u <- u);
+(\A i : i = INTERSECT(u) <=> \A x : x \in i <=> \A y : y \in u => x \in y) => (INTERSECT(u) = INTERSECT(u) <=> \A x : x \in INTERSECT(u) <=> \A y : y \in u => x \in y)   BECAUSE \A(i <- INTERSECT(u));
+u # {} => (INTERSECT(u) = INTERSECT(u) <=> \A x : x \in INTERSECT(u) <=> \A y : y \in u => x \in y)   BECAUSE TI;
+equalSelf   BECAUSE THEOREM;
+INTERSECT(u) = INTERSECT(u)   BECAUSE \A(a <- INTERSECT(u));
+implyTrueEquiv(a,h,t) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+u # {} => \A x : x \in INTERSECT(u) <=> \A y : y \in u => x \in y   BECAUSE implyTrueEquiv;
 bigIntersectExists   BECAUSE GENERALIZATION;
 QED
 
@@ -675,6 +750,41 @@ QED
 subsetSingleton == \A a : \A p : p \subseteq {a} => p = {} \/ p = {a}
 THEOREM subsetSingleton
 PROOF
+VARIABLES a,b,p,x,z;
+p \subseteq {a} => (z \in p => z \in {a})   BECAUSE \A(z <- z);
+p \subseteq {a} /\ z \in p => z \in {a}   BECAUSE HypoImplToAnd;
+singletonExists   BECAUSE THEOREM;
+z \in { a } <=> z = a   BECAUSE \A(a <- a, x <- z);
+z \in { a } => z = a   BECAUSE EquivToImpl;
+p \subseteq {a} /\ z \in p => z = a   BECAUSE TI;
+\A z : \A a : z = a => (z \in p <=> a \in p)   BECAUSE E_SCHEME;
+z = a => (z \in p <=> a \in p)   BECAUSE \A(z <- z, a <- a);
+mergeImpl(a,b,c,d) == (a /\ b => c) => ((c => (b <=> d)) => (a /\ b => d))   PROPO_TAUTO;
+p \subseteq {a} /\ z \in p => a \in p   BECAUSE mergeImpl;
+p \subseteq {a} => (z \in p => a \in p)   BECAUSE HypoAndToImpl;
+\A z : p \subseteq {a} => (z \in p => a \in p)   BECAUSE GENERALIZATION;
+p \subseteq {a} => (\A z : z \in p => a \in p)   BECAUSE Q_SCHEME;
+(\A z : z \in p => a \in p) => ((\E z : z \in p) => \E z : a \in p)   BECAUSE Q_SCHEME;
+p \subseteq {a} => ((\E z : z \in p) => \E z : a \in p)   BECAUSE TI;
+notEmpty   BECAUSE THEOREM;
+p # {} => \E z : z \in p   BECAUSE \A(x <- p);
+injectHypo(h,p,z,a) == (p => z) => ((h => (z => a)) => (h /\ p => a))   PROPO_TAUTO;
+p \subseteq {a} /\ p # {} => \E z : a \in p   BECAUSE injectHypo;
+(\E z : a \in p) => a \in p   BECAUSE Q_SCHEME;
+p \subseteq {a} /\ p # {} => a \in p   BECAUSE TI;
+mergeImplB(z,p,a,h) == (z => (p <=> a)) => ((h => a) => (h => (z => p)))   PROPO_TAUTO;
+p \subseteq {a} /\ p # {} => (z = a => z \in p)   BECAUSE mergeImplB;
+injectHypoB(h,a,b,c) == (a <=> b) => ((h => (b => c)) => (h => (a => c)))   PROPO_TAUTO;
+p \subseteq {a} /\ p # {} => (z \in {a} => z \in p)   BECAUSE injectHypoB;
+\A z : p \subseteq {a} /\ p # {} => (z \in {a} => z \in p)   BECAUSE GENERALIZATION;
+p \subseteq {a} /\ p # {} => {a} \subseteq p   BECAUSE Q_SCHEME;
+p \subseteq {a} /\ p # {} => p \subseteq {a}   BECAUSE S12;
+p \subseteq {a} /\ p # {} => p \subseteq {a} /\ {a} \subseteq p   BECAUSE CIA;
+bothInclusions   BECAUSE THEOREM;
+(p \subseteq {a} /\ {a} \subseteq p) => p = {a}   BECAUSE \A(a <- p, b <- {a});
+p \subseteq {a} /\ p # {} => p = {a}   BECAUSE TI;
+pushCase(h,a,b) == (h /\ ~a => b) => (h => a \/ b)   PROPO_TAUTO;
+p \subseteq {a} => p = {} \/ p = {a}   BECAUSE pushCase;
 subsetSingleton   BECAUSE GENERALIZATION;
 QED
 

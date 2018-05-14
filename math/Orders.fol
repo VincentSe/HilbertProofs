@@ -1369,6 +1369,7 @@ wellOrderAddition(u,v) == injectOrder(u, pasteTags(Domain(u),{}))
    \union injectOrder(v, pasteTags(Domain(v),ordinalOne))
    \union ((Domain(u)\X{{}}) \X (Domain(v)\X{ordinalOne})) \* this puts v after u
 
+(*
 woAddIsWo == \A u : \A v : (IsWellOrder(u) /\ IsWellOrder(v)) => IsWellOrder(wellOrderAddition(u,v))
 THEOREM woAddIsWo
 PROOF
@@ -1479,7 +1480,7 @@ AreDisjoint(Ione(u),Itwo(v))   BECAUSE MODUS_PONENS;
 (IsOrder(Ione(u)) /\ IsOrder(Itwo(v))) => IsOrder(Ione(u) \union Itwo(v))   BECAUSE TI;
 (IsOrder(u) /\ IsOrder(v)) => IsOrder(DO(u,v))   BECAUSE TI;
 QED
-
+*)
 
 (*
    At the moment, the addition and multiplication of well-orders are not commutative,
@@ -2996,6 +2997,19 @@ QED
 minInSingleton == \A a : IsMinimumForIn(a, {a})
 THEOREM minInSingleton
 PROOF
+VARIABLES a,b,x;
+singletonExists   BECAUSE THEOREM;
+a \in { a } <=> a = a   BECAUSE \A(a <- a, x <- a);
+a = a => a \in { a }   BECAUSE EquivToImplReverse;
+equalSelf   BECAUSE THEOREM;
+a = a   BECAUSE \A(a <- a);
+a \in { a }   BECAUSE MODUS_PONENS;
+b \in { a } <=> b = a   BECAUSE \A(a <- a, x <- b);
+b \in { a } => b = a   BECAUSE EquivToImpl;
+b = a => b = a \/ a \in b   BECAUSE IntroOrLeft;
+b \in { a } => b = a \/ a \in b   BECAUSE TI;
+\A b : b \in { a } => b = a \/ a \in b   BECAUSE GENERALIZATION;
+IsMinimumForIn(a, {a})   BECAUSE IntroAndRight;
 minInSingleton   BECAUSE GENERALIZATION;
 QED
 
@@ -3200,6 +3214,9 @@ hmin(o,p) => (IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p))   BECAU
 hmin(o,p) => (\A m : IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
 (\A m : IsMinimumForIn(m, p \intersect o) => IsMinimumForIn(m, p)) => ((\E m : IsMinimumForIn(m, p \intersect o)) => \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
 hmin(o,p) => ((\E m : IsMinimumForIn(m, p \intersect o)) => \E m : IsMinimumForIn(m, p))   BECAUSE TI;
+hmin(o,p) /\ (\E m : IsMinimumForIn(m, p \intersect o)) => \E m : IsMinimumForIn(m, p)   BECAUSE HypoImplToAnd;
+(\E m : IsMinimumForIn(m, p)) => (p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE IntroOrRight;
+hmin(o,p) /\ (\E m : IsMinimumForIn(m, p \intersect o)) => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE TI;
 
 \* Other case : p \intersect o = {}
 emptySetExistsUniquely   BECAUSE THEOREM;
@@ -3230,17 +3247,20 @@ IsMinimumForIn(o, {o})   BECAUSE \A(a <- o);
 \E m : IsMinimumForIn(m, {o})   BECAUSE \E(m <- o);
 \A p : \A o : p = o => ((\E m : IsMinimumForIn(m, p)) <=> (\E m : IsMinimumForIn(m, o)))   BECAUSE E_SCHEME;
 p = {o} => ((\E m : IsMinimumForIn(m, p)) <=> (\E m : IsMinimumForIn(m, {o})))   BECAUSE \A(p <- p, o <- {o});
+p = {o} => (\E m : IsMinimumForIn(m, p))   BECAUSE ImplyEquivTrue;
+p = {} => p = {}   BECAUSE ImplySelf;
+p = {} \/ p = {o} => p = {} \/ (\E m : IsMinimumForIn(m, p))   BECAUSE MergeImplicationsOr;
+hmin(o,p) /\ (p \intersect o) = {} => p = {} \/ (\E m : IsMinimumForIn(m, p))   BECAUSE TI;
 
-\* TODO when p = {o}, conclude \E m : IsMinimumForIn(m,p) and merge cases
-
+hmin(o,p) => ((p \intersect o) = {} \/ (\E m : IsMinimumForIn(m, p \intersect o)) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE mergeImplC;
+hmin(o,p) => p = {} \/ \E m : IsMinimumForIn(m, p)   BECAUSE KillMiddleHypo;
+IsOrdinal(o) => (p \subseteq successor(o) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE HypoAndToImpl;
+\A p : IsOrdinal(o) => (p \subseteq successor(o) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE GENERALIZATION;
+IsOrdinal(o) => (\A p : p \subseteq successor(o) => p = {} \/ \E m : IsMinimumForIn(m, p))   BECAUSE Q_SCHEME;
+IsOrdinal(o) => (\A a : a \in successor(o) => a \notin a) /\ IsTransitiveIn(successor(o))   BECAUSE CIA;
+IsOrdinal(o) => IsWellOrderedByIn(successor(o))   BECAUSE CIA;
+IsOrdinal(o) => IsOrdinal(successor(o))   BECAUSE CIA;
 ordinalSuccessorStable   BECAUSE GENERALIZATION;
-QED
-
-ordinalSuccessorRegular == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ successor(o) = successor(p)
-   => o = p
-THEOREM ordinalSuccessorRegular
-PROOF
-ordinalSuccessorRegular   BECAUSE GENERALIZATION;
 QED
 
 successorIncreasing == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p
@@ -3293,6 +3313,63 @@ successor(o) \in p => successor(o) \in p   BECAUSE ImplySelf;
 successor(o) \in p \/ successor(o) = p =>  successor(o) \in p \/ successor(o) \in {p}   BECAUSE MergeImplicationsOr;
 h(o,p) => successor(o) \in successor(p)   BECAUSE TI2;
 successorIncreasing   BECAUSE GENERALIZATION;
+QED
+
+ordinalSuccessorRegular == \A o : \A p : IsOrdinal(o) /\ IsOrdinal(p) /\ successor(o) = successor(p)
+   => o = p
+THEOREM ordinalSuccessorRegular
+PROOF
+VARIABLES a,o,p,x,y,z;
+h(o,p) == IsOrdinal(o) /\ IsOrdinal(p) /\ successor(o) = successor(p);
+unionInc   BECAUSE THEOREM;
+o \in successor(o) <=> o \in o \/ o \in {o}   BECAUSE \A(x <- o, y <- {o}, z <- o);
+o \in o \/ o \in {o} => o \in successor(o)   BECAUSE EquivToImplReverse;
+o \in {o} => o \in o \/ o \in {o}   BECAUSE IntroOrRight;
+singletonExists   BECAUSE THEOREM;
+o \in {o} <=> o = o   BECAUSE \A(a <- o, x <- o);
+o = o => o \in {o}   BECAUSE EquivToImplReverse;
+o = o => o \in successor(o)   BECAUSE TI2;
+equalSelf   BECAUSE THEOREM;
+o = o   BECAUSE \A(a <- o);
+o \in successor(o)   BECAUSE MODUS_PONENS;
+\A x : \A y : x = y => (o \in x <=> o \in y)   BECAUSE E_SCHEME;
+successor(o) = successor(p) => (o \in successor(o) <=> o \in successor(p))   BECAUSE \A(x <- successor(o), y <- successor(p));
+h(o,p) => successor(o) = successor(p)   BECAUSE S22;
+h(o,p) => (o \in successor(o) <=> o \in successor(p))   BECAUSE TI;
+implyTrueEquiv(t,h,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+h(o,p) => o \in successor(p)   BECAUSE implyTrueEquiv;
+o \in successor(p) <=> o \in p \/ o \in {p}   BECAUSE \A(x <- p, y <- {p}, z <- o);
+o \in successor(p) => o \in p \/ o \in {p}   BECAUSE EquivToImpl;
+h(o,p) => o \in p \/ o \in {p}   BECAUSE TI;
+\* Prove o \in p is impossible by successorIncreasing
+successorIncreasing   BECAUSE THEOREM;
+IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p => successor(o) \in successor(p)   BECAUSE \A(o <- o, p <- p);
+h(o,p) => IsOrdinal(o) /\ IsOrdinal(p)   BECAUSE S12;
+h(o,p) => IsOrdinal(p)   BECAUSE S23;
+o \in p => o \in p   BECAUSE ImplySelf;
+h(o,p) /\ o \in p => IsOrdinal(o) /\ IsOrdinal(p) /\ o \in p   BECAUSE MergeImplicationsAnd;
+h(o,p) /\ o \in p => successor(o) \in successor(p)   BECAUSE TI;
+\A x : \A y : x = y => (x \in successor(p) <=> y \in successor(p))   BECAUSE E_SCHEME;
+successor(o) = successor(p) => (successor(o) \in successor(p) <=> successor(p) \in successor(p))   BECAUSE \A(x <- successor(o), y <- successor(p));
+h(o,p) /\ o \in p => h(o,p)   BECAUSE S12;
+h(o,p) /\ o \in p => (successor(o) \in successor(p) <=> successor(p) \in successor(p))   BECAUSE TI2;
+implyTrueEquivB(t,h,a) == (h => t) => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+h(o,p) /\ o \in p => successor(p) \in successor(p)   BECAUSE implyTrueEquivB;
+ordinalSuccessorStable   BECAUSE THEOREM;
+IsOrdinal(p) => IsOrdinal( successor(p) )   BECAUSE \A(o <- p);
+h(o,p) /\ o \in p => IsOrdinal( successor(p) )   BECAUSE TI2;
+ordinalsWellFounded   BECAUSE THEOREM;
+IsOrdinal(successor(p)) => successor(p) \notin successor(p)   BECAUSE \A(o <- successor(p));
+h(o,p) /\ o \in p => successor(p) \notin successor(p)   BECAUSE TI;
+h(o,p) /\ o \in p => successor(p) \in successor(p) /\ successor(p) \notin successor(p)   BECAUSE CIA;
+absurd(h,a,b) == ((h /\ b) => (a /\ ~a)) => (h => ~b)   PROPO_TAUTO;
+h(o,p) => o \notin p   BECAUSE absurd;
+killCase(h,a,b) == (h => ~a) => ((h => a \/ b) => (h => b))   PROPO_TAUTO;
+h(o,p) => o \in {p}   BECAUSE killCase;
+o \in {p} <=> o = p   BECAUSE \A(a <- p, x <- o);
+o \in {p} => o = p   BECAUSE EquivToImpl;
+h(o,p) => o = p   BECAUSE TI;
+ordinalSuccessorRegular   BECAUSE GENERALIZATION;
 QED
 
 finiteOrdinalSuccessorStable == \A o : IsFiniteOrdinal(o) => IsFiniteOrdinal( successor(o) )
