@@ -43,6 +43,13 @@ struct folAST* make_folAST(const char* file)
   ast->constants = 0;
 }
 
+int compare_lines(const void* l, const void* r)
+{
+  const formula* const* fl = l;
+  const formula* const* fr = r;
+  return (*fr)->first_line - (*fl)->first_line;
+}
+
 void folAST_free(struct folAST* ast)
 {
   if (!ast) return;
@@ -56,23 +63,32 @@ void folAST_free(struct folAST* ast)
   }
   tdestroy(ast->proofs, proof_deleter);
 
-  // First clear formula's operands : defining formulas are still alive
-  void clear_operands(const void* nodep, VISIT value, int level)
+  formula* ops[1024]; // TODO malloc the size of ast->operators
+  ops[0] = (formula*)0;
+  size_t opsCount = 0;
+  
+  void list_operands(const void* nodep, VISIT value, int level)
   {
     if (value == preorder || value == postorder)
       return;
 
     formula* op = *(formula**)nodep;
-    formula_list_free(op->operands);
-    op->operands = 0;
-    if (op->definingFormula)
-      {
-	formula_list_free(op->definingFormula->operands);
-	op->definingFormula->operands = 0;
-      }
-  }
-  twalk(ast->operators, clear_operands);
+    if (strcmp(op->file, ast->file) != 0)
+      return;
 
+    ops[opsCount] = op;
+    opsCount++;
+  }
+  twalk(ast->operators, list_operands);
+
+  // Free operators by line descending, to respect their dependencies
+  qsort(ops, opsCount, sizeof(formula*), compare_lines);
+  for (int i=0; i<opsCount; i++)
+    {
+      formula_free(ops[i]->definingFormula);
+      ops[i]->definingFormula = 0;
+    }
+  
   void deleter(void* t)
   {
     // Delete operators that were defined in this ast's file

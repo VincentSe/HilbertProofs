@@ -1398,9 +1398,11 @@ IsCouple(y) => y = <<fst(y), snd(y)>>   BECAUSE \A(c <- y);
 (fst(y) = f[x] /\ snd(y) = g[x] /\ y = <<fst(y),snd(y)>>) => y = <<f[x],g[x]>>   BECAUSE HypoEquivToAnd;
 (<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = <<f[x],g[x]>>   BECAUSE TI;
 \A y : (<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = <<f[x],g[x]>>   BECAUSE GENERALIZATION;
-(<<x,productFunc(f,g)[x]>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => productFunc(f,g)[x] = <<f[x],g[x]>>   BECAUSE \A(y <- productFunc(f,g)[x]);
+(<<x,productFunc(f,g)[x]>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g)))
+   => productFunc(f,g)[x] = <<f[x],g[x]>>   BECAUSE \A(y <- productFunc(f,g)[x]);
 
-(\E y : <<x,y>> \in productFunc(f,g)) => <<x,productFunc(f,g)[x]>> \in productFunc(f,g)   BECAUSE CHOOSE productFunc(f,g)[x];
+(\E y : \A z : z = y <=> <<x,z>> \in productFunc(f,g)) => \A z : z = productFunc(f,g)[x] <=> <<x,z>> \in productFunc(f,g)
+   BECAUSE CHOOSE productFunc(f,g)[x];
 <<x,y>> \in productFunc(f,g) => \E y : <<x,y>> \in productFunc(f,g)   BECAUSE \E(y <- y);
 <<x,y>> \in productFunc(f,g) => <<x,productFunc(f,g)[x]>> \in productFunc(f,g)   BECAUSE TI;
 

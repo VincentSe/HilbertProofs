@@ -260,12 +260,26 @@ IsLimitOrdinal(Nat)   BECAUSE MODUS_PONENS;
 NatExists   BECAUSE IntroAndRight;
 QED
 
+(*
+   Names for the first natural numbers.
+*)
+0 == {}
+1 == successor(0)
+2 == successor(1)
+3 == successor(2)
+4 == successor(3)
+5 == successor(4)
+6 == successor(5)
+7 == successor(6)
+8 == successor(7)
+9 == successor(8)
+10 == successor(9)
+
 zeroInNat == {} \in Nat
 THEOREM zeroInNat
 PROOF
 VARIABLES a,x,z;
 ordinalZero   BECAUSE THEOREM;
-\* IsFiniteOrdinal( {} )
 NatExists   BECAUSE THEOREM;
 \A z : z = Nat <=> (\A x : x \in z <=> IsFiniteOrdinal(x))   BECAUSE S12;
 Nat = Nat <=> (\A x : x \in Nat <=> IsFiniteOrdinal(x))   BECAUSE \A(z <- Nat);
