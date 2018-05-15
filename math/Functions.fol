@@ -10,62 +10,79 @@
 
 EXTENDS ZFC
 
-IsFunction(f) == IsGraph(f)  /\  \A a : \A b : <<a,b>> \in f => b = f[a]
+IsFunction(f) == IsGraph(f)  /\  \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
 IsInjection(f) == IsFunction(f)  /\  \A a : \A b : <<a,b>> \in f => a = pre(f,b)
+
+funcVal == \A f : \A x : \A y : IsFunction(f) /\ <<x,y>> \in f => y = f[x]
+THEOREM funcVal
+PROOF
+VARIABLES a,b,c,f,x,y,z;
+h(f,x,y) == IsFunction(f) /\ <<x,y>> \in f;
+h(f,x,y) => <<x,y>> \in f   BECAUSE S22;
+\A z : \A y : z = y => (<<x,z>> \in f <=> <<x,y>> \in f)   BECAUSE E_SCHEME;
+z = y => (<<x,z>> \in f <=> <<x,y>> \in f)   BECAUSE \A(z <- z, y <- y);
+cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+<<x,y>> \in f /\ z = y => <<x,z>> \in f   BECAUSE cycleHypos;
+z = y => z = y   BECAUSE ImplySelf;
+h(f,x,y) /\ z = y => <<x,y>> \in f /\ z = y   BECAUSE MergeImplicationsAnd;
+h(f,x,y) /\ z = y => <<x,z>> \in f   BECAUSE TI;
+
+h(f,x,y) /\ <<x,z>> \in f => h(f,x,y)   BECAUSE S12;
+h(f,x,y) /\ <<x,z>> \in f => <<x,z>> \in f   BECAUSE S22;
+h(f,x,y) /\ <<x,z>> \in f => <<x,y>> \in f   BECAUSE TI;
+h(f,x,y) /\ <<x,z>> \in f => <<x,y>> \in f /\ <<x,z>> \in f   BECAUSE CIA;
+h(f,x,y) => IsFunction(f)   BECAUSE S12;
+IsFunction(f) => \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c   BECAUSE S22;
+(\A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c) => (<<x,y>> \in f /\ <<x,z>> \in f => y = z)
+   BECAUSE \A(a <- x, b <- y, c <- z);
+h(f,x,y) => (<<x,y>> \in f /\ <<x,z>> \in f => y = z)   BECAUSE TI2;
+h(f,x,y) /\ <<x,z>> \in f => (<<x,y>> \in f /\ <<x,z>> \in f => y = z)   BECAUSE TI;
+h(f,x,y) /\ <<x,z>> \in f => y = z   BECAUSE KillMiddleHypo;
+y = z => z = y   BECAUSE E_SCHEME;
+h(f,x,y) /\ <<x,z>> \in f => z = y   BECAUSE TI;
+h(f,x,y) => (z = y <=> <<x,z>> \in f)   BECAUSE HIE;
+\A z : h(f,x,y) => (z = y <=> <<x,z>> \in f)   BECAUSE GENERALIZATION;
+h(f,x,y) => (\A z : z = y <=> <<x,z>> \in f)   BECAUSE Q_SCHEME;
+(\A z : z = y <=> <<x,z>> \in f) => (\E y : \A z : z = y <=> <<x,z>> \in f)   BECAUSE \E(y <- y);
+(\E y : \A z : z = y <=> <<x,z>> \in f) => (\A z : z = f[x] <=> <<x,z>> \in f)   BECAUSE CHOOSE f[x];
+h(f,x,y) => (\A z : z = f[x] <=> <<x,z>> \in f)   BECAUSE TI2;
+(\A z : z = f[x] <=> <<x,z>> \in f) => (y = f[x] <=> <<x,y>> \in f)   BECAUSE \A(z <- y);
+h(f,x,y) => (y = f[x] <=> <<x,y>> \in f)   BECAUSE TI;
+implyEquivTrue(t,h,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+h(f,x,y) => y = f[x]   BECAUSE implyEquivTrue;
+funcVal   BECAUSE GENERALIZATION;
+QED
 
 funcImageExists == \A f : \A x : IsFunction(f) /\ x \in Domain(f) => <<x, f[x]>> \in f
 THEOREM funcImageExists
 PROOF
 VARIABLES a,b,f,g,x,y,z;
-(\E y : \A z : z = y <=> <<x,z>> \in f)
-   => \A z : z = f[x] <=> <<x,z>> \in f   BECAUSE CHOOSE f[x];
-(\A z : z = f[x] <=> <<x,z>> \in f) => (f[x] = f[x] <=> <<x,f[x]>> \in f)   BECAUSE \A(z <- f[x]);
-(\E y : \A z : z = y <=> <<x,z>> \in f) => (f[x] = f[x] <=> <<x,f[x]>> \in f)   BECAUSE TI;
-equalSelf   BECAUSE THEOREM;
-f[x] = f[x]   BECAUSE \A(a <- f[x]);
-implyTrueEquiv(t,h,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
-(\E y : \A z : z = y <=> <<x,z>> \in f) => <<x,f[x]>> \in f   BECAUSE implyTrueEquiv;
-\* Prove this y exists
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,z>> \in f => z = f[x])   BECAUSE \A(a <- x, b <- z);
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,y>> \in f => y = f[x])   BECAUSE \A(a <- x, b <- y);
-IsFunction(f) => (<<x,z>> \in f => z = f[x])   BECAUSE TI;
-IsFunction(f) => (<<x,y>> \in f => y = f[x])   BECAUSE TI;
+h(f,x,y) == IsFunction(f) /\ <<x,y>> \in f;
+funcVal   BECAUSE THEOREM;
+h(f,x,y) => y = f[x]   BECAUSE \A(f <- f, x <- x, y <- y);
+\A y : \A z : y = z => (<<x,y>> \in f <=> <<x,z>> \in f)   BECAUSE E_SCHEME;
+y = f[x] => (<<x,y>> \in f <=> <<x,f[x]>> \in f)   BECAUSE \A(y <- y, z <- f[x]);
+h(f,x,y) => (<<x,y>> \in f <=> <<x,f[x]>> \in f)   BECAUSE TI;
+implyTrueEquiv(h,t,a) == (h => t) => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
+h(f,x,y) => <<x,y>> \in f   BECAUSE S22;
+h(f,x,y) => <<x,f[x]>> \in f   BECAUSE implyTrueEquiv;
+\* Discharge y
+IsFunction(f) => (<<x,y>> \in f => <<x,f[x]>> \in f)   BECAUSE HypoAndToImpl;
+\A y : IsFunction(f) => (<<x,y>> \in f => <<x,f[x]>> \in f)   BECAUSE GENERALIZATION;
+IsFunction(f) => (\A y : <<x,y>> \in f => <<x,f[x]>> \in f)   BECAUSE Q_SCHEME;
+(\A y : <<x,y>> \in f => <<x,f[x]>> \in f) => ((\E y : <<x,y>> \in f) => \E y : <<x,f[x]>> \in f)   BECAUSE Q_SCHEME;
+IsFunction(f) => ((\E y : <<x,y>> \in f) => \E y : <<x,f[x]>> \in f)   BECAUSE TI;
+
 domainExists   BECAUSE THEOREM;
 x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
 x \in Domain(f) => \E y : <<x,y>> \in f   BECAUSE EquivToImpl;
-h(f,x,y) == IsFunction(f) /\ x \in Domain(f) /\ <<x,y>> \in f;
-h(f,x,y) => IsFunction(f)   BECAUSE S13;
-h(f,x,y) => <<x,y>> \in f   BECAUSE S22;
-h(f,x,y) => x \in Domain(f)   BECAUSE S23;
-h(f,x,y) => \E y : <<x,y>> \in f   BECAUSE TI;
-\A z : \A y : z = y => (<<x,z>> \in f <=> <<x,y>> \in f)   BECAUSE E_SCHEME;
-z = y => (<<x,z>> \in f <=> <<x,y>> \in f)   BECAUSE \A(z <- z, y <- y);
-implyEquivTrue(t,h,a,b) == (h => t) => ((b => (a <=> t)) => (h /\ b => a))   PROPO_TAUTO;
-h(f,x,y) /\ z = y => <<x,z>> \in f   BECAUSE implyEquivTrue;
-
-h(f,x,y) /\ <<x,z>> \in f => <<x,z>> \in f   BECAUSE S22;
-h(f,x,y) /\ <<x,z>> \in f => h(f,x,y)   BECAUSE S12;
-h(f,x,y) /\ <<x,z>> \in f => <<x,y>> \in f   BECAUSE TI;
-h(f,x,y) /\ <<x,z>> \in f => (<<x,z>> \in f => z = f[x])   BECAUSE TI2;
-h(f,x,y) /\ <<x,z>> \in f => (<<x,y>> \in f => y = f[x])   BECAUSE TI2;
-h(f,x,y) /\ <<x,z>> \in f => z = f[x]   BECAUSE KillMiddleHypo;
-h(f,x,y) /\ <<x,z>> \in f => y = f[x]   BECAUSE KillMiddleHypo;
-h(f,x,y) /\ <<x,z>> \in f => z = f[x] /\ y = f[x]   BECAUSE CIA;
-z = f[x] /\ y = f[x] => z = y   BECAUSE E_SCHEME;
-h(f,x,y) /\ <<x,z>> \in f => z = y   BECAUSE TI;
-h(f,x,y) => (z = y <=> <<x,z>> \in f)   BECAUSE HIE;
-\A z : h(f,x,y) => (z = y <=> <<x,z>> \in f)   BECAUSE GENERALIZATION;
-h(f,x,y) => (\A z : z = y <=> <<x,z>> \in f)   BECAUSE Q_SCHEME;
-IsFunction(f) /\ x \in Domain(f) => (<<x,y>> \in f => \A z : z = y <=> <<x,z>> \in f)   BECAUSE HypoAndToImpl;
-\A y : IsFunction(f) /\ x \in Domain(f) => (<<x,y>> \in f => \A z : z = y <=> <<x,z>> \in f)   BECAUSE GENERALIZATION;
-IsFunction(f) /\ x \in Domain(f) => (\A y : <<x,y>> \in f => \A z : z = y <=> <<x,z>> \in f)   BECAUSE Q_SCHEME;
-(\A y : <<x,y>> \in f => \A z : z = y <=> <<x,z>> \in f) => ((\E y : <<x,y>> \in f) => \E y : \A z : z = y <=> <<x,z>> \in f)   BECAUSE Q_SCHEME;
-IsFunction(f) /\ x \in Domain(f) => ((\E y : <<x,y>> \in f) => \E y : \A z : z = y <=> <<x,z>> \in f)   BECAUSE TI;
 IsFunction(f) /\ x \in Domain(f) => x \in Domain(f)   BECAUSE S22;
-IsFunction(f) /\ x \in Domain(f) => (\E y : <<x,y>> \in f)   BECAUSE TI;
-IsFunction(f) /\ x \in Domain(f) => \E y : \A z : z = y <=> <<x,z>> \in f   BECAUSE KillMiddleHypo;
-IsFunction(f) /\ x \in Domain(f) => <<x, f[x]>> \in f   BECAUSE TI;
+IsFunction(f) /\ x \in Domain(f) => IsFunction(f)   BECAUSE S12;
+IsFunction(f) /\ x \in Domain(f) => ((\E y : <<x,y>> \in f) => \E y : <<x,f[x]>> \in f)   BECAUSE TI;
+IsFunction(f) /\ x \in Domain(f) => \E y : <<x,y>> \in f   BECAUSE TI;
+IsFunction(f) /\ x \in Domain(f) => \E y : <<x,f[x]>> \in f   BECAUSE KillMiddleHypo;
+(\E y : <<x,f[x]>> \in f) => <<x,f[x]>> \in f   BECAUSE Q_SCHEME;
+IsFunction(f) /\ x \in Domain(f) => <<x,f[x]>> \in f   BECAUSE TI;
 funcImageExists   BECAUSE GENERALIZATION;
 QED
 
@@ -172,17 +189,14 @@ QED
 funcInversePre == \A f : \A y : IsFunction(f) /\ y \in Image(f) => f[pre(f,y)] = y
 THEOREM funcInversePre
 PROOF
-VARIABLES a,b,f,g,y;
+VARIABLES a,b,f,g,x,y;
 imageExists   BECAUSE THEOREM;
 y \in Image(f) <=> Reaches(f,y)   BECAUSE \A(g <- f, y <- y);
 y \in Image(f) => \E x : <<x,y>> \in f   BECAUSE EquivToImpl;
 (\E x : <<x,y>> \in f) => <<pre(f,y),y>> \in f   BECAUSE CHOOSE pre(f,y);
 y \in Image(f) => <<pre(f,y),y>> \in f   BECAUSE TI;
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])
-   BECAUSE \A(a <- pre(f,y), b <- y);
-IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TI;
-IsFunction(f) /\ <<pre(f,y),y>> \in f => y = f[pre(f,y)]   BECAUSE HypoImplToAnd;
+funcVal   BECAUSE THEOREM;
+IsFunction(f) /\ <<pre(f,y),y>> \in f => y = f[pre(f,y)]   BECAUSE \A(f <- f, x <- pre(f,y), y <- y);
 IsFunction(f) => IsFunction(f)   BECAUSE ImplySelf;
 IsFunction(f) /\ y \in Image(f) => IsFunction(f) /\ <<pre(f,y),y>> \in f   BECAUSE MergeImplicationsAnd;
 IsFunction(f) /\ y \in Image(f) => y = f[pre(f,y)]   BECAUSE TI;
@@ -210,9 +224,9 @@ IsDefinedOn(f,x) => x \in Domain(f)   BECAUSE EquivToImplReverse;
 h(f,g,x,y) => <<x,y>> \in f   BECAUSE S22;
 h(f,g,x,y) => x \in Domain(f)   BECAUSE TI2;
 h(f,g,x,y) => mainHypo(f,g)   BECAUSE S12;
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,y>> \in f => y = f[x])   BECAUSE \A(a <- x, b <- y);
-IsFunction(f) => (<<x,y>> \in f => y = f[x])   BECAUSE TI;
+funcVal   BECAUSE THEOREM;
+IsFunction(f) /\ <<x,y>> \in f => y = f[x]   BECAUSE \A(f <- f, x <- x, y <- y);
+IsFunction(f) => (<<x,y>> \in f => y = f[x])   BECAUSE HypoAndToImpl;
 h(f,g,x,y) => (<<x,y>> \in f => y = f[x])   BECAUSE TI2;
 h(f,g,x,y) => y = f[x]   BECAUSE KillMiddleHypo;
 mainHypo(f,g) => (\A x : x \in Domain(f) => f[x] = g[x])   BECAUSE S22;
@@ -418,7 +432,7 @@ QED
 identityBiject == \A d : identity(d) \in Bijections(d,d)
 THEOREM identityBiject
 PROOF
-VARIABLES a,b,d,f,g,i,j,x,y;
+VARIABLES a,b,c,d,f,g,i,j,x,y;
 identityExists   BECAUSE THEOREM;
 x \in identity(d) <=> x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE \A(d <- d, x <- x);
 x \in identity(d) => x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE EquivToImpl;
@@ -466,7 +480,12 @@ cartesianProductCouples   BECAUSE THEOREM;
 <<a,b>> \in identity(d) => (a = b /\ a = identity(d)[a])   BECAUSE CIA;
 (a = b /\ a = identity(d)[a]) => b = identity(d)[a]   BECAUSE E_SCHEME;
 <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
-\A a : \A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
+\A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
+<<a,c>> \in identity(d) => c = identity(d)[a]   BECAUSE \A(b <- c);
+<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = identity(d)[a] /\ c = identity(d)[a]   BECAUSE MergeImplicationsAnd;
+b = identity(d)[a] /\ c = identity(d)[a] => b = c   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE GENERALIZATION;
 IsFunction(identity(d))   BECAUSE IntroAndRight;
 
 \* Prove IsInjection(identity(d))
@@ -585,117 +604,73 @@ constExists   BECAUSE GENERALIZATION;
 QED
 
 
-constVal == \A d : \A c : \A x : x \in d => const(d,c)[x] = c
-THEOREM constVal
-PROOF
-VARIABLES a,b,c,d,x,y,z;
-\* Proof that \A x : x \in d => <<x,c>> \in const(d,c)
-constExists   BECAUSE THEOREM;
-<<x,c>> \in const(d,c) <=> (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c)
-   BECAUSE \A(d <- d, c <- c, x <- <<x,c>>);
-(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c) => <<x,c>> \in const(d,c)
-   BECAUSE EquivToImplReverse;
-fstExists   BECAUSE THEOREM;
-x = fst(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
-sndExists   BECAUSE THEOREM;
-c = snd(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
-c = snd(<<x,c>>) => snd(<<x,c>>) = c   BECAUSE E_SCHEME;
-snd(<<x,c>>) = c   BECAUSE MODUS_PONENS;
-(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d)
-   => (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d /\ snd(<<x,c>>) = c)   BECAUSE IntroAndLeft;
-(IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d) => <<x,c>> \in const(d,c)   BECAUSE TI;
-equalSelf   BECAUSE THEOREM;
-<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
-IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
-\A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
-IsCouple(<<x,c>>)   BECAUSE \A(a <- x, b <- c);
-fst(<<x,c>>) \in d => (IsCouple(<<x,c>>) /\ fst(<<x,c>>) \in d)   BECAUSE IntroAndRight;
-fst(<<x,c>>) \in d => <<x,c>> \in const(d,c)   BECAUSE TI;
-\A x : \A y : x = y => (x \in d <=> y \in d)   BECAUSE E_SCHEME;
-x = fst(<<x,c>>) => (x \in d <=> fst(<<x,c>>) \in d)   BECAUSE \A(x <- x, y <- fst(<<x,c>>));
-x \in d <=> fst(<<x,c>>) \in d   BECAUSE MODUS_PONENS;
-x \in d => fst(<<x,c>>) \in d   BECAUSE EquivToImpl;
-x \in d => <<x,c>> \in const(d,c)   BECAUSE TI;
-\A z : \A y : z = y => (<<x,z>> \in const(d,c) <=> <<x,y>> \in const(d,c))   BECAUSE E_SCHEME;
-z = c => (<<x,z>> \in const(d,c) <=> <<x,c>> \in const(d,c))   BECAUSE \A(z <- z, y <- c);
-mergeImpl(a,b,c,d) == (a => b) => ((c => (d <=> b)) => (a /\ c => d))   PROPO_TAUTO;
-x \in d /\ z = c => <<x,z>> \in const(d,c)   BECAUSE mergeImpl;
-
-\* Then prove the unicity of the image of x
-<<x,z>> \in const(d,c) <=> (IsCouple(<<x,z>>) /\ fst(<<x,z>>) \in d /\ snd(<<x,z>>) = c)
-   BECAUSE \A(d <- d, c <- c, x <- <<x,z>>);
-<<x,z>> \in const(d,c) => (IsCouple(<<x,z>>) /\ fst(<<x,z>>) \in d /\ snd(<<x,z>>) = c)
-   BECAUSE EquivToImpl;
-(IsCouple(<<x,z>>) /\ fst(<<x,z>>) \in d /\ snd(<<x,z>>) = c) => snd(<<x,z>>) = c   BECAUSE S22;
-<<x,z>> \in const(d,c) => snd(<<x,z>>) = c   BECAUSE TI;
-z = snd(<<x,z>>)   BECAUSE \A(a <- x, b <- z);
-z = snd(<<x,z>>) => snd(<<x,z>>) = z   BECAUSE E_SCHEME;
-snd(<<x,z>>) = z   BECAUSE MODUS_PONENS;
-snd(<<x,z>>) = c => (snd(<<x,z>>) = z /\ snd(<<x,z>>) = c)  BECAUSE IntroAndRight;
-(snd(<<x,z>>) = z /\ snd(<<x,z>>) = c) => z = c   BECAUSE E_SCHEME;
-snd(<<x,z>>) = c => z = c  BECAUSE TI;
-<<x,z>> \in const(d,c) => z = c   BECAUSE TI;
-x \in d => (<<x,z>> \in const(d,c) => z = c)   BECAUSE PT1;
-x \in d /\ <<x,z>> \in const(d,c) => z = c   BECAUSE HypoImplToAnd;
-x \in d => (z = c <=> <<x,z>> \in const(d,c))   BECAUSE HIE;
-\A z : x \in d => (z = c <=> <<x,z>> \in const(d,c))   BECAUSE GENERALIZATION;
-x \in d => (\A z : z = c <=> <<x,z>> \in const(d,c))   BECAUSE Q_SCHEME;
-
-(\A z : z = c <=> <<x,z>> \in const(d,c)) => \E y : \A z : z = y <=> <<x,z>> \in const(d,c)   BECAUSE \E(y <- c);
-(\E y : \A z : z = y <=> <<x,z>> \in const(d,c))
-   => \A z : z = const(d,c)[x] <=> <<x,z>> \in const(d,c)   BECAUSE CHOOSE const(d,c)[x];
-x \in d => \A z : z = const(d,c)[x] <=> <<x,z>> \in const(d,c)   BECAUSE TI2;
-(\A z : z = const(d,c)[x] <=> <<x,z>> \in const(d,c)) => (c = const(d,c)[x] <=> <<x,c>> \in const(d,c))   BECAUSE \A(z <- c);
-x \in d => (c = const(d,c)[x] <=> <<x,c>> \in const(d,c))   BECAUSE TI;
-killCase(a,b,c) == (a => b) => ((a => (c <=> b)) => (a => c))   PROPO_TAUTO;
-x \in d => c = const(d,c)[x]   BECAUSE killCase;
-c = const(d,c)[x] => const(d,c)[x] = c   BECAUSE E_SCHEME;
-x \in d => const(d,c)[x] = c   BECAUSE TI;
-constVal   BECAUSE GENERALIZATION;
-QED
-
-constFunc == \A d : \A c : IsFunction(const(d,c))
+constFunc == \A d : \A k : IsFunction(const(d,k)) /\ \A x : x \in d => const(d,k)[x] = k
 THEOREM constFunc
 PROOF
-VARIABLES a,b,c,d,x,y;
+VARIABLES a,b,c,d,f,k,x,y,z;
 constExists   BECAUSE THEOREM;
-x \in const(d,c) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) = c)   BECAUSE \A(d <- d, c <- c, x <- x);
-x \in const(d,c) => (IsCouple(x) /\ fst(x) \in d /\ snd(x) = c)   BECAUSE EquivToImpl;
-(IsCouple(x) /\ fst(x) \in d /\ snd(x) = c) => IsCouple(x)   BECAUSE S13;
-x \in const(d,c) => IsCouple(x)   BECAUSE TI;
-IsGraph(const(d,c))   BECAUSE GENERALIZATION;
+x \in const(d,k) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) = k)   BECAUSE \A(d <- d, c <- k, x <- x);
+x \in const(d,k) => (IsCouple(x) /\ fst(x) \in d /\ snd(x) = k)   BECAUSE EquivToImpl;
+(IsCouple(x) /\ fst(x) \in d /\ snd(x) = k) => IsCouple(x)   BECAUSE S13;
+x \in const(d,k) => IsCouple(x)   BECAUSE TI;
+IsGraph(const(d,k))   BECAUSE GENERALIZATION;
 
-<<a,b>> \in const(d,c) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c)
-   BECAUSE \A(d <- d, c <- c, x <- <<a,b>>);
-<<a,b>> \in const(d,c) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c)
-   BECAUSE EquivToImpl;
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => snd(<<a,b>>) = c   BECAUSE S22;
-<<a,b>> \in const(d,c) => snd(<<a,b>>) = c   BECAUSE TI;
+\* Prove the unicity of the image of a
+<<a,b>> \in const(d,k) <=> (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = k)
+   BECAUSE \A(d <- d, c <- k, x <- <<a,b>>);
+<<a,b>> \in const(d,k) => (IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = k)   BECAUSE EquivToImpl;
+(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = k) => snd(<<a,b>>) = k   BECAUSE S22;
+<<a,b>> \in const(d,k) => snd(<<a,b>>) = k   BECAUSE TI;
 sndExists   BECAUSE THEOREM;
 b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
 b = snd(<<a,b>>) => snd(<<a,b>>) = b   BECAUSE E_SCHEME;
 snd(<<a,b>>) = b   BECAUSE MODUS_PONENS;
-(snd(<<a,b>>) = b /\ snd(<<a,b>>) = c) => b = c   BECAUSE E_SCHEME;
-snd(<<a,b>>) = c => (snd(<<a,b>>) = b /\ snd(<<a,b>>) = c)   BECAUSE IntroAndRight;
-snd(<<a,b>>) = c => b = c   BECAUSE TI;
-<<a,b>> \in const(d,c) => b = c   BECAUSE TI;
-constVal   BECAUSE THEOREM;
-a \in d => const(d,c)[a] = c   BECAUSE \A(d <- d, c <- c, x <- a);
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => fst(<<a,b>>) \in d   BECAUSE S23;
-\A a : \A b : a = b => (a \in d <=> b \in d)   BECAUSE E_SCHEME;
-a = fst(<<a,b>>) => (a \in d <=> fst(<<a,b>>) \in d)   BECAUSE \A(a <- a, b <- fst(<<a,b>>));
+<<a,b>> \in const(d,k) => snd(<<a,b>>) = b   BECAUSE PT1;
+<<a,b>> \in const(d,k) => snd(<<a,b>>) = b /\ snd(<<a,b>>) = k   BECAUSE CIA;
+snd(<<a,b>>) = b /\ snd(<<a,b>>) = k => b = k   BECAUSE E_SCHEME;
+<<a,b>> \in const(d,k) => b = k   BECAUSE TI;
+\A b : <<a,b>> \in const(d,k) => b = k   BECAUSE GENERALIZATION;
+<<a,c>> \in const(d,k) => c = k   BECAUSE \A(b <- c);
+<<a,b>> \in const(d,k) /\ <<a,c>> \in const(d,k) => b = k /\ c = k   BECAUSE MergeImplicationsAnd;
+b = k /\ c = k => b = c   BECAUSE E_SCHEME;
+<<a,b>> \in const(d,k) /\ <<a,c>> \in const(d,k) => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in const(d,k) /\ <<a,c>> \in const(d,k) => b = c   BECAUSE GENERALIZATION;
+IsFunction(const(d,k))   BECAUSE IntroAndRight;
+
+\* Proof that \A x : x \in d => <<x,k>> \in const(d,k)
+<<x,k>> \in const(d,k) <=> (IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d /\ snd(<<x,k>>) = k)
+   BECAUSE \A(d <- d, c <- k, x <- <<x,k>>);
+(IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d /\ snd(<<x,k>>) = k) => <<x,k>> \in const(d,k)
+   BECAUSE EquivToImplReverse;
 fstExists   BECAUSE THEOREM;
-a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
-(a \in d <=> fst(<<a,b>>) \in d)   BECAUSE MODUS_PONENS;
-fst(<<a,b>>) \in d => a \in d   BECAUSE EquivToImplReverse;
-(IsCouple(<<a,b>>) /\ fst(<<a,b>>) \in d /\ snd(<<a,b>>) = c) => a \in d   BECAUSE TI;
-<<a,b>> \in const(d,c) => a \in d   BECAUSE TI;
-<<a,b>> \in const(d,c) => const(d,c)[a] = c   BECAUSE TI;
-<<a,b>> \in const(d,c) => (b = c /\ const(d,c)[a] = c)   BECAUSE CIA;
-(b = c /\ const(d,c)[a] = c) => b = const(d,c)[a]   BECAUSE E_SCHEME;
-<<a,b>> \in const(d,c) => b = const(d,c)[a]   BECAUSE TI;
-\A a : \A b : <<a,b>> \in const(d,c) => b = const(d,c)[a]   BECAUSE GENERALIZATION;
-IsFunction(const(d,c))   BECAUSE IntroAndRight;
+x = fst(<<x,k>>)   BECAUSE \A(a <- x, b <- k);
+k = snd(<<x,k>>)   BECAUSE \A(a <- x, b <- k);
+k = snd(<<x,k>>) => snd(<<x,k>>) = k   BECAUSE E_SCHEME;
+snd(<<x,k>>) = k   BECAUSE MODUS_PONENS;
+(IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d)
+   => (IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d /\ snd(<<x,k>>) = k)   BECAUSE IntroAndLeft;
+(IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d) => <<x,k>> \in const(d,k)   BECAUSE TI;
+equalSelf   BECAUSE THEOREM;
+<<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
+IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
+\A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
+IsCouple(<<x,k>>)   BECAUSE \A(a <- x, b <- k);
+fst(<<x,k>>) \in d => (IsCouple(<<x,k>>) /\ fst(<<x,k>>) \in d)   BECAUSE IntroAndRight;
+fst(<<x,k>>) \in d => <<x,k>> \in const(d,k)   BECAUSE TI;
+\A x : \A y : x = y => (x \in d <=> y \in d)   BECAUSE E_SCHEME;
+x = fst(<<x,k>>) => (x \in d <=> fst(<<x,k>>) \in d)   BECAUSE \A(x <- x, y <- fst(<<x,k>>));
+x \in d <=> fst(<<x,k>>) \in d   BECAUSE MODUS_PONENS;
+x \in d => fst(<<x,k>>) \in d   BECAUSE EquivToImpl;
+x \in d => <<x,k>> \in const(d,k)   BECAUSE TI;
+
+funcVal   BECAUSE THEOREM;
+IsFunction(const(d,k)) /\ <<x,k>> \in const(d,k) => k = const(d,k)[x]   BECAUSE \A(f <- const(d,k), x <- x, y <- k);
+x \in d => IsFunction(const(d,k))   BECAUSE PT1;
+x \in d => IsFunction(const(d,k)) /\ <<x,k>> \in const(d,k)   BECAUSE CIA;
+k = const(d,k)[x] => const(d,k)[x] = k   BECAUSE E_SCHEME;
+x \in d => const(d,k)[x] = k   BECAUSE TI2;
+\A x : x \in d => const(d,k)[x] = k   BECAUSE GENERALIZATION;
+IsFunction(const(d,k)) /\ \A x : x \in d => const(d,k)[x] = k   BECAUSE IntroAndRight;
 constFunc   BECAUSE GENERALIZATION;
 QED
 
@@ -708,14 +683,16 @@ QED
 emptyFunction == IsInjection({})
 THEOREM emptyFunction
 PROOF
-VARIABLES a,b,x;
+VARIABLES a,b,c,x;
 emptySetExists   BECAUSE THEOREM;
 x \notin {}   BECAUSE \A(x <- x);
 x \in {} => IsCouple(x)   BECAUSE Explosion;
 IsGraph({})   BECAUSE GENERALIZATION;
 <<a,b>> \notin {}   BECAUSE \A(x <- <<a,b>>);
-<<a,b>> \in {} => b = {}[a]   BECAUSE Explosion;
-\A a : \A b : <<a,b>> \in {} => b = {}[a]   BECAUSE GENERALIZATION;
+<<a,b>> \in {} /\ <<a,c>> \in {} => <<a,b>> \in {}   BECAUSE S12;
+<<a,b>> \in {} => b = c   BECAUSE Explosion;
+<<a,b>> \in {} /\ <<a,c>> \in {} => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in {} /\ <<a,c>> \in {} => b = c   BECAUSE GENERALIZATION;
 IsFunction({})   BECAUSE IntroAndRight;
 <<a,b>> \in {} => a = pre({},b)   BECAUSE Explosion;
 \A a : \A b : <<a,b>> \in {} => a = pre({},b)   BECAUSE GENERALIZATION;
@@ -776,11 +753,11 @@ pre(f,x) = pre(f,y) => (<<pre(f,x),x>> \in f <=> <<pre(f,y),x>> \in f)   BECAUSE
 (x \in Image(f) /\ y \in Image(f) /\ pre(f,x) = pre(f,y))
    => (<<pre(f,y),x>> \in f /\ <<pre(f,y),y>> \in f)   BECAUSE TI;
 
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- y);
-IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE TI;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE \A(a <- pre(f,y), b <- x);
-IsFunction(f) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE TI;
+funcVal   BECAUSE THEOREM;
+IsFunction(f) /\ <<pre(f,y),y>> \in f => y = f[pre(f,y)]   BECAUSE \A(f <- f, x <- pre(f,y), y <- y);
+IsFunction(f) => (<<pre(f,y),y>> \in f => y = f[pre(f,y)])   BECAUSE HypoAndToImpl;
+IsFunction(f) /\ <<pre(f,y),x>> \in f => x = f[pre(f,y)]   BECAUSE \A(f <- f, x <- pre(f,y), y <- x);
+IsFunction(f) => (<<pre(f,y),x>> \in f => x = f[pre(f,y)])   BECAUSE HypoAndToImpl;
 IsFunction(f) => ((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
    BECAUSE CIA;
 ((<<pre(f,y),x>> \in f => x = f[pre(f,y)]) /\ (<<pre(f,y),y>> \in f => y = f[pre(f,y)]))
@@ -1140,57 +1117,24 @@ IsCouple(y) => y = <<fst(y), snd(y)>>   BECAUSE \A(c <- y);
 <<x,y>> \in cloneGraph(d) => <<x,y>> \in cloneGraph(d)   BECAUSE ImplySelf;
 <<x,y>> \in cloneGraph(d) => (<<x,y>> \in cloneGraph(d) /\ y = <<fst(y),snd(y)>>)   BECAUSE CIA;
 <<x,y>> \in cloneGraph(d) => y = <<x,x>>   BECAUSE TI;
-(IsCouple(<<x,y>>) /\ fst(<<x,y>>) \in d /\ snd(<<x,y>>) \in (d \X d)) => fst(<<x,y>>) \in d   BECAUSE S23;
-<<x,y>> \in (d \X (d \X d)) => fst(<<x,y>>) \in d   BECAUSE TI;
-<<x,y>> \in cloneGraph(d) => fst(<<x,y>>) \in d   BECAUSE TI;
-\A y : \A x : y = x => (y \in d <=> x \in d)   BECAUSE E_SCHEME;
-x = fst(<<x,y>>) => (x \in d <=> fst(<<x,y>>) \in d)   BECAUSE \A(y <- x, x <- fst(<<x,y>>));
-x \in d <=> fst(<<x,y>>) \in d   BECAUSE MODUS_PONENS;
-fst(<<x,y>>) \in d => x \in d   BECAUSE EquivToImplReverse;
-<<x,y>> \in cloneGraph(d) => x \in d   BECAUSE TI;
-<<x,y>> \in cloneGraph(d) => (x \in d /\ y = <<x,x>>)  BECAUSE CIA;
-
-\* Prove that IsFunction(cloneGraph(d))
 \A y : <<x,y>> \in cloneGraph(d) => y = <<x,x>>   BECAUSE GENERALIZATION;
-<<x,cloneGraph(d)[x]>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE \A(y <- cloneGraph(d)[x]);
-(\E y : \A z : z = y <=> <<x,z>> \in cloneGraph(d)) => \A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d)
-   BECAUSE CHOOSE cloneGraph(d)[x];
-\A z : \A y : z = y => (<<x,z>> \in cloneGraph(d) <=> <<x,y>> \in cloneGraph(d))   BECAUSE E_SCHEME;
-z = y => (<<x,z>> \in cloneGraph(d) <=> <<x,y>> \in cloneGraph(d))   BECAUSE \A(z <- z, y <- y);
-cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
-<<x,y>> \in cloneGraph(d) /\ z = y => <<x,z>> \in cloneGraph(d)   BECAUSE cycleHypos;
-\A y : <<x,y>> \in cloneGraph(d) => (x \in d /\ y = <<x,x>>)  BECAUSE GENERALIZATION;
-<<x,z>> \in cloneGraph(d) => (x \in d /\ z = <<x,x>>)  BECAUSE \A(y <- z);
-(x \in d /\ z = <<x,x>>) => z = <<x,x>>   BECAUSE S22;
-<<x,z>> \in cloneGraph(d) => z = <<x,x>>  BECAUSE TI;
-\A z : <<x,z>> \in cloneGraph(d) => z = <<x,x>>  BECAUSE GENERALIZATION;
-<<x,y>> \in cloneGraph(d) => y = <<x,x>>  BECAUSE \A(z <- y);
-<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => y = <<x,x>> /\ z = <<x,x>>  BECAUSE MergeImplicationsAnd;
+<<x,z>> \in cloneGraph(d) => z = <<x,x>>   BECAUSE \A(y <- z);
+<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => y = <<x,x>> /\ z = <<x,x>>   BECAUSE MergeImplicationsAnd;
 y = <<x,x>> /\ z = <<x,x>> => y = z   BECAUSE E_SCHEME;
-y = z => z = y   BECAUSE E_SCHEME;
-<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => z = y   BECAUSE TI2;
-<<x,y>> \in cloneGraph(d) => (z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE HIE;
-\A z : <<x,y>> \in cloneGraph(d) => (z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE GENERALIZATION;
-<<x,y>> \in cloneGraph(d) => (\A z : z = y <=> <<x,z>> \in cloneGraph(d))   BECAUSE Q_SCHEME;
-(\A z : z = y <=> <<x,z>> \in cloneGraph(d)) => \E y : \A z : z = y <=> <<x,z>> \in cloneGraph(d)   BECAUSE \E(y <- y);
-<<x,y>> \in cloneGraph(d) => \A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d)   BECAUSE TI2;
-(\A z : z = cloneGraph(d)[x] <=> <<x,z>> \in cloneGraph(d))
-   => (cloneGraph(d)[x] = cloneGraph(d)[x] <=> <<x,cloneGraph(d)[x]>> \in cloneGraph(d))   BECAUSE \A(z <- cloneGraph(d)[x]);
-<<x,y>> \in cloneGraph(d) => (cloneGraph(d)[x] = cloneGraph(d)[x] <=> <<x,cloneGraph(d)[x]>> \in cloneGraph(d))   BECAUSE TI;
-equalSelf   BECAUSE THEOREM;
-cloneGraph(d)[x] = cloneGraph(d)[x]   BECAUSE \A(a <- cloneGraph(d)[x]);
-implyTrueEquiv(t,h,a) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
-<<x,y>> \in cloneGraph(d) => <<x,cloneGraph(d)[x]>> \in cloneGraph(d)   BECAUSE implyTrueEquiv;
-<<x,y>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE TI;
-<<x,y>> \in cloneGraph(d) => (y = <<x,x>> /\ cloneGraph(d)[x] = <<x,x>>)   BECAUSE CIA;
-(y = <<x,x>> /\ cloneGraph(d)[x] = <<x,x>>) => y = cloneGraph(d)[x]   BECAUSE E_SCHEME;
-<<x,y>> \in cloneGraph(d) => y = cloneGraph(d)[x]   BECAUSE TI;
-\A x : \A y : <<x,y>> \in cloneGraph(d) => y = cloneGraph(d)[x]   BECAUSE GENERALIZATION;
-<<a,b>> \in cloneGraph(d) => b = cloneGraph(d)[a]   BECAUSE \A(x <- a, y <- b);
-\A a : \A b : <<a,b>> \in cloneGraph(d) => b = cloneGraph(d)[a]   BECAUSE GENERALIZATION;
+<<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => y = z   BECAUSE TI;
+\A x : \A y : \A z : <<x,y>> \in cloneGraph(d) /\ <<x,z>> \in cloneGraph(d) => y = z   BECAUSE GENERALIZATION;
+<<a,b>> \in cloneGraph(d) /\ <<a,c>> \in cloneGraph(d) => b = c   BECAUSE \A(x <- a, y <- b, z <- c);
+\A a : \A b : \A c : <<a,b>> \in cloneGraph(d) /\ <<a,c>> \in cloneGraph(d) => b = c   BECAUSE GENERALIZATION;
 IsFunction(cloneGraph(d))   BECAUSE IntroAndRight;
 
 \* Prove that x \in d => <<x, <<x,x>> >> \in cloneGraph(d)
+funcVal   BECAUSE THEOREM;
+IsFunction(cloneGraph(d)) /\ <<x,y>> \in cloneGraph(d) => y = cloneGraph(d)[x]   BECAUSE \A(f <- cloneGraph(d), x <- x, y <- y);
+<<x,y>> \in cloneGraph(d) => IsFunction(cloneGraph(d)) /\ <<x,y>> \in cloneGraph(d)   BECAUSE IntroAndRight;
+<<x,y>> \in cloneGraph(d) => y = cloneGraph(d)[x]   BECAUSE TI;
+<<x,y>> \in cloneGraph(d) => y = cloneGraph(d)[x] /\ y = <<x,x>>   BECAUSE CIA;
+y = cloneGraph(d)[x] /\ y = <<x,x>> => cloneGraph(d)[x] = <<x,x>>   BECAUSE E_SCHEME;
+<<x,y>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE TI;
 \A y : <<x,y>> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE GENERALIZATION;
 <<x, <<x,x>> >> \in cloneGraph(d) => cloneGraph(d)[x] = <<x,x>>   BECAUSE \A(y <- <<x,x>>);
 <<x, <<x,x>> >> \in cloneGraph(d) <=> (<<x, <<x,x>> >> \in (d \X (d \X d)) /\ (fst(<<x, <<x,x>> >>) = fst(snd(<<x, <<x,x>> >>)) /\ fst(<<x, <<x,x>> >>) = snd(snd(<<x, <<x,x>> >>))))   BECAUSE \A(x <- <<x, <<x,x>> >>);
@@ -1214,6 +1158,7 @@ x \in d => <<x,<<x,x>> >> \in (d \X (d \X d))   BECAUSE TI;
 <<x, <<x,x>> >> \in (d \X (d \X d)) => (<<x, <<x,x>> >> \in (d \X (d \X d)) /\ (fst(<<x, <<x,x>> >>) = fst(snd(<<x, <<x,x>> >>)) /\ fst(<<x, <<x,x>> >>) = snd(snd(<<x, <<x,x>> >>))))   BECAUSE IntroAndLeft;
 <<x, <<x,x>> >> \in (d \X (d \X d)) => <<x, <<x,x>> >> \in cloneGraph(d)   BECAUSE TI;
 x \in d => <<x, <<x,x>> >> \in cloneGraph(d)   BECAUSE TI;
+
 \A a : \A b : a = b => (<<x,a>> \in cloneGraph(d) <=> <<x,b>> \in cloneGraph(d))   BECAUSE E_SCHEME;
 y = <<x,x>> => (<<x,y>> \in cloneGraph(d) <=> <<x,<<x,x>> >> \in cloneGraph(d))   BECAUSE \A(a <- y, b <- <<x,x>>);
 (y = <<x,x>> /\ <<x,<<x,x>> >> \in cloneGraph(d)) => <<x,y>> \in cloneGraph(d)   BECAUSE HypoEquivToAndReverse;
@@ -1222,6 +1167,11 @@ y = <<x,x>> => y = <<x,x>>   BECAUSE ImplySelf;
 (<<x,<<x,x>> >> \in cloneGraph(d) /\ y = <<x,x>>) => (y = <<x,x>> /\ <<x,<<x,x>> >> \in cloneGraph(d))   BECAUSE AndSymmetry;
 (<<x,<<x,x>> >> \in cloneGraph(d) /\ y = <<x,x>>) => <<x,y>> \in cloneGraph(d)   BECAUSE TI;
 (x \in d /\ y = <<x,x>>) => <<x,y>> \in cloneGraph(d)   BECAUSE TI;
+(x \in d /\ y \in d \X d) <=> <<x,y>> \in (d \X (d \X d))   BECAUSE \A(x <- d, y <- d \X d, a <- x, b <- y);
+<<x,y>> \in (d \X (d \X d)) => (x \in d /\ y \in d \X d)   BECAUSE EquivToImplReverse;
+(x \in d /\ y \in d \X d) => x \in d   BECAUSE S12;
+<<x,y>> \in cloneGraph(d) => x \in d   BECAUSE TI2;
+<<x,y>> \in cloneGraph(d) => x \in d /\ y = <<x,x>>   BECAUSE CIA;
 <<x,y>> \in cloneGraph(d) <=> (x \in d /\ y = <<x,x>>)   BECAUSE IntroEquiv;
 \A x : \A y : <<x,y>> \in cloneGraph(d) <=> (x \in d /\ y = <<x,x>>)   BECAUSE GENERALIZATION;
 IsFunction(cloneGraph(d)) /\ \A x : \A y : <<x,y>> \in cloneGraph(d) <=> (x \in d /\ y = <<x,x>>)   BECAUSE IntroAndRight;
@@ -1359,70 +1309,7 @@ QED
 productFuncIsFunc == \A f : \A g : (IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))
 THEOREM productFuncIsFunc
 PROOF
-VARIABLES a,b,c,f,g,h,x,y;
-productFuncVal   BECAUSE THEOREM;
-<<x,y>> \in productFunc(f,g) => (IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g)
-   BECAUSE \A(f <- f, g <- g, x <- x, y <- y);
-IsFunction(f) => \A a : \A b : <<a,b>> \in f => b = f[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in f => b = f[a]) => (<<x,fst(y)>> \in f => fst(y) = f[x])   BECAUSE \A(a <- x, b <- fst(y));
-IsFunction(f) => (<<x,fst(y)>> \in f => fst(y) = f[x])   BECAUSE TI;
-<<x,fst(y)>> \in f => (IsFunction(f) => fst(y) = f[x])   BECAUSE SwitchHypos;
-(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => <<x,fst(y)>> \in f   BECAUSE S23;
-<<x,y>> \in productFunc(f,g) => <<x,fst(y)>> \in f   BECAUSE TI;
-<<x,y>> \in productFunc(f,g) => (IsFunction(f) => fst(y) = f[x])   BECAUSE TI;
-
-IsFunction(g) => \A a : \A b : <<a,b>> \in g => b = g[a]   BECAUSE S22;
-(\A a : \A b : <<a,b>> \in g => b = g[a]) => (<<x,snd(y)>> \in g => snd(y) = g[x])   BECAUSE \A(a <- x, b <- snd(y));
-IsFunction(g) => (<<x,snd(y)>> \in g => snd(y) = g[x])   BECAUSE TI;
-<<x,snd(y)>> \in g => (IsFunction(g) => snd(y) = g[x])   BECAUSE SwitchHypos;
-(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => <<x,snd(y)>> \in g   BECAUSE S22;
-<<x,y>> \in productFunc(f,g) => <<x,snd(y)>> \in g   BECAUSE TI;
-<<x,y>> \in productFunc(f,g) => (IsFunction(g) => snd(y) = g[x])   BECAUSE TI;
-<<x,y>> \in productFunc(f,g) => ((IsFunction(f) => fst(y) = f[x]) /\ (IsFunction(g) => snd(y) = g[x]))
-   BECAUSE CIA;
-mergeHypos(a,b,c,d) == ((a => b) /\ (c => d)) => ((a /\ c) => (b /\ d))   PROPO_TAUTO;
-((IsFunction(f) => fst(y) = f[x]) /\ (IsFunction(g) => snd(y) = g[x])) => ((IsFunction(f) /\ IsFunction(g)) => (fst(y) = f[x] /\ snd(y) = g[x]))   BECAUSE mergeHypos;
-<<x,y>> \in productFunc(f,g) => ((IsFunction(f) /\ IsFunction(g)) => (fst(y) = f[x] /\ snd(y) = g[x]))   BECAUSE TI;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => (fst(y) = f[x] /\ snd(y) = g[x])   BECAUSE HypoImplToAnd;
-(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => IsCouple(y)   BECAUSE S13;
-<<x,y>> \in productFunc(f,g) => IsCouple(y)   BECAUSE TI;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => <<x,y>> \in productFunc(f,g)   BECAUSE S12;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => IsCouple(y)   BECAUSE TI;
-tupleComposition   BECAUSE THEOREM;
-IsCouple(y) => y = <<fst(y), snd(y)>>   BECAUSE \A(c <- y);
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = <<fst(y), snd(y)>>   BECAUSE TI;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g)))
-   => (fst(y) = f[x] /\ snd(y) = g[x] /\ y = <<fst(y),snd(y)>>)   BECAUSE CIA;
-\A a : \A b : \A f : \A g : (a = b /\ f = g) => (y = <<a,f>> <=> y = <<b,g>>)   BECAUSE E_SCHEME;
-(fst(y) = f[x] /\ snd(y) = g[x]) => (y = <<fst(y),snd(y)>> <=> y = <<f[x],g[x]>>)   BECAUSE \A(a <- fst(y), b <- f[x], f <- snd(y), g <- g[x]);
-(fst(y) = f[x] /\ snd(y) = g[x] /\ y = <<fst(y),snd(y)>>) => y = <<f[x],g[x]>>   BECAUSE HypoEquivToAnd;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = <<f[x],g[x]>>   BECAUSE TI;
-\A y : (<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = <<f[x],g[x]>>   BECAUSE GENERALIZATION;
-(<<x,productFunc(f,g)[x]>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g)))
-   => productFunc(f,g)[x] = <<f[x],g[x]>>   BECAUSE \A(y <- productFunc(f,g)[x]);
-
-(\E y : \A z : z = y <=> <<x,z>> \in productFunc(f,g)) => \A z : z = productFunc(f,g)[x] <=> <<x,z>> \in productFunc(f,g)
-   BECAUSE CHOOSE productFunc(f,g)[x];
-<<x,y>> \in productFunc(f,g) => \E y : <<x,y>> \in productFunc(f,g)   BECAUSE \E(y <- y);
-<<x,y>> \in productFunc(f,g) => <<x,productFunc(f,g)[x]>> \in productFunc(f,g)   BECAUSE TI;
-
-(IsFunction(f) /\ IsFunction(g)) => (IsFunction(f) /\ IsFunction(g))   BECAUSE ImplySelf;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g)))
-   => (<<x,productFunc(f,g)[x]>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g)))
-   BECAUSE MergeImplicationsAnd;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => productFunc(f,g)[x] = <<f[x],g[x]>>   BECAUSE TI;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => (y = <<f[x],g[x]>> /\ productFunc(f,g)[x] = <<f[x],g[x]>>)   BECAUSE CIA;
-(y = <<f[x],g[x]>> /\ productFunc(f,g)[x] = <<f[x],g[x]>>) => y = productFunc(f,g)[x]   BECAUSE E_SCHEME;
-(<<x,y>> \in productFunc(f,g) /\ (IsFunction(f) /\ IsFunction(g))) => y = productFunc(f,g)[x]   BECAUSE TI;
-<<x,y>> \in productFunc(f,g) => ((IsFunction(f) /\ IsFunction(g)) => y = productFunc(f,g)[x])   BECAUSE HypoAndToImpl;
-(IsFunction(f) /\ IsFunction(g)) => (<<x,y>> \in productFunc(f,g) => y = productFunc(f,g)[x])   BECAUSE SwitchHypos;
-\A x : \A y : (IsFunction(f) /\ IsFunction(g)) => (<<x,y>> \in productFunc(f,g) => y = productFunc(f,g)[x])   BECAUSE GENERALIZATION;
-(IsFunction(f) /\ IsFunction(g)) => (<<a,b>> \in productFunc(f,g) => b = productFunc(f,g)[a])   BECAUSE \A(x <- a, y <- b);
-\A b : (IsFunction(f) /\ IsFunction(g)) => (<<a,b>> \in productFunc(f,g) => b = productFunc(f,g)[a])   BECAUSE GENERALIZATION;
-(IsFunction(f) /\ IsFunction(g)) => (\A b : <<a,b>> \in productFunc(f,g) => b = productFunc(f,g)[a])   BECAUSE Q_SCHEME;
-\A a : (IsFunction(f) /\ IsFunction(g)) => (\A b : <<a,b>> \in productFunc(f,g) => b = productFunc(f,g)[a])   BECAUSE GENERALIZATION;
-(IsFunction(f) /\ IsFunction(g)) => (\A a : \A b : <<a,b>> \in productFunc(f,g) => b = productFunc(f,g)[a])   BECAUSE Q_SCHEME;
-
+VARIABLES a,b,c,f,g,h,x,y,z;
 composeExists   BECAUSE THEOREM;
 x \in productFunc(f,g) <=> (IsCouple(x) /\ \E t : <<fst(x),t>> \in clone(Domain(f) \intersect Domain(g)) /\ <<t,snd(x)>> \in parallelFunc(f,g))
    BECAUSE \A(g <- parallelFunc(f,g), h <- clone(Domain(f) \intersect Domain(g)), x <- x);
@@ -1430,8 +1317,63 @@ x \in productFunc(f,g) => (IsCouple(x) /\ \E t : <<fst(x),t>> \in clone(Domain(f
 (IsCouple(x) /\ \E t : <<fst(x),t>> \in clone(Domain(f) \intersect Domain(g)) /\ <<t,snd(x)>> \in parallelFunc(f,g)) => IsCouple(x)   BECAUSE S12;
 x \in productFunc(f,g) => IsCouple(x)   BECAUSE TI;
 IsGraph(productFunc(f,g))   BECAUSE GENERALIZATION;
-(IsFunction(f) /\ IsFunction(g)) => IsGraph(productFunc(f,g))   BECAUSE PT1;
-(IsFunction(f) /\ IsFunction(g)) => IsFunction(productFunc(f,g))   BECAUSE CIA;
+
+hf(f,g) == IsFunction(f) /\ IsFunction(g);
+hf(f,g) => IsFunction(f)   BECAUSE S12;
+hf(f,g) => IsFunction(g)   BECAUSE S22;
+\* Proof that hf(f,g) /\ <<x,y>> \in productFunc(f,g) => y = <<f[x], g[x]>>
+hfxy(f,g,x,y) == hf(f,g) /\ <<x,y>> \in productFunc(f,g);
+hfxy(f,g,x,y) => hf(f,g)   BECAUSE S12;
+hfxy(f,g,x,y) => <<x,y>> \in productFunc(f,g)   BECAUSE S22;
+productFuncVal   BECAUSE THEOREM;
+<<x,y>> \in productFunc(f,g) => (IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g)
+   BECAUSE \A(f <- f, g <- g, x <- x, y <- y);
+(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => IsCouple(y)   BECAUSE S13;
+(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => <<x,fst(y)>> \in f   BECAUSE S23;
+(IsCouple(y) /\ <<x,fst(y)>> \in f /\ <<x,snd(y)>> \in g) => <<x,snd(y)>> \in g   BECAUSE S22;
+hfxy(f,g,x,y) => <<x,fst(y)>> \in f   BECAUSE TI2;
+hfxy(f,g,x,y) => IsFunction(f)   BECAUSE TI;
+funcVal   BECAUSE THEOREM;
+IsFunction(f) /\ <<x,fst(y)>> \in f => fst(y) = f[x]   BECAUSE \A(f <- f, x <- x, y <- fst(y));
+hfxy(f,g,x,y) => IsFunction(f) /\ <<x,fst(y)>> \in f   BECAUSE CIA;
+hfxy(f,g,x,y) => fst(y) = f[x]   BECAUSE TI;
+
+IsFunction(g) /\ <<x,snd(y)>> \in g => snd(y) = g[x]   BECAUSE \A(f <- g, x <- x, y <- snd(y));
+hfxy(f,g,x,y) => <<x,snd(y)>> \in g   BECAUSE TI2;
+hfxy(f,g,x,y) => IsFunction(g)   BECAUSE TI;
+hfxy(f,g,x,y) => IsFunction(g) /\ <<x,snd(y)>> \in g   BECAUSE CIA;
+hfxy(f,g,x,y) => snd(y) = g[x]   BECAUSE TI;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(y) => y = <<fst(y), snd(y)>>   BECAUSE \A(c <- y);
+hfxy(f,g,x,y) => IsCouple(y)   BECAUSE TI2;
+hfxy(f,g,x,y) => y = <<fst(y), snd(y)>>   BECAUSE TI;
+\A x : \A y : \A a : \A b : x = y /\ a = b => (<<x,a>> = <<y,b>>)   BECAUSE E_SCHEME;
+fst(y) = f[x] /\ snd(y) = g[x] => <<fst(y),snd(y)>> = <<f[x],g[x]>>   BECAUSE \A(x <- fst(y), y <- f[x], a <- snd(y), b <- g[x]);
+hfxy(f,g,x,y) => fst(y) = f[x] /\ snd(y) = g[x]   BECAUSE CIA;
+hfxy(f,g,x,y) => <<fst(y),snd(y)>> = <<f[x],g[x]>>   BECAUSE TI;
+<<fst(y),snd(y)>> = <<f[x],g[x]>> => <<f[x],g[x]>> = <<fst(y),snd(y)>>   BECAUSE E_SCHEME;
+hfxy(f,g,x,y) => <<f[x],g[x]>> = <<fst(y),snd(y)>>   BECAUSE TI;
+hfxy(f,g,x,y) => y = <<fst(y), snd(y)>> /\ <<f[x],g[x]>> = <<fst(y),snd(y)>>   BECAUSE CIA;
+y = <<fst(y), snd(y)>> /\ <<f[x],g[x]>> = <<fst(y),snd(y)>> => y = <<f[x],g[x]>>   BECAUSE E_SCHEME;
+hfxy(f,g,x,y) => y = <<f[x],g[x]>>   BECAUSE TI;
+hf(f,g) => (<<x,y>> \in productFunc(f,g) => y = <<f[x], g[x]>>)   BECAUSE HypoAndToImpl;
+\A y : hf(f,g) => (<<x,y>> \in productFunc(f,g) => y = <<f[x], g[x]>>)   BECAUSE GENERALIZATION;
+hf(f,g) => (<<x,z>> \in productFunc(f,g) => z = <<f[x], g[x]>>)   BECAUSE \A(y <- z);
+mergeImpl(h,a,b,c,d) == (h => (a => b)) => ((h => (c => d)) => (h /\ (a /\ c) => b /\ d))   PROPO_TAUTO;
+hf(f,g) /\ (<<x,y>> \in productFunc(f,g) /\ <<x,z>> \in productFunc(f,g)) => y = <<f[x], g[x]>> /\ z = <<f[x], g[x]>>   BECAUSE mergeImpl;
+y = <<f[x], g[x]>> /\ z = <<f[x], g[x]>> => y = z   BECAUSE E_SCHEME;
+hf(f,g) /\ (<<x,y>> \in productFunc(f,g) /\ <<x,z>> \in productFunc(f,g)) => y = z   BECAUSE TI;
+\A x : \A y : \A z : hf(f,g) /\ (<<x,y>> \in productFunc(f,g) /\ <<x,z>> \in productFunc(f,g)) => y = z   BECAUSE GENERALIZATION;
+hf(f,g) /\ (<<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g)) => b = c   BECAUSE \A(x <- a, y <- b, z <- c);
+hf(f,g) => (<<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE HypoAndToImpl;
+\A c : hf(f,g) => (<<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE GENERALIZATION;
+hf(f,g) => (\A c : <<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE Q_SCHEME;
+\A b : hf(f,g) => (\A c : <<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE GENERALIZATION;
+hf(f,g) => (\A b : \A c : <<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE Q_SCHEME;
+\A a : hf(f,g) => (\A b : \A c : <<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE GENERALIZATION;
+hf(f,g) => (\A a : \A b : \A c : <<a,b>> \in productFunc(f,g) /\ <<a,c>> \in productFunc(f,g) => b = c)   BECAUSE Q_SCHEME;
+hf(f,g) => IsGraph(productFunc(f,g))   BECAUSE PT1;
+hf(f,g) => IsFunction(productFunc(f,g))   BECAUSE CIA;
 productFuncIsFunc   BECAUSE GENERALIZATION;
 QED
 
@@ -1447,7 +1389,7 @@ choiceFunctionsExist == \A a : \E f : IsFunction(f)
   /\ \A p : p \subseteq a /\ p # {} => f[p] \in p
 THEOREM choiceFunctionsExist
 PROOF
-VARIABLES a,b,f,i,j,p,x,y,z;
+VARIABLES a,b,c,f,i,j,p,x,y,z;
 \* By separation in (SUBSET a \ {}) \X a, prove cf(a) is a graph
 Choice(p) == CHOOSE z : z \in p;
 \A a : \E b : \A x : x \in b <=> x \in a /\ snd(x) = Choice(fst(x))   BECAUSE AXIOM_SCHEME;
@@ -1480,16 +1422,12 @@ b = snd(<<a,b>>) /\ a = fst(<<a,b>>)   BECAUSE IntroAndRight;
 b = Choice(a) <=> snd(<<a,b>>) = Choice(fst(<<a,b>>))   BECAUSE MODUS_PONENS;
 snd(<<a,b>>) = Choice(fst(<<a,b>>)) => b = Choice(a)   BECAUSE EquivToImplReverse;
 <<a,b>> \in cf(z) => b = Choice(a)   BECAUSE TI;
-<<a,b>> \in cf(z) => \E y : <<a,y>> \in cf(z)   BECAUSE \E(y <- b);
-(\E y : <<a,y>> \in cf(z)) => <<a,cf(z)[a]>> \in cf(z)   BECAUSE CHOOSE cf(z)[a];
-<<a,b>> \in cf(z) => <<a,cf(z)[a]>> \in cf(z)   BECAUSE TI;
 \A b : <<a,b>> \in cf(z) => b = Choice(a)   BECAUSE GENERALIZATION;
-<<a,cf(z)[a]>> \in cf(z) => cf(z)[a] = Choice(a)   BECAUSE \A(b <- cf(z)[a]);
-<<a,b>> \in cf(z) => cf(z)[a] = Choice(a)   BECAUSE TI;
-<<a,b>> \in cf(z) => (b = Choice(a) /\ cf(z)[a] = Choice(a))   BECAUSE CIA;
-(b = Choice(a) /\ cf(z)[a] = Choice(a)) => b = cf(z)[a]   BECAUSE E_SCHEME;
-<<a,b>> \in cf(z) => b = cf(z)[a]   BECAUSE TI;
-\A a : \A b : <<a,b>> \in cf(z) => b = cf(z)[a]   BECAUSE GENERALIZATION;
+<<a,c>> \in cf(z) => c = Choice(a)   BECAUSE \A(b <- c);
+<<a,b>> \in cf(z) /\ <<a,c>> \in cf(z) => b = Choice(a) /\ c = Choice(a)   BECAUSE MergeImplicationsAnd;
+b = Choice(a) /\ c = Choice(a) => b = c   BECAUSE E_SCHEME;
+<<a,b>> \in cf(z) /\ <<a,c>> \in cf(z) => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in cf(z) /\ <<a,c>> \in cf(z) => b = c   BECAUSE GENERALIZATION;
 \A a : IsGraph(cf(a))   BECAUSE GENERALIZATION;
 IsGraph(cf(z))   BECAUSE \A(a <- z);
 IsFunction(cf(z))   BECAUSE IntroAndRight;
@@ -1525,7 +1463,10 @@ Choice(p) = Choice(p)   BECAUSE \A(a <- Choice(p));
 snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE MODUS_PONENS;
 <<p,Choice(p)>> \in (SUBSET a) \X a => <<p,Choice(p)>> \in (SUBSET a) \X a /\ snd(<<p,Choice(p)>>) = Choice(fst(<<p,Choice(p)>>))   BECAUSE IntroAndLeft;
 h(a,p) => <<p,Choice(p)>> \in cf(a)   BECAUSE TI2;
-<<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE \A(a <- p, b <- Choice(p));
+funcVal   BECAUSE THEOREM;
+IsFunction(cf(z)) /\ <<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE \A(f <- cf(z), x <- p, y <- Choice(p));
+<<p,Choice(p)>> \in cf(z) => IsFunction(cf(z)) /\ <<p,Choice(p)>> \in cf(z)   BECAUSE IntroAndRight;
+<<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE TI;
 \A z : <<p,Choice(p)>> \in cf(z) => Choice(p) = cf(z)[p]   BECAUSE GENERALIZATION;
 <<p,Choice(p)>> \in cf(a) => Choice(p) = cf(a)[p]   BECAUSE \A(z <- a);
 h(a,p) => Choice(p) = cf(a)[p]   BECAUSE TI;

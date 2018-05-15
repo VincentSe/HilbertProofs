@@ -68,6 +68,8 @@ int main(int argc, char** argv)
   unsigned int astSort[16];
   unsigned char success = resolve_extends(/*out*/asts, /*out*/astSort);
 
+  fflush(stdout); // in case the destructors below crash
+
   // Destroy asts in reverse order of dependencies.
   // Even in case of error, resolve_extends must cleanup what it did
   // so that the following destruction loop works :

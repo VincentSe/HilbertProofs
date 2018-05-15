@@ -806,6 +806,10 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
   formula* c = make_formula(f->builtInOp,
 			    f->name ? strdup(f->name) : 0,
 			    (struct formula_list*) 0,
+			    // A cloned formula was not written in a FOL file,
+			    // so leave its file and line empty. This information
+			    // will also be used by formula_free, to know
+			    // which formulas own defining formulas.
 			    (const char*) 0,
 			    0);
 

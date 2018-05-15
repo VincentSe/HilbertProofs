@@ -1058,8 +1058,7 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    each case x,y,z. In the special case where each such choice is unique,
    the axiom of choice can be avoided. This unicity is guaranteed when
    formula P starts with an equivalent equality, as in
-   someNewOp(x,y,z) == CHOOSE t : \A s : s = t <=> Q(s,x,y,z)
-
+      someNewOp(x,y,z) == CHOOSE t : \A s : s = t <=> Q(s,x,y,z)
    where variable t has no free occurrences in formula Q,
    otherwise we could have
    CHOOSE t : \A s : s = t <=> s = t
@@ -1076,18 +1075,32 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
    In the extended model M+, F is still false because model extensions
    preserve truth values. Hence T+ does not prove F.
 
-   If some axioms in T derive from an axiom scheme, we might ask whether
+   If some axioms of T derive from an axiom scheme, we might ask whether
    we take as axioms in the new theory the applications of the scheme to
    formulas involving someNewOp. This can break the conservation :
    Choice(a) == CHOOSE x : x \in p
    applied in the separation axiom scheme yields the axiom of choice.
-   For this reason we refuse CHOOSE symbols in axiom schemes, we require
-   CHOOSE_UNIQUE instead. It is conservative to use the new CHOOSE_UNIQUE
-   symbol in an axiom scheme, even when its existence formula is not
-   satisfied : in that case the symbol has no properties, if a proof
-   with the symbol ends with a formula without the symbol, we can replace
-   it in the proof by any value. We will get the proof in the
-   language of the previous theory, ending with the same formula.
+   For this reason we refuse CHOOSE symbols in axiom schemes.
+
+   In the case of CHOOSE_UNIQUE, something nice happens : we
+   do not need to apply the axiom schemes to formulas with the
+   new symbol, because those instances are theorems of T+, not axioms.
+   T+ proves that all instances of axiom schemes on formulas with
+   the new symbol are implied by instances on formulas without the symbol.
+   For this reason, we accept in BECAUSE AXIOM_SCHEME formulas
+   involving CHOOSE_UNIQUE symbols.
+
+   Actually the previous paragraph in only strictly true where the
+   formula P is satisfied, where CHOOSE_UNIQUE does produce the
+   unique element satisfying P. To get back to this case, we can
+   complete any formula P by choosing an arbitrary value like 42,
+   on all x,y,z where \A t : ~P(t,x,y,z). This corresponds
+   to adding a second axiom to T+ :
+      \A x : \A y : \A z : (\A t : ~P(t,x,y,z)) => someNewOp(x,y,z) = 42
+   With this completed formula, all instances of axiom schemes are
+   theorems again, implied by formulas of T involving 42. This is
+   a conservative extension : we accept all instances in BECAUSE
+   AXIOM_SCHEMES, even with an incomplete P.
 
    Syntactically, T+ proves a formula G involving someNewOp(x,y,z) if
    and only if T proves the formula
