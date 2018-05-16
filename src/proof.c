@@ -1151,18 +1151,23 @@ unsigned char find_existence_of_choose(const struct FormulaDList* statement,
 
 */
 short check_choose_statement(const struct FormulaDList* statement,
-			     const formula* chooseReason)
+			     const formula* chooseReason,
+			     const formula_set operators,
+			     const struct formula_list* proofLocalOps) // TODO remove local CHOOSE in proofs
 {
   // axiom scheme : (\E x : P) => P(CHOOSE x : P)
   // For example the empty set :
   // (\E b : \A x : x \notin b) => (\A x : x \notin {})
 
-  const formula* chooseF = get_quantified_formula(chooseReason, chooseUnique);
+  // TODO operands of CHOOSE, substitutions in formula_equal.
+  // Mind variable capture :
+  // fst(c) == CHOOSE_UNIQUE x : \A z : z = x <=> \E y : c = <<z,y>>
+  // problem with fst(x).
 
   const formula* f = statement->jf->formula;
+  const formula* chooseF = get_quantified_formula(chooseReason, chooseUnique);
   if (!chooseF)
     chooseF = get_quantified_formula(chooseReason, choose);
-
   if (!chooseF)
     {
       printf("%s:%d: bad choose reason\n", f->file, f->first_line);
@@ -1284,7 +1289,8 @@ short check_proof_statement(const struct FormulaDList* statement,
       return check_propositional_tautology_statement(statement, assumedProofs,
 						     operators, proofLocalOps);
     case reasonChoose:
-      return check_choose_statement(statement, statement->jf->reason->formula);
+      return check_choose_statement(statement, statement->jf->reason->formula,
+				    operators, proofLocalOps);
 
       // The only checking that looks at the previously proven formulas,
       // to cut proven hypotheses in proven implications.

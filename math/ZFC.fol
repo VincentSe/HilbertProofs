@@ -1263,7 +1263,13 @@ a = z => z = a   BECAUSE E_SCHEME;
 z = a <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE IntroEquiv;
 \A z : z = a <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE GENERALIZATION;
 \E x : \A z : z = x <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE \E(x <- a);
-\A z : z = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE CHOOSE fst(<<a,b>>);
+(\E x : \A z : z = x <=> (\E y : c = <<z,y>>))
+   => \A z : z = fst(c) <=> (\E y : c = <<z,y>>)   BECAUSE CHOOSE fst(c);
+\A c : (\E x : \A z : z = x <=> (\E y : c = <<z,y>>))
+   => \A z : z = fst(c) <=> (\E y : c = <<z,y>>)   BECAUSE GENERALIZATION;
+(\E x : \A z : z = x <=> (\E y : <<a,b>> = <<z,y>>))
+   => \A z : z = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE \A(c <- <<a,b>>);
+\A z : z = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<z,y>>)   BECAUSE MODUS_PONENS;
 a = fst(<<a,b>>) <=> (\E y : <<a,b>> = <<a,y>>)   BECAUSE \A(z <- a);
 a = fst(<<a,b>>)   BECAUSE MODUS_PONENS;
 fstExists   BECAUSE GENERALIZATION;
@@ -1290,7 +1296,13 @@ b = z => z = b   BECAUSE E_SCHEME;
 z = b <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE IntroEquiv;
 \A z : z = b <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE GENERALIZATION;
 \E y : \A z : z = y <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE \E(y <- b);
-\A z : z = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE CHOOSE snd(<<a,b>>);
+(\E y : \A z : z = y <=> c = <<fst(c),z>>)
+   => \A z : z = snd(c) <=> c = <<fst(c),z>>   BECAUSE CHOOSE snd(c);
+\A c : (\E y : \A z : z = y <=> c = <<fst(c),z>>)
+   => \A z : z = snd(c) <=> c = <<fst(c),z>>   BECAUSE GENERALIZATION;
+(\E y : \A z : z = y <=> <<a,b>> = <<fst(<<a,b>>),z>>)
+   => \A z : z = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE \A(c <- <<a,b>>);
+\A z : z = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),z>>   BECAUSE MODUS_PONENS;
 b = snd(<<a,b>>) <=> <<a,b>> = <<fst(<<a,b>>),b>>   BECAUSE \A(z <- b);
 b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 sndExists   BECAUSE GENERALIZATION;

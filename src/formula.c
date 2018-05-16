@@ -176,6 +176,11 @@ void formula_free(formula* f)
     }
 
   free(f->name);
+  /* for (struct formula_list* op = f->operands; op; op = op->next) */
+  /*   { */
+  /*     if (!f->first_line && op->formula_elem->first_line) */
+  /* 	op->formula_elem = 0; // shared operands */
+  /*   } */
   formula_list_free(f->operands);
   free(f);
 }
@@ -253,6 +258,7 @@ formula* make_formula(enum builtin_operator builtInOp,
       not->operands = make_formula_list(f, 0);
       not->file = file;
       not->first_line = first_line;
+      not->last_line = last_line;
       not->definingFormula = 0;
       f->builtInOp = builtInOp == notin ? in : equal;
       return not;
@@ -738,9 +744,21 @@ formula* equivalent_defining_formula(const formula* f,
 				     const formula* opDef,
 				     const formula_set operatorDefinitions)
 {
-  // TODO : choose defining formulas with susbstituted operands are only for BECAUSE CHOOSE reasons, not for main formulas
   if (!f || !free_define(f->operands, opDef))
     return (formula*)0;
+
+  if (opDef->definingFormula->builtInOp == choose
+      || opDef->definingFormula->builtInOp == chooseUnique)
+    {
+      // CHOOSE axioms are invoked explicitely,
+      // no need for implicit substitutions of defining formulas.
+      // We still need to store that they are terms
+      // (valid for subtitutions in \A and \E). Do not clone
+      // opDef->definingFormula, just do the substitutions of
+      // operands once, when the BECAUSE CHOOSE statement
+      // is checked.
+      return opDef->definingFormula;
+    }
 
   // Substitute f's operands into opDef's free variables
   variable_substitution subs[16];
@@ -803,6 +821,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
       variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
       if (sub && sub->variable)
 	return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
+      //(formula*)sub->subst; //
     }
 
   formula* c = make_formula(f->builtInOp,

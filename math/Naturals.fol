@@ -899,7 +899,9 @@ h(f,init) => (z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE HIE;
 \A z : h(f,init) => (z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE GENERALIZATION;
 h(f,init) => (\A z : z = init <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
 (\A z : z = init <=> <<{}, z>> \in IterateFunc(f,init)) => \E y : \A z : z = y <=> <<{}, z>> \in IterateFunc(f,init)   BECAUSE \E(y <- init);
-(\E y : \A z : z = y <=> <<{}, z>> \in IterateFunc(f,init)) => \A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init)   BECAUSE CHOOSE IterateFunc(f,init)[{}];
+(\E y : \A z : z = y <=> <<x, z>> \in f) => \A z : z = f[x] <=> <<x, z>> \in f   BECAUSE CHOOSE f[x];
+\A f : \A x : (\E y : \A z : z = y <=> <<x, z>> \in f) => \A z : z = f[x] <=> <<x, z>> \in f   BECAUSE GENERALIZATION;
+(\E y : \A z : z = y <=> <<{}, z>> \in IterateFunc(f,init)) => \A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init)   BECAUSE \A(f <- IterateFunc(f,init), x <- {});
 h(f,init) => (\A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init))   BECAUSE TI2;
 (\A z : z = IterateFunc(f,init)[{}] <=> <<{}, z>> \in IterateFunc(f,init)) => (init = IterateFunc(f,init)[{}] <=> <<{}, init>> \in IterateFunc(f,init))   BECAUSE \A(z <- init);
 h(f,init) => (init = IterateFunc(f,init)[{}] <=> <<{}, init>> \in IterateFunc(f,init))   BECAUSE TI;
@@ -1116,7 +1118,7 @@ hf(f,init,b) /\ n \in b => (z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>>
 hf(f,init,b) /\ n \in b => (\A z : z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE Q_SCHEME;
 (\A z : z = f[IterateFunc(f,init)[n]] <=> <<successor(n),z>> \in IterateFunc(f,init)) => (\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE \E(y <- f[IterateFunc(f,init)[n]]);
 hf(f,init,b) /\ n \in b => (\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE TI;
-(\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init)) => (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE CHOOSE IterateFunc(f,init)[successor(n)];
+(\E y : \A z : z = y <=> <<successor(n),z>> \in IterateFunc(f,init)) => (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE \A(f <- IterateFunc(f,init), x <- successor(n));
 hf(f,init,b) /\ n \in b => (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))   BECAUSE TI;
 (\A z : z = IterateFunc(f,init)[successor(n)] <=> <<successor(n),z>> \in IterateFunc(f,init))
    => (f[IterateFunc(f,init)[n]] = IterateFunc(f,init)[successor(n)] <=> <<successor(n),f[IterateFunc(f,init)[n]]>> \in IterateFunc(f,init))   BECAUSE \A(z <- f[IterateFunc(f,init)[n]]);
