@@ -139,12 +139,14 @@ typedef struct formulaS
   */
   const char* file;
   long first_line;
+  long last_line;
 } formula;
 formula* make_formula(enum builtin_operator builtInOp,
 		      const char* name, // takes ownership
 		      struct formula_list* operands,
 		      const char* file,
-		      long first_line);
+		      long first_line,
+		      long last_line);
 void formula_free(formula* f);
 declare_list_type(formula)
 declare_set_type(formula)
@@ -169,6 +171,8 @@ short is_propositional_formula(const formula* f);
 unsigned char prove_propositional_tautology(const formula* op);
 const formula* get_first_operand(const formula* f);
 const formula* get_second_operand(const formula* f);
+unsigned char formula_is_term(const formula* f,
+			      const formula_set ops);
 
 /**
    Find a variable v of formula f satisfying predicate pred, which is given

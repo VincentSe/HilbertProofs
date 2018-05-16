@@ -231,7 +231,8 @@ formula* make_formula(enum builtin_operator builtInOp,
 		      const char* name,
 		      struct formula_list* operands,
 		      const char* file,
-		      long first_line)
+		      long first_line,
+		      long last_line)
 {
   formula* f = malloc(sizeof(formula));
   f->builtInOp = builtInOp;
@@ -239,6 +240,7 @@ formula* make_formula(enum builtin_operator builtInOp,
   f->operands = operands;
   f->file = file;
   f->first_line = first_line;
+  f->last_line = last_line;
   f->definingFormula = 0;
 
   if (builtInOp == notin || builtInOp == different)
@@ -263,7 +265,7 @@ formula* make_formula(enum builtin_operator builtInOp,
 	{
 	  // Convert to a tuple : functions only take one argument.
 	  struct formula_list* args = f->operands->next;
-	  formula* group = make_formula(tuple, (char*)0, args, file, first_line);
+	  formula* group = make_formula(tuple, (char*)0, args, file, first_line, last_line);
 	  f->operands->next = make_formula_list(group, 0);
 	}
     }
@@ -811,7 +813,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 			    // will also be used by formula_free, to know
 			    // which formulas own defining formulas.
 			    (const char*) 0,
-			    0);
+			    0, 0);
 
   c->operands = clone_operands(f->operands, freeSubs);
   // c->definingFormula = formula_clone(f->definingFormula, freeSubs) ???
@@ -876,8 +878,11 @@ short resolve_operator_or_variable(formula* f,
     }
   if (resolvedF)
     {
+      long lastLine = resolvedF->last_line;
+      if (resolvedF->definingFormula && resolvedF->definingFormula->last_line > lastLine)
+	lastLine = resolvedF->definingFormula->last_line;
       if (strcmp(f->file, resolvedF->file) == 0
-	  && f->first_line <= resolvedF->first_line)
+	  && f->first_line <= lastLine)
 	{
 	  printf("%s:%d: calling operator %s, which is defined later\n",
 		 f->file,

@@ -2804,10 +2804,10 @@ Domain(cf(o,p)) = o /\ Domain(identity(o)) = o => Domain(cf(o,p)) = Domain(ident
 hh(o,p) => Domain(cf(o,p)) = Domain(identity(o))   BECAUSE TI;
 hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o))   BECAUSE CIA;
 hh(o,p) => IsFunction(cf(o,p)) /\ IsFunction(identity(o)) /\ Domain(cf(o,p)) = Domain(identity(o))   BECAUSE CIA;
-identityVal   BECAUSE THEOREM;
-a \in o => (identity(o)[a] = a /\ pre(identity(o),a) = a)   BECAUSE \A(d <- o, x <- a);
-(identity(o)[a] = a /\ pre(identity(o),a) = a) => identity(o)[a] = a   BECAUSE S12;
-a \in o => identity(o)[a] = a   BECAUSE TI;
+identityIsFunc   BECAUSE THEOREM;
+IsFunction(identity(o)) /\ Domain(identity(o)) = o /\ \A x : x \in o => identity(o)[x] = x   BECAUSE \A(d <- o);
+\A x : x \in o => identity(o)[x] = x   BECAUSE S22;
+a \in o => identity(o)[a] = a   BECAUSE \A(x <- a);
 hh(o,p) => (a \in o => identity(o)[a] = a)   BECAUSE PT1;
 hh(o,p) /\ a \in o => identity(o)[a] = a   BECAUSE HypoImplToAnd;
 hh(o,p) /\ a \in o => cf(o,p)[a] = a   BECAUSE HypoImplToAnd;

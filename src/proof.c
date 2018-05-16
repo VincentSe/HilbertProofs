@@ -1475,6 +1475,14 @@ short check_proof(const proof* proof,
 	  return 0;
 	}
 
+      if (formula_is_term(proof->formulaToProve, operators))
+	{
+	  printf("%s:%d: a theorem cannot be a term.\n",
+		 proof->formulaToProve->file,
+		 proof->formulaToProve->first_line);
+	  return 0;
+	}
+
       struct FormulaDList* statement = proof->cumulativeTruths;
       struct FormulaDList* lastStatement = 0;
       while (statement

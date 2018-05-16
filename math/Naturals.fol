@@ -1243,26 +1243,214 @@ h(f,init) => IsFunction(IterateFunc(f,init)) /\ Domain(IterateFunc(f,init)) = Na
 iterateFuncExists   BECAUSE GENERALIZATION;
 QED
 
-(*
-IterateFunc(f,init) == CHOOSE_UNIQUE s : \A z : z = s <=>
-   IsFunction(z) /\ Domain(z) = Nat /\ z[ {} ] = init
-   /\ \A n : n \in Nat => z[successor(n)] = f[z[n]]
-*)
 
 \* Restriction of the successor operator to Nat
-natSucc == CHOOSE_UNIQUE f : \A z : z = f <=>
-   IsFunction(z) /\ Domain(z) = Nat /\ \A n : n \in Nat => natSucc[n] = successor(n)
+natSucc == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A x : x \in z <=> x \in (Nat \X Nat) /\ snd(x) = successor(fst(x))
+
+natSuccIsFunc == IsFunction(natSucc) /\ Domain(natSucc) = Nat
+   /\ \A n : n \in Nat => natSucc[n] = successor(n)
+THEOREM natSuccIsFunc
+PROOF
+VARIABLES a,b,c,f,g,i,j,n,x,y,z;
+\* By separation in Nat \X Nat
+dom == Nat \X Nat;
+func(x) == snd(x) = successor(fst(x));
+\A a : \E b : \A x : x \in b <=> x \in a /\ func(x)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in dom /\ func(x)   BECAUSE \A(a <- dom);
+h(b) == \A x : x \in b <=> x \in dom /\ func(x);
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+\A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
+z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
+h(b) => (x \in b <=> x \in dom /\ func(x))   BECAUSE \A(x <- x);
+mergeImplC(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
+h(b) /\ z = b => (x \in z <=> x \in dom /\ func(x))   BECAUSE mergeImplC;
+\A x : h(b) /\ z = b => (x \in z <=> x \in dom /\ func(x))   BECAUSE GENERALIZATION;
+h(b) /\ z = b => (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE Q_SCHEME;
+(\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in dom /\ func(x))   BECAUSE \A(x <- x);
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE S22;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in z <=> x \in dom /\ func(x))   BECAUSE TI;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => h(b)   BECAUSE S12;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in b <=> x \in dom /\ func(x))   BECAUSE TI;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in b <=> x \in dom /\ func(x)) /\ (x \in z <=> x \in dom /\ func(x))   BECAUSE CIA;
+transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
+(x \in b <=> x \in dom /\ func(x)) /\ (x \in z <=> x \in dom /\ func(x))
+   => (x \in z <=> x \in b)   BECAUSE transitEquiv;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in b)   BECAUSE TI;
+\A x : h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => z = b   BECAUSE TI;
+h(b) => (z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE HIE;
+\A z : h(b) => (z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE GENERALIZATION;
+h(b) => (\A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : h(b)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : \A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE MODUS_PONENS;
+\A z : z = natSucc <=> (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE CHOOSE natSucc;
+natSucc = natSucc <=> (\A x : x \in natSucc <=> x \in dom /\ func(x))   BECAUSE \A(z <- natSucc);
+equalSelf   BECAUSE THEOREM;
+natSucc = natSucc   BECAUSE \A(a <- natSucc);
+\A x : x \in natSucc <=> x \in (Nat \X Nat) /\ snd(x) = successor(fst(x))   BECAUSE MODUS_PONENS;
+
+\* Prove natSucc is a graph
+x \in natSucc <=> x \in (Nat \X Nat) /\ snd(x) = successor(fst(x))   BECAUSE \A(x <- x);
+x \in natSucc => x \in (Nat \X Nat) /\ snd(x) = successor(fst(x))   BECAUSE EquivToImpl;
+x \in (Nat \X Nat) /\ snd(x) = successor(fst(x)) => x \in Nat \X Nat   BECAUSE S12;
+cartesianProductExists   BECAUSE THEOREM;
+x \in (Nat \X Nat) <=> (IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat)   BECAUSE   \A(i <- Nat, j <- Nat, x <- x);
+x \in (Nat \X Nat) => (IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat)   BECAUSE   EquivToImpl;
+IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat => IsCouple(x)   BECAUSE S13;
+x \in natSucc => x \in Nat \X Nat   BECAUSE TI;
+x \in natSucc => IsCouple(x)   BECAUSE TI2;
+IsGraph(natSucc)   BECAUSE GENERALIZATION;
+
+\* Proof natSucc is a function
+<<a,b>> \in natSucc <=> <<a,b>> \in (Nat \X Nat) /\ snd(<<a,b>>) = successor(fst(<<a,b>>))   BECAUSE \A(x <- <<a,b>>);
+<<a,b>> \in natSucc => <<a,b>> \in (Nat \X Nat) /\ snd(<<a,b>>) = successor(fst(<<a,b>>))   BECAUSE EquivToImpl;
+<<a,b>> \in (Nat \X Nat) /\ snd(<<a,b>>) = successor(fst(<<a,b>>)) => snd(<<a,b>>) = successor(fst(<<a,b>>))   BECAUSE S22;
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+\A a : \A b : \A i : \A j : a = b /\ i = j => (a = successor(i) <=> b = successor(j))   BECAUSE E_SCHEME;
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>) => (b = successor(a) <=> snd(<<a,b>>) = successor(fst(<<a,b>>)))   BECAUSE \A(a <- b, b <- snd(<<a,b>>), i <- a, j <- fst(<<a,b>>));
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>)   BECAUSE IntroAndRight;
+b = successor(a) <=> snd(<<a,b>>) = successor(fst(<<a,b>>))   BECAUSE MODUS_PONENS;
+snd(<<a,b>>) = successor(fst(<<a,b>>)) => b = successor(a)   BECAUSE EquivToImplReverse;
+<<a,b>> \in natSucc => b = successor(a)   BECAUSE TI2;
+\A b : <<a,b>> \in natSucc => b = successor(a)   BECAUSE GENERALIZATION;
+<<a,c>> \in natSucc => c = successor(a)   BECAUSE \A(b <- c);
+<<a,b>> \in natSucc /\ <<a,c>> \in natSucc => b = successor(a) /\ c = successor(a)   BECAUSE MergeImplicationsAnd;
+b = successor(a) /\ c = successor(a) => b = c   BECAUSE E_SCHEME;
+<<a,b>> \in natSucc /\ <<a,c>> \in natSucc => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in natSucc /\ <<a,c>> \in natSucc => b = c   BECAUSE GENERALIZATION;
+IsFunction(natSucc)   BECAUSE IntroAndRight;
+
+\* Prove the domain is Nat
+x \in (Nat \X Nat) /\ snd(x) = successor(fst(x)) => x \in natSucc   BECAUSE EquivToImplReverse;
+\A x : x \in (Nat \X Nat) /\ snd(x) = successor(fst(x)) => x \in natSucc   BECAUSE GENERALIZATION;
+<<x,successor(x)>> \in (Nat \X Nat) /\ snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>))
+   => <<x,successor(x)>> \in natSucc   BECAUSE \A(x <- <<x,successor(x)>>);
+cartesianProductCouples   BECAUSE THEOREM;
+(x \in Nat /\ successor(x) \in Nat) <=> <<x,successor(x)>> \in (Nat \X Nat)   BECAUSE \A(x <- Nat, y <- Nat, a <- x, b <- successor(x));
+x \in Nat /\ successor(x) \in Nat => <<x,successor(x)>> \in (Nat \X Nat)   BECAUSE EquivToImpl;
+natSuccStable   BECAUSE THEOREM;
+x \in Nat => successor(x) \in Nat   BECAUSE \A(n <- x);
+x \in Nat => x \in Nat   BECAUSE ImplySelf;
+x \in Nat => x \in Nat /\ successor(x) \in Nat   BECAUSE CIA;
+x \in Nat => <<x,successor(x)>> \in (Nat \X Nat)   BECAUSE TI;
+successor(x) = snd(<<x,successor(x)>>) /\ x = fst(<<x,successor(x)>>) => (successor(x) = successor(x) <=> snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>)))
+   BECAUSE \A(a <- successor(x), b <- snd(<<x,successor(x)>>), i <- x, j <- fst(<<x,successor(x)>>));
+x = fst(<<x,successor(x)>>)   BECAUSE \A(a <- x, b <- successor(x));
+successor(x) = snd(<<x,successor(x)>>)   BECAUSE \A(a <- x, b <- successor(x));
+successor(x) = snd(<<x,successor(x)>>) /\ x = fst(<<x,successor(x)>>)   BECAUSE IntroAndRight;
+successor(x) = successor(x) <=> snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>))   BECAUSE MODUS_PONENS;
+successor(x) = successor(x)   BECAUSE \A(a <- successor(x));
+snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>))   BECAUSE MODUS_PONENS;
+x \in Nat => snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>))   BECAUSE PT1;
+x \in Nat => <<x,successor(x)>> \in (Nat \X Nat) /\ snd(<<x,successor(x)>>) = successor(fst(<<x,successor(x)>>))   BECAUSE CIA;
+x \in Nat => <<x,successor(x)>> \in natSucc   BECAUSE TI;
+domainExists   BECAUSE THEOREM;
+x \in Domain(natSucc) <=> IsDefinedOn(natSucc,x)   BECAUSE \A(g <- natSucc, x <- x);
+IsDefinedOn(natSucc,x) => x \in Domain(natSucc)   BECAUSE EquivToImplReverse;
+<<x,successor(x)>> \in natSucc => IsDefinedOn(natSucc,x)   BECAUSE \E(y <- successor(x));
+x \in Nat => x \in Domain(natSucc)   BECAUSE TI2;
+
+<<a,b>> \in (Nat \X Nat) /\ snd(<<a,b>>) = successor(fst(<<a,b>>)) => <<a,b>> \in (Nat \X Nat)   BECAUSE S12;
+<<a,b>> \in natSucc => <<a,b>> \in (Nat \X Nat)   BECAUSE TI;
+(a \in Nat /\ b \in Nat) <=> <<a,b>> \in (Nat \X Nat)   BECAUSE \A(x <- Nat, y <- Nat, a <- a, b <- b);
+<<a,b>> \in (Nat \X Nat) => (a \in Nat /\ b \in Nat)   BECAUSE EquivToImplReverse;
+(a \in Nat /\ b \in Nat) => a \in Nat   BECAUSE S12;
+<<a,b>> \in natSucc => a \in Nat   BECAUSE TI2;
+\A a : \A b : <<a,b>> \in natSucc => a \in Nat   BECAUSE GENERALIZATION;
+<<x,y>> \in natSucc => x \in Nat   BECAUSE \A(a <- x, b <- y);
+\* Discharge y
+(\E y : <<x,y>> \in natSucc) => \E y : x \in Nat   BECAUSE Q_SCHEME;
+x \in Domain(natSucc) => IsDefinedOn(natSucc,x)   BECAUSE EquivToImpl;
+x \in Domain(natSucc) => \E y : x \in Nat   BECAUSE TI;
+(\E y : x \in Nat) => x \in Nat   BECAUSE Q_SCHEME;
+x \in Domain(natSucc) => x \in Nat   BECAUSE TI;
+x \in Domain(natSucc) <=> x \in Nat   BECAUSE IntroEquiv;
+\A x : x \in Domain(natSucc) <=> x \in Nat   BECAUSE GENERALIZATION;
+(\A x : x \in Domain(natSucc) <=> x \in Nat) => Domain(natSucc) = Nat   BECAUSE \A(a <- Domain(natSucc), b <- Nat);
+Domain(natSucc) = Nat   BECAUSE MODUS_PONENS;
+
+funcVal   BECAUSE THEOREM;
+IsFunction(natSucc) /\ <<x,successor(x)>> \in natSucc => successor(x) = natSucc[x]   BECAUSE \A(f <- natSucc, x <- x, y <- successor(x));
+<<x,successor(x)>> \in natSucc => IsFunction(natSucc) /\ <<x,successor(x)>> \in natSucc   BECAUSE IntroAndRight;
+x \in Nat => successor(x) = natSucc[x]   BECAUSE TI2;
+successor(x) = natSucc[x] => natSucc[x] = successor(x)   BECAUSE E_SCHEME;
+x \in Nat => natSucc[x] = successor(x)   BECAUSE TI;
+\A x : x \in Nat => natSucc[x] = successor(x)   BECAUSE GENERALIZATION;
+n \in Nat => natSucc[n] = successor(n)   BECAUSE \A(x <- n);
+\A n : n \in Nat => natSucc[n] = successor(n)   BECAUSE GENERALIZATION;
+IsFunction(natSucc) /\ Domain(natSucc) = Nat   BECAUSE IntroAndRight;
+natSuccIsFunc   BECAUSE IntroAndRight;
+QED
 
 (*
    The usual addition operation on natural numbers.
    It could also be defined as the restriction of
    ordinal addition on Nat.
 *)
-NatAddition == CHOOSE_UNIQUE f : \A z : z = f <=>
-   IsFunction(z) /\ Domain(z) = (Nat \X Nat)
-   /\ \A n : \A p : n \in Nat /\ p \in Nat => z[n,p] = IterateFunc(natSucc,n)[p]
+NatAddition == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A x : x \in z <=> x \in ((Nat \X Nat) \X Nat) /\ snd(x) = IterateFunc(natSucc,fst(x))[snd(x)]
 
-natAdditionExists == \A n : \A p : n \in Nat /\ p \in Nat => NatAddition[n,p] = IterateFunc(natSucc,n)[p]
-THEOREM natAdditionExists
+natAdditionIsFunc == IsFunction(NatAddition) /\ Domain(NatAddition) = Nat \X Nat
+   /\ \A n : \A p : n \in Nat /\ p \in Nat => NatAddition[n,p] = IterateFunc(natSucc,n)[p]
+THEOREM natAdditionIsFunc
+PROOF
+VARIABLES a,b,x,z;
+\* By separation in (Nat \X Nat) \X Nat
+dom == (Nat \X Nat) \X Nat;
+func(x) == snd(x) = IterateFunc(natSucc,fst(x))[snd(x)];
+\A a : \E b : \A x : x \in b <=> x \in a /\ func(x)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in dom /\ func(x)   BECAUSE \A(a <- dom);
+h(b) == \A x : x \in b <=> x \in dom /\ func(x);
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+\A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
+z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
+h(b) => (x \in b <=> x \in dom /\ func(x))   BECAUSE \A(x <- x);
+mergeImplC(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
+h(b) /\ z = b => (x \in z <=> x \in dom /\ func(x))   BECAUSE mergeImplC;
+\A x : h(b) /\ z = b => (x \in z <=> x \in dom /\ func(x))   BECAUSE GENERALIZATION;
+h(b) /\ z = b => (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE Q_SCHEME;
+(\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in dom /\ func(x))   BECAUSE \A(x <- x);
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE S22;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in z <=> x \in dom /\ func(x))   BECAUSE TI;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => h(b)   BECAUSE S12;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in b <=> x \in dom /\ func(x))   BECAUSE TI;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x))
+   => (x \in b <=> x \in dom /\ func(x)) /\ (x \in z <=> x \in dom /\ func(x))   BECAUSE CIA;
+transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
+(x \in b <=> x \in dom /\ func(x)) /\ (x \in z <=> x \in dom /\ func(x))
+   => (x \in z <=> x \in b)   BECAUSE transitEquiv;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in b)   BECAUSE TI;
+\A x : h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+h(b) /\ (\A x : x \in z <=> x \in dom /\ func(x)) => z = b   BECAUSE TI;
+h(b) => (z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE HIE;
+\A z : h(b) => (z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE GENERALIZATION;
+h(b) => (\A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : h(b)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : \A z : z = b <=> (\A x : x \in z <=> x \in dom /\ func(x)))   BECAUSE MODUS_PONENS;
+\A z : z = NatAddition <=> (\A x : x \in z <=> x \in dom /\ func(x))   BECAUSE CHOOSE NatAddition;
+NatAddition = NatAddition <=> (\A x : x \in NatAddition <=> x \in dom /\ func(x))   BECAUSE \A(z <- NatAddition);
+equalSelf   BECAUSE THEOREM;
+NatAddition = NatAddition   BECAUSE \A(a <- NatAddition);
+\A x : x \in NatAddition <=> x \in dom /\ func(x)   BECAUSE MODUS_PONENS;
+
+QED
+
+zeroNeutralNatAddition == \A n : n \in Nat => NatAddition[0,n] = n /\ NatAddition[n,0] = n
+THEOREM zeroNeutralNatAddition
 
 (* TODO associativity, commutativity, multiplication, symbols for digits 0,1,2,3,4,5,6,7,8,9,10 *)

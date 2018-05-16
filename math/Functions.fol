@@ -317,47 +317,95 @@ QED
    The identity function on a domain d. It takes each element
    of the domain and simply returns it.
 *)
-identity(d) == CHOOSE b : \A x : x \in b <=>
-   x \in d \X d /\ fst(x) = snd(x)
+identity(d) == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A x : x \in z <=> x \in d \X d /\ snd(x) = fst(x)
 
-identityExists == \A d : \A x : x \in identity(d) <=>
-   x \in d \X d /\ fst(x) = snd(x)
-THEOREM identityExists
+identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
+   /\ \A x : x \in d => identity(d)[x] = x
+THEOREM identityIsFunc
 PROOF
 \* By separation in d \X d
-VARIABLES a,b,d,x,y;
-\A a : \E b : \A x : x \in b <=> x \in a /\ fst(x) = snd(x)   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> x \in d \X d /\ fst(x) = snd(x)   BECAUSE \A(a <- d \X d);
-\A x : x \in identity(d) <=> x \in d \X d /\ fst(x) = snd(x)   BECAUSE CHOOSE identity(d);
-identityExists   BECAUSE GENERALIZATION;
+VARIABLES a,b,c,d,i,j,x,z;
+func(x) == snd(x) = fst(x);
+\A a : \E b : \A x : x \in b <=> x \in a /\ func(x)   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in d \X d /\ func(x)   BECAUSE \A(a <- d \X d);
+h(b,d) == \A x : x \in b <=> x \in d \X d /\ func(x);
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+\A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
+z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
+h(b,d) => (x \in b <=> x \in d \X d /\ func(x))   BECAUSE \A(x <- x);
+mergeImplC(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
+h(b,d) /\ z = b => (x \in z <=> x \in d \X d /\ func(x))   BECAUSE mergeImplC;
+\A x : h(b,d) /\ z = b => (x \in z <=> x \in d \X d /\ func(x))   BECAUSE GENERALIZATION;
+h(b,d) /\ z = b => (\A x : x \in z <=> x \in d \X d /\ func(x))   BECAUSE Q_SCHEME;
+(\A x : x \in z <=> x \in d \X d /\ func(x)) => (x \in z <=> x \in d \X d /\ func(x))   BECAUSE \A(x <- x);
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x))
+   => (\A x : x \in z <=> x \in d \X d /\ func(x))   BECAUSE S22;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x))
+   => (x \in z <=> x \in d \X d /\ func(x))   BECAUSE TI;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x)) => h(b,d)   BECAUSE S12;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x))
+   => (x \in b <=> x \in d \X d /\ func(x))   BECAUSE TI;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x))
+   => (x \in b <=> x \in d \X d /\ func(x)) /\ (x \in z <=> x \in d \X d /\ func(x))   BECAUSE CIA;
+transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
+(x \in b <=> x \in d \X d /\ func(x)) /\ (x \in z <=> x \in d \X d /\ func(x))
+   => (x \in z <=> x \in b)   BECAUSE transitEquiv;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x)) => (x \in z <=> x \in b)   BECAUSE TI;
+\A x : h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x)) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x)) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+h(b,d) /\ (\A x : x \in z <=> x \in d \X d /\ func(x)) => z = b   BECAUSE TI;
+h(b,d) => (z = b <=> (\A x : x \in z <=> x \in d \X d /\ func(x)))   BECAUSE HIE;
+\A z : h(b,d) => (z = b <=> (\A x : x \in z <=> x \in d \X d /\ func(x)))   BECAUSE GENERALIZATION;
+h(b,d) => (\A z : z = b <=> (\A x : x \in z <=> x \in d \X d /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : h(b,d)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in d \X d /\ func(x)))   BECAUSE Q_SCHEME;
+(\E b : \A z : z = b <=> (\A x : x \in z <=> x \in d \X d /\ func(x)))   BECAUSE MODUS_PONENS;
+\A z : z = identity(d) <=> (\A x : x \in z <=> x \in d \X d /\ func(x))   BECAUSE CHOOSE identity(d);
+identity(d) = identity(d) <=> (\A x : x \in identity(d) <=> x \in d \X d /\ func(x))   BECAUSE \A(z <- identity(d));
+equalSelf   BECAUSE THEOREM;
+identity(d) = identity(d)   BECAUSE \A(a <- identity(d));
+\A x : x \in identity(d) <=> x \in (d \X d) /\ func(x)   BECAUSE MODUS_PONENS;
+
+\* Prove identity(d) is a graph
+x \in identity(d) <=> x \in d \X d /\ func(x)   BECAUSE \A(x <- x);
+x \in identity(d) => x \in d \X d /\ func(x)   BECAUSE EquivToImpl;
+x \in d \X d /\ func(x) => x \in d \X d   BECAUSE S12;
+cartesianProductExists   BECAUSE THEOREM;
+x \in d \X d <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE   \A(i <- d, j <- d, x <- x);
+x \in d \X d => (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE   EquivToImpl;
+IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d => IsCouple(x)   BECAUSE S13;
+x \in identity(d) => x \in d \X d   BECAUSE TI;
+x \in identity(d) => IsCouple(x)   BECAUSE TI2;
+IsGraph(identity(d))   BECAUSE GENERALIZATION;
+
+\* Proof identity(d) is a function
+<<a,b>> \in identity(d) <=> <<a,b>> \in (d \X d) /\ func(<<a,b>>)   BECAUSE \A(x <- <<a,b>>);
+<<a,b>> \in identity(d) => <<a,b>> \in (d \X d) /\ func(<<a,b>>)   BECAUSE EquivToImpl;
+<<a,b>> \in (d \X d) /\ func(<<a,b>>) => func(<<a,b>>)   BECAUSE S22;
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+\A a : \A b : \A i : \A j : a = b /\ i = j => (a = i <=> b = j)   BECAUSE E_SCHEME;
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>) => (b = a <=> func(<<a,b>>))   BECAUSE \A(a <- b, b <- snd(<<a,b>>), i <- a, j <- fst(<<a,b>>));
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>)   BECAUSE IntroAndRight;
+b = a <=> func(<<a,b>>)   BECAUSE MODUS_PONENS;
+func(<<a,b>>) => b = a   BECAUSE EquivToImplReverse;
+<<a,b>> \in identity(d) => b = a   BECAUSE TI2;
+\A b : <<a,b>> \in identity(d) => b = a   BECAUSE GENERALIZATION;
+<<a,c>> \in identity(d) => c = a   BECAUSE \A(b <- c);
+<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = a /\ c = a   BECAUSE MergeImplicationsAnd;
+b = a /\ c = a => b = c   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE TI;
+\A a : \A b : \A c : <<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE GENERALIZATION;
+IsFunction(identity(d))   BECAUSE IntroAndRight;
 QED
 
-identityVal == \A d : \A x : x \in d => (identity(d)[x] = x /\ pre(identity(d),x) = x)
+identityVal == \A d : \A x : x \in d => pre(identity(d),x) = x
 THEOREM identityVal
 PROOF
 VARIABLES a,b,d,x,y,z;
-\* Proof that \A x : x \in d => <<x,x>> \in identity(d)
-identityExists   BECAUSE THEOREM;
-<<x,x>> \in identity(d) <=> <<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>)
-   BECAUSE \A(d <- d, x <- <<x,x>>);
-<<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>) => <<x,x>> \in identity(d)
-   BECAUSE EquivToImplReverse;
-fstExists   BECAUSE THEOREM;
-x = fst(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
-sndExists   BECAUSE THEOREM;
-x = snd(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
-x = fst(<<x,x>>) /\ x = snd(<<x,x>>) => fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE E_SCHEME;
-x = fst(<<x,x>>) /\ x = snd(<<x,x>>)   BECAUSE IntroAndRight;
-fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE MODUS_PONENS;
-cartesianProductCouples   BECAUSE THEOREM;
-x \in d /\ x \in d <=> <<x,x>> \in d \X d   BECAUSE \A(x <- d, y <- d, a <- x, b <- x);
-x \in d /\ x \in d => <<x,x>> \in d \X d   BECAUSE EquivToImpl;
-x \in d => x \in d /\ x \in d   BECAUSE AndSelf;
-x \in d => <<x,x>> \in d \X d   BECAUSE TI;
-<<x,x>> \in d \X d => <<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE IntroAndLeft;
-x \in d => <<x,x>> \in d \X d /\ fst(<<x,x>>) = snd(<<x,x>>)   BECAUSE TI;
-x \in d => <<x,x>> \in identity(d)   BECAUSE TI;
-
 \* Proof that x \in d => x = identity(d)[x]
 <<x,x>> \in identity(d) => \E y : <<x,y>> \in identity(d)   BECAUSE \E(y <- x);
 x \in d => \E y : <<x,y>> \in identity(d)   BECAUSE TI;
@@ -433,61 +481,6 @@ identityBiject == \A d : identity(d) \in Bijections(d,d)
 THEOREM identityBiject
 PROOF
 VARIABLES a,b,c,d,f,g,i,j,x,y;
-identityExists   BECAUSE THEOREM;
-x \in identity(d) <=> x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE \A(d <- d, x <- x);
-x \in identity(d) => x \in (d \X d) /\ fst(x) = snd(x)   BECAUSE EquivToImpl;
-x \in (d \X d) /\ fst(x) = snd(x) => x \in (d \X d)   BECAUSE S12;
-x \in identity(d) => x \in (d \X d)   BECAUSE TI;
-cartesianProductExists   BECAUSE THEOREM;
-x \in (d \X d) <=> (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE \A(i <- d, j <- d, x <- x);
-x \in (d \X d) => (IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d)   BECAUSE EquivToImpl;
-IsCouple(x) /\ fst(x) \in d /\ snd(x) \in d => IsCouple(x)   BECAUSE S13;
-x \in (d \X d) => IsCouple(x)   BECAUSE TI;
-x \in identity(d) => IsCouple(x)   BECAUSE TI;
-IsGraph(identity(d))   BECAUSE GENERALIZATION;
-
-\* Prove IsFunction(identity(d))
-<<a,b>> \in identity(d) <=> (<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>))   BECAUSE \A(d <- d, x <- <<a,b>>);
-<<a,b>> \in identity(d) => (<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>))   BECAUSE EquivToImpl;
-(<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>)) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE S22;
-<<a,b>> \in identity(d) => fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE TI;
-fstExists   BECAUSE THEOREM;
-a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
-sndExists   BECAUSE THEOREM;
-b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
-\A a : \A x : \A b : \A y : (a = x /\ b = y) => (a = b <=> x = y)   BECAUSE E_SCHEME;
-(a = fst(<<a,b>>) /\ b = snd(<<a,b>>)) => (a = b <=> fst(<<a,b>>) = snd(<<a,b>>))
-   BECAUSE \A(a <- a, x <- fst(<<a,b>>), b <- b, y <- snd(<<a,b>>));
-a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE IntroAndRight;
-a = b <=> fst(<<a,b>>) = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
-fst(<<a,b>>) = snd(<<a,b>>) => a = b   BECAUSE EquivToImplReverse;
-<<a,b>> \in identity(d) => a = b   BECAUSE TI;
-identityVal   BECAUSE THEOREM;
-a \in d => (identity(d)[a] = a /\ pre(identity(d),a) = a)   BECAUSE \A(d <- d, x <- a);
-(identity(d)[a] = a /\ pre(identity(d),a) = a) => identity(d)[a] = a   BECAUSE S12;
-a \in d => identity(d)[a] = a   BECAUSE TI;
-identity(d)[a] = a => a = identity(d)[a]   BECAUSE E_SCHEME;
-a \in d => a = identity(d)[a]   BECAUSE TI;
-(<<a,b>> \in (d \X d) /\ fst(<<a,b>>) = snd(<<a,b>>)) => <<a,b>> \in (d \X d)   BECAUSE S12;
-<<a,b>> \in identity(d) => <<a,b>> \in (d \X d)   BECAUSE TI;
-cartesianProductCouples   BECAUSE THEOREM;
-(a \in d /\ b \in d) <=> <<a,b>> \in (d \X d)   BECAUSE \A(x <- d, y <- d, a <- a, b <- b);
-<<a,b>> \in (d \X d) => (a \in d /\ b \in d)   BECAUSE EquivToImplReverse;
-<<a,b>> \in identity(d) => (a \in d /\ b \in d)   BECAUSE TI;
-(a \in d /\ b \in d) => a \in d   BECAUSE S12;
-<<a,b>> \in identity(d) => a \in d   BECAUSE TI;
-<<a,b>> \in identity(d) => a = identity(d)[a]   BECAUSE TI;
-<<a,b>> \in identity(d) => (a = b /\ a = identity(d)[a])   BECAUSE CIA;
-(a = b /\ a = identity(d)[a]) => b = identity(d)[a]   BECAUSE E_SCHEME;
-<<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
-\A b : <<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE GENERALIZATION;
-<<a,c>> \in identity(d) => c = identity(d)[a]   BECAUSE \A(b <- c);
-<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = identity(d)[a] /\ c = identity(d)[a]   BECAUSE MergeImplicationsAnd;
-b = identity(d)[a] /\ c = identity(d)[a] => b = c   BECAUSE E_SCHEME;
-<<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE TI;
-\A a : \A b : \A c : <<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE GENERALIZATION;
-IsFunction(identity(d))   BECAUSE IntroAndRight;
-
 \* Prove IsInjection(identity(d))
 (identity(d)[a] = a /\ pre(identity(d),a) = a) => pre(identity(d),a) = a   BECAUSE S22;
 a \in d => pre(identity(d),a) = a   BECAUSE TI;

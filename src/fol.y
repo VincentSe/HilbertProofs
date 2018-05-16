@@ -98,19 +98,19 @@ CONSTANT UNDERSCORE INFIX_OP UNDERSCORE {
 		    (char*)0,
 		    (struct formula_list*)0,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | CONSTANT UNDERSCORE INFIX_REL UNDERSCORE {
   $$ = make_formula($3,
 		    (char*)0,
 		    (struct formula_list*)0,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | CONSTANT PREFIX_OP UNDERSCORE {
   $$ = make_formula($2,
 		    (char*)0,
 		    (struct formula_list*)0,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 ;
 
 variables:
@@ -134,7 +134,7 @@ formula NAME_SEPARATOR formula {
 				  $4,
 				  make_formula_list($6, 0),
 				  ast->file,
-				  @1.first_line);
+				  @1.first_line, @$.last_line);
   $$ = check_operator_definition($1, chooseF);
   if (!$$)
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
@@ -143,7 +143,7 @@ formula NAME_SEPARATOR formula {
 				  $4,
 				  make_formula_list($6, 0),
 				  ast->file,
-				  @1.first_line);
+				  @1.first_line, @$.last_line);
   $$ = check_operator_definition($1, chooseF);
   if (!$$)
     yyerror(&@$, scanner, ast, "Bad operator definition"); }
@@ -188,7 +188,7 @@ substitution : NAME LEFT_ARROW formula {
 			       $1,
 			       (struct formula_list*)0,
 			       ast->file,
-			       @1.first_line);
+			       @1.first_line, @$.last_line);
   $$ = make_formula_list(name, make_formula_list($3, (struct formula_list*)0)); }
 ;
 
@@ -199,64 +199,64 @@ NAME { // operator or variable as a leaf of this formula
 		    $1,
 		    (struct formula_list*)0,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | NAME LEFT_PARENTHESIS commaSeparatedFormulas RIGHT_PARENTHESIS {
   $$ = make_formula(lnone,
 		    $1,
 		    $3,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | NAME LEFT_PARENTHESIS commaSeparatedSubstitutions RIGHT_PARENTHESIS {
   $$ = make_formula(schemeVariable,
 		    $1,
 		    $3,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | LEFT_PARENTHESIS formula RIGHT_PARENTHESIS {  $$ = $2; }
 | QUANTIFIER NAME COLON formula %prec QUANTIFIER {
   $$ = make_formula($1,
 		    $2,
 		    make_formula_list($4, 0),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | PREFIX_OP formula {
   $$ = make_formula($1,
 		    (char *)0,
 		    make_formula_list($2, 0),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | formula INFIX_OP formula {
   $$ = make_formula($2,
 		    (char *)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | formula INFIX_REL formula {
   $$ = make_formula($2,
 		    (char *)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | formula LOGICAL_BIN_OP formula {
   // logical bin ops cannot be redefined, leave them without name
   $$ = make_formula($2,
 		    (char*)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | formula LOGICAL_ANDOR_OP formula {
   // logical bin ops cannot be redefined, leave them without name
   $$ = make_formula($2,
 		    (char*)0,
 		    make_formula_list($1, make_formula_list($3, 0)),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | LNOT formula {
   $$ = make_formula($1,
 		    (char*)0,
 		    make_formula_list($2, 0),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 | setDef | tuple
 | funcApply
 ;
@@ -266,7 +266,7 @@ funcApply: formula LEFT_BRACKET commaSeparatedFormulas RIGHT_BRACKET {
   $$ = make_formula(funcApply, (char*)0,
 		    make_formula_list($1, $3),
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 ;
 
 justifiedFormula:
@@ -290,7 +290,7 @@ NAME { $$ = make_reason(propoTautology,
 				     $1,
 				     (struct formula_list*)0,
 				     ast->file,
-				     @1.first_line)); }
+				     @1.first_line, @$.last_line)); }
 | REASON_KIND { $$ = make_reason($1, (formula*)0); }
 | QUANTIFIER LEFT_PARENTHESIS commaSeparatedSubstitutions RIGHT_PARENTHESIS {
   if ($1 != forall && $1 != exists)
@@ -300,7 +300,7 @@ NAME { $$ = make_reason(propoTautology,
 				(char*)0,
 				$3,
 				ast->file,
-				@1.first_line)); }
+				@1.first_line, @$.last_line)); }
 | CHOOSE formula {
   $$ = make_reason(reasonChoose, $2); }
 ;
@@ -311,7 +311,7 @@ LEFT_BRACE commaSeparatedFormulas RIGHT_BRACE {
 		    (char*)0,
 		    $2,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 // { x \in a : some formula } is not implemented at the moment.
 // The separation axiom is used explicitely instead.
 /* | LEFT_BRACE formula INFIX_OP formula COLON formula RIGHT_BRACE { */
@@ -319,13 +319,13 @@ LEFT_BRACE commaSeparatedFormulas RIGHT_BRACE {
 /* 		    strdup(op_to_string(setSeparation)), */
 /* 		    make_formula_list($2, make_formula_list($4, make_formula_list($6, 0))), */
 /* 		    ast->file, */
-/* 		    @1.first_line); } */
+/* 		    @1.first_line, @$.last_line); } */
 | LEFT_BRACE RIGHT_BRACE { // empty set
   $$ = make_formula(setEnumerate,
 		    (char*)0,
 		    (struct formula_list*)0,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 ;
 
 tuple:
@@ -334,5 +334,5 @@ LEFT_TUPLE commaSeparatedFormulas RIGHT_TUPLE {
 		    (char*)0,
 		    $2,
 		    ast->file,
-		    @1.first_line); }
+		    @1.first_line, @$.last_line); }
 ;
