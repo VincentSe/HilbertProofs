@@ -325,7 +325,7 @@ identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
 THEOREM identityIsFunc
 PROOF
 \* By separation in d \X d
-VARIABLES a,b,c,d,i,j,x,z;
+VARIABLES a,b,c,d,f,i,j,x,y,z;
 func(x) == snd(x) = fst(x);
 \A a : \E b : \A x : x \in b <=> x \in a /\ func(x)   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> x \in d \X d /\ func(x)   BECAUSE \A(a <- d \X d);
@@ -400,6 +400,17 @@ b = a /\ c = a => b = c   BECAUSE E_SCHEME;
 <<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE TI;
 \A a : \A b : \A c : <<a,b>> \in identity(d) /\ <<a,c>> \in identity(d) => b = c   BECAUSE GENERALIZATION;
 IsFunction(identity(d))   BECAUSE IntroAndRight;
+
+\* Prove Domain(identity(d)) = d
+
+funcVal   BECAUSE THEOREM;
+IsFunction(identity(d)) /\ <<a,b>> \in identity(d) => b = identity(d)[a]
+   BECAUSE \A(f <- identity(d), x <- a, y <- b);
+<<a,b>> \in identity(d) => IsFunction(identity(d)) /\ <<a,b>> \in identity(d)   BECAUSE IntroAndRight;
+<<a,b>> \in identity(d) => b = identity(d)[a]   BECAUSE TI;
+<<a,b>> \in identity(d) => b = identity(d)[a] /\ b = a   BECAUSE CIA;
+b = identity(d)[a] /\ b = a => identity(d)[a] = a   BECAUSE E_SCHEME;
+<<a,b>> \in identity(d) => identity(d)[a] = a   BECAUSE TI;
 QED
 
 identityVal == \A d : \A x : x \in d => pre(identity(d),x) = x

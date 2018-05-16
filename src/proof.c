@@ -1164,6 +1164,10 @@ short check_choose_statement(const struct FormulaDList* statement,
   // fst(c) == CHOOSE_UNIQUE x : \A z : z = x <=> \E y : c = <<z,y>>
   // problem with fst(x).
 
+  // There is another problem though, x is substituted by fst(c) first,
+  // and inside that fst(d). We do not handle nested substitutions at
+  // the moment.
+
   const formula* f = statement->jf->formula;
   const formula* chooseF = get_quantified_formula(chooseReason, chooseUnique);
   if (!chooseF)
@@ -1312,6 +1316,21 @@ unsigned char is_free_var(const char* v,
   return strcmp(v, targetVar) == 0;
 }
 
+unsigned char bound_var(const char* v,
+			const struct string_list* innerBoundVars,
+			const void* args)
+{
+  if (!string_list_contains(innerBoundVars, v))
+    return 0; // free variable of v
+  
+  for (const struct formula_list* boundVarsForCapture = args;
+       boundVarsForCapture; boundVarsForCapture = boundVarsForCapture->next)
+    {
+      if (strcmp(v, boundVarsForCapture->formula_elem->name) == 0)
+	return 1;
+    }
+  return 0;
+}
 
 short semantic_check_operator_definition(formula* op,
 					 const formula_set operators,
@@ -1368,9 +1387,15 @@ short semantic_check_operator_definition(formula* op,
 	  return 0;
 	}	
     }
-  return 1;
 
-  // TODO Check that op->freeVariables are not quantified in the right-hand side formula
+  if (find_variable(op->definingFormula, (struct string_list*)0, bound_var, op->operands))
+    {
+      printf("%s:%d: the free variables of an operator cannot be quantified in its defining formula\n",
+	     op->file, op->first_line);
+      return 0;
+    }
+
+  return 1;
 }
 
 short semantic_check_reason(struct reason* r,

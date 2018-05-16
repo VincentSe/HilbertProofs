@@ -176,11 +176,11 @@ void formula_free(formula* f)
     }
 
   free(f->name);
-  /* for (struct formula_list* op = f->operands; op; op = op->next) */
-  /*   { */
-  /*     if (!f->first_line && op->formula_elem->first_line) */
-  /* 	op->formula_elem = 0; // shared operands */
-  /*   } */
+  for (struct formula_list* op = f->operands; op; op = op->next)
+    {
+      if (!f->first_line && op->formula_elem->first_line)
+  	op->formula_elem = 0; // shared operands
+    }
   formula_list_free(f->operands);
   free(f);
 }
@@ -820,8 +820,9 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
       // TODO free variable
       variable_substitution* sub = variable_substitution_find(f->name, freeSubs);
       if (sub && sub->variable)
-	return formula_clone(sub->subst, (variable_substitution*)0); // recursive substitutions ?
-      //(formula*)sub->subst; //
+	return sub->subst->first_line // share those, they are operands written in FOL files, deleted by their parent formula
+	  ? (formula*)sub->subst
+	  : formula_clone(sub->subst, (variable_substitution*)0);
     }
 
   formula* c = make_formula(f->builtInOp,
