@@ -450,6 +450,11 @@ QED
    h(i,j) /\ (<<a,b>> \in j /\ <<a,c>> \in j) => b = F(x <- a) /\ c = F(x <- a)   BECAUSE mergeImpl;
    h(i,j) /\ (<<a,b>> \in j /\ <<a,c>> \in j) => b = c   BECAUSE TI;
    h(i,j) => ((<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE HypoAndToImpl;
+   \A c : h(i,j) => ((<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
+   h(i,j) => (\A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
+   \A b : h(i,j) => (\A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
+   h(i,j) => (\A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
+   \A a : h(i,j) => (\A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
    h(i,j) => (\A a : \A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
    \A a : \A b : h(a,b) => IsGraph(b)   BECAUSE GENERALIZATION;
    h(i,j) => IsGraph(j)   BECAUSE \A(a <- i, b <- j);
@@ -459,26 +464,92 @@ QED
 
    \* Prove that Domain(b) = a
    (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => fst(y) = x   BECAUSE S23;
-   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => fst(y) = x   BECAUSE TI;
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => x \in a   BECAUSE S12;
+   \A y : \A x : y = x => (y \in a <=> x \in a)   BECAUSE E_SCHEME;
+   fst(y) = x => (fst(y) \in a <=> x \in a)   BECAUSE \A(y <- fst(y), x <- x);
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => (fst(y) \in a <=> x \in a)   BECAUSE TI2; 
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => fst(y) \in a   BECAUSE implyEquivTrue;
 
-   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F) => fst(y) \in a   BECAUSE TI;
-   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => fst(y) \in a   BECAUSE Q_SCHEME;
+   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => \E x : fst(y) \in a   BECAUSE Q_SCHEME;
+   (\E x : fst(y) \in a) => fst(y) \in a   BECAUSE Q_SCHEME;
+   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => fst(y) \in a   BECAUSE TI;
    h(a,b) /\ y \in b => fst(y) \in a   BECAUSE TI;
-   h(a,b) => Domain(b) \subseteq a   BECAUSE TI;
+
+   \A y : h(a,b) /\ y \in b => fst(y) \in a   BECAUSE GENERALIZATION;
+   h(a,b) /\ <<z,y>> \in b => fst(<<z,y>>) \in a   BECAUSE \A(y <- <<z,y>>);
+   fst(<<z,y>>) = z => (fst(<<z,y>>) \in a <=> z \in a)   BECAUSE \A(y <- fst(<<z,y>>), x <- z);
+   z = fst(<<z,y>>)   BECAUSE \A(a <- z, b <- y);
+   z = fst(<<z,y>>) => fst(<<z,y>>) = z   BECAUSE E_SCHEME;
+   fst(<<z,y>>) = z   BECAUSE MODUS_PONENS;
+   (fst(<<z,y>>) \in a <=> z \in a)   BECAUSE MODUS_PONENS;
+   (fst(<<z,y>>) \in a => z \in a)   BECAUSE EquivToImpl;
+   h(a,b) /\ <<z,y>> \in b => z \in a   BECAUSE TI;
+
+   h(a,b) => (<<z,y>> \in b => z \in a)   BECAUSE HypoAndToImpl;
+   \A y : h(a,b) => (<<z,y>> \in b => z \in a)   BECAUSE GENERALIZATION;
+   h(a,b) => (\A y : <<z,y>> \in b => z \in a)   BECAUSE Q_SCHEME;
+   (\A y : <<z,y>> \in b => z \in a) => ((\E y : <<z,y>> \in b) => \E y : z \in a)   BECAUSE Q_SCHEME;
+   h(a,b) => ((\E y : <<z,y>> \in b) => \E y : z \in a)   BECAUSE TI;
+   domainExists   BECAUSE THEOREM;
+   z \in Domain(b) <=> IsDefinedOn(b,z)   BECAUSE \A(g <- b, x <- z);
+   injectHypo(h,a,b,c) == (a <=> b) => ((h => (b => c)) => (h /\ a => c))   PROPO_TAUTO;
+   h(a,b) /\ z \in Domain(b) => \E y : z \in a   BECAUSE injectHypo;
+   (\E y : z \in a) => z \in a   BECAUSE Q_SCHEME;
+   h(a,b) /\ z \in Domain(b) => z \in a   BECAUSE TI;
+   h(a,b) => (z \in Domain(b) => z \in a)   BECAUSE HypoAndToImpl;
+   \A z : h(a,b) => (z \in Domain(b) => z \in a)   BECAUSE GENERALIZATION;
+   h(a,b) => Domain(b) \subseteq a   BECAUSE Q_SCHEME;
 
    (y \in b <=> \E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F))
       => ((\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => y \in b)   BECAUSE EquivToImplReverse;
    h(a,b) => ((\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => y \in b)   BECAUSE TI;
-   \* Show that h(a,b) /\ x \in a => <<x,F>> \in f
+   (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F))
+      => (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F))   BECAUSE \E(x <- x);
+   h(a,b) /\ (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => y \in b   BECAUSE injectHypo;
+   \A y : h(a,b) /\ (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = F)) => y \in b   BECAUSE GENERALIZATION;
+   h(a,b) /\ (x \in a /\ (IsCouple(<<x,F>>) /\ fst(<<x,F>>) = x /\ snd(<<x,F>>) = F)) => <<x,F>> \in b   BECAUSE \A(y <- <<x,F>>); \* Because F has no free occurrence of variable y
+   h(a,b) => ((x \in a /\ (IsCouple(<<x,F>>) /\ fst(<<x,F>>) = x /\ snd(<<x,F>>) = F)) => <<x,F>> \in b)   BECAUSE HypoAndToImpl;
+   \* Show that h(a,b) /\ x \in a => <<x,F>> \in b
+   equalSelf   BECAUSE THEOREM;
+   <<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
+   IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
+   \A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
+   IsCouple(<<x,F>>)   BECAUSE \A(a <- x, b <- F);
+   x = fst(<<x,F>>)   BECAUSE \A(a <- x, b <- F);
+   x = fst(<<x,F>>) => fst(<<x,F>>) = x   BECAUSE E_SCHEME;
+   fst(<<x,F>>) = x   BECAUSE MODUS_PONENS;
+   x = snd(<<x,F>>)   BECAUSE \A(a <- x, b <- x);
+   x = snd(<<x,F>>) => snd(<<x,F>>) = x   BECAUSE E_SCHEME;
+   snd(<<x,F>>) = x   BECAUSE MODUS_PONENS;
+   IsCouple(<<x,F>>) /\ fst(<<x,F>>) = x   BECAUSE IntroAndRight;
+   IsCouple(<<x,F>>) /\ fst(<<x,F>>) = x /\ snd(<<x,F>>) = x   BECAUSE IntroAndRight;
+   x \in a => x \in a /\ (IsCouple(<<x,F>>) /\ fst(<<x,F>>) = x /\ snd(<<x,F>>) = x)   BECAUSE IntroAndLeft;
+   h(a,b) /\ x \in a => <<x,F>> \in b   BECAUSE injectHypo;
+   <<x,F>> \in b => IsDefinedOn(b,x)   BECAUSE \E(y <- F);
+   IsDefinedOn(b,x) => x \in Domain(b)    BECAUSE EquivToImplReverse;
+   h(a,b) /\ x \in a => x \in Domain(b)   BECAUSE TI2;
+   h(a,b) => (x \in a => x \in Domain(b))   BECAUSE HypoAndToImpl;
+   \A x : h(a,b) => (x \in a => x \in Domain(b))   BECAUSE GENERALIZATION;
+   h(a,b) => (z \in a => z \in Domain(b))   BECAUSE \A(x <- z);
+   \A z : h(a,b) => (z \in a => z \in Domain(b))   BECAUSE GENERALIZATION;
+   h(a,b) => a \subseteq Domain(b)   BECAUSE Q_SCHEME;
+   bothInclusions   BECAUSE THEOREM;
+   (Domain(b) \subseteq a /\ a \subseteq Domain(b)) => Domain(b) = a   BECAUSE \A(a <- Domain(b), b <- a);
+   h(a,b) => Domain(b) \subseteq a /\ a \subseteq Domain(b)   BECAUSE CIA;
+   h(a,b) => Domain(b) = a   BECAUSE TI;
 
    \* Prove that \A x : x \in a => b[x] = F
    funcVal   BECAUSE THEOREM;
-   IsFunction(b) /\ <<x,y>> \in b => y = b[x]   BECAUSE \A(f <- b, x <- x, y <- y);
-   \A i : \A j : \A a : \A b :  h(i,j) /\ <<a,b>> \in j => b = F   BECAUSE GENERALIZATION;
-   h(a,b) /\ <<x,y>> \in b => y = F   BECAUSE \A(i <- a, j <- b, x <- a, y <- b);
-   <<x,y>> \in b => <<x,y>> \in b   BECAUSE ImplySelf;
-   h(a,b) /\ <<x,y>> \in b => IsFunction(b) /\ <<x,y>> \in b   BECAUSE MergeImplicationsAnd;
-   h(a,b) /\ <<x,y>> \in b => y = b[x]   BECAUSE TI;
+   IsFunction(b) /\ <<x,F>> \in b => F = b[x]   BECAUSE \A(f <- b, x <- x, y <- F);
+   h(a,b) /\ x \in a => h(a,b)   BECAUSE S12;
+   h(a,b) /\ x \in a => IsFunction(b)   BECAUSE TI;
+   h(a,b) /\ x \in a => IsFunction(b) /\ <<x,F>> \in b   BECAUSE CIA;
+   h(a,b) /\ x \in a => F = b[x]   BECAUSE TI;
+   F = b[x] => b[x] = F   BECAUSE E_SCHEME;
+   h(a,b) /\ x \in a => b[x] = F   BECAUSE TI;
+   h(a,b) => (x \in a => b[x] = F)   BECAUSE HypoAndToImpl;
+   \A x : h(a,b) => (x \in a => b[x] = F)   BECAUSE GENERALIZATION;
+   h(a,b) => (\A x : x \in a => b[x] = F)   BECAUSE Q_SCHEME;
 
    \* Prove that b is unique
 *)
@@ -629,6 +700,11 @@ VARIABLES a,b,c,d,f,i,j,x,y,z;
    h(i,j) /\ (<<a,b>> \in j /\ <<a,c>> \in j) => b = a /\ c = a   BECAUSE mergeImpl;
    h(i,j) /\ (<<a,b>> \in j /\ <<a,c>> \in j) => b = c   BECAUSE TI;
    h(i,j) => ((<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE HypoAndToImpl;
+   \A c : h(i,j) => ((<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
+   h(i,j) => (\A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
+   \A b : h(i,j) => (\A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
+   h(i,j) => (\A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
+   \A a : h(i,j) => (\A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE GENERALIZATION;
    h(i,j) => (\A a : \A b : \A c : (<<a,b>> \in j /\ <<a,c>> \in j) => b = c)   BECAUSE Q_SCHEME;
    \A a : \A b : h(a,b) => IsGraph(b)   BECAUSE GENERALIZATION;
    h(i,j) => IsGraph(j)   BECAUSE \A(a <- i, b <- j);
@@ -638,27 +714,98 @@ VARIABLES a,b,c,d,f,i,j,x,y,z;
 
    \* Prove that Domain(b) = a
    (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => fst(y) = x   BECAUSE S23;
-   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => fst(y) = x   BECAUSE TI;
-
-   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => fst(y) \in a   BECAUSE TI;
-   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => fst(y) \in a   BECAUSE Q_SCHEME;
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => x \in a   BECAUSE S12;
+   \A y : \A x : y = x => (y \in a <=> x \in a)   BECAUSE E_SCHEME;
+   fst(y) = x => (fst(y) \in a <=> x \in a)   BECAUSE \A(y <- fst(y), x <- x);
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => (fst(y) \in a <=> x \in a)   BECAUSE TI2; 
+   x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x) => fst(y) \in a   BECAUSE implyEquivTrue;
+   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => \E x : fst(y) \in a   BECAUSE Q_SCHEME;
+   (\E x : fst(y) \in a) => fst(y) \in a   BECAUSE Q_SCHEME;
+   (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => fst(y) \in a   BECAUSE TI;
    h(a,b) /\ y \in b => fst(y) \in a   BECAUSE TI;
-   h(a,b) => Domain(b) \subseteq a   BECAUSE TI;
+
+   \A y : h(a,b) /\ y \in b => fst(y) \in a   BECAUSE GENERALIZATION;
+   h(a,b) /\ <<z,y>> \in b => fst(<<z,y>>) \in a   BECAUSE \A(y <- <<z,y>>);
+   fst(<<z,y>>) = z => (fst(<<z,y>>) \in a <=> z \in a)   BECAUSE \A(y <- fst(<<z,y>>), x <- z);
+   z = fst(<<z,y>>)   BECAUSE \A(a <- z, b <- y);
+   z = fst(<<z,y>>) => fst(<<z,y>>) = z   BECAUSE E_SCHEME;
+   fst(<<z,y>>) = z   BECAUSE MODUS_PONENS;
+   (fst(<<z,y>>) \in a <=> z \in a)   BECAUSE MODUS_PONENS;
+   (fst(<<z,y>>) \in a => z \in a)   BECAUSE EquivToImpl;
+   h(a,b) /\ <<z,y>> \in b => z \in a   BECAUSE TI;
+
+   h(a,b) => (<<z,y>> \in b => z \in a)   BECAUSE HypoAndToImpl;
+   \A y : h(a,b) => (<<z,y>> \in b => z \in a)   BECAUSE GENERALIZATION;
+   h(a,b) => (\A y : <<z,y>> \in b => z \in a)   BECAUSE Q_SCHEME;
+   (\A y : <<z,y>> \in b => z \in a) => ((\E y : <<z,y>> \in b) => \E y : z \in a)   BECAUSE Q_SCHEME;
+   h(a,b) => ((\E y : <<z,y>> \in b) => \E y : z \in a)   BECAUSE TI;
+   domainExists   BECAUSE THEOREM;
+   z \in Domain(b) <=> IsDefinedOn(b,z)   BECAUSE \A(g <- b, x <- z);
+   z \in Domain(b) => IsDefinedOn(b,z)   BECAUSE EquivToImpl;
+   injectHypo(h,a,b,c) == (a => b) => ((h => (b => c)) => (h /\ a => c))   PROPO_TAUTO;
+   h(a,b) /\ z \in Domain(b) => \E y : z \in a   BECAUSE injectHypo;
+   (\E y : z \in a) => z \in a   BECAUSE Q_SCHEME;
+   h(a,b) /\ z \in Domain(b) => z \in a   BECAUSE TI;
+   h(a,b) => (z \in Domain(b) => z \in a)   BECAUSE HypoAndToImpl;
+   \A z : h(a,b) => (z \in Domain(b) => z \in a)   BECAUSE GENERALIZATION;
+   h(a,b) => Domain(b) \subseteq a   BECAUSE Q_SCHEME;
 
    (y \in b <=> \E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x))
       => ((\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => y \in b)   BECAUSE EquivToImplReverse;
    h(a,b) => ((\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => y \in b)   BECAUSE TI;
+   (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => (\E x : x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x))   BECAUSE \E(x <- x);
+   h(a,b) /\ (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => y \in b   BECAUSE injectHypo;
+   \A y : h(a,b) /\ (x \in a /\ (IsCouple(y) /\ fst(y) = x /\ snd(y) = x)) => y \in b   BECAUSE GENERALIZATION;
+   h(a,b) /\ (x \in a /\ (IsCouple(<<x,x>>) /\ fst(<<x,x>>) = x /\ snd(<<x,x>>) = x)) => <<x,x>> \in b   BECAUSE \A(y <- <<x,x>>);
+   h(a,b) => ((x \in a /\ (IsCouple(<<x,x>>) /\ fst(<<x,x>>) = x /\ snd(<<x,x>>) = x)) => <<x,x>> \in b)   BECAUSE HypoAndToImpl;
    \* Show that h(a,b) /\ x \in a => <<x,x>> \in f
+   equalSelf   BECAUSE THEOREM;
+   <<a,b>> = <<a,b>>   BECAUSE \A(a <- <<a,b>>);
+   IsCouple(<<a,b>>)   BECAUSE \E(x <- a, y <- b);
+   \A a : \A b : IsCouple(<<a,b>>)   BECAUSE GENERALIZATION;
+   IsCouple(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+   x = fst(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+   x = fst(<<x,x>>) => fst(<<x,x>>) = x   BECAUSE E_SCHEME;
+   fst(<<x,x>>) = x   BECAUSE MODUS_PONENS;
+   x = snd(<<x,x>>)   BECAUSE \A(a <- x, b <- x);
+   x = snd(<<x,x>>) => snd(<<x,x>>) = x   BECAUSE E_SCHEME;
+   snd(<<x,x>>) = x   BECAUSE MODUS_PONENS;
+   IsCouple(<<x,x>>) /\ fst(<<x,x>>) = x   BECAUSE IntroAndRight;
+   IsCouple(<<x,x>>) /\ fst(<<x,x>>) = x /\ snd(<<x,x>>) = x   BECAUSE IntroAndRight;
+   x \in a => x \in a /\ (IsCouple(<<x,x>>) /\ fst(<<x,x>>) = x /\ snd(<<x,x>>) = x)   BECAUSE IntroAndLeft;
+   h(a,b) /\ x \in a => <<x,x>> \in b   BECAUSE injectHypo;
+   <<x,x>> \in b => IsDefinedOn(b,x)   BECAUSE \E(y <- x);
+   x \in Domain(b) <=> IsDefinedOn(b,x)   BECAUSE \A(g <- b, x <- x);
+   IsDefinedOn(b,x) => x \in Domain(b)    BECAUSE EquivToImplReverse;
+   h(a,b) /\ x \in a => x \in Domain(b)   BECAUSE TI2;
+   h(a,b) => (x \in a => x \in Domain(b))   BECAUSE HypoAndToImpl;
+   \A x : h(a,b) => (x \in a => x \in Domain(b))   BECAUSE GENERALIZATION;
+   h(a,b) => (z \in a => z \in Domain(b))   BECAUSE \A(x <- z);
+   \A z : h(a,b) => (z \in a => z \in Domain(b))   BECAUSE GENERALIZATION;
+   h(a,b) => a \subseteq Domain(b)   BECAUSE Q_SCHEME;
+   bothInclusions   BECAUSE THEOREM;
+   (Domain(b) \subseteq a /\ a \subseteq Domain(b)) => Domain(b) = a   BECAUSE \A(a <- Domain(b), b <- a);
+   h(a,b) => Domain(b) \subseteq a /\ a \subseteq Domain(b)   BECAUSE CIA;
+   h(a,b) => Domain(b) = a   BECAUSE TI;
 
    \* Prove that \A x : x \in a => b[x] = x
    funcVal   BECAUSE THEOREM;
-   IsFunction(b) /\ <<x,y>> \in b => y = b[x]   BECAUSE \A(f <- b, x <- x, y <- y);
-   \A i : \A j : \A a : \A b :  h(i,j) /\ <<a,b>> \in j => b = x   BECAUSE GENERALIZATION;
-   h(a,b) /\ <<x,y>> \in b => y = x   BECAUSE \A(i <- a, j <- b, x <- a, y <- b);
-   <<x,y>> \in b => <<x,y>> \in b   BECAUSE ImplySelf;
-   h(a,b) /\ <<x,y>> \in b => IsFunction(b) /\ <<x,y>> \in b   BECAUSE MergeImplicationsAnd;
-   h(a,b) /\ <<x,y>> \in b => y = b[x]   BECAUSE TI;
+   IsFunction(b) /\ <<z,z>> \in b => z = b[z]   BECAUSE \A(f <- b, x <- z, y <- z);
+   h(a,b) /\ z \in a => h(a,b)   BECAUSE S12;
+   h(a,b) /\ z \in a => IsFunction(b)   BECAUSE TI;
+   h(a,b) /\ z \in a => IsFunction(b) /\ <<z,z>> \in b   BECAUSE CIA;
+   h(a,b) /\ z \in a => z = b[z]   BECAUSE TI;
+   z = b[z] => b[z] = z   BECAUSE E_SCHEME;
+   h(a,b) /\ z \in a => b[z] = z   BECAUSE TI;
+   h(a,b) => (z \in a => b[z] = z)   BECAUSE HypoAndToImpl;
+   \A z : h(a,b) => (z \in a => b[z] = z)   BECAUSE GENERALIZATION;
+   h(a,b) => (x \in a => b[x] = x)   BECAUSE \A(z <- x);
+   \A x : h(a,b) => (x \in a => b[x] = x)   BECAUSE GENERALIZATION;
+   h(a,b) => (\A x : x \in a => b[x] = x)   BECAUSE Q_SCHEME;
 
+   \* Prove the unicity of b
+   h(a,b) => IsFunction(b) /\ Domain(b) = a   BECAUSE CIA;
+   h(a,b) => IsFunction(b) /\ Domain(b) = a /\ (\A x : x \in a => b[x] = x)   BECAUSE CIA;
 QED
 
 identityVal == \A d : \A x : x \in d => pre(identity(d),x) = x
