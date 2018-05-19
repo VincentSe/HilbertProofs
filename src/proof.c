@@ -1411,6 +1411,22 @@ short semantic_check_reason(struct reason* r,
   if (r->rk == propoTautology)
     return 1; //semantic_check_tautology(r->formula, assumedProofs);
 
+  if (r->rk == forallInstance || r->rk == existInstance)
+    {
+      // Resolve the substituted terms
+      for (const struct formula_list* substit = r->formula->operands; substit; substit = substit->next->next)
+	{
+	  if (!resolve_names(substit->next->formula_elem,
+			     constants,
+			     operators,
+			     p->variables,
+			     (struct formula_list*)0,
+			     proofLocalOps))
+	    return 0;
+	}
+      return 1;
+    }
+
   return resolve_names(/*out*/r->formula,
 		       constants,
 		       operators,
@@ -1451,7 +1467,7 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 			   constants,
 			   operators,
 			   p->variables,
-			   0,
+			   (struct formula_list*)0, // no operator variables
 			   *proofLocalOps)
 	&& semantic_check_reason(jf->reason, assumedProofs, p, *proofLocalOps, operators, constants);
     }

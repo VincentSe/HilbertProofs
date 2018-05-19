@@ -45,7 +45,7 @@ enum builtin_operator
     //     statement such as "zero \in one" could either be a universal
     //     quantification of zero and one, or refering to predeclared
     //     terms zero and one.
-    variable,
+    variable, substitution,
 
     // used in the replacement axiom scheme
     schemeVariable

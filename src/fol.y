@@ -184,7 +184,7 @@ substitution { $$ = $1; }
 
 substitution : NAME LEFT_ARROW formula {
   // Drop the arrow and convert it to a pair (name, formula)
-  formula* name = make_formula(lnone,
+  formula* name = make_formula(substitution,
 			       $1,
 			       (struct formula_list*)0,
 			       ast->file,

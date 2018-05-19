@@ -970,6 +970,15 @@ unsigned char resolve_names(/*out*/formula* f,
 
   // TODO check that operators (\in, +) are declared in CONSTANT clauses
 
+  if (f->builtInOp == substitution && !opVariables)
+    {
+      printf("%s:%d: variable substitutions are only allowed in operators definitions and quantifier instances\n",
+	     f->file,
+	     f->first_line,
+	     f->name);
+      return 0;
+    }
+
   if (f->builtInOp == forall
       || f->builtInOp == exists
       || f->builtInOp == choose
