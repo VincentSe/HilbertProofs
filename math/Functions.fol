@@ -636,7 +636,7 @@ QED
 identityBiject == \A d : identity(d) \in Bijections(d,d)
 THEOREM identityBiject
 PROOF
-VARIABLES a,b,c,d,f,g,i,j,x,y;
+VARIABLES a,b,c,d,f,g,i,j,x,y,z;
 \* Prove IsInjection(identity(d))
 identityIsFunc   BECAUSE THEOREM;
 IsFunction(identity(d)) /\ Domain(identity(d)) = d /\ \A x : x \in d => identity(d)[x] = x
@@ -682,25 +682,47 @@ IsInjection(identity(d))   BECAUSE IntroAndRight;
 Domain(identity(d)) = d   BECAUSE S23;
 
 imageExists   BECAUSE THEOREM;
-y \in Image(identity(d)) <=> Reaches(identity(d),y)   BECAUSE \A(g <- identity(d), y <- y);
-\A a : \A b : <<a,b>> \in identity(d) => (a \in d /\ b \in d)   BECAUSE GENERALIZATION;
-<<x,y>> \in identity(d) => (x \in d /\ y \in d)   BECAUSE \A(a <- x, b <- y);
-(x \in d /\ y \in d) => y \in d   BECAUSE S22;
-<<x,y>> \in identity(d) => y \in d   BECAUSE TI;
-Reaches(identity(d),y) => \E x : y \in d   BECAUSE Q_SCHEME;
-(\E x : y \in d) => y \in d   BECAUSE Q_SCHEME;
-Reaches(identity(d),y) => y \in d   BECAUSE TI;
-\A x : x \in d => <<x,x>> \in identity(d)   BECAUSE GENERALIZATION;
-y \in d => <<y,y>> \in identity(d)   BECAUSE \A(x <- y);
-<<y,y>> \in identity(d) => \E x : <<x,y>> \in identity(d)   BECAUSE \E(x <- y);
-y \in d => Reaches(identity(d),y)   BECAUSE TI;
-y \in d <=> Reaches(identity(d),y)   BECAUSE IntroEquiv;
-y \in Image(identity(d)) <=> y \in d   BECAUSE TransitEquiv2;
-\A y : y \in Image(identity(d)) <=> y \in d   BECAUSE GENERALIZATION;
-x \in Image(identity(d)) <=> x \in d   BECAUSE \A(y <- x);
-\A x : x \in Image(identity(d)) <=> x \in d   BECAUSE GENERALIZATION;
-(\A x : x \in Image(identity(d)) <=> x \in d) => Image(identity(d)) = d   BECAUSE \A(a <- Image(identity(d)), b <- d);
+z \in Image(identity(d)) <=> Reaches(identity(d),z)   BECAUSE \A(g <- identity(d), y <- z);
+z \in Image(identity(d)) => \E x : <<x,z>> \in identity(d)   BECAUSE EquivToImpl;
+\A a : \A b : <<a,b>> \in identity(d) => b = a   BECAUSE GENERALIZATION;
+<<x,z>> \in identity(d) => z = x   BECAUSE \A(a <- x, b <- z);
+\A a : \A b : <<a,b>> \in identity(d) => a \in d   BECAUSE GENERALIZATION;
+<<x,z>> \in identity(d) => x \in d   BECAUSE \A(a <- x, b <- z);
+\A z : \A x : z = x => (z \in d <=> x \in d)   BECAUSE E_SCHEME;
+z = x => (z \in d <=> x \in d)   BECAUSE \A(z <- z, x <- x);
+<<x,z>> \in identity(d) => (z \in d <=> x \in d)   BECAUSE TI;
+implyEquivTrue(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+<<x,z>> \in identity(d) => z \in d   BECAUSE implyEquivTrue;
+(\E x : <<x,z>> \in identity(d)) => \E x : z \in d   BECAUSE Q_SCHEME;
+(\E x : z \in d) => z \in d   BECAUSE Q_SCHEME;
+z \in Image(identity(d)) => z \in d   BECAUSE TI2;
+Image(identity(d)) \subseteq d   BECAUSE GENERALIZATION;
+funcImageExists   BECAUSE THEOREM;
+IsFunction(identity(d)) /\ z \in Domain(identity(d))
+   => <<z, identity(d)[z]>> \in identity(d)   BECAUSE \A(f <- identity(d), x <- z);
+z \in Domain(identity(d)) => IsFunction(identity(d)) /\ z \in Domain(identity(d))   BECAUSE IntroAndRight;
+z \in Domain(identity(d)) => <<z, identity(d)[z]>> \in identity(d)   BECAUSE TI;
+\A a : a \in Domain(identity(d)) <=> a \in d   BECAUSE GENERALIZATION;
+z \in Domain(identity(d)) <=> z \in d   BECAUSE \A(a <- z);
+z \in d => z \in Domain(identity(d))   BECAUSE EquivToImplReverse;
+z \in d => <<z, identity(d)[z]>> \in identity(d)   BECAUSE TI;
+z \in d => identity(d)[z] = z   BECAUSE \A(x <- z);
+identity(d)[z] = z => z = identity(d)[z]   BECAUSE E_SCHEME;
+z \in d => z = identity(d)[z]   BECAUSE TI;
+\A a : \A b : a = b => (<<z, a>> \in identity(d) <=> <<z, b>> \in identity(d))   BECAUSE E_SCHEME;
+z = identity(d)[z] => (<<z, z>> \in identity(d) <=> <<z, identity(d)[z]>> \in identity(d))   BECAUSE \A(a <- z, b <- identity(d)[z]);
+z \in d => (<<z, z>> \in identity(d) <=> <<z, identity(d)[z]>> \in identity(d))   BECAUSE TI;
+z \in d => <<z, z>> \in identity(d)   BECAUSE implyEquivTrue;
+(\E x : <<x,z>> \in identity(d)) => z \in Image(identity(d))   BECAUSE EquivToImplReverse;
+<<z, z>> \in identity(d) => (\E x : <<x,z>> \in identity(d))   BECAUSE \E(x <- z);
+z \in d => z \in Image(identity(d))   BECAUSE TI2;
+d \subseteq Image(identity(d))   BECAUSE GENERALIZATION;
+bothInclusions   BECAUSE THEOREM;
+(Image(identity(d)) \subseteq d /\ d \subseteq Image(identity(d))) => Image(identity(d)) = d
+   BECAUSE \A(a <- Image(identity(d)), b <- d);
+Image(identity(d)) \subseteq d /\ d \subseteq Image(identity(d))   BECAUSE IntroAndRight;
 Image(identity(d)) = d   BECAUSE MODUS_PONENS;
+
 IsInjection(identity(d)) /\ Domain(identity(d)) = d   BECAUSE IntroAndRight;
 IsInjection(identity(d)) /\ Domain(identity(d)) = d /\ Image(identity(d)) = d   BECAUSE IntroAndRight;
 bijectionsExists   BECAUSE THEOREM;
