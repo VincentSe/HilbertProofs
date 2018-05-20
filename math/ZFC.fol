@@ -831,24 +831,29 @@ p \subseteq {a} => p = {} \/ p = {a}   BECAUSE pushCase;
 subsetSingleton   BECAUSE GENERALIZATION;
 QED
 
-{ c, d } == CHOOSE b : \A y : y \in b <=> (y = c \/ y = d)
+{ c, d } == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A y : y \in z <=> (y = c \/ y = d)
 
-pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
-THEOREM pairExists
+pairExistsUniquely == \A c : \A d : \A z : z = {c,d} <=>
+   \A y : y \in z <=> (y = c \/ y = d)
+THEOREM pairExistsUniquely
 PROOF
 VARIABLES a,b,c,d,i,j,x,y,z;
 \* Proof by replacement of ordinalTwo with the functional {} -> c, ordinalOne -> d
 F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 (\A x : \A y : \A z : (((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d))
       	       	        /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d))) => y = z)
-   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))   BECAUSE AXIOM_SCHEME;
+   => (\A a : \E b : \A y : y \in b <=> \E x : x \in a /\ ((x = {} /\ y = c) \/ (x = ordinalOne /\ y = d)))
+   BECAUSE AXIOM_SCHEME;
 
-   \* Proof that F is functional
-(F(c,d,x,y) /\ ((x = {} /\ z = c) \/ (x = ordinalOne /\ z = d)))
-   => ((F(c,d,x,y) /\ (x = {} /\ z = c)) \/ (F(c,d,x,y) /\ (x = ordinalOne /\ z = d)))   BECAUSE DistribAndOrLeft;
+\* Proof that F is functional
+F(c,d,x,y) /\ F(c,d,x,z)
+   => ((F(c,d,x,y) /\ (x = {} /\ z = c)) \/ (F(c,d,x,y) /\ (x = ordinalOne /\ z = d)))
+   BECAUSE DistribAndOrLeft;
 \* Case x = {}
 (F(c,d,x,y) /\ (x = {} /\ z = c))
-   => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))   BECAUSE DistribAndOrRight;
+   => (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)))
+   BECAUSE DistribAndOrRight;
 (x = {} /\ z = c) => x = {}   BECAUSE S12;
 (x = ordinalOne /\ y = d) => x = ordinalOne   BECAUSE S12;
 ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c)) => (x = ordinalOne /\ x = {})   BECAUSE MergeImplicationsAnd;
@@ -861,7 +866,6 @@ F(c,d,x,y) == (x = {} /\ y = c) \/ (x = ordinalOne /\ y = d);
 ((x = {} /\ y = c) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
 (((x = {} /\ y = c) /\ (x = {} /\ z = c)) \/ ((x = ordinalOne /\ y = d) /\ (x = {} /\ z = c))) => ((y = z) \/ (ordinalOne = {}))   BECAUSE MergeImplicationsOr;
 (F(c,d,x,y) /\ (x = {} /\ z = c)) => (y = z \/ ordinalOne = {})   BECAUSE TI;
-
 oneIsNotZero   BECAUSE THEOREM;
 (y = z \/ ordinalOne = {}) => y = z   BECAUSE OrFalseStart;
 (F(c,d,x,y) /\ (x = {} /\ z = c)) => y = z   BECAUSE TI;
@@ -945,8 +949,43 @@ y = d => (\E x : x \in ordinalTwo /\ F(c,d,x,y))   BECAUSE TI;
 (y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (y \in b <=> (y = c \/ y = d))   BECAUSE TransitEquiv2;
 (\A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
 (\E b : \A y : y \in b <=> (\E x : x \in ordinalTwo /\ F(c,d,x,y))) => (\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE Q_SCHEME;
-(\E b : \A y : y \in b <=> (y = c \/ y = d))   BECAUSE MODUS_PONENS;
-\A y : y \in { c, d } <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
+\E b : \A y : y \in b <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
+
+\* Unicity of the pair
+h(b,c,d) == \A y : y \in b <=> (y = c \/ y = d);
+\A z : \A b : z = b => (h(z,c,d) <=> h(b,c,d))   BECAUSE E_SCHEME;
+z = b => (h(z,c,d) <=> h(b,c,d))   BECAUSE \A(z <- z, b <- b);
+cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+h(b,c,d) /\ z = b => h(z,c,d)   BECAUSE cycleHypos;
+h(b,c,d) => (y \in b <=> (y = c \/ y = d))   BECAUSE \A(y <- y);
+h(z,c,d) => (y \in z <=> (y = c \/ y = d))   BECAUSE \A(y <- y);
+transitEquiv(a,b,c,d,e) == (a => (b <=> c)) => ((d => (e <=> c)) => (a /\ d => (e <=> b)))   PROPO_TAUTO;
+h(b,c,d) /\ h(z,c,d) => (y \in z <=> y \in b)   BECAUSE transitEquiv;
+\A y : h(b,c,d) /\ h(z,c,d) => (y \in z <=> y \in b)   BECAUSE GENERALIZATION;
+h(b,c,d) /\ h(z,c,d) => (x \in z <=> x \in b)   BECAUSE \A(y <- x);
+\A x : h(b,c,d) /\ h(z,c,d) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(b,c,d) /\ h(z,c,d) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+h(b,c,d) /\ h(z,c,d) => z = b   BECAUSE TI;
+h(b,c,d) => (z = b <=> h(z,c,d))   BECAUSE HIE;
+\A z : h(b,c,d) => (z = b <=> h(z,c,d))   BECAUSE GENERALIZATION;
+h(b,c,d) => (\A z : z = b <=> h(z,c,d))   BECAUSE Q_SCHEME;
+(\E b : h(b,c,d)) => (\E b : \A z : z = b <=> h(z,c,d))   BECAUSE Q_SCHEME;
+\E b : \A z : z = b <=> h(z,c,d)   BECAUSE MODUS_PONENS;
+\A z : z = {c,d} <=> \A y : y \in z <=> (y = c \/ y = d)   BECAUSE CHOOSE {c, d};
+pairExistsUniquely   BECAUSE GENERALIZATION;
+QED
+
+pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
+THEOREM pairExists
+PROOF
+VARIABLES c,d;
+pairExistsUniquely   BECAUSE THEOREM;
+{c,d} = {c,d} <=> \A y : y \in {c,d} <=> (y = c \/ y = d)   BECAUSE \A(c <- c, d <- d, z <- {c,d});
+equalSelf   BECAUSE THEOREM;
+{c,d} = {c,d}   BECAUSE \A(a <- {c,d});
+\A y : y \in {c,d} <=> (y = c \/ y = d)   BECAUSE MODUS_PONENS;
 pairExists   BECAUSE GENERALIZATION;
 QED
 
