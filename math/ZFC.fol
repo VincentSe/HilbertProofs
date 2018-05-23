@@ -980,7 +980,7 @@ QED
 pairExists == \A c : \A d : \A y : y \in { c, d } <=> (y = c \/ y = d)
 THEOREM pairExists
 PROOF
-VARIABLES c,d;
+VARIABLES a,c,d,z;
 pairExistsUniquely   BECAUSE THEOREM;
 {c,d} = {c,d} <=> \A y : y \in {c,d} <=> (y = c \/ y = d)   BECAUSE \A(c <- c, d <- d, z <- {c,d});
 equalSelf   BECAUSE THEOREM;

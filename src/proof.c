@@ -16,6 +16,18 @@ struct FormulaDList* push_justified_formula(struct JustifiedFormula* jf,
   return fl;
 }
 
+struct FormulaDList* push_justified_formula_last(struct JustifiedFormula* jf,
+						 struct FormulaDList* prev)
+{
+  struct FormulaDList* fl = malloc(sizeof(struct FormulaDList));
+  fl->jf = jf;
+  fl->previous = prev;
+  fl->next = 0;
+  //if (prev)
+  //  prev->next = fl;
+  return fl;
+}
+
 void print_justified_formula(struct JustifiedFormula* jf)
 {
   print_formula(jf->formula);
@@ -119,6 +131,7 @@ const char* reason_kind_to_string(enum reason_kind rk)
     case modusPonens: return "modus ponens";
     case generalization: return "generalization";
     case theorem: return "theorem";
+    case macro: return "macro";
     case axiom: return "axiom";
     case forallInstance: return "instance of forall";
     case existInstance: return "instance of exists";
@@ -326,10 +339,12 @@ short check_propositional_tautology_statement(const struct FormulaDList* stateme
       || implicit_propositional_tautology(statement, tauto->definingFormula, operators))
     return 1;
 
-  printf("%s:%d: tautology %s does not match\n",
+  printf("%s:%d: tautology %s does not match ",
 	 statement->jf->formula->file,
 	 statement->jf->formula->first_line,
 	 tauto->name);
+  print_formula(statement->jf->formula);
+  printf("\n");
   return 0;
 }
 
@@ -1207,8 +1222,132 @@ short check_choose_statement(const struct FormulaDList* statement,
   return 0;
 }
 
+short check_proof_statement(const struct FormulaDList* statement,
+			    const proof* p,
+			    struct formula_list** proofLocalOps,
+			    const formula_set operators,
+			    const proof_set assumedProofs,
+			    const struct proof_list* axiomSchemes,
+			    const struct formula_list* constants,
+			    const char* file, // for macros, the formulas don't store it
+			    int first_line);
+
+short semantic_check_proof_statement(const struct JustifiedFormula* jf,
+				     const formula_set operators,
+				     const struct formula_list* constants,
+				     const proof_set assumedProofs,
+				     const proof* p,
+				     struct formula_list** proofLocalOps,
+				     const char* file, // for macros, the formulas don't store it
+				     int first_line);
+
+/**
+   Replace the macro varible by its formula, also resolving
+   the substitutions like F(x <- xPrime). Do not test variable
+   capture, the proof checking is done in the other proof,
+   where the macro is pasted.
+ */
+void set_variables(const char* v,
+		   /*out*/formula* f)
+{
+  if (f->builtInOp == lnone
+      && strcmp(v, f->name) == 0)
+    f->builtInOp = variable;
+  for (struct formula_list* oper = f->operands; oper; oper = oper->next)
+    set_variables(v, /*out*/oper->formula_elem);
+}
+
+unsigned char check_macro_invocation_statement(const struct FormulaDList* statement,
+					       const proof* p,
+					       struct formula_list** proofLocalOps,
+					       const formula_set operators,
+					       const proof_set assumedProofs,
+					       const struct proof_list* axiomSchemes,
+					       const struct formula_list* constants)
+{
+  formula* reasonF = statement->jf->reason->formula;
+  proof searchP;
+  searchP.formulaToProve = reasonF;
+  const proof* macroProof = proof_set_find(&searchP, assumedProofs);
+  if (!macroProof)
+    {
+      printf("%s:%d: macro not found ",
+	     reasonF->file,
+	     reasonF->first_line);
+      print_formula(reasonF);
+      printf("\n");
+      return 0;
+    }
+
+  const struct formula_list* substit = reasonF->operands;
+  variable_substitution freeSubs[2]; // TODO multiple substitutions
+  freeSubs[0].variable = substit->formula_elem->name;
+  freeSubs[0].subst = substit->next->formula_elem;
+  freeSubs[1].variable = (char*)0;
+  proof pExtraVariables;
+  pExtraVariables.goal = p->goal;
+  pExtraVariables.formulaToProve = p->formulaToProve;
+  struct string_list extraVariable;
+  extraVariable.string_elem = substit->formula_elem->name;
+  extraVariable.next = p->variables;
+  pExtraVariables.variables = &extraVariable;
+  pExtraVariables.cumulativeTruths = p->cumulativeTruths;
+
+  struct FormulaDList* substitStatement = (struct FormulaDList*)statement;
+
+  unsigned char macroSucceeds = 1;
+  
+  for (struct FormulaDList* macroStatement = macroProof->cumulativeTruths;
+       macroStatement && macroSucceeds;
+       macroStatement = macroStatement->next)
+    {      
+      // Substitute the invocated formula in macroStatement, then check it
+      set_variables(freeSubs[0].variable, /*out*/macroStatement->jf->formula);
+      formula* c = formula_clone(macroStatement->jf->formula, freeSubs);
+      if (macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula)
+	c->definingFormula = macroStatement->jf->formula->definingFormula;
+
+      // print_formula(c); printf("\n");
+
+      struct JustifiedFormula* jf = make_jf(c, macroStatement->jf->reason);
+      substitStatement = push_justified_formula_last(jf, substitStatement);
+
+      macroSucceeds &= semantic_check_proof_statement(substitStatement->jf, operators, constants,
+						      assumedProofs, &pExtraVariables,
+						      proofLocalOps,
+						      reasonF->file, reasonF->first_line)
+	&& check_proof_statement(substitStatement,
+				 p,
+				 proofLocalOps,
+				 operators,
+				 assumedProofs,
+				 axiomSchemes,
+				 constants,
+				 reasonF->file, reasonF->first_line);
+    }
+
+  for (struct FormulaDList* macroStatement = substitStatement; macroStatement != statement; )
+    {
+      macroStatement->jf->reason = 0;
+      if (macroStatement->jf->reason
+	  && macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula
+	  && macroStatement->jf->formula)
+	macroStatement->jf->formula->definingFormula = 0;
+      justified_formula_free(macroStatement->jf);
+      struct FormulaDList* prev = macroStatement->previous;
+      free(macroStatement);
+      macroStatement = prev;
+    }
+    
+
+  // TODO check equality between macro's last statement and statement->jf->formula
+
+  return macroSucceeds;
+}
+
 // Check XXX BECAUSE THEOREM;
-short check_theorem_invocation_statement(const formula* f, const proof_set assumedProofs)
+unsigned char check_theorem_invocation_statement(const formula* f, const proof_set assumedProofs,
+						 const char* file, int first_line)
 {
   proof searchP;
   searchP.formulaToProve = (formula*)f;
@@ -1217,8 +1356,10 @@ short check_theorem_invocation_statement(const formula* f, const proof_set assum
       && otherProof->goal == theorem
       && otherProof->cumulativeTruths)
     {
-      if (strcmp(f->file, otherProof->formulaToProve->file) == 0
-	  && f->first_line < otherProof->formulaToProve->first_line)
+      const char* currentFile = f->file ? f->file : file;
+      int currentLine = f->first_line ? f->first_line : first_line;
+      if (strcmp(currentFile, otherProof->formulaToProve->file) == 0
+	  && first_line < otherProof->formulaToProve->first_line)
 	{
 	  // Prevent cycles in proofs, to avoid for example giving two names
 	  // to the same closed formula and incorrectly proving it
@@ -1237,10 +1378,12 @@ short check_theorem_invocation_statement(const formula* f, const proof_set assum
 
 short check_proof_statement(const struct FormulaDList* statement,
 			    const proof* p,
-			    const struct formula_list* proofLocalOps,
+			    struct formula_list** proofLocalOps,
 			    const formula_set operators,
 			    const proof_set assumedProofs,
-			    const struct proof_list* axiomSchemes)
+			    const struct proof_list* axiomSchemes,
+			    const struct formula_list* constants,
+			    const char* file, int first_line)
 {
   if (!statement->jf->reason)
     {
@@ -1265,9 +1408,13 @@ short check_proof_statement(const struct FormulaDList* statement,
       // In these two cases, the check is just formula_equal between statement->jf->formula
       // and an axiom or theorem formula taken from assumedProofs.
     case axiom:
-      return check_axiom_statement(statement->jf, assumedProofs, operators, proofLocalOps);
+      return check_axiom_statement(statement->jf, assumedProofs, operators, *proofLocalOps);
     case theorem:
-      return check_theorem_invocation_statement(statement->jf->formula, assumedProofs);
+      return check_theorem_invocation_statement(statement->jf->formula, assumedProofs,
+						file, first_line);
+    case macro:
+      return check_macro_invocation_statement(statement, p, proofLocalOps, operators,
+					      assumedProofs, axiomSchemes, constants);
 
       // Axiom scheme cases. They check that several subformulas of statement->jf->formula
       // are equal or substituted from one another.
@@ -1291,10 +1438,10 @@ short check_proof_statement(const struct FormulaDList* statement,
       return check_generalization_statement(statement, operators);
     case propoTautology:
       return check_propositional_tautology_statement(statement, assumedProofs,
-						     operators, proofLocalOps);
+						     operators, *proofLocalOps);
     case reasonChoose:
       return check_choose_statement(statement, statement->jf->reason->formula,
-				    operators, proofLocalOps);
+				    operators, *proofLocalOps);
 
       // The only checking that looks at the previously proven formulas,
       // to cut proven hypotheses in proven implications.
@@ -1354,7 +1501,7 @@ short semantic_check_operator_definition(formula* op,
 				operators,
 				(struct string_list*)0,
 				op->operands,
-				proofLocalDecl);
+				proofLocalDecl, 0, 0);
   if (!success)
     return 0;
 
@@ -1411,6 +1558,9 @@ short semantic_check_reason(struct reason* r,
   if (r->rk == propoTautology)
     return 1; //semantic_check_tautology(r->formula, assumedProofs);
 
+  if (r->rk == macro)
+    return 1; // TODO check the macro exists, that its variables are in bijection with the substitutions in r->formula and resolve names in the substitutions
+
   if (r->rk == forallInstance || r->rk == existInstance)
     {
       // Resolve the substituted terms
@@ -1421,7 +1571,7 @@ short semantic_check_reason(struct reason* r,
 			     operators,
 			     p->variables,
 			     (struct formula_list*)0,
-			     proofLocalOps))
+			     proofLocalOps, 0, 0))
 	    return 0;
 	}
       return 1;
@@ -1432,7 +1582,7 @@ short semantic_check_reason(struct reason* r,
 		       operators,
 		       p->variables,
 		       (struct formula_list*)0, // no operator variables
-		       proofLocalOps);
+		       proofLocalOps, 0, 0);
 }
 
 short semantic_check_proof_statement(const struct JustifiedFormula* jf,
@@ -1440,7 +1590,9 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 				     const struct formula_list* constants,
 				     const proof_set assumedProofs,
 				     const proof* p,
-				     struct formula_list** proofLocalOps)
+				     struct formula_list** proofLocalOps,
+				     const char* file, // for macros, the formulas don't store it
+				     int first_line)
 {
   if (jf->reason)
     {
@@ -1461,14 +1613,15 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 			       constants,
 			       operators,
 			       (struct string_list*)0,
-			       jf->formula->operands, 0);
+			       jf->formula->operands, // op variables
+			       0, file, first_line);
 	}
       return resolve_names(jf->formula,
 			   constants,
 			   operators,
 			   p->variables,
 			   (struct formula_list*)0, // no operator variables
-			   *proofLocalOps)
+			   *proofLocalOps, file, first_line)
 	&& semantic_check_reason(jf->reason, assumedProofs, p, *proofLocalOps, operators, constants);
     }
   else
@@ -1506,8 +1659,9 @@ short check_proof(const proof* proof,
   switch (proof->goal)
     {
     case axiom:
-    case axiomScheme:
-      return 1; // an axiom is its own proof, no need to verify it
+    case axiomScheme: // an axiom is its own proof, no need to verify it
+    case macro: // a macro is checked in another proof, where it is copy-pasted TODO check a macro does not invoke another macro in its proof
+      return 1; 
     case propoTautology:
       return is_propositional_formula(proof->formulaToProve)
 	&& prove_propositional_tautology(proof->formulaToProve);
@@ -1534,10 +1688,14 @@ short check_proof(const proof* proof,
       struct FormulaDList* lastStatement = 0;
       while (statement
 	     && semantic_check_proof_statement(statement->jf, operators, constants,
-					       assumedProofs, proof, &localOperators)
-	     && check_proof_statement(statement, proof, localOperators,
+					       assumedProofs, proof, &localOperators,
+					       statement->jf->formula->file,
+					       statement->jf->formula->first_line)
+	     && check_proof_statement(statement, proof, &localOperators,
 				      operators, assumedProofs,
-				      axiomSchemes))
+				      axiomSchemes, constants,
+				      statement->jf->formula->file,
+				      statement->jf->formula->first_line))
 	{
 	  if (!statement->next)
 	    lastStatement = statement;
@@ -1575,7 +1733,9 @@ short check_proof(const proof* proof,
 
   // In case an error in a statement silently returns (bug),
   // complain here once more :
-  printf("Error in proof of ");
+  printf("%s:%d: Error in proof of ",
+	 proof->formulaToProve->file,
+	 proof->formulaToProve->first_line);
   print_formula(proof->formulaToProve);
   printf("\n");
   return 0;

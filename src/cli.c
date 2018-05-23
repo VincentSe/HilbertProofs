@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   asts[astCount] = (struct folAST*)0;
 
   for (i = 0; i < astCount; i++)
-    if (parse_fo_formulas(asts[i]) != 0) // 0 means bison succeeded
+    if (parse_fo_formulas(asts[i]) != 0) // means bison failed
       {
 	printf("parsing failure\n");
 	free_first_asts(asts, astCount);

@@ -292,6 +292,7 @@ NAME { $$ = make_reason(propoTautology,
 				     ast->file,
 				     @1.first_line, @$.last_line)); }
 | REASON_KIND { $$ = make_reason($1, (formula*)0); }
+| REASON_KIND formula { $$ = make_reason($1, $2); }
 | QUANTIFIER LEFT_PARENTHESIS commaSeparatedSubstitutions RIGHT_PARENTHESIS {
   if ($1 != forall && $1 != exists)
     yyerror(&@$, scanner, ast, "Substitutions in a reason must be \\A or \\E.\n");

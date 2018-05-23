@@ -47,6 +47,7 @@ void folerror (YYLTYPE* yylloc, void* scanner, struct folAST* ast, char const* e
 "Q_SCHEME"       { folget_lval(yyscanner)->rkVal = quantifierScheme; return REASON_KIND; }
 "E_SCHEME"       { folget_lval(yyscanner)->rkVal = equalityScheme; return REASON_KIND; }
 "THEOREM"        { folget_lval(yyscanner)->rkVal = theorem; return REASON_KIND; }
+"MACRO"          { folget_lval(yyscanner)->rkVal = macro; return REASON_KIND; }
 "PROPO_TAUTO"    { folget_lval(yyscanner)->rkVal = propoTautology; return REASON_KIND; }
 "MODUS_PONENS"   { folget_lval(yyscanner)->rkVal = modusPonens; return REASON_KIND; }
 "GENERALIZATION" { folget_lval(yyscanner)->rkVal = generalization; return REASON_KIND; }

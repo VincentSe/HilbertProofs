@@ -68,7 +68,8 @@ enum reason_kind
     equalityScheme,
     forallInstance,
     existInstance,
-    reasonChoose
+    reasonChoose,
+    macro
   };
 const char* reason_kind_to_string(enum reason_kind rk);
 
@@ -228,7 +229,9 @@ unsigned char resolve_names(formula* f,
 			    const formula_set operatorDefinitions,
 			    const struct string_list* variables,
 			    const struct formula_list* opVariables, // should be a union with variables
-			    const struct formula_list* proofLocalDecl);
+			    const struct formula_list* proofLocalDecl,
+			    const char* file,
+			    int first_line);
 
 /**
    Checks whether f is a valid forall instance axiom, ie if there exists

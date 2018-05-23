@@ -27,7 +27,7 @@ void print_formula(const formula* f)
 
   if (f->builtInOp == variable)
     {
-      printf("var %s", f->name);
+      printf("%s", f->name);
       return;
     }
 
@@ -68,7 +68,7 @@ void print_formula(const formula* f)
       || f->builtInOp == choose
       || f->builtInOp == chooseUnique)
     {
-      printf("%s %s (", op_to_string(f->builtInOp), f->name);
+      printf("(%s %s : ", op_to_string(f->builtInOp), f->name);
       print_formula(get_first_operand(f));
       printf(")");
       return;
@@ -96,7 +96,7 @@ void print_formula(const formula* f)
   // Binary formula
   printf("(");
   print_formula(get_first_operand(f));
-  printf(") %s (", op_to_string(f->builtInOp));
+  printf(" %s ", op_to_string(f->builtInOp));
   print_formula(get_second_operand(f));
   printf(")");
 }
@@ -178,7 +178,8 @@ void formula_free(formula* f)
   free(f->name);
   for (struct formula_list* op = f->operands; op; op = op->next)
     {
-      if (!f->first_line && op->formula_elem->first_line)
+      if (!f->first_line // f was cloned
+	  && op->formula_elem->first_line)
   	op->formula_elem = 0; // shared operands
     }
   formula_list_free(f->operands);
@@ -871,7 +872,9 @@ short resolve_operator_or_variable(formula* f,
 				   const formula_set operatorDefinitions,
 				   const struct string_list* variables,
 				   const struct formula_list* opVariables, // should be a union with variables
-				   const struct formula_list* proofLocalDecl)
+				   const struct formula_list* proofLocalDecl,
+				   const char* file,
+				   int first_line)
 {
   if (!f || (f->builtInOp == lnone && !f->name))
     return 1; // nothing to resolve
@@ -901,8 +904,10 @@ short resolve_operator_or_variable(formula* f,
       long lastLine = resolvedF->last_line;
       if (resolvedF->definingFormula && resolvedF->definingFormula->last_line > lastLine)
 	lastLine = resolvedF->definingFormula->last_line;
-      if (strcmp(f->file, resolvedF->file) == 0
-	  && f->first_line <= lastLine)
+      const char* currentFile = f->file ? f->file : file;
+      int currentLine = f->first_line ? f->first_line : first_line;
+      if (strcmp(currentFile, resolvedF->file) == 0
+	  && currentLine <= lastLine)
 	{
 	  printf("%s:%d: calling operator %s, which is defined later\n",
 		 f->file,
@@ -942,14 +947,17 @@ unsigned char resolve_operands(struct formula_list* operands,
 			       const formula_set operatorDefinitions,
 			       const struct string_list* variables,
 			       const struct formula_list* opVariables,
-			       const struct formula_list* proofLocalDecl)
+			       const struct formula_list* proofLocalDecl,
+			       const char* file,
+			       int first_line)
 {
   for ( ; operands; operands = operands->next)
     {
       formula* oper = operands->formula_elem;
       if (!resolve_names(oper, primitives,
 			 operatorDefinitions, variables,
-			 opVariables, proofLocalDecl))
+			 opVariables, proofLocalDecl,
+			 file, first_line))
 	return 0;
     }
   return 1;
@@ -964,7 +972,9 @@ unsigned char resolve_names(/*out*/formula* f,
 			    const formula_set operatorDefinitions,
 			    const struct string_list* variables,
 			    const struct formula_list* opVariables, // should be a union with variables
-			    const struct formula_list* proofLocalDecl)
+			    const struct formula_list* proofLocalDecl,
+			    const char* file,
+			    int first_line)
 {
   // TODO refuse nested quantified variables with same name
 
@@ -972,7 +982,7 @@ unsigned char resolve_names(/*out*/formula* f,
 
   if (f->builtInOp == substitution && !opVariables)
     {
-      printf("%s:%d: variable substitutions are only allowed in operators definitions and quantifier instances\n",
+      printf("%s:%d: variable substitutions are only allowed in operator definitions, quantifier instances and macro invocations\n",
 	     f->file,
 	     f->first_line,
 	     f->name);
@@ -990,19 +1000,22 @@ unsigned char resolve_names(/*out*/formula* f,
       bindVariable.next = (struct string_list*)variables;
       return resolve_names(f->operands->formula_elem, primitives,
 			   operatorDefinitions, &bindVariable,
-			   opVariables, proofLocalDecl);
+			   opVariables, proofLocalDecl,
+			   file, first_line);
     }
   else
     {
       // resolve operands first, because they can go in f->definingFormula
       if (!resolve_operands(f->operands, primitives, operatorDefinitions,
-			    variables, opVariables, proofLocalDecl))
+			    variables, opVariables, proofLocalDecl,
+			    file, first_line))
 	return 0;
     }
 
   if (is_custom_operator(f)
       && !resolve_operator_or_variable(f, primitives, operatorDefinitions,
-				       variables, opVariables, proofLocalDecl))
+				       variables, opVariables, proofLocalDecl,
+				       file, first_line))
     {
       return 0;
     }

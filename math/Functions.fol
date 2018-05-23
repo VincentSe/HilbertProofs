@@ -313,6 +313,37 @@ mainHypo(f,g) => f = g   BECAUSE TI;
 funcEqual   BECAUSE GENERALIZATION;
 QED
 
+MACRO separationFunc(F)
+PROOF
+\* No variables declared, a macro is copy-pasted in other proofs. Or add these variables to the other proof's variables ?
+\* Do not declare operators h(a,b) == ...F... because F might have other free variables.
+\A a : \E b : \A x : x \in b <=> x \in a /\ snd(x) = F   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in d \X i /\ snd(x) = F   BECAUSE \A(a <- d \X i);
+\* Prove b is a graph
+x \in d \X i /\ snd(x) = F => x \in d \X i   BECAUSE S12;
+cartesianProductExists   BECAUSE THEOREM;
+x \in (d \X i) <=> IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i   BECAUSE \A(i <- d, j <- i, x <- x);
+x \in (d \X i) => IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i   BECAUSE EquivToImpl;
+IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i => IsCouple(x)   BECAUSE S13;
+x \in d \X i /\ snd(x) = F => IsCouple(x)   BECAUSE TI2;
+
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
+   (x \in b <=> x \in d \X i /\ snd(x) = F)   BECAUSE \A(x <- x);
+(x \in b <=> x \in d \X i /\ snd(x) = F)
+   => (x \in b => x \in d \X i /\ snd(x) = F)   BECAUSE EquivToImpl;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
+   (x \in b => x \in d \X i /\ snd(x) = F)   BECAUSE TI;
+sepFuncTauto1(a,b,c,d) == (a => (b => c)) => ((c => d) => (a => (b => d)))   PROPO_TAUTO;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => (x \in b => IsCouple(x))   BECAUSE sepFuncTauto1;
+\A x : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => (x \in b => IsCouple(x))   BECAUSE GENERALIZATION;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => IsGraph(b)   BECAUSE Q_SCHEME;
+
+\* Prove b is a function
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
+   (xPrime \in b <=> xPrime \in d \X i /\ snd(xPrime) = F(x <- xPrime))   BECAUSE \A(x <- xPrime);
+\E b : IsGraph(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = F   BECAUSE TI;
+QED
+
 (*
    Convenience axiom scheme for defining functions from term formulas.
    Can be weakened to the separation axiom scheme when we have a set containing
@@ -625,7 +656,10 @@ identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
 THEOREM identityIsFunc
 PROOF
 \* By separation in d \X d
-VARIABLES a,b,c,d,f,i,j,x,y,z;
+VARIABLES a,b,c,d,f,i,j,x,y,z,xPrime;
+\E b : IsGraph(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = fst(x)
+   BECAUSE MACRO separationFunc(F <- fst(x));
+
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = x))   BECAUSE AXIOM_SCHEME;
 \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE \A(a <- d);
 \A z : z = identity(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE CHOOSE identity(d);

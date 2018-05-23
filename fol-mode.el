@@ -1,5 +1,5 @@
 (setq fol-keywords
-      '(("LOCAL\\|EXTENDS\\|CHOOSE_UNIQUE\\|CHOOSE\\|BECAUSE\\|PROOF\\|VARIABLES\\|THEOREM\\|PROPO_TAUTO\\|AXIOM_SCHEME\\|Q_SCHEME\\|E_SCHEME\\|AXIOM\\|QED\\|CONSTANT" . font-lock-keyword-face)
+      '(("LOCAL\\|EXTENDS\\|CHOOSE_UNIQUE\\|CHOOSE\\|BECAUSE\\|PROOF\\|VARIABLES\\|THEOREM\\|PROPO_TAUTO\\|AXIOM_SCHEME\\|Q_SCHEME\\|E_SCHEME\\|AXIOM\\|MACRO\\|QED\\|CONSTANT" . font-lock-keyword-face)
         ("UNION\\|SUBSET\\|MODUS_PONENS\\|GENERALIZATION" . font-lock-constant-face)))
 
 ;; Defines fol comments. Line comments are \* and block comments are (* *)

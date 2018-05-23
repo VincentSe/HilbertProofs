@@ -429,6 +429,22 @@ short semantic_check_proof(proof* p, struct folAST* ast)
       && strcmp(p->formulaToProve->file, ast->file) != 0)
     return 1; // proof coming from EXTENDS statement, was already checked in its own module
 
+  if (p->goal == macro)
+    {
+      for (const struct formula_list* op = p->formulaToProve->operands; op; op = op->next)
+	{
+	  if (op->formula_elem->builtInOp != lnone || op->formula_elem->operands)
+	    {
+	      printf("%s:%d: the operands of a macro must be variables %s\n",
+		     p->formulaToProve->file,
+		     p->formulaToProve->first_line);
+	      return 0;
+	    }
+	  op->formula_elem->builtInOp = variable;
+	}
+      return 1; // macros are checked in other proofs, where they are copy-pasted
+    }
+
   if (p->goal == propoTautology)
     return semantic_check_tautology(p->formulaToProve, ast->operators);
 
@@ -462,7 +478,8 @@ short semantic_check_proof(proof* p, struct folAST* ast)
   if (!resolve_names(p->formulaToProve,
 		     ast->constants,
 		     ast->operators,
-		     0, 0, 0))
+		     0, 0, 0,
+		     0, 0))
     {
       // finish the error message
       printf("in formula ");
