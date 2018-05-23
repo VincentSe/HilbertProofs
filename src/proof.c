@@ -1241,20 +1241,52 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 				     const char* file, // for macros, the formulas don't store it
 				     int first_line);
 
+const formula* find_formula_substit(const struct formula_list* l,
+				    const formula* op)
+{
+  for (; l; l = l->next->next)
+    if (l->formula_elem->name
+	&& op->name
+	&& strcmp(op->name, l->formula_elem->name) == 0)
+      return l->next->formula_elem;
+  return 0;
+}
+
 /**
    Replace the macro varible by its formula, also resolving
    the substitutions like F(x <- xPrime). Do not test variable
    capture, the proof checking is done in the other proof,
    where the macro is pasted.
  */
-void set_variables(const char* v,
+void set_variables(const struct formula_list* subs,
 		   /*out*/formula* f)
 {
-  if (f->builtInOp == lnone
-      && strcmp(v, f->name) == 0)
-    f->builtInOp = variable;
   for (struct formula_list* oper = f->operands; oper; oper = oper->next)
-    set_variables(v, /*out*/oper->formula_elem);
+    {
+      const formula* sub;
+      if (oper->formula_elem->builtInOp == lnone
+	  && (sub = find_formula_substit(subs, oper->formula_elem)))
+	{
+	  formula_free(oper->formula_elem);
+	  oper->formula_elem = (formula*)sub;
+	}
+      else if (oper->formula_elem->builtInOp == schemeVariable // substitution of variables too
+	  && (sub = find_formula_substit(subs, oper->formula_elem)))
+	{
+	  // TODO
+	  variable_substitution vSubs[2];
+	  struct formula_list* vSub = oper->formula_elem->operands;
+	  oper->formula_elem->operands = 0;
+	  vSubs[0].variable = vSub->formula_elem->name;
+	  vSubs[0].subst = vSub->next->formula_elem;
+	  vSubs[1].variable = (char*)0;
+	  formula_free(oper->formula_elem);
+	  oper->formula_elem = formula_clone(sub, vSubs);
+	  formula_list_free(vSub);
+	}
+      else
+	set_variables(subs, /*out*/oper->formula_elem);
+    }
 }
 
 unsigned char check_macro_invocation_statement(const struct FormulaDList* statement,
@@ -1280,10 +1312,6 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
     }
 
   const struct formula_list* substit = reasonF->operands;
-  variable_substitution freeSubs[2]; // TODO multiple substitutions
-  freeSubs[0].variable = substit->formula_elem->name;
-  freeSubs[0].subst = substit->next->formula_elem;
-  freeSubs[1].variable = (char*)0;
   proof pExtraVariables;
   pExtraVariables.goal = p->goal;
   pExtraVariables.formulaToProve = p->formulaToProve;
@@ -1302,12 +1330,12 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
        macroStatement = macroStatement->next)
     {      
       // Substitute the invocated formula in macroStatement, then check it
-      set_variables(freeSubs[0].variable, /*out*/macroStatement->jf->formula);
-      formula* c = formula_clone(macroStatement->jf->formula, freeSubs);
+      formula* c = formula_clone(macroStatement->jf->formula, (variable_substitution*)0);
+      set_variables(substit, /*out*/c);
       if (macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula)
 	c->definingFormula = macroStatement->jf->formula->definingFormula;
 
-      // print_formula(c); printf("\n");
+      //print_formula(c); printf("\n");
 
       struct JustifiedFormula* jf = make_jf(c, macroStatement->jf->reason);
       substitStatement = push_justified_formula_last(jf, substitStatement);
