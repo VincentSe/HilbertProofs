@@ -53,6 +53,47 @@ h(f,x,y) => y = f[x]   BECAUSE implyEquivTrue;
 funcVal   BECAUSE GENERALIZATION;
 QED
 
+funcBis == \A f : IsGraph(f)
+   /\ (\A x : \A y : x \in f /\ y \in f /\ fst(x) = fst(y) => snd(x) = snd(y))
+   => IsFunction(f)
+THEOREM funcBis
+PROOF
+VARIABLES a,b,c,f,i,j,k,l,t,x,y,z;
+h(f) == IsGraph(f) /\ (\A x : \A y : x \in f /\ y \in f /\ fst(x) = fst(y) => snd(x) = snd(y));
+h(f) => (\A x : \A y : x \in f /\ y \in f /\ fst(x) = fst(y) => snd(x) = snd(y))   BECAUSE S22;
+(\A x : \A y : x \in f /\ y \in f /\ fst(x) = fst(y) => snd(x) = snd(y))
+   => (<<a,b>> \in f /\ <<a,c>> \in f /\ fst(<<a,b>>) = fst(<<a,c>>) => snd(<<a,b>>) = snd(<<a,c>>))
+   BECAUSE \A(x <- <<a,b>>, y <- <<a,c>>);
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+a = fst(<<a,c>>)   BECAUSE \A(a <- a, b <- c);
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+c = snd(<<a,c>>)   BECAUSE \A(a <- a, b <- c);
+a = fst(<<a,b>>) /\ a = fst(<<a,c>>)   BECAUSE IntroAndRight;
+a = fst(<<a,b>>) /\ a = fst(<<a,c>>) /\ b = snd(<<a,b>>)   BECAUSE IntroAndRight;
+a = fst(<<a,b>>) /\ a = fst(<<a,c>>) /\ b = snd(<<a,b>>) /\ c = snd(<<a,c>>)  BECAUSE IntroAndRight;
+\A i : \A x : \A j : \A y : \A k : \A z : \A l : \A t : i = x /\ j = y /\ k = z /\ l = t => ((<<a,b>> \in f /\ <<a,c>> \in f /\ i = j => k = l) <=> (<<a,b>> \in f /\ <<a,c>> \in f /\ x = y => z = t))   BECAUSE E_SCHEME;
+a = fst(<<a,b>>) /\ a = fst(<<a,c>>) /\ b = snd(<<a,b>>) /\ c = snd(<<a,c>>) => ((<<a,b>> \in f /\ <<a,c>> \in f /\ a = a => b = c) <=> (<<a,b>> \in f /\ <<a,c>> \in f /\ fst(<<a,b>>) = fst(<<a,c>>) => snd(<<a,b>>) = snd(<<a,c>>)))
+   BECAUSE \A(i <- a, x <- fst(<<a,b>>), j <- a, y <- fst(<<a,c>>), k <- b, z <- snd(<<a,b>>), l <- c, t <- snd(<<a,c>>));
+(<<a,b>> \in f /\ <<a,c>> \in f /\ a = a => b = c) <=> (<<a,b>> \in f /\ <<a,c>> \in f /\ fst(<<a,b>>) = fst(<<a,c>>) => snd(<<a,b>>) = snd(<<a,c>>))   BECAUSE MODUS_PONENS;
+(<<a,b>> \in f /\ <<a,c>> \in f /\ fst(<<a,b>>) = fst(<<a,c>>) => snd(<<a,b>>) = snd(<<a,c>>)) => (<<a,b>> \in f /\ <<a,c>> \in f /\ a = a => b = c)   BECAUSE EquivToImplReverse;
+h(f) => (<<a,b>> \in f /\ <<a,c>> \in f /\ a = a => b = c)   BECAUSE TI2;
+equalSelf   BECAUSE THEOREM;
+a = a   BECAUSE \A(a <- a);
+dropTrueHypo(a,b,c,h,t) == t => ((h => (a /\ b /\ t => c)) => (h => (a /\ b => c)))   PROPO_TAUTO;
+h(f) => (<<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE dropTrueHypo;
+\A c : h(f) => (<<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+h(f) => (\A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+\A b : h(f) => (\A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+h(f) => (\A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+\A a : h(f) => (\A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+h(f) => (\A a : \A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+h(f) => IsGraph(f)   BECAUSE S12;
+h(f) => IsFunction(f)   BECAUSE CIA;
+funcBis   BECAUSE GENERALIZATION;
+QED
+
 funcImageExists == \A f : \A x : IsFunction(f) /\ x \in Domain(f) => <<x, f[x]>> \in f
 THEOREM funcImageExists
 PROOF
@@ -313,35 +354,93 @@ mainHypo(f,g) => f = g   BECAUSE TI;
 funcEqual   BECAUSE GENERALIZATION;
 QED
 
+(*
+   F should be a term with free variable x, which defines a function.
+   For example, separationFunc(x) defines the identity function.
+*)
 MACRO separationFunc(F)
 PROOF
 \* No variables declared, a macro is copy-pasted in other proofs. Or add these variables to the other proof's variables ?
 \* Do not declare operators h(a,b) == ...F... because F might have other free variables.
-\A a : \E b : \A x : x \in b <=> x \in a /\ snd(x) = F   BECAUSE AXIOM_SCHEME;
-\E b : \A x : x \in b <=> x \in d \X i /\ snd(x) = F   BECAUSE \A(a <- d \X i);
+\A a : \E b : \A x : x \in b <=> x \in a /\ snd(x) = F(x <- fst(x))   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))   BECAUSE \A(a <- d \X i);
+\* Transform it as <<x,y>> \in b <=> y = F ?
+
 \* Prove b is a graph
-x \in d \X i /\ snd(x) = F => x \in d \X i   BECAUSE S12;
+x \in d \X i /\ snd(x) = F(x <- fst(x)) => x \in d \X i   BECAUSE S12;
 cartesianProductExists   BECAUSE THEOREM;
 x \in (d \X i) <=> IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i   BECAUSE \A(i <- d, j <- i, x <- x);
 x \in (d \X i) => IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i   BECAUSE EquivToImpl;
 IsCouple(x) /\ fst(x) \in d /\ snd(x) \in i => IsCouple(x)   BECAUSE S13;
-x \in d \X i /\ snd(x) = F => IsCouple(x)   BECAUSE TI2;
+x \in d \X i /\ snd(x) = F(x <- fst(x)) => IsCouple(x)   BECAUSE TI2;
 
-(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
-   (x \in b <=> x \in d \X i /\ snd(x) = F)   BECAUSE \A(x <- x);
-(x \in b <=> x \in d \X i /\ snd(x) = F)
-   => (x \in b => x \in d \X i /\ snd(x) = F)   BECAUSE EquivToImpl;
-(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
-   (x \in b => x \in d \X i /\ snd(x) = F)   BECAUSE TI;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) =>
+   (x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE \A(x <- x);
+(x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in b => x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE EquivToImpl;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) =>
+   (x \in b => x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE TI;
 sepFuncTauto1(a,b,c,d) == (a => (b => c)) => ((c => d) => (a => (b => d)))   PROPO_TAUTO;
-(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => (x \in b => IsCouple(x))   BECAUSE sepFuncTauto1;
-\A x : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => (x \in b => IsCouple(x))   BECAUSE GENERALIZATION;
-(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) => IsGraph(b)   BECAUSE Q_SCHEME;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in b => IsCouple(x))   BECAUSE sepFuncTauto1;
+\A x : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => (x \in b => IsCouple(x))   BECAUSE GENERALIZATION;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsGraph(b)   BECAUSE Q_SCHEME;
 
 \* Prove b is a function
-(\A x : x \in b <=> x \in d \X i /\ snd(x) = F) =>
-   (xPrime \in b <=> xPrime \in d \X i /\ snd(xPrime) = F(x <- xPrime))   BECAUSE \A(x <- xPrime);
-\E b : IsGraph(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = F   BECAUSE TI;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (<<a,b>> \in f <=> <<a,b>> \in d \X i /\ snd(<<a,b>>) = F(x <- fst(<<a,b>>)))   BECAUSE \A(x <- <<a,b>>);
+sepFuncTauto2(h,a,b) == (h => (a <=> b)) => (h /\ a => b)   PROPO_TAUTO;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ <<a,b>> \in f
+   => <<a,b>> \in d \X i /\ snd(<<a,b>>) = F(x <- fst(<<a,b>>))   BECAUSE sepFuncTauto2;
+<<a,b>> \in d \X i /\ snd(<<a,b>>) = F(x <- fst(<<a,b>>)) => snd(<<a,b>>) = F(x <- fst(<<a,b>>))   BECAUSE S22;
+sndExists   BECAUSE THEOREM;
+b = snd(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+fstExists   BECAUSE THEOREM;
+a = fst(<<a,b>>)   BECAUSE \A(a <- a, b <- b);
+\A a : \A b : \A x : \A y : a = b /\ x = y => (a = F(x <- x) <=> b = F(x <- y))   BECAUSE E_SCHEME;
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>) => (b = F(x <- a) <=> snd(<<a,b>>) = F(x <- fst(<<a,b>>)))
+   BECAUSE \A(a <- b, b <- snd(<<a,b>>), x <- a, y <- fst(<<a,b>>));
+b = snd(<<a,b>>) /\ a = fst(<<a,b>>)   BECAUSE IntroAndRight;
+b = F(x <- a) <=> snd(<<a,b>>) = F(x <- fst(<<a,b>>))   BECAUSE MODUS_PONENS;
+snd(<<a,b>>) = F(x <- fst(<<a,b>>)) => b = F(x <- a)   BECAUSE EquivToImplReverse;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ <<a,b>> \in f => b = F(x <- a)   BECAUSE TI2;
+\A b : (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ <<a,b>> \in f => b = F(x <- a)   BECAUSE GENERALIZATION;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ <<a,c>> \in f => c = F(x <- a)   BECAUSE \A(b <- c);
+sepFuncTauto3(h,a,b,c,d) == (h /\ a => b) => ((h /\ c => d) => (h /\ (a /\ c) => b /\ d))   PROPO_TAUTO;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (<<a,b>> \in f /\ <<a,c>> \in f)
+   => b = F(x <- a) /\ c = F(x <- a)   BECAUSE sepFuncTauto3;
+b = F(x <- a) /\ c = F(x <- a) => b = c   BECAUSE E_SCHEME;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (<<a,b>> \in f /\ <<a,c>> \in f)
+   => b = c   BECAUSE TI;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (<<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE HypoAndToImpl;
+\A c : (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (<<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+\A b : (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+\A a : (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE GENERALIZATION;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A a : \A b : \A c : <<a,b>> \in f /\ <<a,c>> \in f => b = c)   BECAUSE Q_SCHEME;
+\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsGraph(b)   BECAUSE GENERALIZATION;
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsGraph(f)   BECAUSE \A(b <- f);
+(\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsFunction(f)   BECAUSE CIA;
+\A f : (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsFunction(f)   BECAUSE GENERALIZATION;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsFunction(b)   BECAUSE \A(f <- b);
+
+\* Prove that Domain(b) = d when F \in i
+
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE ImplySelf;
+(\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => IsFunction(b) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE CIA;
+(\E b : \A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => \E b : IsFunction(b) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE Q_SCHEME;
+\E b : IsFunction(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))   BECAUSE MODUS_PONENS;
 QED
 
 (*
@@ -655,11 +754,12 @@ identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
    /\ \A x : x \in d => identity(d)[x] = x
 THEOREM identityIsFunc
 PROOF
-\* By separation in d \X d
-VARIABLES a,b,c,d,f,i,j,x,y,z,xPrime;
-\E b : IsGraph(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = fst(x)
-   BECAUSE MACRO separationFunc(F <- fst(x));
+VARIABLES a,b,c,d,f,i,j,x,y,z;
 
+\E b : IsFunction(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = fst(x)
+   BECAUSE MACRO separationFunc(F <- x);
+
+\* By separation in d \X d
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = x))   BECAUSE AXIOM_SCHEME;
 \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE \A(a <- d);
 \A z : z = identity(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE CHOOSE identity(d);
@@ -778,7 +878,11 @@ constExists == \A d : \A k : IsFunction(const(d,k)) /\ Domain(const(d,k)) = d
    /\ \A x : x \in d => const(d,k)[x] = k
 THEOREM constExists
 PROOF
-VARIABLES a,b,d,k,z;
+VARIABLES a,b,c,d,f,i,k,x,z;
+
+\E b : IsFunction(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = k
+   BECAUSE MACRO separationFunc(F <- k);
+
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = k))   BECAUSE AXIOM_SCHEME;
 \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))   BECAUSE \A(a <- d);
 \A z : z = const(d,k) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))   BECAUSE CHOOSE const(d,k);
@@ -1187,6 +1291,9 @@ productFuncIsFunc == \A g : \A h : \A z : z = productFunc(g,h) <=>
 THEOREM productFuncIsFunc
 PROOF
 VARIABLES a,b,c,d,f,g,h,i,j,x,y,z;
+\E b : IsFunction(b) /\ \A x : x \in b <=> x \in d \X i /\ snd(x) = <<g[fst(x)],h[fst(x)]>>
+   BECAUSE MACRO separationFunc(F <- <<g[x],h[x]>>);
+
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = <<g[x],h[x]>>))   BECAUSE AXIOM_SCHEME;
 \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h)
    /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))

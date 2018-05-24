@@ -93,6 +93,15 @@ void print_formula(const formula* f)
       return;
     }
 
+  if (f->builtInOp == funcApply)
+    {
+      print_formula(get_first_operand(f));
+      printf("[");
+      print_formula(get_second_operand(f));
+      printf("]");
+      return;
+    }
+
   // Binary formula
   printf("(");
   print_formula(get_first_operand(f));

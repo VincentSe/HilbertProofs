@@ -466,6 +466,7 @@ short check_modus_ponens_statement(const struct FormulaDList* statement,
 	 statement->jf->formula->file,
 	 statement->jf->formula->first_line);
   print_formula(statement->jf->formula);
+  printf("\n");
   return 0;
 }
 
@@ -1261,6 +1262,9 @@ const formula* find_formula_substit(const struct formula_list* l,
 void set_variables(const struct formula_list* subs,
 		   /*out*/formula* f)
 {
+  if (!f)
+    return;
+  
   for (struct formula_list* oper = f->operands; oper; oper = oper->next)
     {
       const formula* sub;
@@ -1273,7 +1277,6 @@ void set_variables(const struct formula_list* subs,
       else if (oper->formula_elem->builtInOp == schemeVariable // substitution of variables too
 	  && (sub = find_formula_substit(subs, oper->formula_elem)))
 	{
-	  // TODO
 	  variable_substitution vSubs[2];
 	  struct formula_list* vSub = oper->formula_elem->operands;
 	  oper->formula_elem->operands = 0;
@@ -1336,8 +1339,10 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
 	c->definingFormula = macroStatement->jf->formula->definingFormula;
 
       //print_formula(c); printf("\n");
-
-      struct JustifiedFormula* jf = make_jf(c, macroStatement->jf->reason);
+      
+      formula* rc = formula_clone(macroStatement->jf->reason->formula, (variable_substitution*)0);
+      set_variables(substit, /*out*/rc);
+      struct JustifiedFormula* jf = make_jf(c, make_reason(macroStatement->jf->reason->rk, rc));
       substitStatement = push_justified_formula_last(jf, substitStatement);
 
       macroSucceeds &= semantic_check_proof_statement(substitStatement->jf, operators, constants,
@@ -1354,9 +1359,10 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
 				 reasonF->file, reasonF->first_line);
     }
 
+  const short goalReached = formula_equal(substitStatement->jf->formula, statement->jf->formula, 0, 0, 0);
+
   for (struct FormulaDList* macroStatement = substitStatement; macroStatement != statement; )
     {
-      macroStatement->jf->reason = 0;
       if (macroStatement->jf->reason
 	  && macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula
 	  && macroStatement->jf->formula)
@@ -1366,10 +1372,17 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
       free(macroStatement);
       macroStatement = prev;
     }
+  
+  if (!goalReached)
+    {
+      printf("%s:%d: macro does not end with formula ",
+	     reasonF->file,
+	     reasonF->first_line);
+      print_formula(statement->jf->formula);
+      printf("\n");
+      return 0;
+    }
     
-
-  // TODO check equality between macro's last statement and statement->jf->formula
-
   return macroSucceeds;
 }
 
@@ -1578,7 +1591,9 @@ short semantic_check_reason(struct reason* r,
 			    const proof* p,
 			    const struct formula_list* proofLocalOps,
 			    const formula_set operators,
-			    const struct formula_list* constants)
+			    const struct formula_list* constants,
+			    const char* file, // for macros, the formulas don't store it
+			    int first_line)
 {
   if (!r->formula)
     return 1; // ok, nothing to check
@@ -1586,10 +1601,7 @@ short semantic_check_reason(struct reason* r,
   if (r->rk == propoTautology)
     return 1; //semantic_check_tautology(r->formula, assumedProofs);
 
-  if (r->rk == macro)
-    return 1; // TODO check the macro exists, that its variables are in bijection with the substitutions in r->formula and resolve names in the substitutions
-
-  if (r->rk == forallInstance || r->rk == existInstance)
+  if (r->rk == macro || r->rk == forallInstance || r->rk == existInstance)
     {
       // Resolve the substituted terms
       for (const struct formula_list* substit = r->formula->operands; substit; substit = substit->next->next)
@@ -1599,7 +1611,7 @@ short semantic_check_reason(struct reason* r,
 			     operators,
 			     p->variables,
 			     (struct formula_list*)0,
-			     proofLocalOps, 0, 0))
+			     proofLocalOps, file, first_line))
 	    return 0;
 	}
       return 1;
@@ -1610,7 +1622,7 @@ short semantic_check_reason(struct reason* r,
 		       operators,
 		       p->variables,
 		       (struct formula_list*)0, // no operator variables
-		       proofLocalOps, 0, 0);
+		       proofLocalOps, file, first_line);
 }
 
 short semantic_check_proof_statement(const struct JustifiedFormula* jf,
@@ -1650,7 +1662,7 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 			   p->variables,
 			   (struct formula_list*)0, // no operator variables
 			   *proofLocalOps, file, first_line)
-	&& semantic_check_reason(jf->reason, assumedProofs, p, *proofLocalOps, operators, constants);
+	&& semantic_check_reason(jf->reason, assumedProofs, p, *proofLocalOps, operators, constants, file, first_line);
     }
   else
     {
