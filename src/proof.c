@@ -1324,6 +1324,8 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
   pExtraVariables.variables = &extraVariable;
   pExtraVariables.cumulativeTruths = p->cumulativeTruths;
 
+  struct formula_list* localOpsEnd = *proofLocalOps; // The macro can add local ops, delete them right after the macro's invocation
+
   struct FormulaDList* substitStatement = (struct FormulaDList*)statement;
 
   unsigned char macroSucceeds = 1;
@@ -1335,8 +1337,13 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
       // Substitute the invocated formula in macroStatement, then check it
       formula* c = formula_clone(macroStatement->jf->formula, (variable_substitution*)0);
       set_variables(substit, /*out*/c);
-      if (macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula)
-	c->definingFormula = macroStatement->jf->formula->definingFormula;
+      if (macroStatement->jf->reason->rk == propoTautology
+	  && !macroStatement->jf->reason->formula)
+	{
+	  // For local propositional tautologies, use the defining formulas
+	  // of the macro directly.
+	  c->definingFormula = macroStatement->jf->formula->definingFormula;
+	}
 
       //print_formula(c); printf("\n");
       
@@ -1361,10 +1368,20 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
 
   const short goalReached = formula_equal(substitStatement->jf->formula, statement->jf->formula, 0, 0, 0);
 
+  // Free statements copied from the macro
+  for (struct formula_list* localOpsDel = *proofLocalOps; localOpsDel != localOpsEnd; )
+    {
+      struct formula_list* n = localOpsDel->next;
+      free(localOpsDel); // TODO free memory after
+      localOpsDel = n;
+    }
+  *proofLocalOps = localOpsEnd;
+
   for (struct FormulaDList* macroStatement = substitStatement; macroStatement != statement; )
     {
       if (macroStatement->jf->reason
-	  && macroStatement->jf->reason->rk == propoTautology && !macroStatement->jf->reason->formula
+	  && macroStatement->jf->reason->rk == propoTautology
+	  && !macroStatement->jf->reason->formula
 	  && macroStatement->jf->formula)
 	macroStatement->jf->formula->definingFormula = 0;
       justified_formula_free(macroStatement->jf);
