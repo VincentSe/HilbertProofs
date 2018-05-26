@@ -1272,7 +1272,7 @@ void set_variables(const struct formula_list* subs,
 	  && (sub = find_formula_substit(subs, oper->formula_elem)))
 	{
 	  formula_free(oper->formula_elem);
-	  oper->formula_elem = (formula*)sub;
+	  oper->formula_elem = (formula*)sub; // share the substituted formula
 	}
       else if (oper->formula_elem->builtInOp == schemeVariable // substitution of variables too
 	  && (sub = find_formula_substit(subs, oper->formula_elem)))

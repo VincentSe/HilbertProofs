@@ -507,19 +507,43 @@ bothInclusions   BECAUSE THEOREM;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
    => IsFunction(b) /\ Domain(b) = d   BECAUSE CIA;
 
+\* Prove b[x] = F
+funcVal   BECAUSE THEOREM;
+IsFunction(b) /\ <<x,F>> \in b => F = b[x]   BECAUSE \A(f <- b, x <- x, y <- F);
+F = b[x] => b[x] = F   BECAUSE E_SCHEME;
+IsFunction(b) /\ <<x,F>> \in b => b[x] = F   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   BECAUSE S12;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => IsFunction(b)   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => IsFunction(b) /\ <<x,F>> \in b   BECAUSE CIA;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => b[x] = F   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in d => b[x] = F)   BECAUSE HypoAndToImpl;
+\A x : (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in d => b[x] = F)   BECAUSE GENERALIZATION;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A x : x \in d => b[x] = F)   BECAUSE Q_SCHEME;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F)   BECAUSE CIA;
+
+
 \* Discharge b
 (\A x : x \in d => F \in i) => ((\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => IsFunction(b) /\ Domain(b) = d)   BECAUSE HypoAndToImpl;
+   => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE HypoAndToImpl;
 \A b : (\A x : x \in d => F \in i) => ((\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => IsFunction(b) /\ Domain(b) = d)   BECAUSE GENERALIZATION;
+   => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE GENERALIZATION;
 (\A x : x \in d => F \in i) => (\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => IsFunction(b) /\ Domain(b) = d)   BECAUSE Q_SCHEME;
-(\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsFunction(b) /\ Domain(b) = d)
-   => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : IsFunction(b) /\ Domain(b) = d)   BECAUSE Q_SCHEME;
-(\A x : x \in d => F \in i) => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : IsFunction(b) /\ Domain(b) = d)   BECAUSE TI;
+   => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))
+   => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE Q_SCHEME;
+(\A x : x \in d => F \in i) => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE TI;
 (\A x : x \in d => F \in i)
    => (\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))))   BECAUSE PT1;
-(\A x : x \in d => F \in i) => (\E b : IsFunction(b) /\ Domain(b) = d)   BECAUSE KillMiddleHypo;
+(\A x : x \in d => F \in i) => (\E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE KillMiddleHypo;
 QED
 
 (*
@@ -835,7 +859,7 @@ THEOREM identityIsFunc
 PROOF
 VARIABLES a,b,c,d,f,i,j,x,y,z;
 
-(\A x : x \in d => x \in i) => (\E b : IsFunction(b) /\ Domain(b) = d)
+(\A x : x \in d => x \in i) => (\E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = x))
    BECAUSE MACRO separationFunc(F <- x);
 
 \* By separation in d \X d
@@ -959,7 +983,7 @@ THEOREM constExists
 PROOF
 VARIABLES a,b,c,d,f,i,k,x,z;
 
-(\A x : x \in d => k \in i) => (\E b : IsFunction(b) /\ Domain(b) = d)
+(\A x : x \in d => k \in i) => (\E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = k))
    BECAUSE MACRO separationFunc(F <- k);
 
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = k))   BECAUSE AXIOM_SCHEME;
@@ -1371,7 +1395,7 @@ THEOREM productFuncIsFunc
 PROOF
 VARIABLES a,b,c,d,f,g,h,i,j,x,y,z;
 
-(\A x : x \in d => <<g[x],h[x]>> \in i) => (\E b : IsFunction(b) /\ Domain(b) = d)
+(\A x : x \in d => <<g[x],h[x]>> \in i) => (\E b : IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = <<g[x],h[x]>>))
    BECAUSE MACRO separationFunc(F <- <<g[x],h[x]>>);
 
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = <<g[x],h[x]>>))   BECAUSE AXIOM_SCHEME;

@@ -77,8 +77,14 @@ void print_formula(const formula* f)
   if (f->builtInOp == setEnumerate)
     {
       printf("{");
-      if (f->operands)
-	print_formula(f->operands->formula_elem); // TODO
+      unsigned char firstOp = 1;
+      for (struct formula_list* operand = f->operands; operand; operand = operand->next)
+	{
+	  if (!firstOp)
+	    printf(",");
+	  print_formula(operand->formula_elem);
+	  firstOp = 0;
+	}
       printf("}");
       return;
     }
@@ -171,6 +177,7 @@ const char* op_to_string(enum builtin_operator op)
     case plus: return "+";
     case cartesianProduct: return "\\X";
     case funcApply: return "funcApply";
+    case substitution: return "substitution";
     };
   printf("Unknown operator %d\n", op);
   return 0;
@@ -796,6 +803,8 @@ formula* equivalent_defining_formula(const formula* f,
     return opDef->definingFormula; // share the formula when there is no substitution of variables
 
   formula* def = formula_clone(opDef->definingFormula, subs);
+  //if (32 == f->first_line)
+  //  printf("\n %p line %d DEF_FORMULA ", def, f->first_line); print_formula(def); printf("\n");
 
   // Recursively clone the defining formulas
   formula* resolvedF = formula_set_find(def, operatorDefinitions);
@@ -902,6 +911,9 @@ short resolve_operator_or_variable(formula* f,
       f->builtInOp = variable;
       return 1;
     }
+
+  if (f->definingFormula)
+    return 1; // macros share already resolved formulas
 
   // Try operators
   const formula* resolvedF = formula_set_find(f, operatorDefinitions);
