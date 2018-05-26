@@ -1245,12 +1245,15 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 const formula* find_formula_substit(const struct formula_list* l,
 				    const formula* op)
 {
+  if (op->operands && op->operands->formula_elem->builtInOp != substitution)
+    return (formula*)0; // only substitute variables
+
   for (; l; l = l->next->next)
     if (l->formula_elem->name
 	&& op->name
 	&& strcmp(op->name, l->formula_elem->name) == 0)
       return l->next->formula_elem;
-  return 0;
+  return (formula*)0;
 }
 
 /**
