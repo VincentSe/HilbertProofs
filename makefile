@@ -10,6 +10,12 @@ bin/proveMath: $(SRC) src/lex.fol.c src/fol.tab.c src/folAST.h src/formula.h src
 	mkdir -p bin
 	gcc -g -Werror $(SRC) src/lex.fol.c src/fol.tab.c -o bin/proveMath
 
+profile: $(SRC) src/lex.fol.c src/fol.tab.c src/folAST.h src/formula.h src/proof.h
+	mkdir -p bin
+	gcc -g -pg -no-pie -Werror $(SRC) src/lex.fol.c src/fol.tab.c -o bin/proveMath
+	bin/proveMath
+	gprof bin/proveMath > gprof.out
+
 assembly: $(SRC) src/lex.fol.c src/fol.tab.c src/folAST.h src/formula.h src/proof.h
 	mkdir -p bin
 	gcc -g -S -Werror $(SRC) src/lex.fol.c src/fol.tab.c

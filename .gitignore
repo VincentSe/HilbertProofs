@@ -1,3 +1,5 @@
+gmon.out
+gprof.out
 bin/*
 math/test.fol
 tests

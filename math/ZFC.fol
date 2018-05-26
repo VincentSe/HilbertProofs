@@ -1754,6 +1754,13 @@ a = fst(<<a,b>>) /\ b = snd(<<a,b>>)   BECAUSE MODUS_PONENS;
 cartesianProductCouples   BECAUSE GENERALIZATION;
 QED
 
+domainIncProd == \A g : \A d : \A i : g \subseteq d \X i => Domain(g) \subseteq d
+THEOREM domainIncProd
+PROOF
+domainIncProd   BECAUSE GENERALIZATION;
+QED
+
+
 compose(g,h) == CHOOSE b : \A x : x \in b <=>
    (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
 

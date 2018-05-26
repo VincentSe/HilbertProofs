@@ -76,7 +76,10 @@ void print_formula(const formula* f)
 
   if (f->builtInOp == setEnumerate)
     {
-      printf("{}");
+      printf("{");
+      if (f->operands)
+	print_formula(f->operands->formula_elem); // TODO
+      printf("}");
       return;
     }
   if (f->builtInOp == tuple)
