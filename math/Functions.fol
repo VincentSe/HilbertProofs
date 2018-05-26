@@ -604,6 +604,7 @@ implyEquivTrue(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUT
 (\A x : x \in d => F \in i)
    => (\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))))   BECAUSE PT1;
 (\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE KillMiddleHypo;
+\A d : \A i : (\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -910,7 +911,7 @@ AXIOM_SCHEME BOUND_VAR(f,y,z) replacementFunc
    The identity function on a domain d. It takes each element
    of the domain and simply returns it.
 *)
-identity(d) == CHOOSE_UNIQUE f : \A z : z = f <=>
+identity(d) == CHOOSE_UNIQUE b : \A z : z = b <=>
    IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = x
 
 identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
@@ -918,14 +919,14 @@ identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
 THEOREM identityIsFunc
 PROOF
 VARIABLES a,b,c,d,f,i,j,x,y,z;
-
-(\A x : x \in d => x \in i)
-    => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))))
-   BECAUSE MACRO separationFunc(F <- x);
-
 \* By separation in d \X d
-\A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = x))   BECAUSE AXIOM_SCHEME;
-\E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE \A(a <- d);
+\A d : \A i : (\A x : x \in d => x \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))))
+   BECAUSE MACRO separationFunc(F <- x);
+(\A x : x \in d => x \in d) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))))
+   BECAUSE \A(d <- d, i <- d);
+x \in d => x \in d   BECAUSE ImplySelf;
+\A x : x \in d => x \in d   BECAUSE GENERALIZATION;
+\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x)))   BECAUSE MODUS_PONENS;
 \A z : z = identity(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE CHOOSE identity(d);
 identity(d) = identity(d) <=> (IsFunction(identity(d)) /\ Domain(identity(d)) = d /\ (\A x : x \in d => identity(d)[x] = x))   BECAUSE \A(z <- identity(d));
 equalSelf   BECAUSE THEOREM;
@@ -1035,7 +1036,7 @@ QED
 (*
    The constant function on a domain d, that returns c.
 *)
-const(d,k) == CHOOSE_UNIQUE f : \A z : z = f <=>
+const(d,k) == CHOOSE_UNIQUE b : \A z : z = b <=>
    IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = k
 
 constExists == \A d : \A k : IsFunction(const(d,k)) /\ Domain(const(d,k)) = d
@@ -1043,13 +1044,20 @@ constExists == \A d : \A k : IsFunction(const(d,k)) /\ Domain(const(d,k)) = d
 THEOREM constExists
 PROOF
 VARIABLES a,b,c,d,f,i,k,x,z;
-
-(\A x : x \in d => k \in i) =>
+\A d : \A i : (\A x : x \in d => k \in i) =>
    (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))))
    BECAUSE MACRO separationFunc(F <- k);
-
-\A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = k))   BECAUSE AXIOM_SCHEME;
-\E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))   BECAUSE \A(a <- d);
+(\A x : x \in d => k \in {k}) =>
+   (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))))   BECAUSE \A(d <- d, i <- {k});
+singletonExists   BECAUSE THEOREM;
+k \in { k } <=> k = k   BECAUSE \A(a <- k, x <- k);
+k = k => k \in { k }   BECAUSE EquivToImplReverse;
+equalSelf   BECAUSE THEOREM;
+k = k   BECAUSE \A(a <- k);
+k \in { k }   BECAUSE MODUS_PONENS;
+x \in d => k \in { k }   BECAUSE PT1;
+\A x : x \in d => k \in { k }   BECAUSE GENERALIZATION;
+\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k)))   BECAUSE MODUS_PONENS;
 \A z : z = const(d,k) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))   BECAUSE CHOOSE const(d,k);
 const(d,k) = const(d,k) <=> (IsFunction(const(d,k)) /\ Domain(const(d,k)) = d /\ (\A x : x \in d => const(d,k)[x] = k))   BECAUSE \A(z <- const(d,k));
 equalSelf   BECAUSE THEOREM;
@@ -1428,15 +1436,23 @@ QED
 
 
 \* The function x \in d |-> <<x, x>>
-clone(d) == CHOOSE_UNIQUE f : \A z : z = f <=>
+clone(d) == CHOOSE_UNIQUE b : \A z : z = b <=>
    IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = <<x,x>>
 cloneExists == \A d : IsFunction(clone(d)) /\ Domain(clone(d)) = d /\ (\A x : x \in d => clone(d)[x] = <<x,x>>)
 THEOREM cloneExists
 PROOF
 VARIABLES a,b,c,d,f,i,j,x,y,z;
-\A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = <<x,x>>))
-   BECAUSE AXIOM_SCHEME;
-\E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))   BECAUSE \A(a <- d);
+\A d : \A i : (\A x : x \in d => <<x,x>> \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))))
+   BECAUSE MACRO separationFunc(F <- <<x,x>>);
+(\A x : x \in d => <<x,x>> \in d \X d) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))))
+   BECAUSE \A(d <- d, i <- d \X d);
+cartesianProductCouples   BECAUSE THEOREM;
+(x \in d /\ x \in d) <=> <<x,x>> \in d \X d   BECAUSE \A(x <- d, y <- d, a <- x, b <- x);
+(x \in d /\ x \in d) => <<x,x>> \in d \X d   BECAUSE EquivToImpl;
+x \in d => x \in d /\ x \in d   BECAUSE AndSelf;
+x \in d => <<x,x>> \in d \X d   BECAUSE TI;
+\A x : x \in d => <<x,x>> \in d \X d   BECAUSE GENERALIZATION;
+\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>)))   BECAUSE MODUS_PONENS;
 \A z : z = clone(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))   BECAUSE CHOOSE clone(d);
 clone(d) = clone(d) <=> (IsFunction(clone(d)) /\ Domain(clone(d)) = d /\ (\A x : x \in d => clone(d)[x] = <<x,x>>))   BECAUSE \A(z <- clone(d));
 equalSelf   BECAUSE THEOREM;
@@ -1456,10 +1472,17 @@ productFuncIsFunc == \A g : \A h : \A z : z = productFunc(g,h) <=>
 THEOREM productFuncIsFunc
 PROOF
 VARIABLES a,b,c,d,f,g,h,i,j,x,y,z;
-
-(\A x : x \in d => <<g[x],h[x]>> \in i)
+\A d : \A i : (\A x : x \in d => <<g[x],h[x]>> \in i)
    => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<g[x],h[x]>>))))
    BECAUSE MACRO separationFunc(F <- <<g[x],h[x]>>);
+(\A x : x \in Domain(g) \intersect Domain(h) => <<g[x],h[x]>> \in Image(g) \X Image(h))
+   => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))
+   BECAUSE \A(d <- Domain(g) \intersect Domain(h), i <- Image(g) \X Image(h));
+
+cartesianProductCouples   BECAUSE THEOREM;
+(g[x] \in Image(g) /\ h[x] \in Image(h)) <=> <<g[x],h[x]>> \in Image(g) \X Image(h)   BECAUSE \A(x <- Image(g), y <- Image(h), a <- g[x], b <- h[x]);
+(g[x] \in Image(g) /\ h[x] \in Image(h)) => <<g[x],h[x]>> \in Image(g) \X Image(h)   BECAUSE EquivToImpl;
+\* TODO
 
 \A a : \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in a => z[x] = <<g[x],h[x]>>))   BECAUSE AXIOM_SCHEME;
 \E f : \A z : z = f <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h)

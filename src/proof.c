@@ -1285,7 +1285,7 @@ void set_variables(const struct formula_list* subs,
 	  oper->formula_elem->operands = 0;
 	  vSubs[0].variable = vSub->formula_elem->name;
 	  vSubs[0].subst = vSub->next->formula_elem;
-	  set_variables(subs, /*out*/vSub->next->formula_elem); // LEAK
+	  set_variables(subs, /*out*/vSub->next->formula_elem);
 	  vSubs[1].variable = (char*)0;
 	  formula_free(oper->formula_elem);
 	  oper->formula_elem = formula_clone(sub, vSubs);
