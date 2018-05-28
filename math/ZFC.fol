@@ -203,8 +203,9 @@ AXIOM_SCHEME BOUND_VAR(b) separation
    (\E b : h(a,b)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE Q_SCHEME;
    \E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F)   BECAUSE MODUS_PONENS;
 *)
-separationUnique(F) == \A a : \E b : \A z : z = b <=> \A x : x \in z <=> (x \in a /\ F)
-AXIOM_SCHEME BOUND_VAR(b,z) separationUnique
+\* Maybe make this a macro
+\*separationUnique(F) == \A a : \E b : \A z : z = b <=> \A x : x \in z <=> (x \in a /\ F)
+\*AXIOM_SCHEME BOUND_VAR(b,z) separationUnique
 
 (*
    The full axiom scheme of replacement : the image of a set by
@@ -1757,6 +1758,34 @@ QED
 domainIncProd == \A g : \A d : \A i : g \subseteq d \X i => Domain(g) \subseteq d
 THEOREM domainIncProd
 PROOF
+VARIABLES d,g,i,y,z;
+domainExists   BECAUSE THEOREM;
+z \in Domain(g) <=> IsDefinedOn(g,z)   BECAUSE \A(g <- g, x <- z);
+z \in Domain(g) => \E y : <<z,y>> \in g   BECAUSE EquivToImpl;
+h(d,g,i,y,z) == g \subseteq d \X i /\ z \in Domain(g) /\ <<z,y>> \in g;
+h(d,g,i,y,z) => g \subseteq d \X i   BECAUSE S13;
+h(d,g,i,y,z) => <<z,y>> \in g   BECAUSE S22;
+g \subseteq d \X i => (<<z,y>> \in g => <<z,y>> \in d \X i)   BECAUSE \A(z <- <<z,y>>);
+h(d,g,i,y,z) => (<<z,y>> \in g => <<z,y>> \in d \X i)   BECAUSE TI;
+h(d,g,i,y,z) => <<z,y>> \in d \X i   BECAUSE KillMiddleHypo;
+cartesianProductCouples   BECAUSE THEOREM;
+(z \in d /\ y \in i) <=> <<z,y>> \in d \X i   BECAUSE \A(x <- d, y <- i, a <- z, b <- y); 
+<<z,y>> \in d \X i => (z \in d /\ y \in i)   BECAUSE EquivToImplReverse;
+(z \in d /\ y \in i) => z \in d   BECAUSE S12;
+h(d,g,i,y,z) => z \in d   BECAUSE TI2;
+g \subseteq d \X i /\ z \in Domain(g) => (<<z,y>> \in g => z \in d)   BECAUSE HypoAndToImpl;
+\A y : g \subseteq d \X i /\ z \in Domain(g) => (<<z,y>> \in g => z \in d)   BECAUSE GENERALIZATION;
+g \subseteq d \X i /\ z \in Domain(g) => (\A y : <<z,y>> \in g => z \in d)   BECAUSE Q_SCHEME;
+(\A y : <<z,y>> \in g => z \in d) => ((\E y : <<z,y>> \in g) => \E y : z \in d)   BECAUSE Q_SCHEME;
+g \subseteq d \X i /\ z \in Domain(g) => ((\E y : <<z,y>> \in g) => \E y : z \in d)   BECAUSE TI;
+g \subseteq d \X i /\ z \in Domain(g) => z \in Domain(g)   BECAUSE S22;
+g \subseteq d \X i /\ z \in Domain(g) => \E y : <<z,y>> \in g   BECAUSE TI;
+g \subseteq d \X i /\ z \in Domain(g) => \E y : z \in d   BECAUSE KillMiddleHypo;
+(\E y : z \in d) => z \in d   BECAUSE Q_SCHEME;
+g \subseteq d \X i /\ z \in Domain(g) => z \in d   BECAUSE TI;
+g \subseteq d \X i => (z \in Domain(g) => z \in d)   BECAUSE HypoAndToImpl;
+\A z : g \subseteq d \X i => (z \in Domain(g) => z \in d)   BECAUSE GENERALIZATION;
+g \subseteq d \X i => Domain(g) \subseteq d   BECAUSE Q_SCHEME;
 domainIncProd   BECAUSE GENERALIZATION;
 QED
 

@@ -16,6 +16,7 @@ struct folAST // result of the bison parsing
      merge_asts recursively includes operators from extended modules.
    */
   formula_set operators;
+  struct formula_list* operators_by_line;
 
   /**
      Proofs are not ordered and almost independant from each other.

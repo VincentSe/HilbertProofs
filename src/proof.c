@@ -1567,6 +1567,10 @@ short semantic_check_operator_definition(formula* op,
   if (!success)
     return 0;
 
+  op->op_type = op->definingFormula->op_type == logical || op->definingFormula->op_type == relation
+    ? relation
+    : operation;
+
   if (op->definingFormula->builtInOp == chooseUnique)
     {
       // Check chooseF implies the unicity of the chosen term
@@ -1737,7 +1741,7 @@ short check_proof(const proof* proof,
 	  return 0;
 	}
 
-      if (formula_is_term(proof->formulaToProve, operators))
+      if (formula_is_term(proof->formulaToProve))
 	{
 	  printf("%s:%d: a theorem cannot be a term.\n",
 		 proof->formulaToProve->file,

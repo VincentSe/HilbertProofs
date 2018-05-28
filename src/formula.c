@@ -19,6 +19,8 @@ const formula* get_second_operand(const formula* f)
 
 void print_formula(const formula* f)
 {
+  struct formula_list* operand;
+  
   if (!f)
     {
       printf("Null formula");
@@ -41,14 +43,16 @@ void print_formula(const formula* f)
     {
       // custom operator
       printf("%s", f->name);
-      struct formula_list* operand = f->operands;
-      if (operand)
+      if (f->operands)
 	{
 	  printf("(");
-	  while (operand)
+	  unsigned char firstOp = 1;
+	  for (operand = f->operands; operand; operand = operand->next)
 	    {
+	      if (!firstOp)
+		printf(",");
 	      print_formula(operand->formula_elem);
-	      operand = operand->next;
+	      firstOp = 0;
 	    }
 	  printf(")");
 	}
@@ -78,7 +82,7 @@ void print_formula(const formula* f)
     {
       printf("{");
       unsigned char firstOp = 1;
-      for (struct formula_list* operand = f->operands; operand; operand = operand->next)
+      for (operand = f->operands; operand; operand = operand->next)
 	{
 	  if (!firstOp)
 	    printf(",");
@@ -119,17 +123,22 @@ void print_formula(const formula* f)
   printf(")");
 }
 
-unsigned char formula_is_term(const formula* f,
-			      const formula_set ops)
+void formula_set_op_type(formula* f)
 {
   switch (f->builtInOp)
     {
     case choose:
     case chooseUnique:
     case variable:
-      return 1;
+      f->op_type = operation;
+      return;
     case in: // TODO look at axioms using it to know its a relational operator
-    case notin:
+    case notin: // doesn't really exist, replaced by not in in make_formula
+    case equal:
+    case different:
+      f->op_type = relation;
+      return;
+
     case limplies:
     case lnot:
     case lequiv:
@@ -137,15 +146,14 @@ unsigned char formula_is_term(const formula* f,
     case lor:
     case forall:
     case exists:
-      return 0;
+      f->op_type = logical;
+      return;
     }
+}
 
-  if (f->definingFormula)
-    return formula_is_term(f->definingFormula, ops);
-  formula* opDef = formula_set_find(f, ops);
-  if (opDef)
-    return formula_is_term(opDef, ops); // even if the variables don't substitute, the type is that of the defining formula
-  return 0;
+unsigned char formula_is_term(const formula* f)
+{
+  return f->op_type == operation;
 }
 
 const char* op_to_string(enum builtin_operator op)
@@ -260,6 +268,7 @@ formula* make_formula(enum builtin_operator builtInOp,
 		      long last_line)
 {
   formula* f = malloc(sizeof(formula));
+  f->op_type = operation; // will be deduced later from builtInOp
   f->builtInOp = builtInOp;
   f->name = (char*)name;
   f->operands = operands;
@@ -274,6 +283,7 @@ formula* make_formula(enum builtin_operator builtInOp,
       // don't make build construct local negations of formulas, do it here.
       formula* not = malloc(sizeof(formula));
       not->builtInOp = lnot;
+      not->op_type = logical;
       not->name = (char*)0;
       not->operands = make_formula_list(f, 0);
       not->file = file;
@@ -305,18 +315,19 @@ formula* make_formula(enum builtin_operator builtInOp,
 */
 short is_custom_operator(const formula* op)
 {
-  if (op->builtInOp == lnone
-      || op->builtInOp == in
-      || op->builtInOp == subseteq
-      || op->builtInOp == binIntersect
-      || op->builtInOp == binUnion
-      || op->builtInOp == powerset
-      || op->builtInOp == plus
-      || op->builtInOp == setDifference
-      || op->builtInOp == setEnumerate  // empty set, singleton, pairs, ...
-      || op->builtInOp == cartesianProduct
-      || op->builtInOp == funcApply
-      || op->builtInOp == tuple)
+  const enum builtin_operator bop = op->builtInOp; // don't dereference a pointer 10 times
+  if (bop == lnone
+      || bop == in
+      || bop == subseteq
+      || bop == binIntersect
+      || bop == binUnion
+      || bop == powerset
+      || bop == plus
+      || bop == setDifference
+      || bop == setEnumerate  // empty set, singleton, pairs, ...
+      || bop == cartesianProduct
+      || bop == funcApply
+      || bop == tuple)
     return 1;
 
   return 0;
@@ -856,6 +867,7 @@ formula* formula_clone(const formula* f, variable_substitution* freeSubs)
 			    // which formulas own defining formulas.
 			    (const char*) 0,
 			    0, 0);
+  c->op_type = f->op_type;
 
   c->operands = clone_operands(f->operands, freeSubs);
   // c->definingFormula = formula_clone(f->definingFormula, freeSubs) ???
@@ -909,6 +921,7 @@ short resolve_operator_or_variable(formula* f,
       // TODO search in operators too and report an error
       // if f->name is multiply defined
       f->builtInOp = variable;
+      f->op_type = operation;
       return 1;
     }
 
@@ -952,6 +965,10 @@ short resolve_operator_or_variable(formula* f,
 	}
       f->definingFormula = equivalent_defining_formula(f, resolvedF,
 						       operatorDefinitions);
+      // f->definingFormula can be null in case of variable capture
+      f->op_type = resolvedF->definingFormula->op_type == logical || resolvedF->definingFormula->op_type == relation
+	? relation
+	: operation;
       return 1;
     }
 
@@ -987,6 +1004,34 @@ unsigned char resolve_operands(struct formula_list* operands,
   return 1;
 }
 
+unsigned char check_op_types(const formula* f)
+{
+  if (f->op_type == relation)
+    for (struct formula_list* operand = f->operands; operand; operand = operand->next)
+      if (operand->formula_elem->op_type != operation)
+	{
+	  printf("%s:%d: relation %s must have operations as operands\n",
+		 f->file,
+		 f->first_line,
+		 op_to_string(f->builtInOp));
+	  return 0;
+	}
+  if (f->op_type == logical)
+    for (struct formula_list* operand = f->operands; operand; operand = operand->next)
+      if (operand->formula_elem->op_type != relation
+	  && operand->formula_elem->op_type != logical
+	  && operand->formula_elem->builtInOp != schemeVariable
+	  && operand->formula_elem->builtInOp != variable) // variables can either be propositional or first-order
+	{
+	  printf("%s:%d: logical connector %s must have logical connectors or relations as operands\n",
+		 f->file,
+		 f->first_line,
+		 op_to_string(f->builtInOp));
+	  return 0;
+	}
+  return 1;
+}
+
 /**
    Mark all variables inside f with builtInOp variable.
    Link all operators inside f to their defining formulas.
@@ -1003,6 +1048,7 @@ unsigned char resolve_names(/*out*/formula* f,
   // TODO refuse nested quantified variables with same name
 
   // TODO check that operators (\in, +) are declared in CONSTANT clauses
+  formula_set_op_type(/*out*/f);
 
   if (f->builtInOp == substitution && !opVariables)
     {
@@ -1043,6 +1089,9 @@ unsigned char resolve_names(/*out*/formula* f,
     {
       return 0;
     }
+
+  if (!check_op_types(f))
+    return 0;
 
   if (f->builtInOp == variable && f->operands)
     {
@@ -1097,7 +1146,7 @@ short check_quantifier_instance_statement_one(enum reason_kind rk,
 	  // do not substitute a variable with itself
 	  freeSub->variable = sub->formula_elem->name;
 	  freeSub->subst = sub->next->formula_elem;
-	  if (!formula_is_term(freeSub->subst, ops))
+	  if (!formula_is_term(freeSub->subst))
 	    return 0;
 	  freeSub++;
 	}
@@ -1131,7 +1180,7 @@ short check_propositional_tautology_statement_one(const formula* statement,
       variable_substitution* sub = propositionalVariables;
       while (sub->variable)
 	{
-	  if (formula_is_term(sub->subst, ops))
+	  if (formula_is_term(sub->subst))
 	    return 0;
 	  sub++;
 	}

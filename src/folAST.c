@@ -38,16 +38,28 @@ struct folAST* make_folAST(const char* file)
   ast->file = strdup(file);
   ast->extends = 0;
   ast->operators = 0;
+  ast->operators_by_line = 0;
   ast->proofs = 0;
   ast->axiomSchemes = 0;
   ast->constants = 0;
 }
 
-int compare_lines(const void* l, const void* r)
+/* int compare_lines(const void* l, const void* r) */
+/* { */
+/*   const formula* const* fl = l; */
+/*   const formula* const* fr = r; */
+/*   return (*fr)->first_line - (*fl)->first_line; */
+/* } */
+
+void reverse_free(struct formula_list* l)
 {
-  const formula* const* fl = l;
-  const formula* const* fr = r;
-  return (*fr)->first_line - (*fl)->first_line;
+  if (!l)
+    return;
+  reverse_free(l->next);
+  formula_free(l->formula_elem->definingFormula);
+  l->formula_elem->definingFormula = 0;
+  formula_free(l->formula_elem);
+  free(l);
 }
 
 void folAST_free(struct folAST* ast)
@@ -63,44 +75,44 @@ void folAST_free(struct folAST* ast)
   }
   tdestroy(ast->proofs, proof_deleter);
 
-  formula* ops[1024]; // TODO malloc the size of ast->operators
-  ops[0] = (formula*)0;
-  size_t opsCount = 0;
-  
-  void list_operands(const void* nodep, VISIT value, int level)
-  {
-    if (value == preorder || value == postorder)
-      return;
+  /* formula* ops[1024]; // TODO malloc the size of ast->operators */
+  /* ops[0] = (formula*)0; */
+  /* size_t opsCount = 0; */
+  /* void list_operands(const void* nodep, VISIT value, int level) */
+  /* { */
+  /*   if (value == preorder || value == postorder) */
+  /*     return; */
 
-    formula* op = *(formula**)nodep;
-    if (strcmp(op->file, ast->file) != 0)
-      return;
+  /*   formula* op = *(formula**)nodep; */
+  /*   if (strcmp(op->file, ast->file) != 0) */
+  /*     return; */
 
-    ops[opsCount] = op;
-    opsCount++;
-  }
-  twalk(ast->operators, list_operands);
+  /*   ops[opsCount] = op; */
+  /*   opsCount++; */
+  /* } */
+  /* twalk(ast->operators, list_operands); */
 
-  // Free operators by line descending, to respect their dependencies
-  qsort(ops, opsCount, sizeof(formula*), compare_lines);
-  for (int i=0; i<opsCount; i++)
-    {
-      formula_free(ops[i]->definingFormula);
-      ops[i]->definingFormula = 0;
-    }
+  /* // Free operators by line descending, to respect their dependencies */
+  /* qsort(ops, opsCount, sizeof(formula*), compare_lines); */
+  /* for (int i=0; i<opsCount; i++) */
+  /*   { */
+  /*     formula_free(ops[i]->definingFormula); */
+  /*     ops[i]->definingFormula = 0; */
+  /*   } */
+  reverse_free(ast->operators_by_line);
   
   void deleter(void* t)
   {
     // Delete operators that were defined in this ast's file
     // (others come from EXTENDS and will be deleted by their asts)
-    formula* op = t;
-    if (strcmp(op->file, ast->file) == 0)
-      {
-	//printf("FREE OPERATOR %s\n", op->name); 
-	formula_free(op->definingFormula);
-	op->definingFormula = 0;
-	formula_free(op);
-      }
+    //formula* op = t;
+    /* if (strcmp(op->file, ast->file) == 0) */
+    /*   { */
+    /* 	//printf("FREE OPERATOR %s\n", op->name);  */
+    /* 	formula_free(op->definingFormula); */
+    /* 	op->definingFormula = 0; */
+    /* 	formula_free(op); */
+    /*   } */
   }
   tdestroy(ast->operators, deleter); // destroy operator definitions last, because the proofs point to them
   free(ast->file);
@@ -202,6 +214,8 @@ short declare_operator(formula* op, struct folAST* ast)
       formula_free(op);
       return 0;
     }
+
+  ast->operators_by_line = make_formula_list(op, ast->operators_by_line);
 
   formula** tf = tsearch(op, &ast->operators, formula_compare_operators);
   if (tf && op != *tf)
@@ -494,27 +508,33 @@ short semantic_check_proof(proof* p, struct folAST* ast)
 short semantic_check(struct folAST* ast)
 {
   // First check ast's operator definitions
-  short opDefsOk = 1;
-  void all_ops_ok(const void* nodep, VISIT value, int level)
-  {
-    if (value == preorder || value == postorder)
-      return;
+  /* short opDefsOk = 1; */
+  /* void all_ops_ok(const void* nodep, VISIT value, int level) */
+  /* { */
+  /*   if (value == preorder || value == postorder) */
+  /*     return; */
 
-    formula* op = *(formula**)nodep;
+  /*   formula* op = *(formula**)nodep; */
 
-    if (op->file && strcmp(op->file, ast->file) != 0)
-      return; // operator coming from EXTENDS statement, was already checked in its own module
+  /*   if (op->file && strcmp(op->file, ast->file) != 0) */
+  /*     return; // operator coming from EXTENDS statement, was already checked in its own module */
 
-    const struct formula_list* proofLocalDecl = 0; // not inside a proof
-    opDefsOk &= semantic_check_operator_definition(op,
-						   ast->operators,
-						   ast->constants,
-						   proofLocalDecl);
-  }
-
-  twalk(ast->operators, all_ops_ok);
-  if (!opDefsOk)
-    return 0;
+  /*   const struct formula_list* proofLocalDecl = 0; // not inside a proof */
+  /*   opDefsOk &= semantic_check_operator_definition(op, */
+  /* 						   ast->operators, */
+  /* 						   ast->constants, */
+  /* 						   proofLocalDecl); */
+  /* } */
+  /* twalk(ast->operators, all_ops_ok); // TODO resolve in line order, for op_type */
+  /* if (!opDefsOk) */
+  /*   return 0; */
+  const struct formula_list* proofLocalDecl = 0; // not inside a proof */
+  for (struct formula_list* op = ast->operators_by_line; op; op = op->next)
+    if (!semantic_check_operator_definition(op->formula_elem,
+					    ast->operators,
+					    ast->constants,
+					    proofLocalDecl))
+      return 0;
 
   // Then check ast's proofs
   short proofsOk = 1;

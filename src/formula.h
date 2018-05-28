@@ -1,5 +1,12 @@
 #include "list.h"
 
+enum operator_type
+  {
+    logical,
+    relation,
+    operation
+  };
+
 /**
    Operators composing formulas. Built-in means those operators
    are identified by a number (enum) instead of a name (char *),
@@ -84,6 +91,7 @@ const char* reason_kind_to_string(enum reason_kind rk);
 typedef struct formulaS
 {
   enum builtin_operator builtInOp;
+  enum operator_type op_type;
 
   /**
      An operator declaration like
@@ -172,8 +180,7 @@ short is_propositional_formula(const formula* f);
 unsigned char prove_propositional_tautology(const formula* op);
 const formula* get_first_operand(const formula* f);
 const formula* get_second_operand(const formula* f);
-unsigned char formula_is_term(const formula* f,
-			      const formula_set ops);
+unsigned char formula_is_term(const formula* f);
 
 /**
    Find a variable v of formula f satisfying predicate pred, which is given
