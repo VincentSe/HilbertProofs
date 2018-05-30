@@ -44,13 +44,6 @@ struct folAST* make_folAST(const char* file)
   ast->constants = 0;
 }
 
-/* int compare_lines(const void* l, const void* r) */
-/* { */
-/*   const formula* const* fl = l; */
-/*   const formula* const* fr = r; */
-/*   return (*fr)->first_line - (*fl)->first_line; */
-/* } */
-
 void reverse_free(struct formula_list* l)
 {
   if (!l)
@@ -74,45 +67,10 @@ void folAST_free(struct folAST* ast)
       proof_free(p);
   }
   tdestroy(ast->proofs, proof_deleter);
-
-  /* formula* ops[1024]; // TODO malloc the size of ast->operators */
-  /* ops[0] = (formula*)0; */
-  /* size_t opsCount = 0; */
-  /* void list_operands(const void* nodep, VISIT value, int level) */
-  /* { */
-  /*   if (value == preorder || value == postorder) */
-  /*     return; */
-
-  /*   formula* op = *(formula**)nodep; */
-  /*   if (strcmp(op->file, ast->file) != 0) */
-  /*     return; */
-
-  /*   ops[opsCount] = op; */
-  /*   opsCount++; */
-  /* } */
-  /* twalk(ast->operators, list_operands); */
-
-  /* // Free operators by line descending, to respect their dependencies */
-  /* qsort(ops, opsCount, sizeof(formula*), compare_lines); */
-  /* for (int i=0; i<opsCount; i++) */
-  /*   { */
-  /*     formula_free(ops[i]->definingFormula); */
-  /*     ops[i]->definingFormula = 0; */
-  /*   } */
   reverse_free(ast->operators_by_line);
   
   void deleter(void* t)
   {
-    // Delete operators that were defined in this ast's file
-    // (others come from EXTENDS and will be deleted by their asts)
-    //formula* op = t;
-    /* if (strcmp(op->file, ast->file) == 0) */
-    /*   { */
-    /* 	//printf("FREE OPERATOR %s\n", op->name);  */
-    /* 	formula_free(op->definingFormula); */
-    /* 	op->definingFormula = 0; */
-    /* 	formula_free(op); */
-    /*   } */
   }
   tdestroy(ast->operators, deleter); // destroy operator definitions last, because the proofs point to them
   free(ast->file);
