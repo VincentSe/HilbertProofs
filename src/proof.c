@@ -1339,6 +1339,16 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
        macroStatement = macroStatement->next)
     {      
       // Substitute the invocated formula in macroStatement, then check it
+
+      if (!macroStatement->jf->reason)
+	{
+	  printf("%s:%d: macros cannot define local operators",
+		 reasonF->file,
+		 reasonF->first_line);
+	  printf("\n");
+	  return 0;
+	}
+
       formula* c = formula_clone(macroStatement->jf->formula, (variable_substitution*)0);
       set_variables(substit, /*out*/c);
       if (macroStatement->jf->reason->rk == propoTautology

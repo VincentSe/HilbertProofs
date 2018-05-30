@@ -1257,7 +1257,8 @@ natSucc == CHOOSE_UNIQUE b : \A z : z = b <=>
    IsFunction(z) /\ Domain(z) = Nat /\ \A x : x \in Nat => z[x] = successor(x)
 
 natSuccIsFunc == IsFunction(natSucc) /\ Domain(natSucc) = Nat
-   /\ \A n : n \in Nat => natSucc[n] = successor(n)
+   /\ (\A n : n \in Nat => natSucc[n] = successor(n))
+   /\ Image(natSucc) \subseteq Nat
 THEOREM natSuccIsFunc
 PROOF
 VARIABLES a,b,c,d,f,g,i,j,n,x,y,z;
@@ -1278,6 +1279,46 @@ IsFunction(natSucc) /\ Domain(natSucc) = Nat /\ (\A x : x \in Nat => natSucc[x] 
 n \in Nat => natSucc[n] = successor(n)   BECAUSE \A(x <- n);
 \A n : n \in Nat => natSucc[n] = successor(n)   BECAUSE GENERALIZATION;
 IsFunction(natSucc) /\ Domain(natSucc) = Nat   BECAUSE S12;
+
+IsFunction(natSucc)   BECAUSE S12;
+Domain(natSucc) = Nat   BECAUSE S22;
+imageExists   BECAUSE THEOREM;
+z \in Image(natSucc) <=> Reaches(natSucc,z)   BECAUSE \A(g <- natSucc, y <- z);
+z \in Image(natSucc) => \E x : <<x,z>> \in natSucc   BECAUSE EquivToImpl;
+funcVal   BECAUSE THEOREM;
+IsFunction(natSucc) /\ <<x,z>> \in natSucc => z = natSucc[x]   BECAUSE \A(f <- natSucc, x <- x, y <- z);
+<<x,z>> \in natSucc => IsFunction(natSucc) /\ <<x,z>> \in natSucc   BECAUSE IntroAndRight;
+<<x,z>> \in natSucc => z = natSucc[x]   BECAUSE TI;
+(\A x : x \in Nat => natSucc[x] = successor(x))  BECAUSE S22;
+x \in Nat => natSucc[x] = successor(x)  BECAUSE \A(x <- x);
+natSucc[x] = successor(x) => successor(x) = natSucc[x]   BECAUSE E_SCHEME;
+
+domainExists   BECAUSE THEOREM;
+x \in Domain(natSucc) <=> IsDefinedOn(natSucc, x)   BECAUSE \A(g <- natSucc, x <- x);
+IsDefinedOn(natSucc, x) => x \in Domain(natSucc)   BECAUSE EquivToImplReverse;
+<<x,z>> \in natSucc => IsDefinedOn(natSucc,x)   BECAUSE \E(y <- z);
+\A y : \A z : y = z => (x \in y <=> x \in z)   BECAUSE E_SCHEME;
+Domain(natSucc) = Nat => (x \in Domain(natSucc) <=> x \in Nat)   BECAUSE \A(y <- Domain(natSucc), z <- Nat);
+x \in Domain(natSucc) <=> x \in Nat   BECAUSE MODUS_PONENS;
+x \in Domain(natSucc) => x \in Nat   BECAUSE EquivToImpl;
+<<x,z>> \in natSucc => x \in Nat   BECAUSE TI2;
+<<x,z>> \in natSucc => successor(x) = natSucc[x]  BECAUSE TI2;
+<<x,z>> \in natSucc => z = natSucc[x] /\ successor(x) = natSucc[x]  BECAUSE CIA;
+z = natSucc[x] /\ successor(x) = natSucc[x] => z = successor(x)   BECAUSE E_SCHEME;
+<<x,z>> \in natSucc => z = successor(x)   BECAUSE TI;
+<<x,z>> \in natSucc => successor(x) \in Nat   BECAUSE TI;
+\A y : \A z : y = z => (y \in Nat <=> z \in Nat)   BECAUSE E_SCHEME;
+z = successor(x) => (z \in Nat <=> successor(x) \in Nat)   BECAUSE \A(y <- z, z <- successor(x));
+<<x,z>> \in natSucc => (z \in Nat <=> successor(x) \in Nat)   BECAUSE TI;
+implyEquivTrue(h,a,t) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+<<x,z>> \in natSucc => z \in Nat   BECAUSE implyEquivTrue;
+(\E x : <<x,z>> \in natSucc) => \E x : z \in Nat   BECAUSE Q_SCHEME;
+z \in Image(natSucc) => \E x : z \in Nat   BECAUSE TI;
+(\E x : z \in Nat) => z \in Nat   BECAUSE Q_SCHEME;
+z \in Image(natSucc) => z \in Nat   BECAUSE TI;
+Image(natSucc) \subseteq Nat   BECAUSE GENERALIZATION;
+IsFunction(natSucc) /\ Domain(natSucc) = Nat
+   /\ \A n : n \in Nat => natSucc[n] = successor(n)   BECAUSE IntroAndRight;
 natSuccIsFunc   BECAUSE IntroAndRight;
 QED
 
@@ -1291,20 +1332,122 @@ NatAddition == CHOOSE_UNIQUE b : \A z : z = b <=>
    /\ \A x : x \in Nat \X Nat => z[x] = IterateFunc(natSucc,fst(x))[snd(x)]
 
 natAdditionIsFunc == IsFunction(NatAddition) /\ Domain(NatAddition) = Nat \X Nat
-   /\ \A n : \A p : n \in Nat /\ p \in Nat => NatAddition[n,p] = IterateFunc(natSucc,n)[p]
+   /\ \A x : x \in Nat \X Nat => NatAddition[x] = IterateFunc(natSucc,fst(x))[snd(x)]
 THEOREM natAdditionIsFunc
 PROOF
-VARIABLES a,b,c,d,f,i,x,z;
+VARIABLES a,b,c,d,f,g,i,n,p,x,y,z,init;
 \A d : \A i : (\A x : x \in d => IterateFunc(natSucc,fst(x))[snd(x)] \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = IterateFunc(natSucc,fst(x))[snd(x)]))))
    BECAUSE MACRO separationFunc(F <- IterateFunc(natSucc,fst(x))[snd(x)]);
 (\A x : x \in Nat \X Nat => IterateFunc(natSucc,fst(x))[snd(x)] \in Nat) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Nat \X Nat /\ (\A x : x \in Nat \X Nat => z[x] = IterateFunc(natSucc,fst(x))[snd(x)]))))
    BECAUSE \A(d <- Nat \X Nat, i <- Nat);
 
-\* TODO
+iterateFuncExists   BECAUSE THEOREM;
+IsFunction(natSucc) /\ Image(natSucc) \subseteq Domain(natSucc) /\ fst(x) \in Domain(natSucc)
+   => ( IsFunction(IterateFunc(natSucc,fst(x)))
+        /\ Domain(IterateFunc(natSucc,fst(x))) = Nat
+        /\ IterateFunc(natSucc,fst(x))[ {} ] = fst(x)
+        /\ \A n : n \in Nat => IterateFunc(natSucc,fst(x))[successor(n)] = natSucc[IterateFunc(natSucc,fst(x))[n]]   )
+   BECAUSE \A(f <- natSucc, init <- fst(x));
 
+natSuccIsFunc   BECAUSE THEOREM;
+Image(natSucc) \subseteq Nat   BECAUSE S22;
+Domain(natSucc) = Nat   BECAUSE S24;
+inclusionInOneself   BECAUSE THEOREM;
+Domain(natSucc) \subseteq Domain(natSucc)   BECAUSE \A(x <- Domain(natSucc));
+\A x : \A y : x = y => (x \subseteq Domain(natSucc) <=> y \subseteq Domain(natSucc))   BECAUSE E_SCHEME;
+Domain(natSucc) = Nat => (Domain(natSucc) \subseteq Domain(natSucc) <=> Nat \subseteq Domain(natSucc))   BECAUSE \A(x <- Domain(natSucc), y <- Nat);
+Domain(natSucc) \subseteq Domain(natSucc) <=> Nat \subseteq Domain(natSucc)   BECAUSE MODUS_PONENS;
+Nat \subseteq Domain(natSucc)   BECAUSE MODUS_PONENS;
+(Image(natSucc) \subseteq Nat) /\ Nat \subseteq Domain(natSucc)   BECAUSE IntroAndRight;
+transitInclusion   BECAUSE THEOREM;
+((Image(natSucc) \subseteq Nat) /\ (Nat \subseteq Domain(natSucc)))
+   => (Image(natSucc) \subseteq Domain(natSucc))   BECAUSE \A(a <- Image(natSucc), b <- Nat, c <- Domain(natSucc));
+Image(natSucc) \subseteq Domain(natSucc)   BECAUSE MODUS_PONENS;
+IsFunction(natSucc)   BECAUSE S14;
+IsFunction(natSucc) /\ Image(natSucc) \subseteq Domain(natSucc)   BECAUSE IntroAndRight;
+fst(x) \in Domain(natSucc) => IsFunction(natSucc) /\ Image(natSucc) \subseteq Domain(natSucc) /\ fst(x) \in Domain(natSucc)  BECAUSE IntroAndRight;
+fst(x) \in Domain(natSucc) => ( IsFunction(IterateFunc(natSucc,fst(x)))
+        /\ Domain(IterateFunc(natSucc,fst(x))) = Nat
+        /\ IterateFunc(natSucc,fst(x))[ {} ] = fst(x)
+        /\ \A n : n \in Nat => IterateFunc(natSucc,fst(x))[successor(n)] = natSucc[IterateFunc(natSucc,fst(x))[n]]   )
+   BECAUSE TI;
+
+cartesianProductExists   BECAUSE THEOREM;
+x \in (Nat \X Nat) <=> (IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat)   BECAUSE \A(i <- Nat, j <- Nat, x <- x);
+x \in (Nat \X Nat) => (IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat)   BECAUSE EquivToImpl;
+(IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat) => fst(x) \in Nat   BECAUSE S23;
+(IsCouple(x) /\ fst(x) \in Nat /\ snd(x) \in Nat) => snd(x) \in Nat   BECAUSE S22;
+x \in (Nat \X Nat) => fst(x) \in Nat   BECAUSE TI;
+x \in (Nat \X Nat) => snd(x) \in Nat   BECAUSE TI;
+\A y : \A z : y = z => (fst(x) \in y <=> fst(x) \in z)   BECAUSE E_SCHEME;
+Domain(natSucc) = Nat => (fst(x) \in Domain(natSucc) <=> fst(x) \in Nat)   BECAUSE \A(y <- Domain(natSucc), z <- Nat);
+fst(x) \in Domain(natSucc) <=> fst(x) \in Nat   BECAUSE MODUS_PONENS;
+fst(x) \in Nat => fst(x) \in Domain(natSucc)   BECAUSE EquivToImplReverse;
+x \in (Nat \X Nat) => fst(x) \in Nat   BECAUSE TI;
+x \in (Nat \X Nat) => ( IsFunction(IterateFunc(natSucc,fst(x)))
+        /\ Domain(IterateFunc(natSucc,fst(x))) = Nat
+        /\ IterateFunc(natSucc,fst(x))[ {} ] = fst(x)
+        /\ \A n : n \in Nat => IterateFunc(natSucc,fst(x))[successor(n)] = natSucc[IterateFunc(natSucc,fst(x))[n]]   )
+   BECAUSE TI2;
+   
+iterateFuncImage   BECAUSE THEOREM;
+IsFunction(natSucc) /\ Image(natSucc) \subseteq Domain(natSucc) /\ fst(x) \in Domain(natSucc)
+   => Image(IterateFunc(natSucc,fst(x))) \subseteq Image(natSucc)   BECAUSE \A(f <- natSucc, init <- fst(x));
+fst(x) \in Domain(natSucc) => Image(IterateFunc(natSucc,fst(x))) \subseteq Image(natSucc)   BECAUSE TI;
+x \in (Nat \X Nat) => Image(IterateFunc(natSucc,fst(x))) \subseteq Image(natSucc)   BECAUSE TI2;
+
+funcImageExists   BECAUSE THEOREM;
+IsFunction(IterateFunc(natSucc,fst(x))) /\ snd(x) \in Domain(IterateFunc(natSucc,fst(x)))
+   => <<snd(x), IterateFunc(natSucc,fst(x))[snd(x)]>> \in IterateFunc(natSucc,fst(x))   BECAUSE \A(f <- IterateFunc(natSucc,fst(x)), x <- snd(x));
+( IsFunction(IterateFunc(natSucc,fst(x)))
+        /\ Domain(IterateFunc(natSucc,fst(x))) = Nat
+        /\ IterateFunc(natSucc,fst(x))[ {} ] = fst(x)
+        /\ \A n : n \in Nat => IterateFunc(natSucc,fst(x))[successor(n)] = natSucc[IterateFunc(natSucc,fst(x))[n]]   )
+   => IsFunction(IterateFunc(natSucc,fst(x)))   BECAUSE S14;
+x \in (Nat \X Nat) => IsFunction(IterateFunc(natSucc,fst(x)))   BECAUSE TI;
+( IsFunction(IterateFunc(natSucc,fst(x)))
+        /\ Domain(IterateFunc(natSucc,fst(x))) = Nat
+        /\ IterateFunc(natSucc,fst(x))[ {} ] = fst(x)
+        /\ \A n : n \in Nat => IterateFunc(natSucc,fst(x))[successor(n)] = natSucc[IterateFunc(natSucc,fst(x))[n]]   )
+   => Domain(IterateFunc(natSucc,fst(x))) = Nat   BECAUSE S24;
+\A y : \A z : y = z => (snd(x) \in y <=> snd(x) \in z)   BECAUSE E_SCHEME;
+Domain(IterateFunc(natSucc,fst(x))) = Nat
+   => (snd(x) \in Domain(IterateFunc(natSucc,fst(x))) <=> snd(x) \in Nat)   BECAUSE \A(y <- Domain(IterateFunc(natSucc,fst(x))), z <- Nat);
+x \in (Nat \X Nat) => (snd(x) \in Domain(IterateFunc(natSucc,fst(x))) <=> snd(x) \in Nat)   BECAUSE TI2;
+implyEquivTrue(h,a,t) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+x \in (Nat \X Nat) => snd(x) \in Domain(IterateFunc(natSucc,fst(x)))   BECAUSE implyEquivTrue;
+x \in (Nat \X Nat) => IsFunction(IterateFunc(natSucc,fst(x))) /\ snd(x) \in Domain(IterateFunc(natSucc,fst(x)))   BECAUSE CIA;
+x \in (Nat \X Nat) => <<snd(x), IterateFunc(natSucc,fst(x))[snd(x)]>> \in IterateFunc(natSucc,fst(x))   BECAUSE TI;
+imageExists   BECAUSE THEOREM;
+IterateFunc(natSucc,fst(x))[snd(x)] \in Image(IterateFunc(natSucc,fst(x))) <=> Reaches(IterateFunc(natSucc,fst(x)),IterateFunc(natSucc,fst(x))[snd(x)])
+   BECAUSE \A(g <- IterateFunc(natSucc,fst(x)), y <- IterateFunc(natSucc,fst(x))[snd(x)]);
+Reaches(IterateFunc(natSucc,fst(x)),IterateFunc(natSucc,fst(x))[snd(x)]) => IterateFunc(natSucc,fst(x))[snd(x)] \in Image(IterateFunc(natSucc,fst(x)))   BECAUSE EquivToImplReverse;
+<<x,y>> \in g => Reaches(g,y)   BECAUSE \E(x <- x);
+\A x : \A y : \A g : <<x,y>> \in g => Reaches(g,y)   BECAUSE GENERALIZATION;
+<<snd(x), IterateFunc(natSucc,fst(x))[snd(x)]>> \in IterateFunc(natSucc,fst(x)) => Reaches(IterateFunc(natSucc,fst(x)),IterateFunc(natSucc,fst(x))[snd(x)])   BECAUSE \A(x <- snd(x), y <- IterateFunc(natSucc,fst(x))[snd(x)], g <- IterateFunc(natSucc,fst(x)));
+x \in (Nat \X Nat) => IterateFunc(natSucc,fst(x))[snd(x)] \in Image(IterateFunc(natSucc,fst(x)))   BECAUSE TI2;
+Image(IterateFunc(natSucc,fst(x))) \subseteq Image(natSucc) => (IterateFunc(natSucc,fst(x))[snd(x)] \in Image(IterateFunc(natSucc,fst(x))) => IterateFunc(natSucc,fst(x))[snd(x)] \in Image(natSucc))   BECAUSE \A(z <- IterateFunc(natSucc,fst(x))[snd(x)]);
+x \in Nat \X Nat => (IterateFunc(natSucc,fst(x))[snd(x)] \in Image(IterateFunc(natSucc,fst(x))) => IterateFunc(natSucc,fst(x))[snd(x)] \in Image(natSucc))   BECAUSE TI;
+x \in Nat \X Nat => IterateFunc(natSucc,fst(x))[snd(x)] \in Image(natSucc)   BECAUSE KillMiddleHypo;
+Image(natSucc) \subseteq Nat => (IterateFunc(natSucc,fst(x))[snd(x)] \in Image(natSucc) => IterateFunc(natSucc,fst(x))[snd(x)] \in Nat)   BECAUSE \A(z <- IterateFunc(natSucc,fst(x))[snd(x)]);
+IterateFunc(natSucc,fst(x))[snd(x)] \in Image(natSucc) => IterateFunc(natSucc,fst(x))[snd(x)] \in Nat   BECAUSE MODUS_PONENS;
+x \in Nat \X Nat => IterateFunc(natSucc,fst(x))[snd(x)] \in Nat   BECAUSE TI;
+(\A x : x \in Nat \X Nat => IterateFunc(natSucc,fst(x))[snd(x)] \in Nat)   BECAUSE GENERALIZATION;
+
+(\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Nat \X Nat /\ (\A x : x \in Nat \X Nat => z[x] = IterateFunc(natSucc,fst(x))[snd(x)]))))   BECAUSE MODUS_PONENS;
+\A z : z = NatAddition <=> (IsFunction(z) /\ Domain(z) = Nat \X Nat /\ (\A x : x \in Nat \X Nat => z[x] = IterateFunc(natSucc,fst(x))[snd(x)]))   BECAUSE CHOOSE NatAddition;
+NatAddition = NatAddition <=> (IsFunction(NatAddition) /\ Domain(NatAddition) = Nat \X Nat /\ (\A x : x \in Nat \X Nat => NatAddition[x] = IterateFunc(natSucc,fst(x))[snd(x)]))   BECAUSE \A(z <- NatAddition);
+equalSelf   BECAUSE THEOREM;
+NatAddition = NatAddition   BECAUSE \A(a <- NatAddition);
+IsFunction(NatAddition) /\ Domain(NatAddition) = Nat \X Nat /\ (\A x : x \in Nat \X Nat => NatAddition[x] = IterateFunc(natSucc,fst(x))[snd(x)])   BECAUSE MODUS_PONENS;
+IsFunction(NatAddition) /\ Domain(NatAddition) = Nat \X Nat   BECAUSE S12;
+\* (\A x : x \in Nat \X Nat => NatAddition[x] = IterateFunc(natSucc,fst(x))[snd(x)])   BECAUSE S22;
+\* <<n,p>> \in Nat \X Nat => NatAddition[n,p] = IterateFunc(natSucc,fst(<<n,p>>))[snd(<<n,p>>)]   BECAUSE \A(x <- <<n,p>>);
+
+natAdditionIsFunc   BECAUSE MODUS_PONENS;
 QED
 
 zeroNeutralNatAddition == \A n : n \in Nat => NatAddition[0,n] = n /\ NatAddition[n,0] = n
 THEOREM zeroNeutralNatAddition
 
-(* TODO associativity, commutativity, multiplication, symbols for digits 0,1,2,3,4,5,6,7,8,9,10 *)
+(* TODO associativity, commutativity, multiplication *)
