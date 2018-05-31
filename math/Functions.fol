@@ -13,6 +13,9 @@ EXTENDS ZFC
 IsFunction(f) == IsGraph(f)  /\  \A a : \A b : \A c : (<<a,b>> \in f /\ <<a,c>> \in f) => b = c
 IsInjection(f) == IsFunction(f)  /\  \A a : \A b : <<a,b>> \in f => a = pre(f,b)
 
+\* TODO make this a set
+IsApplication(f,d,i) == IsFunction(f) /\ Domain(f) = d /\ Image(f) \subseteq i
+
 funcVal == \A f : \A x : \A y : IsFunction(f) /\ <<x,y>> \in f => y = f[x]
 THEOREM funcVal
 PROOF
@@ -84,6 +87,13 @@ IsFunction(f) /\ x \in Domain(f) => \E y : <<x,f[x]>> \in f   BECAUSE KillMiddle
 (\E y : <<x,f[x]>> \in f) => <<x,f[x]>> \in f   BECAUSE Q_SCHEME;
 IsFunction(f) /\ x \in Domain(f) => <<x,f[x]>> \in f   BECAUSE TI;
 funcImageExists   BECAUSE GENERALIZATION;
+QED
+
+funcImageSubset == \A f : \A i : IsFunction(f) /\ (\A x : x \in Domain(f) => f[x] \in i)
+   => Image(f) \subseteq i
+THEOREM funcImageSubset
+PROOF
+funcImageSubset   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -486,84 +496,126 @@ IsFunction(b) /\ <<x,F>> \in b => b[x] = F   BECAUSE TI;
    => (x \in d => b[x] = F)   BECAUSE GENERALIZATION;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
    => (\A x : x \in d => b[x] = F)   BECAUSE Q_SCHEME;
+
+\* Image of b
+funcImageSubset   BECAUSE THEOREM;
+IsFunction(b) /\ (\A x : x \in Domain(b) => b[x] \in i)
+   => Image(b) \subseteq i   BECAUSE \A(f <- b, i <- i);
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => (\A x : x \in d => F \in i)   BECAUSE S13;
+(\A x : x \in d => F \in i) => (x \in d => F \in i)   BECAUSE \A(x <- x);
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => (x \in d => F \in i)   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => x \in d   BECAUSE S22;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => F \in i   BECAUSE KillMiddleHypo;
+\A y : \A z : y = z => (y \in i <=> z \in i)   BECAUSE E_SCHEME;
+b[x] = F => (b[x] \in i <=> F \in i)   BECAUSE \A(y <- b[x], z <- F);
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => (b[x] \in i <=> F \in i)   BECAUSE TI;
+implyEquivTrue(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ x \in d
+   => b[x] \in i   BECAUSE implyEquivTrue;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F)   BECAUSE CIA;
+   => (x \in d => b[x] \in i)   BECAUSE HypoAndToImpl;
+\A y : \A z : y = z => ((x \in y => b[x] \in i) <=> (x \in z => b[x] \in i))   BECAUSE E_SCHEME;
+Domain(b) = d => ((x \in Domain(b) => b[x] \in i) <=> (x \in d => b[x] \in i))   BECAUSE \A(y <- Domain(b), z <- d);
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => ((x \in Domain(b) => b[x] \in i) <=> (x \in d => b[x] \in i))   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in Domain(b) => b[x] \in i)   BECAUSE implyEquivTrue;
+\A x : (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (x \in Domain(b) => b[x] \in i)   BECAUSE GENERALIZATION;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => (\A x : x \in Domain(b) => b[x] \in i)   BECAUSE Q_SCHEME;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => IsFunction(b) /\ (\A x : x \in Domain(b) => b[x] \in i)   BECAUSE CIA;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => Image(b) \subseteq i   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => IsApplication(b,d,i)   BECAUSE CIA;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
+   => IsApplication(b,d,i) /\ (\A x : x \in d => b[x] = F)   BECAUSE CIA;
+
 
 \* Unicity of b
-\A z : \A b : z = b => (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F) <=> IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE E_SCHEME;
-z = b => (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F) <=> IsFunction(b) /\ Domain(b) = d /\ (\A x : x \in d => b[x] = F))   BECAUSE \A(z <- z, b <- b);
+\A z : \A b : z = b => (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F) <=> IsApplication(b,d,i) /\ (\A x : x \in d => b[x] = F))   BECAUSE E_SCHEME;
+z = b => (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F) <=> IsApplication(b,d,i) /\ (\A x : x \in d => b[x] = F))   BECAUSE \A(z <- z, b <- b);
 implyEquivTrueB(h,t,a,b) == (h => t) => ((a => (b <=> t)) => (h /\ a => b))   PROPO_TAUTO;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ z = b
-   => (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))   BECAUSE implyEquivTrueB;
+   => (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))   BECAUSE implyEquivTrueB;
 
 funcEqual   BECAUSE THEOREM;
 IsFunction(z) /\ IsFunction(b) /\ Domain(z) = Domain(b) /\ (\A x : x \in Domain(z) => z[x] = b[x])
    => z = b    BECAUSE \A(f <- z, g <- b);
 \* hh(a,b,z) == (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = a /\ (\A x : x \in d => z[x] = F));
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))   BECAUSE S12;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+   /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => IsFunction(b)   BECAUSE TI;
 (\A x : x \in d => F \in i)
    /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => Domain(b) = d   BECAUSE TI;
+   /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => Domain(b) = d   BECAUSE TI;
 (\A x : x \in d => b[x] = F) => (x \in d => b[x] = F)   BECAUSE \A(x <- x);
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in d => b[x] = F)   BECAUSE TI2;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))   BECAUSE S22;
-(IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => IsFunction(z)   BECAUSE S13;
-(IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d   BECAUSE S23;
-(IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (\A x : x \in d => z[x] = F)   BECAUSE S22;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => IsFunction(z)   BECAUSE TI;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in d => b[x] = F)   BECAUSE TI2;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))   BECAUSE S22;
+(IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => IsApplication(z,d,i)   BECAUSE S12;
+IsApplication(z,d,i) => IsFunction(z)   BECAUSE S13;
+(IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => IsFunction(z)   BECAUSE TI;
+IsApplication(z,d,i) => Domain(z) = d   BECAUSE S23;
+(IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d   BECAUSE TI;
+(IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (\A x : x \in d => z[x] = F)   BECAUSE S22;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => IsFunction(z)   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d   BECAUSE TI;
 (\A x : x \in d => z[x] = F) => (x \in d => z[x] = F)   BECAUSE \A(x <- x);
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = F)   BECAUSE TI2;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d /\ Domain(b) = d   BECAUSE CIA;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = F)   BECAUSE TI2;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => Domain(z) = d /\ Domain(b) = d   BECAUSE CIA;
 Domain(z) = d /\ Domain(b) = d => Domain(z) = Domain(b)   BECAUSE E_SCHEME;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => Domain(z) = Domain(b)   BECAUSE TI;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = F) /\ (x \in d => b[x] = F)   BECAUSE CIA;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => Domain(z) = Domain(b)   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = F) /\ (x \in d => b[x] = F)   BECAUSE CIA;
 pullHypo(h,a,b,c) == (h => (a => b) /\ (a => c)) => (h /\ a => b /\ c)   PROPO_TAUTO;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) /\ x \in d => z[x] = F /\ b[x] = F   BECAUSE pullHypo;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) /\ x \in d => z[x] = F /\ b[x] = F   BECAUSE pullHypo;
 z[x] = F /\ b[x] = F => z[x] = b[x]   BECAUSE E_SCHEME;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) /\ x \in d => z[x] = b[x]   BECAUSE TI;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = b[x])   BECAUSE HypoAndToImpl;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) /\ x \in d => z[x] = b[x]   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in d => z[x] = b[x])   BECAUSE HypoAndToImpl;
 \A i : \A j : i = j => ((x \in i => z[x] = b[x]) <=> (x \in j => z[x] = b[x]))   BECAUSE E_SCHEME;
 Domain(z) = d => ((x \in Domain(z) => z[x] = b[x]) <=> (x \in d => z[x] = b[x]))   BECAUSE \A(i <- Domain(z), j <- d);
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => ((x \in Domain(z) => z[x] = b[x]) <=> (x \in d => z[x] = b[x]))   BECAUSE TI;
-implyEquivTrue(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))   PROPO_TAUTO;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in Domain(z) => z[x] = b[x])   BECAUSE implyEquivTrue;
-\A x : (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => (x \in Domain(z) => z[x] = b[x])   BECAUSE GENERALIZATION;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => ((x \in Domain(z) => z[x] = b[x]) <=> (x \in d => z[x] = b[x]))   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in Domain(z) => z[x] = b[x])   BECAUSE implyEquivTrue;
+\A x : (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => (x \in Domain(z) => z[x] = b[x])   BECAUSE GENERALIZATION;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => (\A x : x \in Domain(z) => z[x] = b[x])   BECAUSE Q_SCHEME;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => IsFunction(z) /\ IsFunction(b)   BECAUSE CIA;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => IsFunction(z) /\ IsFunction(b) /\ Domain(z) = Domain(b)   BECAUSE CIA;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))
    => IsFunction(z) /\ IsFunction(b) /\ Domain(z) = Domain(b) /\ (\A x : x \in Domain(z) => z[x] = b[x])   BECAUSE CIA;
-(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)) => z = b   BECAUSE TI;
+(\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) /\ (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)) => z = b   BECAUSE TI;
 
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)))   BECAUSE HIE;
+   => (z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)))   BECAUSE HIE;
 \A z : (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)))   BECAUSE GENERALIZATION;
+   => (z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)))   BECAUSE GENERALIZATION;
 (\A x : x \in d => F \in i) /\ (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F)))   BECAUSE Q_SCHEME;
+   => (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F)))   BECAUSE Q_SCHEME;
 
 \* Discharge b
 (\A x : x \in d => F \in i) => ((\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE HypoAndToImpl;
+   => (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE HypoAndToImpl;
 \A b : (\A x : x \in d => F \in i) => ((\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE GENERALIZATION;
+   => (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE GENERALIZATION;
 (\A x : x \in d => F \in i) => (\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
-   => (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE Q_SCHEME;
-(\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))
-   => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE Q_SCHEME;
-(\A x : x \in d => F \in i) => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE TI;
+   => (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE Q_SCHEME;
+(\A b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))
+   => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE Q_SCHEME;
+(\A x : x \in d => F \in i) => ((\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))) => \E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE TI;
 (\A x : x \in d => F \in i)
    => (\E b : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))))   BECAUSE PT1;
-(\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE KillMiddleHypo;
-\A d : \A i : (\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = F))))   BECAUSE GENERALIZATION;
+(\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE KillMiddleHypo;
+\A d : \A i : (\A x : x \in d => F \in i) => (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = F))))   BECAUSE GENERALIZATION;
 QED
 
 (*
@@ -571,25 +623,25 @@ QED
    of the domain and simply returns it.
 *)
 identity(d) == CHOOSE_UNIQUE b : \A z : z = b <=>
-   IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = x
+   IsApplication(z,d,d) /\ \A x : x \in d => z[x] = x
 
-identityIsFunc == \A d : IsFunction(identity(d)) /\ Domain(identity(d)) = d
+identityIsFunc == \A d : IsApplication(identity(d),d,d)
    /\ \A x : x \in d => identity(d)[x] = x
 THEOREM identityIsFunc
 PROOF
 VARIABLES a,b,c,d,f,i,j,x,y,z;
-\A d : \A i : (\A x : x \in d => x \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))))
+\A d : \A i : (\A x : x \in d => x \in i) => (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = x))))
    BECAUSE MACRO separationFunc(F <- x);
-(\A x : x \in d => x \in d) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))))
+(\A x : x \in d => x \in d) => (\E b : (\A z : z = b <=> (IsApplication(z,d,d) /\ (\A x : x \in d => z[x] = x))))
    BECAUSE \A(d <- d, i <- d);
 x \in d => x \in d   BECAUSE ImplySelf;
 \A x : x \in d => x \in d   BECAUSE GENERALIZATION;
-\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x)))   BECAUSE MODUS_PONENS;
-\A z : z = identity(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = x))   BECAUSE CHOOSE identity(d);
-identity(d) = identity(d) <=> (IsFunction(identity(d)) /\ Domain(identity(d)) = d /\ (\A x : x \in d => identity(d)[x] = x))   BECAUSE \A(z <- identity(d));
+\E b : (\A z : z = b <=> (IsApplication(z,d,d) /\ (\A x : x \in d => z[x] = x)))   BECAUSE MODUS_PONENS;
+\A z : z = identity(d) <=> (IsApplication(z,d,d) /\ (\A x : x \in d => z[x] = x))   BECAUSE CHOOSE identity(d);
+identity(d) = identity(d) <=> (IsApplication(identity(d),d,d) /\ (\A x : x \in d => identity(d)[x] = x))   BECAUSE \A(z <- identity(d));
 equalSelf   BECAUSE THEOREM;
 identity(d) = identity(d)   BECAUSE \A(a <- identity(d));
-(IsFunction(identity(d)) /\ Domain(identity(d)) = d /\ (\A x : x \in d => identity(d)[x] = x))   BECAUSE MODUS_PONENS;
+IsApplication(identity(d),d,d) /\ (\A x : x \in d => identity(d)[x] = x)   BECAUSE MODUS_PONENS;
 identityIsFunc   BECAUSE GENERALIZATION;
 QED
 
@@ -599,8 +651,8 @@ PROOF
 VARIABLES a,b,c,d,f,g,i,j,x,y,z;
 \* Prove IsInjection(identity(d))
 identityIsFunc   BECAUSE THEOREM;
-IsFunction(identity(d)) /\ Domain(identity(d)) = d /\ \A x : x \in d => identity(d)[x] = x
-   BECAUSE \A(d <- d);
+IsApplication(identity(d),d,d) /\ \A x : x \in d => identity(d)[x] = x   BECAUSE \A(d <- d);
+IsApplication(identity(d),d,d)   BECAUSE S12;
 IsFunction(identity(d))   BECAUSE S13;
 Domain(identity(d)) = d   BECAUSE S23;
 \A x : x \in d => identity(d)[x] = x   BECAUSE S22;
@@ -695,18 +747,18 @@ QED
    The constant function on a domain d, that returns c.
 *)
 const(d,k) == CHOOSE_UNIQUE b : \A z : z = b <=>
-   IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = k
+   IsApplication(z,d,{k}) /\ \A x : x \in d => z[x] = k
 
-constExists == \A d : \A k : IsFunction(const(d,k)) /\ Domain(const(d,k)) = d
+constExists == \A d : \A k : IsApplication(const(d,k),d,{k})
    /\ \A x : x \in d => const(d,k)[x] = k
 THEOREM constExists
 PROOF
-VARIABLES a,b,c,d,f,i,k,x,z;
+VARIABLES a,b,c,d,f,i,k,x,y,z;
 \A d : \A i : (\A x : x \in d => k \in i) =>
-   (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))))
+   (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = k))))
    BECAUSE MACRO separationFunc(F <- k);
 (\A x : x \in d => k \in {k}) =>
-   (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))))   BECAUSE \A(d <- d, i <- {k});
+   (\E b : (\A z : z = b <=> (IsApplication(z,d,{k}) /\ (\A x : x \in d => z[x] = k))))   BECAUSE \A(d <- d, i <- {k});
 singletonExists   BECAUSE THEOREM;
 k \in { k } <=> k = k   BECAUSE \A(a <- k, x <- k);
 k = k => k \in { k }   BECAUSE EquivToImplReverse;
@@ -715,12 +767,12 @@ k = k   BECAUSE \A(a <- k);
 k \in { k }   BECAUSE MODUS_PONENS;
 x \in d => k \in { k }   BECAUSE PT1;
 \A x : x \in d => k \in { k }   BECAUSE GENERALIZATION;
-\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k)))   BECAUSE MODUS_PONENS;
-\A z : z = const(d,k) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = k))   BECAUSE CHOOSE const(d,k);
-const(d,k) = const(d,k) <=> (IsFunction(const(d,k)) /\ Domain(const(d,k)) = d /\ (\A x : x \in d => const(d,k)[x] = k))   BECAUSE \A(z <- const(d,k));
+\E b : (\A z : z = b <=> (IsApplication(z,d,{k}) /\ (\A x : x \in d => z[x] = k)))   BECAUSE MODUS_PONENS;
+\A z : z = const(d,k) <=> (IsApplication(z,d,{k}) /\ (\A x : x \in d => z[x] = k))   BECAUSE CHOOSE const(d,k);
+const(d,k) = const(d,k) <=> (IsApplication(const(d,k),d,{k}) /\ (\A x : x \in d => const(d,k)[x] = k))   BECAUSE \A(z <- const(d,k));
 equalSelf   BECAUSE THEOREM;
 const(d,k) = const(d,k)   BECAUSE \A(a <- const(d,k));
-(IsFunction(const(d,k)) /\ Domain(const(d,k)) = d /\ (\A x : x \in d => const(d,k)[x] = k))   BECAUSE MODUS_PONENS;
+(IsApplication(const(d,k),d,{k}) /\ (\A x : x \in d => const(d,k)[x] = k))   BECAUSE MODUS_PONENS;
 constExists   BECAUSE GENERALIZATION;
 QED
 
@@ -1095,14 +1147,14 @@ QED
 
 \* The function x \in d |-> <<x, x>>
 clone(d) == CHOOSE_UNIQUE b : \A z : z = b <=>
-   IsFunction(z) /\ Domain(z) = d /\ \A x : x \in d => z[x] = <<x,x>>
-cloneExists == \A d : IsFunction(clone(d)) /\ Domain(clone(d)) = d /\ (\A x : x \in d => clone(d)[x] = <<x,x>>)
+   IsApplication(z,d,d \X d) /\ \A x : x \in d => z[x] = <<x,x>>
+cloneExists == \A d : IsApplication(clone(d),d,d \X d) /\ (\A x : x \in d => clone(d)[x] = <<x,x>>)
 THEOREM cloneExists
 PROOF
 VARIABLES a,b,c,d,f,i,j,x,y,z;
-\A d : \A i : (\A x : x \in d => <<x,x>> \in i) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))))
+\A d : \A i : (\A x : x \in d => <<x,x>> \in i) => (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = <<x,x>>))))
    BECAUSE MACRO separationFunc(F <- <<x,x>>);
-(\A x : x \in d => <<x,x>> \in d \X d) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))))
+(\A x : x \in d => <<x,x>> \in d \X d) => (\E b : (\A z : z = b <=> (IsApplication(z,d,d \X d) /\ (\A x : x \in d => z[x] = <<x,x>>))))
    BECAUSE \A(d <- d, i <- d \X d);
 cartesianProductCouples   BECAUSE THEOREM;
 (x \in d /\ x \in d) <=> <<x,x>> \in d \X d   BECAUSE \A(x <- d, y <- d, a <- x, b <- x);
@@ -1110,31 +1162,31 @@ cartesianProductCouples   BECAUSE THEOREM;
 x \in d => x \in d /\ x \in d   BECAUSE AndSelf;
 x \in d => <<x,x>> \in d \X d   BECAUSE TI;
 \A x : x \in d => <<x,x>> \in d \X d   BECAUSE GENERALIZATION;
-\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>)))   BECAUSE MODUS_PONENS;
-\A z : z = clone(d) <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<x,x>>))   BECAUSE CHOOSE clone(d);
-clone(d) = clone(d) <=> (IsFunction(clone(d)) /\ Domain(clone(d)) = d /\ (\A x : x \in d => clone(d)[x] = <<x,x>>))   BECAUSE \A(z <- clone(d));
+\E b : (\A z : z = b <=> (IsApplication(z,d,d \X d) /\ (\A x : x \in d => z[x] = <<x,x>>)))   BECAUSE MODUS_PONENS;
+\A z : z = clone(d) <=> (IsApplication(z,d,d\X d) /\ (\A x : x \in d => z[x] = <<x,x>>))   BECAUSE CHOOSE clone(d);
+clone(d) = clone(d) <=> (IsApplication(clone(d),d,d \X d) /\ (\A x : x \in d => clone(d)[x] = <<x,x>>))   BECAUSE \A(z <- clone(d));
 equalSelf   BECAUSE THEOREM;
 clone(d) = clone(d)   BECAUSE \A(a <- clone(d));
-IsFunction(clone(d)) /\ Domain(clone(d)) = d /\ (\A x : x \in d => clone(d)[x] = <<x,x>>)   BECAUSE MODUS_PONENS;
+IsApplication(clone(d),d,d\X d) /\ (\A x : x \in d => clone(d)[x] = <<x,x>>)   BECAUSE MODUS_PONENS;
 cloneExists   BECAUSE GENERALIZATION;
 QED
 
 \* Cartesian product of two functions
 productFunc(g,h) == CHOOSE_UNIQUE b : \A z : z = b <=>
-   IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h)
+   IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h))
    /\ \A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>
 
 productFuncIsFunc == \A g : \A h : IsFunction(g) /\ IsFunction(h) =>
-   IsFunction(productFunc(g,h)) /\ Domain(productFunc(g,h)) = Domain(g) \intersect Domain(h)
+   IsApplication(productFunc(g,h), Domain(g) \intersect Domain(h), Image(g) \X Image(h))
    /\ \A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>
 THEOREM productFuncIsFunc
 PROOF
 VARIABLES a,b,c,d,f,g,h,i,j,x,y,z;
 \A d : \A i : (\A x : x \in d => <<g[x],h[x]>> \in i)
-   => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = d /\ (\A x : x \in d => z[x] = <<g[x],h[x]>>))))
+   => (\E b : (\A z : z = b <=> (IsApplication(z,d,i) /\ (\A x : x \in d => z[x] = <<g[x],h[x]>>))))
    BECAUSE MACRO separationFunc(F <- <<g[x],h[x]>>);
 (\A x : x \in Domain(g) \intersect Domain(h) => <<g[x],h[x]>> \in Image(g) \X Image(h))
-   => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))
+   => (\E b : (\A z : z = b <=> (IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))
    BECAUSE \A(d <- Domain(g) \intersect Domain(h), i <- Image(g) \X Image(h));
 cartesianProductCouples   BECAUSE THEOREM;
 (g[x] \in Image(g) /\ h[x] \in Image(h)) <=> <<g[x],h[x]>> \in Image(g) \X Image(h)   BECAUSE \A(x <- Image(g), y <- Image(h), a <- g[x], b <- h[x]);
@@ -1177,17 +1229,18 @@ IsFunction(g) /\ IsFunction(h)
    => (x \in (Domain(g) \intersect Domain(h)) => <<g[x],h[x]>> \in Image(g) \X Image(h))   BECAUSE GENERALIZATION;
 IsFunction(g) /\ IsFunction(h)
    => (\A x : x \in (Domain(g) \intersect Domain(h)) => <<g[x],h[x]>> \in Image(g) \X Image(h))   BECAUSE Q_SCHEME;
-IsFunction(g) /\ IsFunction(h) => (\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))   BECAUSE TI;
-(\E b : (\A z : z = b <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>)))) => ((\A z : z = productFunc(g,h) <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))   BECAUSE CHOOSE productFunc(g,h);
+IsFunction(g) /\ IsFunction(h) => (\E b : (\A z : z = b <=> (IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))   BECAUSE TI;
+(\E b : (\A z : z = b <=> (IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>)))) => ((\A z : z = productFunc(g,h) <=> (IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))))   BECAUSE CHOOSE productFunc(g,h);
 
-(\A z : z = productFunc(g,h) <=> (IsFunction(z) /\ Domain(z) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))) => (productFunc(g,h) = productFunc(g,h) <=> (IsFunction(productFunc(g,h)) /\ Domain(productFunc(g,h)) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)))
+(\A z : z = productFunc(g,h) <=> (IsApplication(z, Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => z[x] = <<g[x],h[x]>>))) => (productFunc(g,h) = productFunc(g,h) <=> (IsApplication(productFunc(g,h), Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)))
    BECAUSE \A(z <- productFunc(g,h));
-IsFunction(g) /\ IsFunction(h) => (productFunc(g,h) = productFunc(g,h) <=> (IsFunction(productFunc(g,h)) /\ Domain(productFunc(g,h)) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)))
+IsFunction(g) /\ IsFunction(h) => (productFunc(g,h) = productFunc(g,h) <=> (IsApplication(productFunc(g,h), Domain(g) \intersect Domain(h), Image(g) \X Image(h)) /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)))
    BECAUSE TI2;
 equalSelf   BECAUSE THEOREM;
 productFunc(g,h) = productFunc(g,h)   BECAUSE \A(a <- productFunc(g,h));
 killMiddleHypo(h,a,t) == t => ((h => (t <=> a)) => (h => a))   PROPO_TAUTO;
-IsFunction(g) /\ IsFunction(h) => IsFunction(productFunc(g,h)) /\ Domain(productFunc(g,h)) = Domain(g) \intersect Domain(h) /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)   BECAUSE killMiddleHypo;
+IsFunction(g) /\ IsFunction(h) => IsApplication(productFunc(g,h), Domain(g) \intersect Domain(h), Image(g) \X Image(h))
+   /\ (\A x : x \in Domain(g) \intersect Domain(h) => productFunc(g,h)[x] = <<g[x],h[x]>>)   BECAUSE killMiddleHypo;
 productFuncIsFunc   BECAUSE GENERALIZATION;
 QED
 
