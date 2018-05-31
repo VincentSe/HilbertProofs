@@ -113,6 +113,13 @@ PROPO_TAUTO EquivTrue
 ImplyEquivTrue(a,b,t) == t => ((b => (a <=> t)) => (b => a))
 PROPO_TAUTO ImplyEquivTrue
 
+\* Hypothesis implies equiv true
+HIET(h,t,a) == (h => t) => ((h => (a <=> t)) => (h => a))
+PROPO_TAUTO HIET
+
+HITE(h,t,a) == (h => t) => ((h => (t <=> a)) => (h => a))
+PROPO_TAUTO HITE
+
 ImplyEquivSelf(a,b) == (a => (b <=> a)) => (a => b)
 PROPO_TAUTO ImplyEquivSelf
 
