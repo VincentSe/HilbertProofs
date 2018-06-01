@@ -93,6 +93,44 @@ funcImageSubset == \A f : \A i : IsFunction(f) /\ (\A x : x \in Domain(f) => f[x
    => Image(f) \subseteq i
 THEOREM funcImageSubset
 PROOF
+VARIABLES f,i,x,z;
+imageExists   BECAUSE THEOREM;
+z \in Image(f) <=> Reaches(f,z)   BECAUSE \A(g <- f, y <- z);
+z \in Image(f) => \E x : <<x,z>> \in f   BECAUSE EquivToImpl;
+funcVal   BECAUSE THEOREM;
+IsFunction(f) /\ <<x,z>> \in f => z = f[x]   BECAUSE \A(f <- f, x <- x, y <- z);
+h(f,i) == IsFunction(f) /\ (\A x : x \in Domain(f) => f[x] \in i);
+hh(f,i,x,z) == h(f,i) /\ <<x,z>> \in f;
+hh(f,i,x,z) => <<x,z>> \in f   BECAUSE S22;
+hh(f,i,x,z) => IsFunction(f)   BECAUSE S13;
+<<x,z>> \in f => IsDefinedOn(f,x)   BECAUSE \E(y <- z);
+domainExists   BECAUSE THEOREM;
+x \in Domain(f) <=> IsDefinedOn(f,x)   BECAUSE \A(g <- f, x <- x);
+IsDefinedOn(f,x) => x \in Domain(f)   BECAUSE EquivToImplReverse;
+hh(f,i,x,z) => x \in Domain(f)   BECAUSE TI2;
+hh(f,i,x,z) => h(f,i)   BECAUSE S12;
+h(f,i) => (\A x : x \in Domain(f) => f[x] \in i)   BECAUSE S22;
+(\A x : x \in Domain(f) => f[x] \in i) => (x \in Domain(f) => f[x] \in i)   BECAUSE \A(x <- x);
+hh(f,i,x,z) => (x \in Domain(f) => f[x] \in i)   BECAUSE TI2;
+hh(f,i,x,z) => f[x] \in i   BECAUSE KillMiddleHypo;
+\A x : \A z : x = z => (x \in i <=> z \in i)   BECAUSE E_SCHEME;
+z = f[x] => (z \in i <=> f[x] \in i)   BECAUSE \A(x <- z, z <- f[x]);
+hh(f,i,x,z) => IsFunction(f) /\ <<x,z>> \in f   BECAUSE CIA;
+hh(f,i,x,z) => (z \in i <=> f[x] \in i)   BECAUSE TI2;
+hh(f,i,x,z) => z \in i   BECAUSE HIET;
+\* Discharge x
+h(f,i) => (<<x,z>> \in f => z \in i)   BECAUSE HypoAndToImpl;
+\A x : h(f,i) => (<<x,z>> \in f => z \in i)   BECAUSE GENERALIZATION;
+h(f,i) => (\A x : <<x,z>> \in f => z \in i)   BECAUSE Q_SCHEME;
+(\A x : <<x,z>> \in f => z \in i) => ((\E x : <<x,z>> \in f) => \E x : z \in i)   BECAUSE Q_SCHEME;
+h(f,i) => ((\E x : <<x,z>> \in f) => \E x : z \in i)   BECAUSE TI;
+injectHypo(h,p,z,a) == (p => z) => ((h => (z => a)) => (h /\ p => a))   PROPO_TAUTO;
+h(f,i) /\ z \in Image(f) => \E x : z \in i   BECAUSE injectHypo;
+(\E x : z \in i) => z \in i   BECAUSE Q_SCHEME;
+h(f,i) /\ z \in Image(f) => z \in i   BECAUSE TI;
+h(f,i) => (z \in Image(f) => z \in i)   BECAUSE HypoAndToImpl;
+\A z : h(f,i) => (z \in Image(f) => z \in i)   BECAUSE GENERALIZATION;
+h(f,i) => Image(f) \subseteq i   BECAUSE Q_SCHEME;
 funcImageSubset   BECAUSE GENERALIZATION;
 QED
 
