@@ -1647,7 +1647,7 @@ natAdditionCommutes == \A n : \A p : n \in Nat /\ p \in Nat
    => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]
 THEOREM natAdditionCommutes
 PROOF
-VARIABLES b,n,p;
+VARIABLES b,n,p,z;
 \* By induction on n
 \A a : \E b : \A x : x \in b <=> x \in a
    /\ \A p : p \in Nat => NatAdditionCurry(x)[p] = NatAdditionCurry(p)[x]   BECAUSE AXIOM_SCHEME;
@@ -1723,9 +1723,33 @@ natInduction   BECAUSE THEOREM;
 h(b) => Nat \subseteq b   BECAUSE TI;
 
 \* Discharge b
-
-\* TODO
+\* \A x : x \in b <=> x \in Nat /\ \A p : p \in Nat => NatAdditionCurry(x)[p] = NatAdditionCurry(p)[x];
+Nat \subseteq b => (z \in Nat => z \in b)   BECAUSE \A(z <- z);
+h(b) => (z \in Nat => z \in b)   BECAUSE TI;
+h(b) /\ z \in Nat => z \in b   BECAUSE HypoImplToAnd;
+h(b) => (z \in b <=> z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE \A(x <- z);
+(z \in b <=> z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]) => (z \in b => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE EquivToImpl;
+h(b) => (z \in b => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE TI;
+h(b) /\ z \in Nat => h(b)   BECAUSE S12;
+h(b) /\ z \in Nat => (z \in b => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE TI;
+h(b) /\ z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]   BECAUSE KillMiddleHypo;
+h(b) => (z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE HypoAndToImpl;
+(\E b : h(b)) => (\E b : z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE Q_SCHEME;
+(\E b : z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE MODUS_PONENS;
+(\E b : z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]) => (z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE Q_SCHEME;
+z \in Nat => z \in Nat /\ \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]   BECAUSE MODUS_PONENS;
+z \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]) => \A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]   BECAUSE S22;
+(\A p : p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z]) => (p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE \A(p <- p);
+z \in Nat => (p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE TI2;
+\A p : \A z : z \in Nat => (p \in Nat => NatAdditionCurry(z)[p] = NatAdditionCurry(p)[z])   BECAUSE GENERALIZATION;
+n \in Nat => (p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n])   BECAUSE \A(p <- p, z <- n);
+n \in Nat /\ p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]   BECAUSE HypoImplToAnd;
+natAdditionCommutes   BECAUSE GENERALIZATION;
 QED
+
+natAdditionAssoc == \A n : \A p : \A q : n \in Nat /\ p \in Nat /\ q \in Nat
+   => NatAdditionCurry(NatAdditionCurry(n)[p])[q] = NatAdditionCurry(n)[NatAdditionCurry(p)[q]]
+
 
 (*
    The usual multiplication operation on natural numbers.
