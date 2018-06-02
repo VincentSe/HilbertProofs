@@ -197,19 +197,24 @@ void formula_free(formula* f)
     return;
   //printf("\n %p FORMULA_FREE ", f); print_formula(f);
 
-  if (f->definingFormula && f->definingFormula->first_line == 0)
+  if (f->definingFormula
+      && !f->definingFormula->first_line) // was cloned
     {
       formula_free(f->definingFormula);
     }
 
-  free(f->name);
-  for (struct formula_list* op = f->operands; op; op = op->next)
+  // Free operands
+  struct formula_list* op = f->operands;
+  while (op)
     {
-      if (!f->first_line // f was cloned
-	  && op->formula_elem->first_line)
-  	op->formula_elem = 0; // shared operands
+      if (f->first_line // f was written in a FOL file, not cloned, it owns its operands
+	  || !op->formula_elem->first_line) // or op was cloned
+	formula_free(op->formula_elem);
+      struct formula_list* next = op->next;
+      free(op); // the list node
+      op = next;
     }
-  formula_list_free(f->operands);
+  free(f->name);
   free(f);
 }
 
@@ -814,20 +819,22 @@ formula* equivalent_defining_formula(const formula* f,
     return opDef->definingFormula; // share the formula when there is no substitution of variables
 
   formula* def = formula_clone(opDef->definingFormula, subs);
-  //if (32 == f->first_line)
-  //  printf("\n %p line %d DEF_FORMULA ", def, f->first_line); print_formula(def); printf("\n");
+  //if (1472 == f->first_line)
+  //  { printf("\n %p line %d DEF_FORMULA ", def, f->first_line); print_formula(def); printf("\n"); }
 
-  // Recursively clone the defining formulas
+  // Recursively clone the defining formulas.
+  // TODO Reuse f->operands defining formulas ?
   formula* resolvedF = formula_set_find(def, operatorDefinitions);
   if (resolvedF)
     def->definingFormula = equivalent_defining_formula(def, resolvedF,
-						       operatorDefinitions);
-  for (op = def->operands; op; op = op->next)
-    {
-      resolvedF = formula_set_find(op->formula_elem, operatorDefinitions);
-      if (resolvedF)
-	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions);
-    }
+  						       operatorDefinitions);
+  // Careful : the following would leak
+  /* for (op = def->operands; op; op = op->next) */
+  /*   { */
+  /*     resolvedF = formula_set_find(op->formula_elem, operatorDefinitions); */
+  /*     if (resolvedF) */
+  /* 	op->formula_elem->definingFormula = equivalent_defining_formula(op->formula_elem, resolvedF, operatorDefinitions); */
+  /*   } */
   return def;
 }
 
