@@ -66,6 +66,18 @@ a = a   BECAUSE MODUS_PONENS;
 equalSelf   BECAUSE GENERALIZATION;
 QED
 
+transitEqual == \A a : \A b : \A c : a = b /\ b = c => a = c
+THEOREM transitEqual
+PROOF
+VARIABLES a,b,c;
+b = c => c = b   BECAUSE E_SCHEME;
+a = b => a = b   BECAUSE ImplySelf;
+a = b /\ b = c => a = b /\ c = b   BECAUSE MergeImplicationsAnd;
+a = b /\ c = b => a = c   BECAUSE E_SCHEME;
+a = b /\ b = c => a = c   BECAUSE TI;
+transitEqual   BECAUSE GENERALIZATION;
+QED
+
 aSetExists == \E x : x = x
 THEOREM aSetExists
 PROOF

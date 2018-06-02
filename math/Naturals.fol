@@ -1645,6 +1645,87 @@ QED
 
 natAdditionCommutes == \A n : \A p : n \in Nat /\ p \in Nat
    => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]
+THEOREM natAdditionCommutes
+PROOF
+VARIABLES b,n,p;
+\* By induction on n
+\A a : \E b : \A x : x \in b <=> x \in a
+   /\ \A p : p \in Nat => NatAdditionCurry(x)[p] = NatAdditionCurry(p)[x]   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in Nat
+   /\ \A p : p \in Nat => NatAdditionCurry(x)[p] = NatAdditionCurry(p)[x]   BECAUSE \A(a <- Nat);
+h(b) == \A x : x \in b <=> x \in Nat /\ \A p : p \in Nat => NatAdditionCurry(x)[p] = NatAdditionCurry(p)[x];
+h(b) => (0 \in b <=> 0 \in Nat /\ \A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0])   BECAUSE \A(x <- 0);
+(0 \in b <=> 0 \in Nat /\ \A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]) => (0 \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]) => 0 \in b)   BECAUSE EquivToImplReverse;
+h(b) => (0 \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]) => 0 \in b)   BECAUSE TI;
+zeroNeutralNatAddition   BECAUSE THEOREM;
+p \in Nat => NatAdditionCurry(0)[p] = p /\ NatAdditionCurry(p)[0] = p   BECAUSE \A(p <- p);
+NatAdditionCurry(0)[p] = p /\ NatAdditionCurry(p)[0] = p => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]   BECAUSE E_SCHEME;
+p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]   BECAUSE TI;
+\A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]   BECAUSE GENERALIZATION;
+zeroInNat   BECAUSE THEOREM;
+0 \in Nat /\ \A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]   BECAUSE IntroAndRight;
+h(b) => 0 \in Nat /\ \A p : p \in Nat => NatAdditionCurry(0)[p] = NatAdditionCurry(p)[0]   BECAUSE PT1;
+h(b) => 0 \in b   BECAUSE KillMiddleHypo;
+
+\* Induction step
+h(b) => (n \in b <=> n \in Nat /\ \A p : p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n])   BECAUSE \A(x <- n);
+pullHypo(h,a,b,c) == (h => (a <=> b /\ c)) => (h /\ (b /\ a) => c)   PROPO_TAUTO;
+h(b) /\ (n \in Nat /\ n \in b) => \A p : p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]   BECAUSE pullHypo;
+(\A p : p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]) => (p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n])   BECAUSE \A(p <- p);
+h(b) /\ (n \in Nat /\ n \in b) => h(b)   BECAUSE S12;
+h(b) /\ (n \in Nat /\ n \in b) => (n \in Nat /\ n \in b)   BECAUSE S22;
+h(b) /\ (n \in Nat /\ n \in b) => (p \in Nat => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n])   BECAUSE TI;
+hh(b,n,p) == h(b) /\ (n \in Nat /\ n \in b) /\ p \in Nat;
+hh(b,n,p) => NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n]   BECAUSE HypoImplToAnd;
+\A x : \A y : x = y => successor(x) = successor(y)   BECAUSE E_SCHEME;
+NatAdditionCurry(n)[p] = NatAdditionCurry(p)[n] => successor(NatAdditionCurry(n)[p]) = successor(NatAdditionCurry(p)[n])   BECAUSE \A(x <- NatAdditionCurry(n)[p], y <- NatAdditionCurry(p)[n]);
+hh(b,n,p) => successor(NatAdditionCurry(n)[p]) = successor(NatAdditionCurry(p)[n])   BECAUSE TI;
+
+h(b) => (successor(n) \in b <=> successor(n) \in Nat /\ \A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)])   BECAUSE \A(x <- successor(n));
+(successor(n) \in b <=> successor(n) \in Nat /\ \A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)]) => (successor(n) \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)]) => successor(n) \in b)   BECAUSE EquivToImplReverse;
+h(b) /\ (n \in Nat /\ n \in b) => (successor(n) \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)]) => successor(n) \in b)   BECAUSE TI2;
+
+addSuccCommute   BECAUSE THEOREM;
+n \in Nat /\ p \in Nat => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p]) /\ NatAdditionCurry(n)[successor(p)] = successor(NatAdditionCurry(n)[p])   BECAUSE  \A(n <- n, p <- p);
+selectHypos(a,b,c,d) == a /\ (b /\ c) /\ d => b /\ d   PROPO_TAUTO;
+hh(b,n,p) => n \in Nat /\ p \in Nat   BECAUSE selectHypos;
+NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p]) /\ NatAdditionCurry(n)[successor(p)] = successor(NatAdditionCurry(n)[p]) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p])   BECAUSE S12;
+hh(b,n,p) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p])   BECAUSE TI2;
+hh(b,n,p) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p]) /\ successor(NatAdditionCurry(n)[p]) = successor(NatAdditionCurry(p)[n])   BECAUSE CIA;
+transitEqual   BECAUSE THEOREM;
+NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p]) /\ successor(NatAdditionCurry(n)[p]) = successor(NatAdditionCurry(p)[n]) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(p)[n])
+   BECAUSE \A(a <- NatAdditionCurry(successor(n))[p], b <- successor(NatAdditionCurry(n)[p]), c <- successor(NatAdditionCurry(p)[n]));
+hh(b,n,p) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(p)[n])   BECAUSE TI;
+
+n \in Nat /\ p \in Nat => p \in Nat /\ n \in Nat   BECAUSE AndSymmetry;
+p \in Nat /\ n \in Nat => NatAdditionCurry(successor(p))[n] = successor(NatAdditionCurry(p)[n]) /\ NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n])   BECAUSE  \A(n <- p, p <- n);
+NatAdditionCurry(successor(p))[n] = successor(NatAdditionCurry(p)[n]) /\ NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n]) => NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n])   BECAUSE S22;
+hh(b,n,p) => p \in Nat /\ n \in Nat   BECAUSE TI;
+hh(b,n,p) => NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n])   BECAUSE TI2;
+hh(b,n,p) => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(p)[n]) /\ NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n])   BECAUSE CIA;
+NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(p)[n]) /\ NatAdditionCurry(p)[successor(n)] = successor(NatAdditionCurry(p)[n]) => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)]   BECAUSE E_SCHEME;
+hh(b,n,p) => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)]   BECAUSE TI;
+h(b) /\ (n \in Nat /\ n \in b) => (p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)])   BECAUSE HypoAndToImpl;
+\A p : h(b) /\ (n \in Nat /\ n \in b) => (p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)])   BECAUSE GENERALIZATION;
+h(b) /\ (n \in Nat /\ n \in b) => (\A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)])   BECAUSE Q_SCHEME;
+natSuccStable   BECAUSE THEOREM;
+n \in Nat => successor(n) \in Nat   BECAUSE \A(n <- n);
+(n \in Nat /\ n \in b) => n \in Nat   BECAUSE S12;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in Nat   BECAUSE TI2;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in Nat /\ (\A p : p \in Nat => NatAdditionCurry(successor(n))[p] = NatAdditionCurry(p)[successor(n)])   BECAUSE CIA;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in b   BECAUSE KillMiddleHypo;
+h(b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE HypoAndToImpl;
+\A n : h(b) => (n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE GENERALIZATION;
+h(b) => (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE Q_SCHEME;
+h(b) => 0 \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b)   BECAUSE CIA;
+natInduction   BECAUSE THEOREM;
+0 \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b) => Nat \subseteq b   BECAUSE \A(p <- b);
+h(b) => Nat \subseteq b   BECAUSE TI;
+
+\* Discharge b
+
+\* TODO
+QED
 
 (*
    The usual multiplication operation on natural numbers.
