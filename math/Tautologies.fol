@@ -105,6 +105,9 @@ PROPO_TAUTO EquivToImplReverse
 HDER(a,b,h) == (h => (a <=> b)) => (h => (b => a))
 PROPO_TAUTO HDER
 
+HDE(a,b,h) == (h => (a <=> b)) => (h => (a => b))
+PROPO_TAUTO HDE
+
 IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
 PROPO_TAUTO IntroEquiv
 

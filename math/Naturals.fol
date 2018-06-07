@@ -1752,7 +1752,7 @@ natAdditionAssoc == \A n : \A p : \A q : n \in Nat /\ p \in Nat /\ q \in Nat
 THEOREM natAdditionAssoc
 PROOF
 \* By induction on n
-VARIABLES b,i,n,p,q,x;
+VARIABLES b,i,n,p,q,x,z;
 \A a : \E b : \A x : x \in b <=> x \in a
    /\ ( \A p : \A q : x \in Nat /\ p \in Nat /\ q \in Nat
         => NatAdditionCurry(NatAdditionCurry(x)[p])[q] = NatAdditionCurry(x)[NatAdditionCurry(p)[q]])
@@ -1835,14 +1835,14 @@ addSuccCommute   BECAUSE THEOREM;
 n \in Nat /\ p \in Nat => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p])
       /\ NatAdditionCurry(n)[successor(p)] = successor(NatAdditionCurry(n)[p])   BECAUSE \A(n <- n, p <- p);
 n \in Nat /\ p \in Nat => NatAdditionCurry(successor(n))[p] = successor(NatAdditionCurry(n)[p])   BECAUSE HS12;
-hh(b,n,p,q) == h(b) /\ (n \in Nat /\ n \in b) /\ (p \in Nat /\ q \in Nat);
+hh(b,n,p,q) == h(b) /\ (n \in Nat /\ n \in b) /\ (successor(n) \in Nat /\ p \in Nat /\ q \in Nat);
 hh(b,n,p,q) => h(b) /\ (n \in Nat /\ n \in b)  BECAUSE S12;
 hh(b,n,p,q) => n \in Nat /\ n \in b   BECAUSE S23;
 n \in Nat /\ n \in b => n \in Nat   BECAUSE S12;
 hh(b,n,p,q) => n \in Nat   BECAUSE TI;
-hh(b,n,p,q) => p \in Nat /\ q \in Nat   BECAUSE S22;
-p \in Nat /\ q \in Nat => p \in Nat   BECAUSE S12;
-p \in Nat /\ q \in Nat => q \in Nat   BECAUSE S22;
+hh(b,n,p,q) => successor(n) \in Nat /\ p \in Nat /\ q \in Nat   BECAUSE S22;
+successor(n) \in Nat /\ p \in Nat /\ q \in Nat => p \in Nat   BECAUSE S23;
+successor(n) \in Nat /\ p \in Nat /\ q \in Nat => q \in Nat   BECAUSE S22;
 hh(b,n,p,q) => p \in Nat   BECAUSE TI;
 hh(b,n,p,q) => q \in Nat   BECAUSE TI;
 hh(b,n,p,q) => n \in Nat /\ p \in Nat   BECAUSE CIA;
@@ -1887,10 +1887,81 @@ NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = successor(NatAdditionCu
 	      c <- successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]]));
 hh(b,n,p,q) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])   BECAUSE TI;
 
-\* TODO
-\* hh => successor( NatAdditionCurry(n)[NatAdditionCurry(p)[q]] )
-\* = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]]
+n \in Nat /\ NatAdditionCurry(p)[q] \in Nat => NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])
+      /\ NatAdditionCurry(n)[successor(NatAdditionCurry(p)[q])] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])   BECAUSE \A(n <- n, p <- NatAdditionCurry(p)[q]);
+n \in Nat /\ NatAdditionCurry(p)[q] \in Nat => NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])   BECAUSE HS12;
+hh(b,n,p,q) => IsApplication(NatAdditionCurry(p),Nat,Nat)   BECAUSE TI;
+hh(b,n,p,q) => IsApplication(NatAdditionCurry(p),Nat,Nat) /\ q \in Nat   BECAUSE CIA;
+hh(b,n,p,q) => NatAdditionCurry(p)[q] \in Nat   BECAUSE TI;
+hh(b,n,p,q) => n \in Nat /\ NatAdditionCurry(p)[q] \in Nat   BECAUSE CIA;
+hh(b,n,p,q) => NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])   BECAUSE TI;
+hh(b,n,p,q) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]]) /\ NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]])   BECAUSE CIA;
+NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]]) /\ NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]] = successor(NatAdditionCurry(n)[NatAdditionCurry(p)[q]]) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]]  BECAUSE E_SCHEME;
+hh(b,n,p,q) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]]   BECAUSE TI;
+natSuccStable   BECAUSE THEOREM;
+n \in Nat => successor(n) \in Nat   BECAUSE \A(n <- n);
+hh(b,n,p,q) => successor(n) \in Nat   BECAUSE TI;
+hh(b,n,p,q) => successor(n) \in Nat /\ NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]]   BECAUSE CIA;
 
+h(b) /\ (n \in Nat /\ n \in b) => ((successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE HypoAndToImpl;
+\A q : h(b) /\ (n \in Nat /\ n \in b) => ((successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE GENERALIZATION;
+h(b) /\ (n \in Nat /\ n \in b) => (\A q : (successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE Q_SCHEME;
+\A p : h(b) /\ (n \in Nat /\ n \in b) => (\A q : (successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE GENERALIZATION;
+h(b) /\ (n \in Nat /\ n \in b) => (\A p : \A q : (successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE Q_SCHEME;
+
+h(b) /\ (n \in Nat /\ n \in b) => (n \in Nat /\ n \in b)   BECAUSE S22;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in Nat   BECAUSE TI2;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in Nat /\ (\A p : \A q : (successor(n) \in Nat /\ p \in Nat /\ q \in Nat) => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]])   BECAUSE CIA;
+h(b) /\ (n \in Nat /\ n \in b) => h(b)   BECAUSE S12;
+h(b) /\ (n \in Nat /\ n \in b) => (successor(n) \in Nat /\ ( \A p : \A q : successor(n) \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(successor(n))[p])[q] = NatAdditionCurry(successor(n))[NatAdditionCurry(p)[q]]) => successor(n) \in b)
+   BECAUSE TI;
+h(b) /\ (n \in Nat /\ n \in b) => successor(n) \in b   BECAUSE KillMiddleHypo;
+h(b) => ((n \in Nat /\ n \in b) => successor(n) \in b)   BECAUSE HypoAndToImpl;
+\A n : h(b) => ((n \in Nat /\ n \in b) => successor(n) \in b)   BECAUSE GENERALIZATION;
+h(b) => (\A n : (n \in Nat /\ n \in b) => successor(n) \in b)   BECAUSE Q_SCHEME;
+h(b) => 0 \in b /\ (\A n : (n \in Nat /\ n \in b) => successor(n) \in b)   BECAUSE CIA;
+natInduction   BECAUSE THEOREM;
+0 \in b /\ (\A n : n \in Nat /\ n \in b => successor(n) \in b) => Nat \subseteq b   BECAUSE \A(p <- b);
+h(b) => Nat \subseteq b   BECAUSE TI;
+
+\* Discharge b
+\* h(b) == \A x : x \in b <=> x \in Nat
+\*   /\ ( \A p : \A q : x \in Nat /\ p \in Nat /\ q \in Nat
+\*        => NatAdditionCurry(NatAdditionCurry(x)[p])[q] = NatAdditionCurry(x)[NatAdditionCurry(p)[q]]);
+Nat \subseteq b => (z \in Nat => z \in b)   BECAUSE \A(z <- z);
+h(b) => (z \in Nat => z \in b)   BECAUSE TI;
+h(b) /\ z \in Nat => z \in b   BECAUSE HypoImplToAnd;
+h(b) => (z \in b <=> z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE \A(x <- z);
+h(b) => (z \in b => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE HDE;
+h(b) /\ z \in Nat => h(b)   BECAUSE S12;
+h(b) /\ z \in Nat => (z \in b => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE TI;
+h(b) /\ z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE KillMiddleHypo;
+h(b) => (z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE HypoAndToImpl;
+(\E b : h(b)) => (\E b : z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE Q_SCHEME;
+\E b : z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE MODUS_PONENS;
+
+(\E b : z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])) => (z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]))   BECAUSE Q_SCHEME;
+z \in Nat => z \in Nat /\ ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE MODUS_PONENS;
+z \in Nat => ( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE HS22;
+( \A p : \A q : z \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]) => (z \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE \A(p <- p, q <- q);
+z \in Nat => (z \in Nat /\ p \in Nat /\ q \in Nat
+        => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]])   BECAUSE TI;
+pullHypos(a,b,c,d) == (a => (a /\ b /\ c => d)) => (a /\ b /\ c => d)   PROPO_TAUTO;
+z \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]   BECAUSE pullHypos;
+\A z : z \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(z)[p])[q] = NatAdditionCurry(z)[NatAdditionCurry(p)[q]]   BECAUSE GENERALIZATION;
+n \in Nat /\ p \in Nat /\ q \in Nat => NatAdditionCurry(NatAdditionCurry(n)[p])[q] = NatAdditionCurry(n)[NatAdditionCurry(p)[q]]   BECAUSE \A(z <- n);
+natAdditionAssoc   BECAUSE GENERALIZATION;
 QED
 
 
