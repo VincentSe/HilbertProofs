@@ -134,6 +134,13 @@ h(f,i) => Image(f) \subseteq i   BECAUSE Q_SCHEME;
 funcImageSubset   BECAUSE GENERALIZATION;
 QED
 
+appDomainToImage == \A f : \A d : \A i : \A x : IsApplication(f,d,i) /\ x \in d
+   => f[x] \in i
+THEOREM appDomainToImage
+PROOF
+appDomainToImage   BECAUSE GENERALIZATION;
+QED
+
 (*
    A bijection is an equivalence between two sets, a one-to-one correspondence
    between elements of each set.

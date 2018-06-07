@@ -34,11 +34,23 @@ PROPO_TAUTO S12
 S22(a,b) == (a /\ b) => b
 PROPO_TAUTO S22
 
+HS12(a,b,h) == (h => (a /\ b)) => (h => a)
+PROPO_TAUTO HS12
+
+HS22(a,b,h) == (h => (a /\ b)) => (h => b)
+PROPO_TAUTO HS22
+
 S13(a,b,c) == (a /\ b /\ c) => a
 PROPO_TAUTO S13
 
 S23(a,b,c) == (a /\ b /\ c) => b
 PROPO_TAUTO S23
+
+HS13(a,b,c,h) == (h => (a /\ b /\ c)) => (h => a)
+PROPO_TAUTO HS13
+
+HS23(a,b,c,h) == (h => (a /\ b /\ c)) => (h => b)
+PROPO_TAUTO HS23
 
 \* S33 is S22, because of left-associativity
 
@@ -88,6 +100,10 @@ PROPO_TAUTO EquivToImpl
 
 EquivToImplReverse(a,b) == (a <=> b) => (b => a)
 PROPO_TAUTO EquivToImplReverse
+
+\* Hypothesis drop equiv reverse
+HDER(a,b,h) == (h => (a <=> b)) => (h => (b => a))
+PROPO_TAUTO HDER
 
 IntroEquiv(a,b) == (a => b) => ((b => a) => (a <=> b))
 PROPO_TAUTO IntroEquiv
