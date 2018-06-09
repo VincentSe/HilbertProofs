@@ -179,45 +179,45 @@ AXIOM_SCHEME BOUND_VAR(b) separation
    For convenience, the separation axiom scheme combined with the extensionality
    axiom, giving the unicity of the separated set.
    Could be deduced from separation as follows :
-
-   \A a : \E b : \A x : x \in b <=> x \in a /\ F   BECAUSE AXIOM_SCHEME; \* separation
-   \E b : \A x : x \in b <=> x \in a /\ F   BECAUSE \A(a <- a);
-   h(a,b) == \A x : x \in b <=> x \in a /\ F; \* h(a,b) should add all free variables of F after b
-   extensionality   BECAUSE AXIOM;
-   (\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
-   \A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
-   z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
-   h(a,b) => (x \in b <=> x \in a /\ F)   BECAUSE \A(x <- x);
-   mergeImpl(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
-   h(a,b) /\ z = b => (x \in z <=> x \in a /\ F)   BECAUSE mergeImpl;
-   \A x : h(a,b) /\ z = b => (x \in z <=> x \in a /\ F)   BECAUSE GENERALIZATION;
-   h(a,b) /\ z = b => (\A x : x \in z <=> x \in a /\ F)   BECAUSE Q_SCHEME;
-   (\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in a /\ F)   BECAUSE \A(x <- x);
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
-      => (\A x : x \in z <=> x \in a /\ F)   BECAUSE S22;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
-      => (x \in z <=> x \in a /\ F)   BECAUSE TI;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => h(a,b)   BECAUSE S12;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
-      => (x \in b <=> x \in a /\ F)   BECAUSE TI;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
-      => (x \in b <=> x \in a /\ F) /\ (x \in z <=> x \in a /\ F)   BECAUSE CIA;
-   transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
-   (x \in b <=> x \in a /\ F) /\ (x \in z <=> x \in a /\ F)
-      => (x \in z <=> x \in b)   BECAUSE transitEquiv;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in b)   BECAUSE TI;
-   \A x : h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
-   h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => z = b   BECAUSE TI;
-   h(a,b) => (z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE HIE;
-   \A z : h(a,b) => (z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE GENERALIZATION;
-   h(a,b) => (\A z : z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE Q_SCHEME;
-   (\E b : h(a,b)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE Q_SCHEME;
-   \E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F)   BECAUSE MODUS_PONENS;
 *)
-\* Maybe make this a macro
-\*separationUnique(F) == \A a : \E b : \A z : z = b <=> \A x : x \in z <=> (x \in a /\ F)
-\*AXIOM_SCHEME BOUND_VAR(b,z) separationUnique
+
+MACRO separationUnique
+PROOF
+\A a : \E b : \A x : x \in b <=> x \in a /\ F   BECAUSE AXIOM_SCHEME; \* separation
+\E b : \A x : x \in b <=> x \in a /\ F   BECAUSE \A(a <- a);
+h(a,b) == \A x : x \in b <=> x \in a /\ F; \* h(a,b) should add all free variables of F after b
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+\A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
+z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
+h(a,b) => (x \in b <=> x \in a /\ F)   BECAUSE \A(x <- x);
+mergeImpl(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
+h(a,b) /\ z = b => (x \in z <=> x \in a /\ F)   BECAUSE mergeImpl;
+\A x : h(a,b) /\ z = b => (x \in z <=> x \in a /\ F)   BECAUSE GENERALIZATION;
+h(a,b) /\ z = b => (\A x : x \in z <=> x \in a /\ F)   BECAUSE Q_SCHEME;
+(\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in a /\ F)   BECAUSE \A(x <- x);
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
+   => (\A x : x \in z <=> x \in a /\ F)   BECAUSE S22;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
+   => (x \in z <=> x \in a /\ F)   BECAUSE TI;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => h(a,b)   BECAUSE S12;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
+   => (x \in b <=> x \in a /\ F)   BECAUSE TI;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F)
+   => (x \in b <=> x \in a /\ F) /\ (x \in z <=> x \in a /\ F)   BECAUSE CIA;
+transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
+(x \in b <=> x \in a /\ F) /\ (x \in z <=> x \in a /\ F)
+   => (x \in z <=> x \in b)   BECAUSE transitEquiv;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in b)   BECAUSE TI;
+\A x : h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+h(a,b) /\ (\A x : x \in z <=> x \in a /\ F) => z = b   BECAUSE TI;
+h(a,b) => (z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE HIE;
+\A z : h(a,b) => (z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE GENERALIZATION;
+h(a,b) => (\A z : z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE Q_SCHEME;
+(\E b : h(a,b)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F))   BECAUSE Q_SCHEME;
+\E b : \A z : z = b <=> (\A x : x \in z <=> x \in a /\ F)   BECAUSE MODUS_PONENS;
+QED
 
 (*
    The full axiom scheme of replacement : the image of a set by
@@ -1899,3 +1899,89 @@ QED
 
 Infinity == \E a : {} \in a /\ \A x : x \in a => x \union {x} \in a
 AXIOM Infinity
+
+(*
+   Equivalence relations, ie reflexive symmetric and transitive graphs.
+*)
+IsEquivalence(r) == IsGraph(r)
+   \* Reflexivity
+   /\ (\A x : \A y : (<<x,y>> \in r) => (<<x,x>> \in r /\ <<y,y>> \in r))
+   \* transitivity
+   /\ (\A x : \A y : \A z : ((<<x,y>> \in r) /\ (<<y,z>> \in r)) => (<<x,z>> \in r))
+   \* symmetry
+   /\ (\A x : \A y : (<<x,y>> \in r) => (<<y,x>> \in r))
+
+(*
+   The equivalence classes of an equivalence relation are the maximal parts of Domain(r)
+   that relate all their elements.
+
+   When r in an equivalence relation, its equivalence classes partition Domain(r),
+   because if 2 classes a,b have a common element x \in (a \intersect b),
+   then a \union b relates all elements and contains a and b.
+*)
+RelatesAll(r,a) == \A x : \A y : x \in a /\ y \in a => <<x,y>> \in r
+IsEquivalenceClass(r,a) == RelatesAll(r,a) /\ (\A b : RelatesAll(r,b) /\ a \subseteq b => b = a)
+
+EquivalenceClass(r,y) == CHOOSE_UNIQUE b : \A z : z = b <=>
+   (\A x : x \in z <=> <<x,y>> \in r)
+
+equivalenceClassExists == \A r : \A y : \A x : x \in EquivalenceClass(r,y) <=> <<x,y>> \in r
+THEOREM equivalenceClassExists
+PROOF
+\* By separation
+VARIABLES b,r,x,y,z;
+\A a : \E b : \A x : x \in b <=> x \in a /\ <<x,y>> \in r   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in Domain(r) /\ <<x,y>> \in r   BECAUSE \A(a <- Domain(r));
+domainExists   BECAUSE THEOREM;
+x \in Domain(r) <=> IsDefinedOn(r,x)   BECAUSE \A(g <- r, x <- x);
+IsDefinedOn(r,x) => x \in Domain(r)   BECAUSE EquivToImplReverse;
+<<x,y>> \in r => IsDefinedOn(r,x)   BECAUSE \E(y <- y);
+<<x,y>> \in r => x \in Domain(r)   BECAUSE TI;
+(x \in b <=> x \in Domain(r) /\ <<x,y>> \in r) => (x \in b <=> <<x,y>> \in r)   BECAUSE SeparationTauto;
+(\A x : x \in b <=> x \in Domain(r) /\ <<x,y>> \in r) => (\A x : x \in b <=> <<x,y>> \in r)   BECAUSE Q_SCHEME;
+(\E b : \A x : x \in b <=> x \in Domain(r) /\ <<x,y>> \in r) => (\E b : \A x : x \in b <=> <<x,y>> \in r)   BECAUSE Q_SCHEME;
+\E b : \A x : x \in b <=> <<x,y>> \in r   BECAUSE MODUS_PONENS;
+
+\* Unicity of b
+h(b,r,y) == \A x : x \in b <=> <<x,y>> \in r;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in z <=> x \in b) => z = b   BECAUSE \A(a <- z, b <- b);
+\A z : \A b : z = b => (x \in z <=> x \in b)   BECAUSE E_SCHEME;
+z = b => (x \in z <=> x \in b)   BECAUSE \A(z <- z, b <- b);
+h(b,r,y) => (x \in b <=> <<x,y>> \in r)   BECAUSE \A(x <- x);
+mergeImpl(h,a,b,c,d) == (a => (b <=> c)) => ((h => (c <=> d)) => (h /\ a => (b <=> d)))   PROPO_TAUTO;
+h(b,r,y) /\ z = b => (x \in z <=> <<x,y>> \in r)   BECAUSE mergeImpl;
+\A x : h(b,r,y) /\ z = b => (x \in z <=> <<x,y>> \in r)   BECAUSE GENERALIZATION;
+h(b,r,y) /\ z = b => (\A x : x \in z <=> <<x,y>> \in r)   BECAUSE Q_SCHEME;
+(\A x : x \in z <=> <<x,y>> \in r) => (x \in z <=> <<x,y>> \in r)   BECAUSE \A(x <- x);
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r)
+   => (\A x : x \in z <=> <<x,y>> \in r)   BECAUSE S22;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r)
+   => (x \in z <=> <<x,y>> \in r)   BECAUSE TI;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r) => h(b,r,y)   BECAUSE S12;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r)
+   => (x \in b <=> <<x,y>> \in r)   BECAUSE TI;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r)
+   => (x \in b <=> <<x,y>> \in r) /\ (x \in z <=> <<x,y>> \in r)   BECAUSE CIA;
+transitEquiv(a,b,c) == (a <=> c) /\ (b <=> c) => (b <=> a)   PROPO_TAUTO;
+(x \in b <=> <<x,y>> \in r) /\ (x \in z <=> <<x,y>> \in r)
+   => (x \in z <=> x \in b)   BECAUSE transitEquiv;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r) => (x \in z <=> x \in b)   BECAUSE TI;
+\A x : h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r) => (x \in z <=> x \in b)   BECAUSE GENERALIZATION;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r) => (\A x : x \in z <=> x \in b)   BECAUSE Q_SCHEME;
+h(b,r,y) /\ (\A x : x \in z <=> <<x,y>> \in r) => z = b   BECAUSE TI;
+h(b,r,y) => (z = b <=> (\A x : x \in z <=> <<x,y>> \in r))   BECAUSE HIE;
+\A z : h(b,r,y) => (z = b <=> (\A x : x \in z <=> <<x,y>> \in r))   BECAUSE GENERALIZATION;
+h(b,r,y) => (\A z : z = b <=> (\A x : x \in z <=> <<x,y>> \in r))   BECAUSE Q_SCHEME;
+(\E b : h(b,r,y)) => (\E b : \A z : z = b <=> (\A x : x \in z <=> <<x,y>> \in r))   BECAUSE Q_SCHEME;
+\E b : \A z : z = b <=> (\A x : x \in z <=> <<x,y>> \in r)   BECAUSE MODUS_PONENS;
+\A z : z = EquivalenceClass(r,y) <=> (\A x : x \in z <=> <<x,y>> \in r)   BECAUSE CHOOSE EquivalenceClass(r,y);
+EquivalenceClass(r,y) = EquivalenceClass(r,y)
+   <=> (\A x : x \in EquivalenceClass(r,y) <=> <<x,y>> \in r)   BECAUSE \A(z <- EquivalenceClass(r,y));
+equalSelf   BECAUSE THEOREM;
+EquivalenceClass(r,y) = EquivalenceClass(r,y)   BECAUSE \A(a <- EquivalenceClass(r,y));
+\A x : x \in EquivalenceClass(r,y) <=> <<x,y>> \in r   BECAUSE MODUS_PONENS;
+equivalenceClassExists   BECAUSE GENERALIZATION;
+QED
+
+(* TODO IsEquivalenceClass(r,EquivalenceClass(r,x)) *)
