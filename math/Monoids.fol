@@ -1,10 +1,55 @@
 EXTENDS Naturals
 
-IsMonoid(M,op) == IsApplication(op, M \X M, M)
+(*
+   One of the most basic algebraic structures : a binary associative operation,
+   with a neutral element.
+
+   IsMonoid only has one argument, so that we can produce monoids.
+*)
+IsMonoid(op) == \E M : IsApplication(op, M \X M, M)
    \* Associativity
    /\ (\A a : \A b : \A c : a \in M /\ b \in M /\ c \in M => op[op[a,b],c] = op[a,op[b,c]] )
    \* Neutral element
    /\ (\E e : e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a)
+
+BinopDomain(op) == CHOOSE_UNIQUE M : \A z : z = M <=> IsApplication(op, z \X z, z)
+
+monoidDomainExists == \A op : IsMonoid(op) => IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op))
+\*   /\ (\A a : \A b : \A c : a \in BinopDomain(op) /\ b \in BinopDomain(op) /\ c \in BinopDomain(op) => op[op[a,b],c] = op[a,op[b,c]] )
+\*   /\ (\E e : e \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a)
+THEOREM monoidDomainExists
+PROOF
+VARIABLES a,b,x,z,op,M;
+IsApplication(op, M \X M, M) /\ (\A a : \A b : \A c : a \in M /\ b \in M /\ c \in M => op[op[a,b],c] = op[a,op[b,c]] ) /\ (\E e : e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a) => IsApplication(op, M \X M, M)   BECAUSE S13;
+h(M,op) == IsApplication(op, M \X M, M);
+IsMonoid(op) => \E M : h(M,op)   BECAUSE Q_SCHEME;
+\A y : \A z : y = z => (h(y,op) <=> h(z,op))   BECAUSE E_SCHEME;
+z = M => (h(z,op) <=> h(M,op))   BECAUSE \A(y <- z, z <- M);
+pullEquiv(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+h(M,op) /\ z = M => h(z,op)   BECAUSE pullEquiv;
+h(M,op) => Domain(op) = M \X M   BECAUSE S23;
+h(z,op) => Domain(op) = z \X z   BECAUSE S23;
+h(M,op) /\ h(z,op) => Domain(op) = M \X M /\ Domain(op) = z \X z   BECAUSE MergeImplicationsAnd;
+Domain(op) = M \X M /\ Domain(op) = z \X z => M \X M = z \X z   BECAUSE E_SCHEME;
+cartesianSquareInject   BECAUSE THEOREM;
+M \X M = z \X z => M = z   BECAUSE \A(a <- M, b <- z);
+h(M,op) /\ h(z,op) => M = z   BECAUSE TI2;
+M = z => z = M   BECAUSE E_SCHEME;
+h(M,op) /\ h(z,op) => z = M   BECAUSE TI;
+h(M,op) => (z = M <=> h(z,op))   BECAUSE HIE;
+\A z : h(M,op) => (z = M <=> h(z,op))   BECAUSE GENERALIZATION;
+h(M,op) => (\A z : z = M <=> h(z,op))   BECAUSE Q_SCHEME;
+(\E M : h(M,op)) => (\E M : \A z : z = M <=> h(z,op))   BECAUSE Q_SCHEME;
+(\E M : \A z : z = M <=> IsApplication(op, z \X z, z))
+   => (\A z : z = BinopDomain(op) <=> IsApplication(op, z \X z, z))   BECAUSE CHOOSE BinopDomain(op);
+IsMonoid(op) => (\A z : z = BinopDomain(op) <=> IsApplication(op, z \X z, z))   BECAUSE TI2;
+(\A z : z = BinopDomain(op) <=> IsApplication(op, z \X z, z)) => (BinopDomain(op) = BinopDomain(op) <=> IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op)))   BECAUSE \A(z <- BinopDomain(op));
+IsMonoid(op) => (BinopDomain(op) = BinopDomain(op) <=> IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op)))   BECAUSE TI;
+equalSelf   BECAUSE THEOREM;
+BinopDomain(op) = BinopDomain(op)   BECAUSE \A(a <- BinopDomain(op));
+IsMonoid(op) => IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op))   BECAUSE ImplyTrueEquiv;
+monoidDomainExists   BECAUSE GENERALIZATION;
+QED
 
 (*
    The unique neutral element of an operation : the element
@@ -14,15 +59,15 @@ IsMonoid(M,op) == IsApplication(op, M \X M, M)
 Neutral(op) == CHOOSE_UNIQUE e : \A z : z = e <=>
    \A a : (<<a,z>> \in Domain(op) => op[a,z] = a) /\ (<<z,a>> \in Domain(op) => op[z,a] = a)
 
-neutralMonoidExists == \A M : \A op : IsMonoid(M,op) =>
-   \A a : a \in M => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
+neutralMonoidExists == \A op : IsMonoid(op) =>
+   \A a : a \in BinopDomain(op) => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
 THEOREM neutralMonoidExists
 PROOF
 \* If there were 2 neutral elements e and e' in the monoid, then
 \* op[e,e'] = e = e' by neutrality of both e and e'.
 VARIABLES a,e,M,op;
-h(e,M,op) == IsMonoid(M,op) /\ (e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a);
-h(e,M,op) => IsMonoid(M,op)   BECAUSE S12;
+h(e,M,op) == IsMonoid(op) /\ (e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a);
+h(e,M,op) => IsMonoid(op)   BECAUSE S12;
 IsMonoid(M,op) => IsApplication(op, M \X M, M)  BECAUSE S13;
 IsApplication(op, M \X M, M) => Domain(op) = M \X M BECAUSE S23;
 h(e,M,op) => Domain(op) = M \X M BECAUSE TI2;

@@ -583,7 +583,7 @@ unsigned char rename_free_variables_scheme(const formula* f)
       || !formula_equal(get_second_operand(equiv),
 			start,
 			0, subs, 0)
-      // Check that start has no free occurrences of substituted variables
+      // Check that start has no free occurrences of any of the substituted variables
       || find_variable(start, (struct string_list*)0, is_substituted_free_var, subs))
     return 0;
 

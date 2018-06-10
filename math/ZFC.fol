@@ -1801,6 +1801,31 @@ g \subseteq d \X i => Domain(g) \subseteq d   BECAUSE Q_SCHEME;
 domainIncProd   BECAUSE GENERALIZATION;
 QED
 
+cartesianSquareInject == \A a : \A b : a \X a = b \X b => a = b
+THEOREM cartesianSquareInject
+PROOF
+VARIABLES a,b,x;
+cartesianProductCouples   BECAUSE THEOREM;
+x \in a /\ x \in a <=> <<x, x>> \in a \X a   BECAUSE \A(x <- a, y <- a, a <- x, b <- x);
+x \in b /\ x \in b <=> <<x, x>> \in b \X b   BECAUSE \A(x <- b, y <- b, a <- x, b <- x);
+x \in a /\ x \in a => <<x, x>> \in a \X a   BECAUSE EquivToImpl;
+andSelfEquiv(a) == a <=> a /\ a   PROPO_TAUTO;
+x \in a <=> x \in a /\ x \in a   BECAUSE andSelfEquiv;
+x \in b <=> x \in b /\ x \in b   BECAUSE andSelfEquiv;
+x \in a <=> <<x,x>> \in a \X a   BECAUSE TransitEquiv;
+x \in b <=> <<x,x>> \in b \X b   BECAUSE TransitEquiv;
+\A z : \A y : z = y => (<<x,x>> \in z <=> <<x,x>> \in y)   BECAUSE E_SCHEME;
+a \X a = b \X b => (<<x,x>> \in a \X a <=> <<x,x>> \in b \X b)   BECAUSE \A(z <- a \X a, y <- b \X b);
+(<<x,x>> \in a \X a <=> <<x,x>> \in b \X b) => (x \in a <=> <<x,x>> \in b \X b)   BECAUSE TransitEquiv;
+(x \in a <=> <<x,x>> \in b \X b) => (x \in a <=> x \in b)   BECAUSE TransitEquiv2;
+a \X a = b \X b => (x \in a <=> x \in b)   BECAUSE TI2;
+\A x : a \X a = b \X b => (x \in a <=> x \in b)   BECAUSE GENERALIZATION;
+a \X a = b \X b => (\A x : x \in a <=> x \in b)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in a <=> x \in b) => a = b   BECAUSE \A(a <- a, b <- b);
+a \X a = b \X b => a = b   BECAUSE TI;
+cartesianSquareInject   BECAUSE GENERALIZATION;
+QED
 
 compose(g,h) == CHOOSE b : \A x : x \in b <=>
    (IsCouple(x) /\ \E t : <<fst(x),t>> \in h /\ <<t,snd(x)>> \in g)
