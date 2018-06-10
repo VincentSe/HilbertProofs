@@ -68,7 +68,7 @@ PROOF
 VARIABLES a,e,M,op;
 h(e,M,op) == IsMonoid(op) /\ (e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a);
 h(e,M,op) => IsMonoid(op)   BECAUSE S12;
-IsMonoid(M,op) => IsApplication(op, M \X M, M)  BECAUSE S13;
+IsMonoid(op) => IsApplication(op, M \X M, M)  BECAUSE S13;
 IsApplication(op, M \X M, M) => Domain(op) = M \X M BECAUSE S23;
 h(e,M,op) => Domain(op) = M \X M BECAUSE TI2;
 

@@ -1446,7 +1446,7 @@ QED
 IsGraph(g) == \A x : x \in g => IsCouple(x)
 IsDefinedOn(g,x) == \E y : <<x,y>> \in g
 Reaches(g,y) == \E x : <<x,y>> \in g
-Domain(g) == CHOOSE b : \A x : x \in b <=> IsDefinedOn(g,x)
+Domain(g) == CHOOSE_UNIQUE b : \A z : z = b <=> \A x : x \in z <=> IsDefinedOn(g,x)
 Image(g) == CHOOSE b : \A y : y \in b <=> Reaches(g,y)
 f[x] == CHOOSE_UNIQUE y : \A z : z = y <=> <<x,z>> \in f
 pre(f,y) == CHOOSE x : <<x,y>> \in f
@@ -1501,10 +1501,10 @@ QED
 domainExists == \A g : \A x : x \in Domain(g) <=> IsDefinedOn(g,x)
 THEOREM domainExists
 PROOF
-VARIABLES a,b,g,x,y;
+VARIABLES a,b,g,x,y,z;
 \* By separation in UNION UNION g
-(\E b : \A x : x \in b <=> IsDefinedOn(g,x))
-   => (\A x : x \in Domain(g) <=> IsDefinedOn(g,x))   BECAUSE CHOOSE Domain(g);
+(\E b : \A z : z = b <=> \A x : x \in z <=> IsDefinedOn(g,x))
+   => (\A z : z = Domain(g) <=> \A x : x \in z <=> IsDefinedOn(g,x))   BECAUSE CHOOSE Domain(g);
 \A a : \E b : \A x : x \in b <=> (x \in a /\ IsDefinedOn(g,x))   BECAUSE AXIOM_SCHEME;
 \E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))   BECAUSE \A(a <- UNION UNION g);
 (x \in UNION UNION g /\ IsDefinedOn(g,x)) => IsDefinedOn(g,x)   BECAUSE S22;
@@ -1518,7 +1518,31 @@ IsDefinedOn(g,x) => x \in UNION UNION g   BECAUSE TI;
 (x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE SeparationTauto;
 (\A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
 (\E b : \A x : x \in b <=> (x \in UNION UNION g /\ IsDefinedOn(g,x))) => (\E b : \A x : x \in b <=> IsDefinedOn(g,x))   BECAUSE Q_SCHEME;
-\E b : \A x : x \in b <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
+h(b,g) == \A x : x \in b <=> IsDefinedOn(g,x);
+\E b : h(b,g)   BECAUSE MODUS_PONENS;
+\A y : \A z : y = z => (h(y,g) <=> h(z,g))   BECAUSE E_SCHEME;
+z = b => (h(z,g) <=> h(b,g))   BECAUSE \A(y <- z, z <- b);
+pullEquiv(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+h(b,g) /\ z = b => h(z,g)   BECAUSE pullEquiv;
+h(b,g) => (x \in b <=> IsDefinedOn(g,x))   BECAUSE \A(x <- x);
+h(z,g) => (x \in z <=> IsDefinedOn(g,x))   BECAUSE \A(x <- x);
+mergeImpl(h,a,b,c,d) == (a => (b <=> c)) => ((h => (d <=> c)) => (h /\ a => (d <=> b)))   PROPO_TAUTO;
+h(b,g) /\ h(z,g) => (x \in b <=> x \in z)   BECAUSE mergeImpl;
+\A x : h(b,g) /\ h(z,g) => (x \in b <=> x \in z)   BECAUSE GENERALIZATION;
+h(b,g) /\ h(z,g) => (\A x : x \in b <=> x \in z)   BECAUSE Q_SCHEME;
+extensionality   BECAUSE AXIOM;
+(\A x : x \in b <=> x \in z) => b = z   BECAUSE \A(a <- b, b <- z);
+b = z => z = b   BECAUSE E_SCHEME;
+h(b,g) /\ h(z,g) => z = b   BECAUSE TI2;
+h(b,g) => (z = b <=> h(z,g))   BECAUSE HIE;
+\A z : h(b,g) => (z = b <=> h(z,g))   BECAUSE GENERALIZATION;
+h(b,g) => (\A z : z = b <=> h(z,g))   BECAUSE Q_SCHEME;
+(\E b : h(b,g)) => (\E b : \A z : z = b <=> h(z,g))   BECAUSE Q_SCHEME;
+(\E b : \A z : z = b <=> h(z,g))   BECAUSE MODUS_PONENS;
+\A z : z = Domain(g) <=> \A x : x \in z <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
+Domain(g) = Domain(g) <=> \A x : x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE \A(z <- Domain(g));
+equalSelf   BECAUSE THEOREM;
+Domain(g) = Domain(g)   BECAUSE \A(a <- Domain(g));
 \A x : x \in Domain(g) <=> IsDefinedOn(g,x)   BECAUSE MODUS_PONENS;
 domainExists   BECAUSE GENERALIZATION;
 QED
