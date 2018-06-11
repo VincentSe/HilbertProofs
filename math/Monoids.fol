@@ -15,12 +15,13 @@ IsMonoid(op) == \E M : IsApplication(op, M \X M, M)
 BinopDomain(op) == CHOOSE_UNIQUE M : \A z : z = M <=> IsApplication(op, z \X z, z)
 
 monoidDomainExists == \A op : IsMonoid(op) => IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op))
-\*   /\ (\A a : \A b : \A c : a \in BinopDomain(op) /\ b \in BinopDomain(op) /\ c \in BinopDomain(op) => op[op[a,b],c] = op[a,op[b,c]] )
-\*   /\ (\E e : e \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a)
+   /\ (\A a : \A b : \A c : a \in BinopDomain(op) /\ b \in BinopDomain(op) /\ c \in BinopDomain(op) => op[op[a,b],c] = op[a,op[b,c]] )
+   /\ (\E e : e \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a)
 THEOREM monoidDomainExists
 PROOF
 VARIABLES a,b,x,z,op,M;
-IsApplication(op, M \X M, M) /\ (\A a : \A b : \A c : a \in M /\ b \in M /\ c \in M => op[op[a,b],c] = op[a,op[b,c]] ) /\ (\E e : e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a) => IsApplication(op, M \X M, M)   BECAUSE S13;
+hyp(M,op) == IsApplication(op, M \X M, M) /\ (\A a : \A b : \A c : a \in M /\ b \in M /\ c \in M => op[op[a,b],c] = op[a,op[b,c]] ) /\ (\E e : e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a);
+hyp(M,op) => IsApplication(op, M \X M, M)   BECAUSE S13;
 h(M,op) == IsApplication(op, M \X M, M);
 IsMonoid(op) => \E M : h(M,op)   BECAUSE Q_SCHEME;
 \A y : \A z : y = z => (h(y,op) <=> h(z,op))   BECAUSE E_SCHEME;
@@ -48,35 +49,106 @@ IsMonoid(op) => (BinopDomain(op) = BinopDomain(op) <=> IsApplication(op, BinopDo
 equalSelf   BECAUSE THEOREM;
 BinopDomain(op) = BinopDomain(op)   BECAUSE \A(a <- BinopDomain(op));
 IsMonoid(op) => IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op))   BECAUSE ImplyTrueEquiv;
+IsMonoid(op) /\ hyp(M,op) => IsMonoid(op)   BECAUSE S12;
+IsMonoid(op) /\ hyp(M,op) => hyp(M,op)   BECAUSE S22;
+IsMonoid(op) /\ hyp(M,op) => IsApplication(op, M \X M, M)   BECAUSE TI;
+(\A z : z = BinopDomain(op) <=> IsApplication(op, z \X z, z)) => (M = BinopDomain(op) <=> IsApplication(op, M \X M, M))   BECAUSE \A(z <- M);
+IsMonoid(op) /\ hyp(M,op) => (M = BinopDomain(op) <=> IsApplication(op, M \X M, M))   BECAUSE TI2;
+IsMonoid(op) /\ hyp(M,op) => M = BinopDomain(op)   BECAUSE HIET;
+\A y : \A z : y = z => (hyp(y,op) <=> hyp(z,op))   BECAUSE E_SCHEME;
+M = BinopDomain(op) => (hyp(M,op) <=> hyp(BinopDomain(op),op))   BECAUSE \A(y <- M, z <- BinopDomain(op));
+IsMonoid(op) /\ hyp(M,op) => (hyp(M,op) <=> hyp(BinopDomain(op),op))   BECAUSE TI;
+IsMonoid(op) /\ hyp(M,op) => hyp(BinopDomain(op),op)   BECAUSE HITE;
+\* Discharge M
+IsMonoid(op) => (hyp(M,op) => hyp(BinopDomain(op),op))   BECAUSE HypoAndToImpl;
+\A M : IsMonoid(op) => (hyp(M,op) => hyp(BinopDomain(op),op))   BECAUSE GENERALIZATION;
+IsMonoid(op) => (\A M : hyp(M,op) => hyp(BinopDomain(op),op))   BECAUSE Q_SCHEME;
+(\A M : hyp(M,op) => hyp(BinopDomain(op),op)) => ((\E M : hyp(M,op)) => \E M : hyp(BinopDomain(op),op))   BECAUSE Q_SCHEME;
+IsMonoid(op) => (IsMonoid(op) => \E M : hyp(BinopDomain(op),op))   BECAUSE TI;
+IsMonoid(op) => IsMonoid(op)   BECAUSE ImplySelf;
+IsMonoid(op) => \E M : hyp(BinopDomain(op),op)   BECAUSE KillMiddleHypo;
+(\E M : hyp(BinopDomain(op),op)) => hyp(BinopDomain(op),op)   BECAUSE Q_SCHEME;
+IsMonoid(op) => hyp(BinopDomain(op),op)   BECAUSE TI;
 monoidDomainExists   BECAUSE GENERALIZATION;
 QED
 
 (*
-   The unique neutral element of an operation : the element
-   that leaves all other elements unchanged, to the left
-   and to the right.
+   The unique neutral element of an operation, when it exists :
+   the element that leaves all other elements unchanged,
+   to the left and to the right.
 *)
 Neutral(op) == CHOOSE_UNIQUE e : \A z : z = e <=>
-   \A a : (<<a,z>> \in Domain(op) => op[a,z] = a) /\ (<<z,a>> \in Domain(op) => op[z,a] = a)
+   z \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a
 
 neutralMonoidExists == \A op : IsMonoid(op) =>
-   \A a : a \in BinopDomain(op) => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
+   Neutral(op) \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
 THEOREM neutralMonoidExists
 PROOF
 \* If there were 2 neutral elements e and e' in the monoid, then
 \* op[e,e'] = e = e' by neutrality of both e and e'.
-VARIABLES a,e,M,op;
-h(e,M,op) == IsMonoid(op) /\ (e \in M /\ \A a : a \in M => op[a,e] = a /\ op[e,a] = a);
-h(e,M,op) => IsMonoid(op)   BECAUSE S12;
-IsMonoid(op) => IsApplication(op, M \X M, M)  BECAUSE S13;
-IsApplication(op, M \X M, M) => Domain(op) = M \X M BECAUSE S23;
-h(e,M,op) => Domain(op) = M \X M BECAUSE TI2;
+VARIABLES a,e,z,M,op;
+hyp(e,op) == e \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a;
+\A z : \A e : z = e => (hyp(z,op) <=> hyp(e,op))   BECAUSE E_SCHEME;
+z = e => (hyp(z,op) <=> hyp(e,op))   BECAUSE \A(z <- z, e <- e);
+cycleHypos(a,b,c) == (a => (b <=> c)) => (c /\ a => b)   PROPO_TAUTO;
+hyp(e,op) /\ z = e => hyp(z,op)   BECAUSE cycleHypos;
+hyp(e,op) /\ hyp(z,op) => hyp(e,op)   BECAUSE S12;
+hyp(e,op) /\ hyp(z,op) => hyp(z,op)   BECAUSE S22;
+hyp(e,op) => e \in BinopDomain(op)   BECAUSE S12;
+hyp(z,op) => z \in BinopDomain(op)   BECAUSE S12;
+hyp(e,op) => \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a   BECAUSE S22;
+hyp(z,op) => \A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a   BECAUSE S22;
+(\A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a) => (z \in BinopDomain(op) => op[z,e] = z /\ op[e,z] = z)   BECAUSE \A(a <- z);
+(\A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a) => (e \in BinopDomain(op) => op[e,z] = e /\ op[z,e] = e)   BECAUSE \A(a <- e);
+hyp(e,op) /\ hyp(z,op) => (z \in BinopDomain(op) => op[z,e] = z /\ op[e,z] = z)   BECAUSE TI2;
+hyp(e,op) /\ hyp(z,op) => (e \in BinopDomain(op) => op[e,z] = e /\ op[z,e] = e)   BECAUSE TI2;
+hyp(e,op) /\ hyp(z,op) => e \in BinopDomain(op)   BECAUSE TI;
+hyp(e,op) /\ hyp(z,op) => z \in BinopDomain(op)   BECAUSE TI;
+hyp(e,op) /\ hyp(z,op) => op[z,e] = z /\ op[e,z] = z   BECAUSE KillMiddleHypo;
+hyp(e,op) /\ hyp(z,op) => op[e,z] = e /\ op[z,e] = e   BECAUSE KillMiddleHypo;
+op[z,e] = z /\ op[e,z] = z => op[e,z] = z   BECAUSE S22;
+op[e,z] = e /\ op[z,e] = e => op[e,z] = e   BECAUSE S12;
+hyp(e,op) /\ hyp(z,op) => op[e,z] = z   BECAUSE TI;
+hyp(e,op) /\ hyp(z,op) => op[e,z] = e   BECAUSE TI;
+hyp(e,op) /\ hyp(z,op) => op[e,z] = z /\ op[e,z] = e   BECAUSE CIA;
+op[e,z] = z /\ op[e,z] = e => z = e   BECAUSE E_SCHEME;
+hyp(e,op) /\ hyp(z,op) => z = e   BECAUSE TI;
+hyp(e,op) => (z = e <=> hyp(z,op))   BECAUSE HIE;
+\A z : hyp(e,op) => (z = e <=> hyp(z,op))   BECAUSE GENERALIZATION;
+hyp(e,op) => (\A z : z = e <=> hyp(z,op))   BECAUSE Q_SCHEME;
+(\E e : hyp(e,op)) => \E e : (\A z : z = e <=> hyp(z,op))   BECAUSE Q_SCHEME;
+(\E e : (\A z : z = e <=> hyp(z,op))) => (\A z : z = Neutral(op) <=> hyp(z,op))   BECAUSE CHOOSE Neutral(op);
 
-\* Prove that h(e,M,op) => (<<a,e>> \in Domain(op) => op[a,e] = a) /\ (<<e,a>> \in Domain(op) => op[e,a] = a)
-\A x : \A y : x = y => ((<<a,e>> \in x => op[a,e] = a) /\ (<<e,a>> \in x => op[e,a] = a) <=> (<<a,e>> \in y => op[a,e] = a) /\ (<<e,a>> \in y => op[e,a] = a))   BECAUSE E_SCHEME;
-Domain(op) = M \X M => ((<<a,e>> \in Domain(op) => op[a,e] = a) /\ (<<e,a>> \in Domain(op) => op[e,a] = a) <=> (<<a,e>> \in M \X M => op[a,e] = a) /\ (<<e,a>> \in M \X M => op[e,a] = a))   BECAUSE \A(x <- Domain(op), y <- M \X M);
-h(e,M,op) => ((<<a,e>> \in Domain(op) => op[a,e] = a) /\ (<<e,a>> \in Domain(op) => op[e,a] = a) <=> (<<a,e>> \in M \X M => op[a,e] = a) /\ (<<e,a>> \in M \X M => op[e,a] = a))   BECAUSE TI;
-\* TODO
+monoidDomainExists   BECAUSE THEOREM;
+IsMonoid(op) => IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op))
+   /\ (\A a : \A b : \A c : a \in BinopDomain(op) /\ b \in BinopDomain(op) /\ c \in BinopDomain(op) => op[op[a,b],c] = op[a,op[b,c]] )
+   /\ (\E e : hyp(e,op))   BECAUSE \A(op <- op);
+IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op)) /\ (\A a : \A b : \A c : a \in BinopDomain(op) /\ b \in BinopDomain(op) /\ c \in BinopDomain(op) => op[op[a,b],c] = op[a,op[b,c]] ) /\ (\E e : hyp(e,op))
+   => (\E e : hyp(e,op))   BECAUSE S22;
+IsMonoid(op) => (\E e : hyp(e,op))   BECAUSE TI;
+IsMonoid(op) => (\A z : z = Neutral(op) <=> hyp(z,op))   BECAUSE TI2;
+(\A z : z = Neutral(op) <=> hyp(z,op)) => (Neutral(op) = Neutral(op) <=> hyp(Neutral(op),op))   BECAUSE \A(z <- Neutral(op));
+equalSelf   BECAUSE THEOREM;
+Neutral(op) = Neutral(op)   BECAUSE \A(a <- Neutral(op));
+IsMonoid(op) => Neutral(op) = Neutral(op)   BECAUSE PT1;
+IsMonoid(op) => (Neutral(op) = Neutral(op) <=> hyp(Neutral(op),op))   BECAUSE TI;
+IsMonoid(op) => hyp(Neutral(op),op)   BECAUSE HITE;
+neutralMonoidExists   BECAUSE GENERALIZATION;
 QED
+
+subMonoid == \A f : \A M : M \subseteq BinopDomain(f) /\ Neutral(f) \in M
+   /\ (\A a : \A b : a \in M /\ b \in M => f[a,b] \in M) \* stability
+   => IsMonoid(DomainIntersect(f, M \X M))
+
+(*
+   Product of 2 monoids f and g. Its binop domain is the product
+   of binop domains and <<a,b>> (f,g) <<c,d>> = <<f[a,c], g[b,d]>>.
+
+   TODO compose parallelFunc(f,g) with a swap of b and c.
+*)
+productMonoidExists == \A f : \A g : IsMonoid(f) /\ IsMonoid(g) =>
+   IsMonoid(parallelFunc(f,g))
+   /\ BinopDomain(parallelFunc(f,g)) = BinopDomain(f) \X BinopDomain(g)
+   /\ Neutral(parallelFunc(f,g)) = <<Neutral(f), Neutral(g)>>
 
 (* TODO IsMonoid(Nat,natAddition), product monoid, group of a regular monoid *)

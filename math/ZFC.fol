@@ -1970,6 +1970,8 @@ IsEquivalence(r) == IsGraph(r)
 *)
 RelatesAll(r,a) == \A x : \A y : x \in a /\ y \in a => <<x,y>> \in r
 IsEquivalenceClass(r,a) == RelatesAll(r,a) /\ (\A b : RelatesAll(r,b) /\ a \subseteq b => b = a)
+QuotientSet(r) == CHOOSE_UNIQUE b : \A z : z = b <=>
+   \A x : x \in z <=> IsEquivalenceClass(r,x)
 
 EquivalenceClass(r,y) == CHOOSE_UNIQUE b : \A z : z = b <=>
    (\A x : x \in z <=> <<x,y>> \in r)

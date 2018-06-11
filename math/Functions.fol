@@ -1289,6 +1289,26 @@ IsFunction(g) /\ IsFunction(h) => IsApplication(productFunc(g,h), Domain(g) \int
 productFuncIsFunc   BECAUSE GENERALIZATION;
 QED
 
+\* Restrictions of the domain or the image of a function
+DomainIntersect(f,d) == compose(f,identity(d))
+ImageIntersect(f,i) == compose(identity(i),f)
+
+QuotientFunction(f,r) == CHOOSE_UNIQUE b : \A z : z = b <=>
+   IsApplication(z, QuotientSet(r), Image(f)) /\ \A q : \A x : q \in QuotientSet(r) /\ x \in q => z[q] = f[x]
+
+quotientFunctionExists == \A f : \A r : IsFunction(f) /\ IsEquivalence(r) /\ Domain(f) = Domain(r)
+   /\ (\A x : \A y : <<x,y>> \in r => f[x] = f[y]) \* f constant on each equivalence class
+   => (IsApplication(QuotientFunction(f,r), QuotientSet(r), Image(f))
+        /\ \A q : \A x : q \in QuotientSet(r) /\ x \in q => QuotientFunction(f,r)[q] = f[x])
+THEOREM quotientFunctionExists
+PROOF
+\* By separation in QuotientSet(r) \X Image(f)
+VARIABLES f,r;
+\A a : \E b : \A x : x \in b <=> x \in a /\ \E t : t \in fst(x) /\ snd(x) = f[t]   BECAUSE AXIOM_SCHEME;
+\E b : \A x : x \in b <=> x \in (QuotientSet(r) \X Image(f)) /\ \E t : t \in fst(x) /\ snd(x) = f[t]   BECAUSE \A(a <- QuotientSet(r) \X Image(f));
+\* TODO show b works
+QED
+
 (*
    Proof that CHOOSE combined with axiom schemes is not always a conservative extension.
    This proof introduces the symbol Choice(p) == CHOOSE z : z \in p
