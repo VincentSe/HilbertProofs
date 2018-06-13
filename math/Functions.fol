@@ -138,6 +138,32 @@ appDomainToImage == \A f : \A d : \A i : \A x : IsApplication(f,d,i) /\ x \in d
    => f[x] \in i
 THEOREM appDomainToImage
 PROOF
+VARIABLES d,i,f,x,y;
+IsApplication(f,d,i) => IsFunction(f)   BECAUSE S13;
+IsApplication(f,d,i) => Domain(f) = d   BECAUSE S23;
+IsApplication(f,d,i) => Image(f) \subseteq i   BECAUSE S22;
+funcImageExists   BECAUSE THEOREM;
+IsFunction(f) /\ x \in Domain(f) => <<x, f[x]>> \in f   BECAUSE \A(f <- f, x <- x);
+\A d : \A i : d = i => (x \in d <=> x \in i)   BECAUSE E_SCHEME;
+Domain(f) = d => (x \in Domain(f) <=> x \in d)   BECAUSE \A(d <- Domain(f), i <- d);
+IsApplication(f,d,i) => (x \in Domain(f) <=> x \in d)   BECAUSE TI;
+pullHypo(a,b,c) == (a => (b <=> c)) => (a /\ c => b)   PROPO_TAUTO;
+IsApplication(f,d,i) /\ x \in d => x \in Domain(f)   BECAUSE pullHypo;
+IsApplication(f,d,i) /\ x \in d => x \in d   BECAUSE S22;
+IsApplication(f,d,i) /\ x \in d => IsApplication(f,d,i)   BECAUSE S12;
+IsApplication(f,d,i) /\ x \in d => IsFunction(f)   BECAUSE TI;
+IsApplication(f,d,i) /\ x \in d => IsFunction(f) /\ x \in Domain(f)   BECAUSE CIA;
+IsApplication(f,d,i) /\ x \in d => <<x, f[x]>> \in f   BECAUSE TI;
+imageExists   BECAUSE THEOREM;
+f[x] \in Image(f) <=> Reaches(f,f[x])   BECAUSE \A(g <- f, y <- f[x]);
+Reaches(f,f[x]) => f[x] \in Image(f)   BECAUSE EquivToImplReverse;
+<<x, y>> \in f => Reaches(f,y)   BECAUSE \E(x <- x);
+\A y : <<x, y>> \in f => Reaches(f,y)   BECAUSE GENERALIZATION;
+<<x, f[x]>> \in f => Reaches(f,f[x])   BECAUSE \A(y <- f[x]);
+IsApplication(f,d,i) /\ x \in d => f[x] \in Image(f)   BECAUSE TI2;
+Image(f) \subseteq i => (f[x] \in Image(f) => f[x] \in i)   BECAUSE \A(z <- f[x]);
+IsApplication(f,d,i) /\ x \in d => (f[x] \in Image(f) => f[x] \in i)   BECAUSE TI2;
+IsApplication(f,d,i) /\ x \in d => f[x] \in i   BECAUSE KillMiddleHypo;
 appDomainToImage   BECAUSE GENERALIZATION;
 QED
 
@@ -401,7 +427,7 @@ sepFuncTauto1(a,b,c,d) == (a => (b => c)) => ((c => d) => (a => (b => d)))   PRO
 \A x : (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => (x \in b => IsCouple(x))   BECAUSE GENERALIZATION;
 (\A x : x \in b <=> x \in d \X i /\ snd(x) = F(x <- fst(x))) => IsGraph(b)   BECAUSE Q_SCHEME;
 
-\* Prove b is a function
+\* Prove b is a function (rename b to f because b is an argument in IsFunction)
 (\A x : x \in f <=> x \in d \X i /\ snd(x) = F(x <- fst(x)))
    => (<<a,b>> \in f <=> <<a,b>> \in d \X i /\ snd(<<a,b>>) = F(x <- fst(<<a,b>>)))   BECAUSE \A(x <- <<a,b>>);
 sepFuncTauto2(h,a,b) == (h => (a <=> b)) => (h /\ a => b)   PROPO_TAUTO;

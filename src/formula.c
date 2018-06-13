@@ -494,18 +494,16 @@ unsigned char formula_equal(const formula* f,
 	  // compare operands
 	  const struct formula_list* fOperand = f->operands;
 	  const struct formula_list* gOperand = g->operands;
-	  while (fOperand)
+	  while (fOperand && gOperand && formula_equal(fOperand->formula_elem,
+						       gOperand->formula_elem,
+						       boundVariables,
+						       freeSubs,
+						       substituteMore))
 	    {
-	      if (!formula_equal(fOperand->formula_elem,
-				 gOperand->formula_elem,
-				 boundVariables,
-				 freeSubs,
-				 substituteMore))
-		return 0;
 	      fOperand = fOperand->next;
 	      gOperand = gOperand->next;
 	    }
-	  return !gOperand;
+	  return !(fOperand || gOperand); // all operands were successfully consumed
 	}
     }
   else

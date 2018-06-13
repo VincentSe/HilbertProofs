@@ -1296,6 +1296,68 @@ void set_variables(const struct formula_list* subs,
     }
 }
 
+unsigned char check_macro_invocation_statement_one(const struct FormulaDList* macroStatement,
+						   /*out*/struct FormulaDList** substitStatement,
+						   const proof* p,
+						   struct formula_list** proofLocalOps,
+						   const formula_set operators,
+						   const proof_set assumedProofs,
+						   const struct proof_list* axiomSchemes,
+						   const struct formula_list* constants,
+						   formula* reasonF)
+{
+  // Substitute the macro's requested formula in macroStatement, then check it
+
+  const struct formula_list* substit = reasonF->operands;
+  if (!macroStatement->jf->reason)
+    {
+      printf("%s:%d: macros cannot define local operators",
+	     reasonF->file,
+	     reasonF->first_line);
+      printf("\n");
+      return 0;
+    }
+
+  formula* c = formula_clone(macroStatement->jf->formula, (variable_substitution*)0);
+  set_variables(substit, /*out*/c);
+  if (macroStatement->jf->reason->rk == propoTautology
+      && !macroStatement->jf->reason->formula)
+    {
+      // For local propositional tautologies, use the defining formulas
+      // of the macro directly.
+      c->definingFormula = macroStatement->jf->formula->definingFormula;
+    }
+
+  //print_formula(c); printf("\n");
+      
+  formula* rc = formula_clone(macroStatement->jf->reason->formula, (variable_substitution*)0);
+  set_variables(substit, /*out*/rc);
+  struct JustifiedFormula* jf = make_jf(c, make_reason(macroStatement->jf->reason->rk, rc));
+  *substitStatement = push_justified_formula_last(jf, *substitStatement);
+
+  unsigned char macroSucceeds =
+    semantic_check_proof_statement((*substitStatement)->jf, operators, constants,
+				   assumedProofs, p,
+				   proofLocalOps,
+				   reasonF->file, reasonF->first_line)
+    && check_proof_statement(*substitStatement,
+			     p,
+			     proofLocalOps,
+			     operators,
+			     assumedProofs,
+			     axiomSchemes,
+			     constants,
+			     reasonF->file, reasonF->first_line);
+  return macroSucceeds;
+}
+
+/**
+   A macro invocation copies and pastes the text of a prenex second-order proof,
+   then substitutes first-order variables and runs the first-order checker.
+
+   It may fail because of variable collisions, try to use different naming
+   conventions for macro variables.
+ */
 unsigned char check_macro_invocation_statement(const struct FormulaDList* statement,
 					       const proof* p,
 					       struct formula_list** proofLocalOps,
@@ -1303,7 +1365,7 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
 					       const proof_set assumedProofs,
 					       const struct proof_list* axiomSchemes,
 					       const struct formula_list* constants)
-{
+{ 
   formula* reasonF = statement->jf->reason->formula;
   proof searchP;
   searchP.formulaToProve = reasonF;
@@ -1318,6 +1380,7 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
       return 0;
     }
 
+  /*
   const struct formula_list* substit = reasonF->operands;
   proof pExtraVariables;
   pExtraVariables.goal = p->goal;
@@ -1327,66 +1390,33 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
   extraVariable.next = p->variables;
   pExtraVariables.variables = &extraVariable;
   pExtraVariables.cumulativeTruths = p->cumulativeTruths;
+  */
 
   struct formula_list* localOpsEnd = *proofLocalOps; // The macro can add local ops, delete them right after the macro's invocation
 
   struct FormulaDList* substitStatement = (struct FormulaDList*)statement;
-
-  unsigned char macroSucceeds = 1;
-  
-  for (struct FormulaDList* macroStatement = macroProof->cumulativeTruths;
-       macroStatement && macroSucceeds;
-       macroStatement = macroStatement->next)
-    {      
-      // Substitute the invocated formula in macroStatement, then check it
-
-      if (!macroStatement->jf->reason)
-	{
-	  printf("%s:%d: macros cannot define local operators",
-		 reasonF->file,
-		 reasonF->first_line);
-	  printf("\n");
-	  return 0;
-	}
-
-      formula* c = formula_clone(macroStatement->jf->formula, (variable_substitution*)0);
-      set_variables(substit, /*out*/c);
-      if (macroStatement->jf->reason->rk == propoTautology
-	  && !macroStatement->jf->reason->formula)
-	{
-	  // For local propositional tautologies, use the defining formulas
-	  // of the macro directly.
-	  c->definingFormula = macroStatement->jf->formula->definingFormula;
-	}
-
-      //print_formula(c); printf("\n");
-      
-      formula* rc = formula_clone(macroStatement->jf->reason->formula, (variable_substitution*)0);
-      set_variables(substit, /*out*/rc);
-      struct JustifiedFormula* jf = make_jf(c, make_reason(macroStatement->jf->reason->rk, rc));
-      substitStatement = push_justified_formula_last(jf, substitStatement);
-
-      macroSucceeds &= semantic_check_proof_statement(substitStatement->jf, operators, constants,
-						      assumedProofs, &pExtraVariables,
-						      proofLocalOps,
-						      reasonF->file, reasonF->first_line)
-	&& check_proof_statement(substitStatement,
-				 p,
-				 proofLocalOps,
-				 operators,
-				 assumedProofs,
-				 axiomSchemes,
-				 constants,
-				 reasonF->file, reasonF->first_line);
-    }
-
+  struct FormulaDList* macroStatement;
+  int macroStatementNum = 0; // for debug
+  for (macroStatement = macroProof->cumulativeTruths;
+       macroStatement && check_macro_invocation_statement_one(macroStatement,
+							      /*out*/&substitStatement,
+							      p,
+							      /*in out*/proofLocalOps,
+							      operators,
+							      assumedProofs,
+							      axiomSchemes,
+							      constants,
+							      reasonF);
+       macroStatement = macroStatement->next, macroStatementNum++)
+    ;
+  const unsigned char macroSucceeds = !macroStatement; // all statements were successfully used
   const short goalReached = formula_equal(substitStatement->jf->formula, statement->jf->formula, 0, 0, 0);
 
   // Free statements copied from the macro
   for (struct formula_list* localOpsDel = *proofLocalOps; localOpsDel != localOpsEnd; )
     {
       struct formula_list* n = localOpsDel->next;
-      free(localOpsDel); // TODO free memory after
+      free(localOpsDel);
       localOpsDel = n;
     }
   *proofLocalOps = localOpsEnd;
@@ -1404,7 +1434,7 @@ unsigned char check_macro_invocation_statement(const struct FormulaDList* statem
       macroStatement = prev;
     }
   
-  if (!goalReached)
+  if (macroSucceeds && !goalReached)
     {
       printf("%s:%d: macro does not end with formula ",
 	     reasonF->file,
@@ -1710,6 +1740,19 @@ short semantic_check_proof_statement(const struct JustifiedFormula* jf,
 		 jf->formula->first_line,
 		 jf->formula->name);
 	  return 0;
+	}
+
+      const struct string_list* vars = p->variables;
+      while(vars)
+	{
+	  if (strcmp(vars->string_elem, jf->formula->name) == 0)
+	    {
+	      printf("%s:%d: local operator with same name as a proof variable\n",
+		     jf->formula->file,
+		     jf->formula->first_line);
+	      return 0;
+	    }
+	  vars = vars->next;
 	}
 
       if (!semantic_check_operator_definition(jf->formula,
