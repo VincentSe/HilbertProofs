@@ -761,7 +761,7 @@ unsigned char capture_free_define(const char* v,
 unsigned char free_define(const struct formula_list* operands,
 			  const formula* def)
 {
-  if (!operands)
+  if (!operands || def->op_type == operation)
     return 1;
 
   struct cfd_args cfd;
@@ -771,8 +771,14 @@ unsigned char free_define(const struct formula_list* operands,
 }
 
 /**
+   requires f is an atomic formula (relation) or term;
+   requires opDef is the declaration (==) of f's operator;
+
    Test whether f <=> opDef->definingFormula and if it is,
    clone and substitute variables in opDef->definingFormula.
+
+   If f is a term, f = opDef->definingFormula (there are
+   no quantifiers to capture variables in terms).
  */
 formula* equivalent_defining_formula(const formula* f,
 				     const formula* opDef,

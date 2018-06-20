@@ -1,5 +1,9 @@
 #include "list.h"
 
+/**
+   First-order formulas are structured : logical connections
+   of relations on terms (operations).
+ */
 enum operator_type
   {
     logical,
@@ -8,15 +12,13 @@ enum operator_type
   };
 
 /**
-   Operators composing formulas. Built-in means those operators
-   are identified by a number (enum) instead of a name (char *),
-   for faster comparison.
-
-   Some of them can be defined in FOL files, like
-   x \subseteq y == \A z : z \in x => z \in y
-
+   Operators composing formulas. Built-in operators are identified
+   by a number (enum) instead of a name (char *), for faster comparison.
    They are also the only operators that can be postfix, infix
    or prefix without parenthesis.
+
+   Not built-in operators are defined in FOL files, like
+   x \subseteq y == \A z : z \in x => z \in y
 */
 enum builtin_operator
   {
@@ -81,12 +83,13 @@ enum reason_kind
 const char* reason_kind_to_string(enum reason_kind rk);
 
 /**
-   Storage struct for both propositional and first-order formulas. The bison parser
-   garantees formulas are syntactically, however its LALR grammar cannot check formula's senses.
+   Storage struct for both propositional and first-order formulas.
+   The bison parser garantees formulas are syntactically correct,
+   however its LALR grammar cannot check formulas' semantics.
    For example bison accepts "x \lor y", with x and y being sets.
 
-   semantic_check_fo_formula must be called after the bison parsing to finally accept or reject
-   a formula.
+   semantic_check_fo_formula must be called after the bison parsing
+   to finally accept or reject a formula.
 */
 typedef struct formulaS
 {
@@ -112,27 +115,35 @@ typedef struct formulaS
 
 
   /**
-     See comment of name.
+     Defining formulas are for
+        - op_type relation or operation (terms), in both cases its operands are terms
+	- operator defined by == in a FOL file (possibly built-in like the empty set {})
 
-     When a formula f->builtInOp is a custom relation,
-     f can often be replaced by the substitution
-     f->definingFormula(x1 <- f->operand1, ..., xN <- f->operandN)
+     This formula f tries to apply its operator's defining axiom on f's term operands :
+     \A x1 : ... \A xN : f->builtInOp(x1, ..., xN) <=> definingFormula   BECAUSE AXIOM;
+     f <=> definingFormula(x1 <- f->operand1, ..., xN <- f->operandN)   BECAUSE \A(x1 <- f->operand1, ...);
+
+     When the BECAUSE \A succeeds (no variable capture), f->definingFormula stores the
+     substitution definingFormula(x1 <- f->operand1, ..., xN <- f->operandN).
+     In this case, f->definingFormula is equivalent to f and has the same
+     free variables, which are the variables of f's term operands.
+
+     For example x \subseteq y == \A z : z \in x => z \in y, so
+     (a \subseteq b)->definingFormula is \A z : z \in a => z \in b.
      
-     The proof of the equivalence is as follows :
-     f->builtInOp(x1, ..., xN) <=> f->definingFormula   BECAUSE AXIOM;
-     \A x1 : ... \A xN : f->builtInOp(x1, ..., xN) <=> f->definingFormula   BECAUSE GENERALIZATION;
-     f <=> f->definingFormula(x1 <- f->operand1, ..., xN <- f->operandN)   BECAUSE \A(x1 <- f->operand1, ...);
+     But z \subseteq y is not equivalent to \A z : z \in z => z \in y.
+     So (z \subseteq y)->definingFormula is the null pointer.
+     To prove things concerning formula z \subseteq y, we usually
+     prove things on x \subseteq y instead, then generalize x
+     and finally instantiate \A(x <- z).
 
-     which requires that all substitutions xK <- f->operandK are free in
-     f->definingFormula. So for x \subseteq y == \A z : z \in x => z \in y,
-     z \subseteq y is not equivalent to \A z : z \in z => z \in y.
+     When f is a term, the defining axiom is an equality
+     \A x1 : ... \A xN : f->builtInOp(x1, ..., xN) = definingFormula   BECAUSE AXIOM;
+     The BECAUSE \A always succeeds, because definingFormula is a term,
+     it has no quantifiers to capture variables.
 
-     Also used for nullary operators and closed formulas (like axioms,
-     theorems or the empty set), for quicker lookup.
-
-     A formula is compared
-     multiple times for modus ponens checking, resolve aliases only once.
-     Shared by a lot of formulas, formula_free does not free it.
+     When f is a nullary operator (like axioms, theorems or the empty set), 
+     the BECAUSE \A is not even needed, because there is nothing to substitute.
   */
   struct formulaS* definingFormula;
 
@@ -201,14 +212,21 @@ const char* find_variable(const formula* f,
    of variable "a" in g, when substituted by b, all free occurrences of
    variables in "b" remain free in g.
 
-   The substitutions are not ordered and applied all at once,
+   formula_equal tests syntactic equality, not semantic equality. For example
+   it returns false on formulas 2 and 3 - 1.
+
+   With defining formulas, the full (recursive) definition is
+   formula_equal(f,g) ==
+      (f and g are the same variable)
+      || (f and g have the same top operator
+          && \forall i : formula_equal(f->operands[i], g->operands[i]))
+      || formula_equal(f->definingFormula, g)
+      || formula_equal(f, g->definingFormula)
+
+   The substitutions in g are not ordered and applied all at once,
    so (x<-y, y<-z) is the same as (y<-z, x<-y).
 
    boundVariables restrict which variables are considered free.
-
-   formula_equal only uses operators' defining formulas when they
-   have no arguments (simple closed formulas aliases). In this case there
-   is no risk to capture a variable.
 
    Boolean substituteMore allows to increase freeSubs, so that, when returning true,
    formula_equal(f, g, boundVariables, moreFreeSubs, false) is true.
