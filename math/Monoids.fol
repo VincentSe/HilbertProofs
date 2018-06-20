@@ -80,9 +80,9 @@ QED
 Neutral(op) == CHOOSE_UNIQUE e : \A z : z = e <=>
    z \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a
 
-neutralMonoidExists == \A op : IsMonoid(op) =>
-   Neutral(op) \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
-THEOREM neutralMonoidExists
+neutralMonoidExistsUniquely == \A op : IsMonoid(op) => (\A z : z = Neutral(op) <=>
+   z \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a)
+THEOREM neutralMonoidExistsUniquely
 PROOF
 \* If there were 2 neutral elements e and e' in the monoid, then
 \* op[e,e'] = e = e' by neutrality of both e and e'.
@@ -127,6 +127,18 @@ IsApplication(op, BinopDomain(op) \X BinopDomain(op), BinopDomain(op)) /\ (\A a 
    => (\E e : hyp(e,op))   BECAUSE S22;
 IsMonoid(op) => (\E e : hyp(e,op))   BECAUSE TI;
 IsMonoid(op) => (\A z : z = Neutral(op) <=> hyp(z,op))   BECAUSE TI2;
+neutralMonoidExistsUniquely   BECAUSE GENERALIZATION;
+QED
+
+neutralMonoidExists == \A op : IsMonoid(op) =>
+   Neutral(op) \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,Neutral(op)] = a /\ op[Neutral(op),a] = a
+THEOREM neutralMonoidExists
+PROOF
+VARIABLES op;
+neutralMonoidExistsUniquely   BECAUSE THEOREM;
+IsMonoid(op) => (\A z : z = Neutral(op) <=>
+   z \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,z] = a /\ op[z,a] = a)   BECAUSE \A(op <- op);
+hyp(e,op) == e \in BinopDomain(op) /\ \A a : a \in BinopDomain(op) => op[a,e] = a /\ op[e,a] = a;
 (\A z : z = Neutral(op) <=> hyp(z,op)) => (Neutral(op) = Neutral(op) <=> hyp(Neutral(op),op))   BECAUSE \A(z <- Neutral(op));
 equalSelf   BECAUSE THEOREM;
 Neutral(op) = Neutral(op)   BECAUSE \A(a <- Neutral(op));
@@ -303,7 +315,7 @@ productMonoidExists == \A f : \A g : IsMonoid(f) /\ IsMonoid(g) =>
    /\ Neutral(BinopProd(f,g)) = <<Neutral(f), Neutral(g)>>
 THEOREM productMonoidExists
 PROOF
-VARIABLES f,g;
+VARIABLES a,b,c,f,g,x,y;
 binopProdExists   BECAUSE THEOREM;
 IsMonoid(f) /\ IsMonoid(g) =>
    IsApplication(BinopProd(f,g), (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), BinopDomain(f) \X BinopDomain(g))
@@ -311,8 +323,174 @@ IsMonoid(f) /\ IsMonoid(g) =>
        => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)   BECAUSE \A(g <- f, h <- g);
 
 \* Prove that Neutral(BinopProd(f,g)) = <<Neutral(f), Neutral(g)>>
-\* BinopProd(f,g)[x,y] = << f[Neutral(f),fst(y)] , g[Neutral(g),snd(y)] >>
-\*   = <<fst(y), snd(y)>> = y
+\* hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a
+IsApplication(BinopProd(f,g), (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), BinopDomain(f) \X BinopDomain(g)) /\ (\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => IsApplication(BinopProd(f,g), (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), BinopDomain(f) \X BinopDomain(g))   BECAUSE S12;
+IsApplication(BinopProd(f,g), (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), BinopDomain(f) \X BinopDomain(g)) /\ (\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)   BECAUSE S22;
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>) => (<<Neutral(f), Neutral(g)>> \in (BinopDomain(f) \X BinopDomain(g)) /\ a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>)
+   BECAUSE \A(x <- <<Neutral(f), Neutral(g)>>, y <- a);
+IsMonoid(f) /\ IsMonoid(g) => (<<Neutral(f), Neutral(g)>> \in (BinopDomain(f) \X BinopDomain(g)) /\ a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>)
+   BECAUSE TI2;
+cartesianProductCouples   BECAUSE THEOREM;
+(Neutral(f) \in BinopDomain(f) /\ Neutral(g) \in BinopDomain(g))
+   <=> << Neutral(f),Neutral(g) >> \in BinopDomain(f) \X BinopDomain(g)
+   BECAUSE \A(x <- BinopDomain(f), y <- BinopDomain(g), a <- Neutral(f), b <- Neutral(g));
+(Neutral(f) \in BinopDomain(f) /\ Neutral(g) \in BinopDomain(g))
+   => << Neutral(f),Neutral(g) >> \in BinopDomain(f) \X BinopDomain(g)
+   BECAUSE EquivToImpl;
+neutralMonoidExists   BECAUSE THEOREM;
+IsMonoid(f) => Neutral(f) \in BinopDomain(f) /\ \A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a   BECAUSE \A(op <- f);
+Neutral(f) \in BinopDomain(f) /\ (\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a) => Neutral(f) \in BinopDomain(f)   BECAUSE S12;
+Neutral(f) \in BinopDomain(f) /\ (\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a) => (\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a)   BECAUSE S22;
+IsMonoid(f) => Neutral(f) \in BinopDomain(f)   BECAUSE TI;
+IsMonoid(f) => (\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a)   BECAUSE TI;
+\A f : IsMonoid(f) => Neutral(f) \in BinopDomain(f)   BECAUSE GENERALIZATION;
+IsMonoid(g) => Neutral(g) \in BinopDomain(g)   BECAUSE \A(f <- g);
+IsMonoid(f) /\ IsMonoid(g) => Neutral(f) \in BinopDomain(f) /\ Neutral(g) \in BinopDomain(g)   BECAUSE MergeImplicationsAnd;
+IsMonoid(f) /\ IsMonoid(g) => <<Neutral(f),Neutral(g)>> \in BinopDomain(f) \X BinopDomain(g)   BECAUSE TI;
+killMiddleHypo(a,b,c,h) == (h => (a /\ b => c)) => ((h => a) => (h /\ b => c))   PROPO_TAUTO;
+hn(a,f,g) == IsMonoid(f) /\ IsMonoid(g) /\ a \in (BinopDomain(f) \X BinopDomain(g));
+hn(a,f,g) => IsMonoid(f)   BECAUSE S13;
+hn(a,f,g) => IsMonoid(g)   BECAUSE S23;
+hn(a,f,g) => a \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE S22;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>   BECAUSE killMiddleHypo;
+\A d : \A i : \A c : \A b : d = i /\ c = b => (<< f[d,fst(a)] , g[c,snd(a)] >> = << f[i,fst(a)] , g[b,snd(a)] >>)   BECAUSE E_SCHEME;
+Neutral(f) = fst(<<Neutral(f), Neutral(g)>>) /\ Neutral(g) = snd(<<Neutral(f), Neutral(g)>>) => << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>   BECAUSE \A(d <- Neutral(f), i <- fst(<<Neutral(f), Neutral(g)>>), c <- Neutral(g), b <- snd(<<Neutral(f), Neutral(g)>>));
+fstExists   BECAUSE THEOREM;
+Neutral(f) = fst(<<Neutral(f), Neutral(g)>>)   BECAUSE \A(a <- Neutral(f), b <- Neutral(g));
+sndExists   BECAUSE THEOREM;
+Neutral(g) = snd(<<Neutral(f), Neutral(g)>>)   BECAUSE \A(a <- Neutral(f), b <- Neutral(g));
+Neutral(f) = fst(<<Neutral(f), Neutral(g)>>) /\ Neutral(g) = snd(<<Neutral(f), Neutral(g)>>)   BECAUSE IntroAndRight;
+<< f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>   BECAUSE MODUS_PONENS;
+hn(a,f,g) => << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>   BECAUSE PT1;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >> /\ << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >>   BECAUSE CIA;
+BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >> /\ << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = << f[fst(<<Neutral(f), Neutral(g)>>),fst(a)] , g[snd(<<Neutral(f), Neutral(g)>>),snd(a)] >> => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >>   BECAUSE E_SCHEME;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >>   BECAUSE TI;
+
+(\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a) => (fst(a) \in BinopDomain(f) => f[fst(a),Neutral(f)] = fst(a) /\ f[Neutral(f),fst(a)] = fst(a))   BECAUSE \A(a <- fst(a));
+IsMonoid(f) => (fst(a) \in BinopDomain(f) => f[fst(a),Neutral(f)] = fst(a) /\ f[Neutral(f),fst(a)] = fst(a))   BECAUSE TI;
+IsMonoid(f) /\ fst(a) \in BinopDomain(f) => f[fst(a),Neutral(f)] = fst(a) /\ f[Neutral(f),fst(a)] = fst(a)   BECAUSE HypoImplToAnd;
+\A f : IsMonoid(f) => (\A a : a \in BinopDomain(f) => f[a,Neutral(f)] = a /\ f[Neutral(f),a] = a)   BECAUSE GENERALIZATION;
+IsMonoid(g) => (\A a : a \in BinopDomain(g) => g[a,Neutral(g)] = a /\ g[Neutral(g),a] = a)   BECAUSE \A(f <- g);
+(\A a : a \in BinopDomain(g) => g[a,Neutral(g)] = a /\ g[Neutral(g),a] = a) => (snd(a) \in BinopDomain(g) => g[snd(a),Neutral(g)] = snd(a) /\ g[Neutral(g),snd(a)] = snd(a))   BECAUSE \A(a <- snd(a));
+IsMonoid(g) => (snd(a) \in BinopDomain(g) => g[snd(a),Neutral(g)] = snd(a) /\ g[Neutral(g),snd(a)] = snd(a))   BECAUSE TI;
+IsMonoid(g) /\ snd(a) \in BinopDomain(g) => g[snd(a),Neutral(g)] = snd(a) /\ g[Neutral(g),snd(a)] = snd(a)   BECAUSE HypoImplToAnd;
+cartesianProductExists   BECAUSE THEOREM;
+a \in (BinopDomain(f) \X BinopDomain(g)) <=> IsCouple(a) /\ fst(a) \in BinopDomain(f) /\ snd(a) \in BinopDomain(g)
+   BECAUSE \A(i <- BinopDomain(f), j <- BinopDomain(g), x <- a);
+a \in (BinopDomain(f) \X BinopDomain(g)) => IsCouple(a) /\ fst(a) \in BinopDomain(f) /\ snd(a) \in BinopDomain(g)
+   BECAUSE EquivToImpl;
+IsCouple(a) /\ fst(a) \in BinopDomain(f) /\ snd(a) \in BinopDomain(g) => IsCouple(a)   BECAUSE S13;
+IsCouple(a) /\ fst(a) \in BinopDomain(f) /\ snd(a) \in BinopDomain(g) => fst(a) \in BinopDomain(f)   BECAUSE S23;
+IsCouple(a) /\ fst(a) \in BinopDomain(f) /\ snd(a) \in BinopDomain(g) => snd(a) \in BinopDomain(g)   BECAUSE S22;
+hn(a,f,g) => fst(a) \in BinopDomain(f)   BECAUSE TI2;
+hn(a,f,g) => snd(a) \in BinopDomain(g)   BECAUSE TI2;
+hn(a,f,g) => IsMonoid(f) /\ fst(a) \in BinopDomain(f)   BECAUSE CIA;
+hn(a,f,g) => IsMonoid(g) /\ snd(a) \in BinopDomain(g)   BECAUSE CIA;
+f[fst(a),Neutral(f)] = fst(a) /\ f[Neutral(f),fst(a)] = fst(a) => f[Neutral(f),fst(a)] = fst(a)   BECAUSE S22;
+g[snd(a),Neutral(g)] = snd(a) /\ g[Neutral(g),snd(a)] = snd(a) => g[Neutral(g),snd(a)] = snd(a)   BECAUSE S22;
+hn(a,f,g) => f[Neutral(f),fst(a)] = fst(a)   BECAUSE TI2;
+hn(a,f,g) => g[Neutral(g),snd(a)] = snd(a)   BECAUSE TI2;
+hn(a,f,g) => f[Neutral(f),fst(a)] = fst(a) /\ g[Neutral(g),snd(a)] = snd(a)   BECAUSE CIA;
+\A d : \A i : \A c : \A b : d = i /\ c = b => (<<d,c>> = <<i,b>>)   BECAUSE E_SCHEME;
+f[Neutral(f),fst(a)] = fst(a) /\ g[Neutral(g),snd(a)] = snd(a) => << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = <<fst(a),snd(a)>>
+   BECAUSE \A(d <- f[Neutral(f),fst(a)], i <- fst(a), c <- g[Neutral(g),snd(a)], b <- snd(a));
+hn(a,f,g) => << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = <<fst(a),snd(a)>>   BECAUSE TI;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> /\ << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = <<fst(a),snd(a)>>   BECAUSE CIA;
+transitEqual   BECAUSE THEOREM;
+BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> /\ << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >> = <<fst(a),snd(a)>> => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = <<fst(a),snd(a)>>
+   BECAUSE \A(a <- BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a], b <- << f[Neutral(f),fst(a)] , g[Neutral(g),snd(a)] >>, c <- <<fst(a),snd(a)>>);
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = <<fst(a),snd(a)>>   BECAUSE TI;
+tupleComposition   BECAUSE THEOREM;
+IsCouple(a) => a = <<fst(a), snd(a)>>   BECAUSE \A(c <- a);
+hn(a,f,g) => IsCouple(a)   BECAUSE TI2;
+hn(a,f,g) => a = <<fst(a), snd(a)>>   BECAUSE TI;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = <<fst(a),snd(a)>> /\ a = <<fst(a), snd(a)>>   BECAUSE CIA;
+BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = <<fst(a),snd(a)>> /\ a = <<fst(a), snd(a)>> => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a   BECAUSE E_SCHEME;
+hn(a,f,g) => BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a   BECAUSE TI;
+
+\* Symmetrically, prove hn(a,f,g) => BinopProd(f,g)[a, <<Neutral(f), Neutral(g)>>] = a
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ <<Neutral(f), Neutral(g)>> \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>)
+   BECAUSE \A(x <- a, y <- <<Neutral(f), Neutral(g)>>);
+IsMonoid(f) /\ IsMonoid(g) => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ <<Neutral(f), Neutral(g)>> \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>)   BECAUSE TI2;
+killMiddleHypo2(a,b,c,h) == (h => (a /\ b => c)) => ((h => b) => (h /\ a => c))   PROPO_TAUTO;
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>   BECAUSE killMiddleHypo2;
+\A d : \A i : \A c : \A b : d = i /\ c = b => (<< f[fst(a),d] , g[snd(a),c] >> = << f[fst(a),i] , g[snd(a),b] >>)   BECAUSE E_SCHEME;
+Neutral(f) = fst(<<Neutral(f), Neutral(g)>>) /\ Neutral(g) = snd(<<Neutral(f), Neutral(g)>>) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>   BECAUSE \A(d <- Neutral(f), i <- fst(<<Neutral(f), Neutral(g)>>), c <- Neutral(g), b <- snd(<<Neutral(f), Neutral(g)>>));
+<< f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>   BECAUSE MODUS_PONENS;
+hn(a,f,g) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>   BECAUSE PT1;
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >> /\ << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >>   BECAUSE CIA;
+BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >> /\ << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = << f[fst(a),fst(<<Neutral(f), Neutral(g)>>)] , g[snd(a),snd(<<Neutral(f), Neutral(g)>>)] >> => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >>   BECAUSE E_SCHEME;
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >>   BECAUSE TI;
+f[fst(a),Neutral(f)] = fst(a) /\ f[Neutral(f),fst(a)] = fst(a) => f[fst(a),Neutral(f)] = fst(a)   BECAUSE S12;
+g[snd(a),Neutral(g)] = snd(a) /\ g[Neutral(g),snd(a)] = snd(a) => g[snd(a),Neutral(g)] = snd(a)   BECAUSE S12;
+hn(a,f,g) => f[fst(a),Neutral(f)] = fst(a)   BECAUSE TI2;
+hn(a,f,g) => g[snd(a),Neutral(g)] = snd(a)   BECAUSE TI2;
+hn(a,f,g) => f[fst(a),Neutral(f)] = fst(a) /\ g[snd(a),Neutral(g)] = snd(a)   BECAUSE CIA;
+f[fst(a),Neutral(f)] = fst(a) /\ g[snd(a),Neutral(g)] = snd(a) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = <<fst(a),snd(a)>>
+   BECAUSE \A(d <- f[fst(a),Neutral(f)], i <- fst(a), c <- g[snd(a),Neutral(g)], b <- snd(a));
+hn(a,f,g) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = <<fst(a),snd(a)>>   BECAUSE TI;
+hn(a,f,g) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = <<fst(a),snd(a)>> /\ a = <<fst(a), snd(a)>>   BECAUSE CIA;
+<< f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = <<fst(a),snd(a)>> /\ a = <<fst(a), snd(a)>> => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = a   BECAUSE E_SCHEME;
+hn(a,f,g) => << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = a   BECAUSE TI;
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> /\ << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = a   BECAUSE CIA;
+BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> /\ << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >> = a => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a
+   BECAUSE \A(a <- BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>], b <- << f[fst(a),Neutral(f)] , g[snd(a),Neutral(g)] >>, c <- a);
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a   BECAUSE TI;
+hn(a,f,g) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a /\ BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a   BECAUSE CIA;
+IsMonoid(f) /\ IsMonoid(g) => (a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a /\ BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a)   BECAUSE HypoAndToImpl;
+\A a : IsMonoid(f) /\ IsMonoid(g) => (a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a /\ BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a)   BECAUSE GENERALIZATION;
+IsMonoid(f) /\ IsMonoid(g) => (\A a : a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a /\ BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a)   BECAUSE Q_SCHEME;
+(\A a : a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,<<Neutral(f), Neutral(g)>>] = a /\ BinopProd(f,g)[<<Neutral(f), Neutral(g)>>,a] = a) => \E e : (\A a : a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,e] = a /\ BinopProd(f,g)[e,a] = a)   BECAUSE \E(e <- <<Neutral(f), Neutral(g)>>);
+IsMonoid(f) /\ IsMonoid(g) => \E e : (\A a : a \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,e] = a /\ BinopProd(f,g)[e,a] = a)   BECAUSE TI;
+
+\* Prove Neutral(BinopProd(f,g)) = <<Neutral(f),Neutral(g)>> by neutralMonoidExistsUniquely
+
+\* Prove associativity
+\* (<<a,b>> . <<c,d>>) . <<e,f>> = << (a.c).e, (b.d).f >>
+\* = << a.(c.e), b.(d.f) >> = <<a,b>> . (<<c,d>> . <<e,f>>)
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ b \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,b] = << f[fst(a),fst(b)] , g[snd(a),snd(b)] >>)
+   BECAUSE \A(x <- a, y <- b);
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (b \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)
+   BECAUSE \A(x <- b, y <- c);
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (BinopProd(f,g)[a,b] \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[fst(BinopProd(f,g)[a,b]),fst(c)] , g[snd(BinopProd(f,g)[a,b]),snd(c)] >>)
+   BECAUSE \A(x <- BinopProd(f,g)[a,b], y <- c);
+(\A x : \A y : x \in (BinopDomain(f) \X BinopDomain(g)) /\ y \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[x,y] = << f[fst(x),fst(y)] , g[snd(x),snd(y)] >>)
+   => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ BinopProd(f,g)[b,c] \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,BinopProd(f,g)[b,c]] = << f[fst(a),fst(BinopProd(f,g)[b,c])] , g[snd(a),snd(BinopProd(f,g)[b,c])] >>)
+   BECAUSE \A(x <- a, y <- BinopProd(f,g)[b,c]);
+ha(a,b,c,f,g) == IsMonoid(f) /\ IsMonoid(g) /\ a \in (BinopDomain(f) \X BinopDomain(g)) /\ b \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g));
+ha(a,b,c,f,g) => IsMonoid(f) /\ IsMonoid(g)   BECAUSE S14;
+IsMonoid(f) /\ IsMonoid(g) => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ b \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,b] = << f[fst(a),fst(b)] , g[snd(a),snd(b)] >>)   BECAUSE TI2;
+ha(a,b,c,f,g) => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ b \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,b] = << f[fst(a),fst(b)] , g[snd(a),snd(b)] >>)   BECAUSE TI;
+IsMonoid(f) /\ IsMonoid(g) => (b \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE TI2;
+IsMonoid(f) /\ IsMonoid(g) => (BinopProd(f,g)[a,b] \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[fst(BinopProd(f,g)[a,b]),fst(c)] , g[snd(BinopProd(f,g)[a,b]),snd(c)] >>)   BECAUSE TI2;
+IsMonoid(f) /\ IsMonoid(g) => (a \in (BinopDomain(f) \X BinopDomain(g)) /\ BinopProd(f,g)[b,c] \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,BinopProd(f,g)[b,c]] = << f[fst(a),fst(BinopProd(f,g)[b,c])] , g[snd(a),snd(BinopProd(f,g)[b,c])] >>)   BECAUSE TI2;
+ha(a,b,c,f,g) => a \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE S24;
+ha(a,b,c,f,g) => b \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE S23;
+ha(a,b,c,f,g) => a \in (BinopDomain(f) \X BinopDomain(g)) /\ b \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE CIA;
+ha(a,b,c,f,g) => BinopProd(f,g)[a,b] = << f[fst(a),fst(b)] , g[snd(a),snd(b)] >>   BECAUSE KillMiddleHypo;
+
+ha(a,b,c,f,g) => IsApplication(BinopProd(f,g), (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), BinopDomain(f) \X BinopDomain(g))   BECAUSE TI2;
+
+appDomainToImage   BECAUSE THEOREM;
+IsApplication(BinopProd(f,g),(BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), (BinopDomain(f) \X BinopDomain(g))) /\ <<a,b>> \in (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[a,b] \in (BinopDomain(f) \X BinopDomain(g))
+   BECAUSE \A(f <- BinopProd(f,g), d <- (BinopDomain(f) \X BinopDomain(g)) \X (BinopDomain(f) \X BinopDomain(g)), i <- (BinopDomain(f) \X BinopDomain(g)), x <- <<a,b>>);
+
+ha(a,b,c,f,g) => BinopProd(f,g)[a,b] \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE TI;
+ha(a,b,c,f,g) => BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[fst(BinopProd(f,g)[a,b]),fst(c)] , g[snd(BinopProd(f,g)[a,b]),snd(c)] >>   BECAUSE TI2;
+
+\* TODO
+\* << f[fst(BinopProd(f,g)[a,b]),fst(c)] , g[snd(BinopProd(f,g)[a,b]),snd(c)] >>
+\* = << f[f[fst(a),fst(b)], fst(c)] , g[g[snd(a),snd(b)] ,snd(c)] >>
+\* = << f[fst(a), f[fst(b),fst(c)]] , g[snd(a), g[snd(b),snd(c)]] >>
+\* = ...
+
+\* (\A a : \A b : \A c : a \in M /\ b \in M /\ c \in M => op[op[a,b],c] = op[a,op[b,c]] )
 QED
 
 (* TODO IsMonoid(Nat,natAddition), product monoid, group of a regular monoid *)
