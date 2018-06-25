@@ -574,7 +574,29 @@ BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[f[fst(a),fst(b)],fst(c)] , g[g[snd(
    BECAUSE \A(a <- BinopProd(f,g)[BinopProd(f,g)[a,b],c], b <- << f[f[fst(a),fst(b)],fst(c)] , g[g[snd(a),snd(b)],snd(c)] >>, c <- << f[fst(a), f[fst(b),fst(c)]] , g[snd(a), g[snd(b),snd(c)]] >>);
 ha(a,b,c,f,g) => BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[fst(a), f[fst(b),fst(c)]] , g[snd(a), g[snd(b),snd(c)]] >>   BECAUSE TI;
 
+ha(a,b,c,f,g) => (b \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g)) => BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE TI;
+ha(a,b,c,f,g) => b \in (BinopDomain(f) \X BinopDomain(g)) /\ c \in (BinopDomain(f) \X BinopDomain(g))   BECAUSE CIA;
+ha(a,b,c,f,g) => BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>   BECAUSE KillMiddleHypo;
+f[fst(b),fst(c)] = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE \A(a <- f[fst(b),fst(c)], b <- g[snd(b),snd(c)]);
+g[snd(b),snd(c)] = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE \A(a <- f[fst(b),fst(c)], b <- g[snd(b),snd(c)]);
+BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >> => fst(BinopProd(f,g)[b,c]) = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE \A(x <- BinopProd(f,g)[b,c], y <- << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>);
+BinopProd(f,g)[b,c] = << f[fst(b),fst(c)] , g[snd(b),snd(c)] >> => snd(BinopProd(f,g)[b,c]) = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE \A(x <- BinopProd(f,g)[b,c], y <- << f[fst(b),fst(c)] , g[snd(b),snd(c)] >>);
+ha(a,b,c,f,g) => f[fst(b),fst(c)] = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE PT1;
+ha(a,b,c,f,g) => g[snd(b),snd(c)] = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE PT1;
+ha(a,b,c,f,g) => fst(BinopProd(f,g)[b,c]) = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE TI;
+ha(a,b,c,f,g) => snd(BinopProd(f,g)[b,c]) = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE TI;
+ha(a,b,c,f,g) => f[fst(b),fst(c)] = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) /\ fst(BinopProd(f,g)[b,c]) = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE CIA;
+f[fst(b),fst(c)] = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) /\ fst(BinopProd(f,g)[b,c]) = fst(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) => f[fst(b),fst(c)] = fst(BinopProd(f,g)[b,c])   BECAUSE E_SCHEME;
+ha(a,b,c,f,g) => f[fst(b),fst(c)] = fst(BinopProd(f,g)[b,c])   BECAUSE TI;
+ha(a,b,c,f,g) => g[snd(b),snd(c)] = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) /\ snd(BinopProd(f,g)[b,c]) = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>)   BECAUSE CIA;
+g[snd(b),snd(c)] = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) /\ snd(BinopProd(f,g)[b,c]) = snd(<< f[fst(b),fst(c)] , g[snd(b),snd(c)] >>) => g[snd(b),snd(c)] = snd(BinopProd(f,g)[b,c])   BECAUSE E_SCHEME;
+ha(a,b,c,f,g) => g[snd(b),snd(c)] = snd(BinopProd(f,g)[b,c])   BECAUSE TI;
+ha(a,b,c,f,g) => f[fst(b),fst(c)] = fst(BinopProd(f,g)[b,c]) /\ g[snd(b),snd(c)] = snd(BinopProd(f,g)[b,c])   BECAUSE CIA;
+
+ha(a,b,c,f,g) => BinopProd(f,g)[BinopProd(f,g)[a,b],c] = << f[fst(a), fst(BinopProd(f,g)[b,c])] , g[snd(a), snd(BinopProd(f,g)[b,c])] >>   BECAUSE TI;
+
 \* TODO
+\* = << f[fst(a), fst(BinopProd(f,g)[b,c])] , g[snd(a), snd(BinopProd(f,g)[b,c])] >>
 \* = BinopProd(f,g)[a, BinopProd(f,g)[b,c]]
 QED
 
